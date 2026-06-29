@@ -38,27 +38,31 @@ export default function Board({
             key={col.key}
             onDragOver={(e) => e.preventDefault()}
             onDrop={() => onDrop(col.key)}
-            className="flex flex-col rounded-xl border border-gray-200 bg-gray-100/60 p-3"
+            className="glass-soft flex flex-col p-3"
           >
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold">{col.label}</h3>
-              <span className="text-xs text-gray-500">{colDeals.length}</span>
+              <h3 className="text-sm font-semibold text-slate-800">
+                {col.label}
+              </h3>
+              <span className="text-xs text-slate-500">{colDeals.length}</span>
             </div>
-            <p className="mb-2 text-xs text-gray-500">{formatBRL(total)}</p>
+            <p className="mb-2 text-xs text-slate-500">{formatBRL(total)}</p>
             <div className="flex flex-1 flex-col gap-2">
               {colDeals.map((d) => (
                 <div
                   key={d.id}
                   draggable
                   onDragStart={() => setDragId(d.id)}
-                  className="group cursor-grab rounded-lg border border-gray-200 bg-white p-3 shadow-sm active:cursor-grabbing"
+                  className="group cursor-grab rounded-xl border border-white/50 bg-white/70 p-3 shadow-md shadow-slate-900/5 backdrop-blur transition hover:bg-white/90 active:cursor-grabbing"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-medium">{d.title}</p>
+                    <p className="text-sm font-medium text-slate-900">
+                      {d.title}
+                    </p>
                     <form action={deleteDeal}>
                       <input type="hidden" name="id" value={d.id} />
                       <button
-                        className="text-xs text-gray-300 hover:text-red-500"
+                        className="text-xs text-slate-300 hover:text-red-500"
                         title="Excluir"
                       >
                         ✕
@@ -66,7 +70,7 @@ export default function Board({
                     </form>
                   </div>
                   {d.contact_id && contactNames[d.contact_id] && (
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-slate-500">
                       {contactNames[d.contact_id]}
                     </p>
                   )}

@@ -3,5 +3,34 @@
 @tailwind utilities;
 
 body {
-  @apply bg-gray-50 text-gray-900;
+  @apply text-slate-800;
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(59, 130, 246, 0.25), transparent 60%),
+    radial-gradient(1000px 500px at 100% 0%, rgba(168, 85, 247, 0.22), transparent 55%),
+    radial-gradient(900px 600px at 50% 120%, rgba(236, 72, 153, 0.18), transparent 60%),
+    linear-gradient(180deg, #eef2ff 0%, #f8fafc 45%, #eef2ff 100%);
+  background-attachment: fixed;
+}
+
+@layer components {
+  /* Painel de vidro translúcido (liquid glass) */
+  .glass {
+    @apply rounded-2xl border border-white/40 bg-white/50 shadow-xl shadow-slate-900/5 backdrop-blur-xl;
+  }
+
+  /* Variante mais sutil para áreas internas / colunas */
+  .glass-soft {
+    @apply rounded-2xl border border-white/30 bg-white/30 backdrop-blur-md;
+  }
+
+  /* Inputs com aparência de vidro */
+  .glass-input {
+    @apply w-full rounded-xl border border-white/50 bg-white/60 px-3 py-2 text-sm text-slate-800 placeholder-slate-400 shadow-inner backdrop-blur outline-none transition focus:border-brand-400 focus:bg-white/80 focus:ring-2 focus:ring-brand-200;
+  }
+
+  /* Botão principal com leve brilho */
+  .glass-btn {
+    @apply rounded-xl bg-gradient-to-b from-brand-500 to-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-600/30 transition hover:from-brand-400 hover:to-brand-600 active:scale-[0.98];
+  }
 }

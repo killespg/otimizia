@@ -24,7 +24,7 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-gray-200 bg-white">
+      <header className="sticky top-0 z-20 border-b border-white/30 bg-white/40 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <div className="flex items-center gap-8">
             <Link href="/dashboard" className="font-bold text-brand-700">
@@ -35,7 +35,7 @@ export default async function AppLayout({
                 <Link
                   key={n.href}
                   href={n.href}
-                  className="text-gray-600 hover:text-gray-900"
+                  className="text-slate-600 transition hover:text-slate-900"
                 >
                   {n.label}
                 </Link>
@@ -43,9 +43,11 @@ export default async function AppLayout({
             </nav>
           </div>
           <div className="flex items-center gap-4 text-sm">
-            <span className="hidden text-gray-500 sm:inline">{user.email}</span>
+            <span className="hidden text-slate-500 sm:inline">{user.email}</span>
             <form action={logout}>
-              <button className="text-gray-600 hover:text-gray-900">Sair</button>
+              <button className="text-slate-600 transition hover:text-slate-900">
+                Sair
+              </button>
             </form>
           </div>
         </div>

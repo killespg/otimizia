@@ -50,8 +50,8 @@ export default async function ContactDetailPage({
 
       <div className="mt-6 grid gap-8 lg:grid-cols-2">
         {/* Editar */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <h2 className="font-semibold">Dados do contato</h2>
+        <div className="glass p-5">
+          <h2 className="font-semibold text-slate-900">Dados do contato</h2>
           <form action={updateContact} className="mt-4 space-y-3">
             <input type="hidden" name="id" value={c.id} />
             <Field name="name" label="Nome" defaultValue={c.name} required />
@@ -82,15 +82,13 @@ export default async function ContactDetailPage({
                 name="notes"
                 rows={3}
                 defaultValue={c.notes ?? ""}
-                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="glass-input mt-1"
               />
             </div>
-            <button className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
-              Salvar
-            </button>
+            <button className="glass-btn">Salvar</button>
           </form>
 
-          <form action={deleteContact} className="mt-4 border-t border-gray-100 pt-4">
+          <form action={deleteContact} className="mt-4 border-t border-white/40 pt-4">
             <input type="hidden" name="id" value={c.id} />
             <button className="text-sm text-red-600 hover:underline">
               Excluir contato
@@ -100,19 +98,19 @@ export default async function ContactDetailPage({
 
         {/* Histórico + tarefas */}
         <div className="space-y-8">
-          <div className="rounded-xl border border-gray-200 bg-white p-5">
-            <h2 className="font-semibold">Histórico de interações</h2>
+          <div className="glass p-5">
+            <h2 className="font-semibold text-slate-900">
+              Histórico de interações
+            </h2>
             <form action={createInteraction} className="mt-4 flex gap-2">
               <input type="hidden" name="contact_id" value={c.id} />
               <input
                 name="body"
                 required
                 placeholder="Registrar uma conversa, ligação, mensagem..."
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                className="glass-input flex-1"
               />
-              <button className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700">
-                Registrar
-              </button>
+              <button className="glass-btn whitespace-nowrap">Registrar</button>
             </form>
             {logs.length === 0 ? (
               <p className="mt-4 text-sm text-gray-500">
@@ -123,7 +121,7 @@ export default async function ContactDetailPage({
                 {logs.map((l) => (
                   <li key={l.id} className="text-sm">
                     <p>{l.body}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-slate-400">
                       {formatDateTime(l.created_at)}
                     </p>
                   </li>
@@ -132,8 +130,10 @@ export default async function ContactDetailPage({
             )}
           </div>
 
-          <div className="rounded-xl border border-gray-200 bg-white p-5">
-            <h2 className="font-semibold">Tarefas deste contato</h2>
+          <div className="glass p-5">
+            <h2 className="font-semibold text-slate-900">
+              Tarefas deste contato
+            </h2>
             {relatedTasks.length === 0 ? (
               <p className="mt-4 text-sm text-gray-500">
                 Nenhuma tarefa.{" "}
@@ -177,13 +177,13 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium">{label}</label>
+      <label className="block text-sm font-medium text-slate-700">{label}</label>
       <input
         name={name}
         type={type}
         required={required}
         defaultValue={defaultValue}
-        className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+        className="glass-input mt-1"
       />
     </div>
   );

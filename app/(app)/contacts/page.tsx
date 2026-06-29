@@ -18,20 +18,20 @@ export default async function ContactsPage() {
       <div className="mt-6 grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
           {contacts.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-gray-300 p-8 text-center text-sm text-gray-500">
+            <p className="glass-soft border-dashed p-8 text-center text-sm text-slate-500">
               Nenhum contato ainda. Adicione o primeiro ao lado.
             </p>
           ) : (
-            <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
+            <ul className="glass divide-y divide-white/40 overflow-hidden">
               {contacts.map((c) => (
                 <li key={c.id}>
                   <Link
                     href={`/contacts/${c.id}`}
-                    className="flex items-center justify-between px-5 py-4 hover:bg-gray-50"
+                    className="flex items-center justify-between px-5 py-4 transition hover:bg-white/40"
                   >
                     <div>
-                      <p className="font-medium">{c.name}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="font-medium text-slate-900">{c.name}</p>
+                      <p className="text-sm text-slate-500">
                         {c.company || c.email || c.phone || "—"}
                       </p>
                     </div>
@@ -43,8 +43,8 @@ export default async function ContactsPage() {
           )}
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <h2 className="font-semibold">Novo contato</h2>
+        <div className="glass p-5">
+          <h2 className="font-semibold text-slate-900">Novo contato</h2>
           <form action={createContact} className="mt-4 space-y-3">
             <Field name="name" label="Nome" required />
             <Field name="phone" label="Telefone / WhatsApp" />
@@ -53,15 +53,9 @@ export default async function ContactsPage() {
             <Field name="source" label="Origem (ex: Instagram)" />
             <div>
               <label className="block text-sm font-medium">Observações</label>
-              <textarea
-                name="notes"
-                rows={2}
-                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-              />
+              <textarea name="notes" rows={2} className="glass-input mt-1" />
             </div>
-            <button className="w-full rounded-lg bg-brand-600 py-2 text-sm font-semibold text-white hover:bg-brand-700">
-              Adicionar
-            </button>
+            <button className="glass-btn w-full py-2.5">Adicionar</button>
           </form>
         </div>
       </div>
@@ -82,12 +76,12 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium">{label}</label>
+      <label className="block text-sm font-medium text-slate-700">{label}</label>
       <input
         name={name}
         type={type}
         required={required}
-        className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+        className="glass-input mt-1"
       />
     </div>
   );

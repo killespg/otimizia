@@ -44,31 +44,30 @@ export default async function TasksPage() {
 
       <form
         action={createTask}
-        className="mt-6 flex flex-wrap items-end gap-2 rounded-xl border border-gray-200 bg-white p-3"
+        className="glass mt-6 flex flex-wrap items-end gap-2 p-3"
       >
         <div className="flex-1">
-          <label className="block text-xs font-medium">Tarefa</label>
+          <label className="block text-xs font-medium text-slate-700">
+            Tarefa
+          </label>
           <input
             name="title"
             required
             placeholder="Ex: Ligar para o cliente"
-            className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+            className="glass-input mt-1"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium">Quando</label>
-          <input
-            name="due_at"
-            type="datetime-local"
-            className="mt-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
-          />
+          <label className="block text-xs font-medium text-slate-700">
+            Quando
+          </label>
+          <input name="due_at" type="datetime-local" className="glass-input mt-1" />
         </div>
         <div>
-          <label className="block text-xs font-medium">Contato</label>
-          <select
-            name="contact_id"
-            className="mt-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
-          >
+          <label className="block text-xs font-medium text-slate-700">
+            Contato
+          </label>
+          <select name="contact_id" className="glass-input mt-1">
             <option value="">—</option>
             {allContacts.map((c) => (
               <option key={c.id} value={c.id}>
@@ -77,27 +76,22 @@ export default async function TasksPage() {
             ))}
           </select>
         </div>
-        <button className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
-          Adicionar
-        </button>
+        <button className="glass-btn">Adicionar</button>
       </form>
 
       <div className="mt-8 space-y-6">
         {groups.map((g) => (
-          <div
-            key={g.title}
-            className="rounded-xl border border-gray-200 bg-white p-5"
-          >
-            <h2 className="font-semibold">
+          <div key={g.title} className="glass p-5">
+            <h2 className="font-semibold text-slate-900">
               {g.title}{" "}
-              <span className="text-sm font-normal text-gray-400">
+              <span className="text-sm font-normal text-slate-400">
                 ({g.items.length})
               </span>
             </h2>
             {g.items.length === 0 ? (
-              <p className="mt-3 text-sm text-gray-400">Nada aqui.</p>
+              <p className="mt-3 text-sm text-slate-400">Nada aqui.</p>
             ) : (
-              <ul className="mt-2 divide-y divide-gray-100">
+              <ul className="mt-2 divide-y divide-white/40">
                 {g.items.map((t) => (
                   <TaskItem key={t.id} task={t} overdue={g.overdue} />
                 ))}

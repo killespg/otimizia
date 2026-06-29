@@ -8,14 +8,14 @@ export default function LoginPage({
 }) {
   return (
     <main className="flex min-h-screen items-center justify-center px-6">
-      <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-8">
-        <h1 className="text-2xl font-bold">Entrar</h1>
-        <p className="mt-1 text-sm text-gray-500">
+      <div className="glass w-full max-w-sm p-8">
+        <h1 className="text-2xl font-bold text-slate-900">Entrar</h1>
+        <p className="mt-1 text-sm text-slate-500">
           Acesse seu CRM e continue de onde parou.
         </p>
 
         {searchParams.error && (
-          <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+          <p className="mt-4 rounded-xl border border-red-200/60 bg-red-50/80 p-3 text-sm text-red-700 backdrop-blur">
             {searchParams.error}
           </p>
         )}
@@ -27,7 +27,7 @@ export default function LoginPage({
               name="email"
               type="email"
               required
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
+              className="glass-input mt-1"
             />
           </div>
           <div>
@@ -36,18 +36,15 @@ export default function LoginPage({
               name="password"
               type="password"
               required
-              className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2"
+              className="glass-input mt-1"
             />
           </div>
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-brand-600 py-2 font-semibold text-white hover:bg-brand-700"
-          >
+          <button type="submit" className="glass-btn w-full py-2.5">
             Entrar
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
+        <p className="mt-6 text-center text-sm text-slate-600">
           Não tem conta?{" "}
           <Link href="/signup" className="font-medium text-brand-600">
             Criar agora

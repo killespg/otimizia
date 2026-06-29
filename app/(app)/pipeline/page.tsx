@@ -27,34 +27,37 @@ export default async function PipelinePage() {
 
         <form
           action={createDeal}
-          className="flex flex-wrap items-end gap-2 rounded-xl border border-gray-200 bg-white p-3"
+          className="glass flex flex-wrap items-end gap-2 p-3"
         >
           <div>
-            <label className="block text-xs font-medium">Negócio</label>
+            <label className="block text-xs font-medium text-slate-700">
+              Negócio
+            </label>
             <input
               name="title"
               required
               placeholder="Ex: Plano mensal"
-              className="mt-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="glass-input mt-1"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium">Valor (R$)</label>
+            <label className="block text-xs font-medium text-slate-700">
+              Valor (R$)
+            </label>
             <input
               name="value"
               type="number"
               step="0.01"
               min="0"
               placeholder="0,00"
-              className="mt-1 w-28 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="glass-input mt-1 w-28"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium">Contato</label>
-            <select
-              name="contact_id"
-              className="mt-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
-            >
+            <label className="block text-xs font-medium text-slate-700">
+              Contato
+            </label>
+            <select name="contact_id" className="glass-input mt-1">
               <option value="">—</option>
               {allContacts.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -63,13 +66,11 @@ export default async function PipelinePage() {
               ))}
             </select>
           </div>
-          <button className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
-            Adicionar
-          </button>
+          <button className="glass-btn">Adicionar</button>
         </form>
       </div>
 
-      <p className="mt-3 text-sm text-gray-500">
+      <p className="mt-3 text-sm text-slate-500">
         Arraste os cartões entre as colunas para mudar a etapa.
       </p>
 

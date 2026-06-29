@@ -50,20 +50,17 @@ export default async function DashboardPage() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
-          <div
-            key={c.label}
-            className="rounded-xl border border-gray-200 bg-white p-5"
-          >
-            <p className="text-sm text-gray-500">{c.label}</p>
-            <p className="mt-2 text-2xl font-bold">{c.value}</p>
+          <div key={c.label} className="glass p-5">
+            <p className="text-sm text-slate-500">{c.label}</p>
+            <p className="mt-2 text-2xl font-bold text-slate-900">{c.value}</p>
           </div>
         ))}
       </div>
 
-      <div className="mt-8 rounded-xl border border-gray-200 bg-white p-6">
+      <div className="glass mt-8 p-6">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold">Follow-ups para hoje</h2>
-          <Link href="/tasks" className="text-sm text-brand-600">
+          <h2 className="font-semibold text-slate-900">Follow-ups para hoje</h2>
+          <Link href="/tasks" className="text-sm text-brand-600 hover:text-brand-700">
             Ver todas
           </Link>
         </div>
@@ -72,14 +69,14 @@ export default async function DashboardPage() {
             Nada pendente para hoje. 🎉
           </p>
         ) : (
-          <ul className="mt-4 divide-y divide-gray-100">
+          <ul className="mt-4 divide-y divide-white/40">
             {dueTasks.map((t) => (
               <li
                 key={t.id}
                 className="flex items-center justify-between py-2 text-sm"
               >
                 <span>{t.title}</span>
-                <span className="text-gray-400">{formatDate(t.due_at)}</span>
+                <span className="text-slate-400">{formatDate(t.due_at)}</span>
               </li>
             ))}
           </ul>
