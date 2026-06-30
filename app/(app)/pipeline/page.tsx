@@ -1,16 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Deal } from "@/lib/supabase/types";
 import { createDeal } from "../actions";
+import { IconPlus } from "../icons";
 import Board from "./Board";
 
 export default async function PipelinePage() {
   const supabase = createClient();
 
   const [{ data: deals }, { data: contacts }] = await Promise.all([
-    supabase
-      .from("deals")
-      .select("*")
-      .order("created_at", { ascending: false }),
+    supabase.from("deals").select("*").order("created_at", { ascending: false }),
     supabase.from("contacts").select("id, name").order("name"),
   ]);
 
@@ -22,42 +20,51 @@ export default async function PipelinePage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-2xl font-bold">Funil de vendas</h1>
+      <header className="enter">
+        <p className="eyebrow">Vendas</p>
+        <h1 className="font-display mt-3 text-[clamp(1.75rem,5vw,2.75rem)] font-semibold leading-[1.04] tracking-[-0.02em] text-ink">
+          Em que passo está cada venda
+        </h1>
+        <p className="mt-2 max-w-md text-[15px] text-ink-soft">
+          Arraste uma venda para atualizar o próximo passo.
+        </p>
+      </header>
 
-        <form
-          action={createDeal}
-          className="glass flex flex-wrap items-end gap-2 p-3"
-        >
+      {/* Nova venda */}
+      <form action={createDeal} className="card mt-7 p-4 sm:p-5">
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_8rem_minmax(0,1fr)_auto] sm:items-end">
           <div>
-            <label className="block text-xs font-medium text-slate-700">
-              Negócio
+            <label className="label" htmlFor="deal-title">
+              Venda
             </label>
             <input
+              id="deal-title"
               name="title"
               required
+              maxLength={160}
               placeholder="Ex: Plano mensal"
-              className="glass-input mt-1"
+              className="field mt-1.5"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-700">
+            <label className="label" htmlFor="deal-value">
               Valor (R$)
             </label>
             <input
+              id="deal-value"
               name="value"
-              type="number"
-              step="0.01"
-              min="0"
+              type="text"
+              inputMode="decimal"
+              maxLength={32}
               placeholder="0,00"
-              className="glass-input mt-1 w-28"
+              className="field mt-1.5"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-700">
+            <label className="label" htmlFor="deal-contact">
               Contato
             </label>
-            <select name="contact_id" className="glass-input mt-1">
+            <select id="deal-contact" name="contact_id" className="field mt-1.5">
               <option value="">—</option>
               {allContacts.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -66,13 +73,12 @@ export default async function PipelinePage() {
               ))}
             </select>
           </div>
-          <button className="glass-btn">Adicionar</button>
-        </form>
-      </div>
-
-      <p className="mt-3 text-sm text-slate-500">
-        Arraste os cartões entre as colunas para mudar a etapa.
-      </p>
+          <button type="submit" className="btn h-[42px] w-full sm:w-auto">
+            <IconPlus className="h-4 w-4" />
+            Salvar
+          </button>
+        </div>
+      </form>
 
       <Board initialDeals={allDeals} contactNames={contactNames} />
     </div>

@@ -6,12 +6,16 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function login(formData: FormData) {
   const supabase = createClient();
-  const email = String(formData.get("email"));
-  const password = String(formData.get("password"));
+  const email = emailField(formData.get("email"));
+  const password = passwordField(formData.get("password"));
+
+  if (!email || !password) {
+    redirectWithError("/login", "Preencha e-mail e senha.");
+  }
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    redirect("/login?error=" + encodeURIComponent(error.message));
+    redirectWithError("/login", "Nao foi possivel entrar. Confira os dados.");
   }
 
   revalidatePath("/", "layout");
@@ -20,9 +24,17 @@ export async function login(formData: FormData) {
 
 export async function signup(formData: FormData) {
   const supabase = createClient();
-  const email = String(formData.get("email"));
-  const password = String(formData.get("password"));
-  const name = String(formData.get("name") ?? "");
+  const email = emailField(formData.get("email"));
+  const password = passwordField(formData.get("password"));
+  const name = textField(formData.get("name"), 120);
+
+  if (!email || !password) {
+    redirectWithError("/signup", "Preencha e-mail e senha.");
+  }
+
+  if (password.length < 6) {
+    redirectWithError("/signup", "Use uma senha com pelo menos 6 caracteres.");
+  }
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -30,7 +42,7 @@ export async function signup(formData: FormData) {
     options: { data: { name } },
   });
   if (error) {
-    redirect("/signup?error=" + encodeURIComponent(error.message));
+    redirectWithError("/signup", "Nao foi possivel criar a conta.");
   }
 
   revalidatePath("/", "layout");
@@ -42,4 +54,22 @@ export async function logout() {
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
   redirect("/login");
+}
+
+function textField(v: FormDataEntryValue | null, max: number): string {
+  const s = typeof v === "string" ? v.trim() : "";
+  return s.length > max ? s.slice(0, max) : s;
+}
+
+function emailField(v: FormDataEntryValue | null): string {
+  const email = textField(v, 160).toLowerCase();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : "";
+}
+
+function passwordField(v: FormDataEntryValue | null): string {
+  return typeof v === "string" ? v.slice(0, 200) : "";
+}
+
+function redirectWithError(path: string, message: string): never {
+  redirect(`${path}?error=${encodeURIComponent(message)}`);
 }

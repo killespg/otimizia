@@ -10,3 +10,18 @@ next-env.d.ts
 /.vercel
 /supabase/.branches
 /supabase/.temp
+
+# Ignore local and tool-specific files
+.agents/
+.codex/
+.claude/
+.copilot/
+.impeccable/
+.vscode/
+.vscode-shared/
+~/**
+**/__pycache__/
+*.pyc
+config.local.json
+hook.cache.json
+.claude.json

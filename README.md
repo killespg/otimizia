@@ -1,7 +1,7 @@
-# MeuCRM — CRM simples para empreendedores individuais
+# OtimizIA — CRM simples para quem vende sozinho
 
-CRM enxuto para autônomos, freelancers e pequenos empreendedores organizarem
-contatos, acompanharem o funil de vendas e nunca perderem um follow-up.
+CRM simples para quem vende sozinho organizar clientes, acompanhar vendas e
+lembrar de chamar cada pessoa na hora certa.
 
 Construído com **Next.js (App Router) + TypeScript + Tailwind CSS + Supabase
 (Postgres + Auth)**.
@@ -11,12 +11,11 @@ Construído com **Next.js (App Router) + TypeScript + Tailwind CSS + Supabase
 - **Autenticação** por e-mail e senha (Supabase Auth).
 - **Contatos**: cadastro de clientes/leads com telefone, e-mail, empresa,
   origem e observações.
-- **Funil de vendas (Kanban)**: negócios em colunas (Novo → Em contato →
-  Negociação → Ganho / Perdido), com arrastar-e-soltar para mudar a etapa.
-- **Tarefas e lembretes**: follow-ups com data, agrupados em atrasadas,
-  para hoje, próximas e concluídas.
-- **Histórico de interações**: registre conversas e ligações por contato.
-- **Painel**: contatos, negócios em aberto, valor em negociação e ganho no mês.
+- **Vendas em etapas**: vendas em colunas (Novo → Em contato →
+  Proposta → Ganho / Perdido), com arrastar-e-soltar.
+- **Lembretes**: clientes para chamar hoje, depois ou em atraso.
+- **Conversas**: registre ligações, mensagens e observações por cliente.
+- **Painel**: clientes, vendas abertas, valor em aberto e recebido no mês.
 
 Cada usuário só enxerga os próprios dados (Row Level Security no Postgres).
 

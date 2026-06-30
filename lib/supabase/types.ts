@@ -8,7 +8,7 @@ export type DealStage =
 export const DEAL_STAGES: { key: DealStage; label: string }[] = [
   { key: "novo", label: "Novo" },
   { key: "em_contato", label: "Em contato" },
-  { key: "negociacao", label: "Negociação" },
+  { key: "negociacao", label: "Proposta" },
   { key: "ganho", label: "Ganho" },
   { key: "perdido", label: "Perdido" },
 ];

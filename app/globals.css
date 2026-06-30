@@ -2,35 +2,348 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply text-slate-800;
-  min-height: 100vh;
-  background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(59, 130, 246, 0.25), transparent 60%),
-    radial-gradient(1000px 500px at 100% 0%, rgba(168, 85, 247, 0.22), transparent 55%),
-    radial-gradient(900px 600px at 50% 120%, rgba(236, 72, 153, 0.18), transparent 60%),
-    linear-gradient(180deg, #eef2ff 0%, #f8fafc 45%, #eef2ff 100%);
-  background-attachment: fixed;
+@layer base {
+  :root {
+    --ease-ui-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-ui-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --motion-fast: 170ms;
+    --motion-med: 320ms;
+    --motion-reveal: 720ms;
+  }
+
+  body {
+    @apply bg-canvas text-ink antialiased;
+    min-height: 100vh;
+    font-feature-settings: "ss01", "cv01";
+    background-image:
+      linear-gradient(180deg, rgba(139, 61, 255, 0.08), rgba(248, 246, 255, 0) 340px);
+  }
+
+  /* Títulos: quebra equilibrada; prosa longa: sem órfãs. */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  /* Display editorial (Fraunces) — usar via .font-display nos títulos grandes. */
+  .font-display {
+    font-feature-settings: "ss01";
+    letter-spacing: -0.035em;
+  }
+
+  ::selection {
+    @apply bg-brand-200 text-brand-900;
+  }
 }
 
 @layer components {
-  /* Painel de vidro translúcido (liquid glass) */
+  /* ===== Superfícies — fio nítido, sem sombra flutuante ===== */
+  .card {
+    @apply rounded border border-line bg-surface;
+    box-shadow: 0 1px 0 rgba(23, 15, 36, 0.04);
+  }
+  .card-quiet {
+    @apply rounded border border-line bg-surface-2;
+  }
+
+  /* ===== Rótulos editoriais — mono, caixa alta, espaçado (sem pílula) ===== */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-ink-muted;
+  }
+  .label {
+    @apply block font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-ink-muted;
+  }
+
+  /* ===== Etiquetas de status — quadradas, cor + forma (nunca só cor) ===== */
+  .tag {
+    @apply inline-flex items-center gap-1.5 rounded-sm px-2 py-0.5 font-mono text-[11px] font-semibold uppercase tracking-[0.08em];
+  }
+  .tag-brand {
+    @apply bg-brand-50 text-brand-800;
+  }
+  .tag-danger {
+    @apply bg-danger-50 text-danger-700;
+  }
+  .tag-muted {
+    @apply bg-surface-2 text-ink-soft;
+  }
+  .tag-honey {
+    @apply bg-[#fbf3df] text-[#8a6500];
+  }
+
+  /* ===== Campos ===== */
+  .field {
+    @apply w-full rounded border border-line bg-surface px-3 py-2.5 text-[15px] text-ink outline-none placeholder:text-ink-muted/70 focus:border-brand-600 focus:shadow-focus;
+    transition:
+      border-color var(--motion-fast) var(--ease-ui-out),
+      background-color var(--motion-fast) var(--ease-ui-out),
+      box-shadow var(--motion-fast) var(--ease-ui-out);
+  }
+  .field:disabled {
+    cursor: not-allowed;
+    background-color: rgba(240, 235, 251, 0.72);
+    color: rgba(61, 51, 77, 0.72);
+  }
+
+  /* ===== Botões — retangulares ===== */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 active:scale-[0.96];
+  }
+  .btn-soft {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink-soft hover:border-line-strong hover:bg-brand-50 hover:text-brand-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 active:scale-[0.96];
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand-700 px-6 py-3.5 text-base font-semibold text-white hover:bg-brand-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 active:scale-[0.96];
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-surface px-6 py-3.5 text-base font-semibold text-ink-soft hover:border-line-strong hover:bg-brand-50 hover:text-brand-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 active:scale-[0.96];
+  }
+
+  /* ===== Aliases legados — telas não migradas seguem legíveis ===== */
   .glass {
-    @apply rounded-2xl border border-white/40 bg-white/50 shadow-xl shadow-slate-900/5 backdrop-blur-xl;
+    @apply rounded border border-line bg-surface;
   }
-
-  /* Variante mais sutil para áreas internas / colunas */
   .glass-soft {
-    @apply rounded-2xl border border-white/30 bg-white/30 backdrop-blur-md;
+    @apply rounded border border-line bg-surface-2;
   }
-
-  /* Inputs com aparência de vidro */
   .glass-input {
-    @apply w-full rounded-xl border border-white/50 bg-white/60 px-3 py-2 text-sm text-slate-800 placeholder-slate-400 shadow-inner backdrop-blur outline-none transition focus:border-brand-400 focus:bg-white/80 focus:ring-2 focus:ring-brand-200;
+    @apply w-full rounded border border-line bg-surface px-3 py-2.5 text-[15px] text-ink outline-none placeholder:text-ink-muted/70 focus:border-brand-600 focus:shadow-focus;
+    transition:
+      border-color var(--motion-fast) var(--ease-ui-out),
+      background-color var(--motion-fast) var(--ease-ui-out),
+      box-shadow var(--motion-fast) var(--ease-ui-out);
+  }
+  .glass-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 active:scale-[0.96];
   }
 
-  /* Botão principal com leve brilho */
-  .glass-btn {
-    @apply rounded-xl bg-gradient-to-b from-brand-500 to-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-brand-600/30 transition hover:from-brand-400 hover:to-brand-600 active:scale-[0.98];
+  /* Press / realce por fio (hover muda a borda, não levita). */
+  .press {
+    @apply active:scale-[0.96];
+    transition:
+      background-color var(--motion-fast) var(--ease-ui-out),
+      border-color var(--motion-fast) var(--ease-ui-out),
+      color var(--motion-fast) var(--ease-ui-out),
+      transform var(--motion-fast) var(--ease-ui-out);
   }
+  .press-sm {
+    @apply active:scale-95;
+    transition: transform 100ms var(--ease-ui-out);
+  }
+  .btn,
+  .btn-soft,
+  .btn-primary,
+  .btn-ghost,
+  .glass-btn {
+    transition:
+      background-color var(--motion-fast) var(--ease-ui-out),
+      border-color var(--motion-fast) var(--ease-ui-out),
+      color var(--motion-fast) var(--ease-ui-out),
+      box-shadow var(--motion-fast) var(--ease-ui-out),
+      transform var(--motion-fast) var(--ease-ui-out);
+    transform-origin: center;
+  }
+  .btn:disabled,
+  .btn-soft:disabled,
+  .btn-primary:disabled,
+  .btn-ghost:disabled,
+  .glass-btn:disabled,
+  .btn[aria-disabled="true"],
+  .btn-soft[aria-disabled="true"],
+  .btn-primary[aria-disabled="true"],
+  .btn-ghost[aria-disabled="true"],
+  .glass-btn[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.58;
+    transform: none;
+  }
+  .nav-item {
+    @apply outline-none;
+    transition:
+      background-color var(--motion-fast) var(--ease-ui-out),
+      color var(--motion-fast) var(--ease-ui-out),
+      transform var(--motion-fast) var(--ease-ui-out);
+  }
+  .nav-item:active {
+    transform: scale(0.96);
+  }
+  .row-link {
+    transition:
+      background-color var(--motion-fast) var(--ease-ui-out),
+      border-color var(--motion-fast) var(--ease-ui-out),
+      color var(--motion-fast) var(--ease-ui-out),
+      transform var(--motion-fast) var(--ease-ui-out);
+  }
+  .row-link:active {
+    transform: scale(0.975);
+  }
+  .icon-button {
+    transition:
+      background-color var(--motion-fast) var(--ease-ui-out),
+      color var(--motion-fast) var(--ease-ui-out),
+      opacity var(--motion-fast) var(--ease-ui-out),
+      transform var(--motion-fast) var(--ease-ui-out);
+  }
+  .icon-button:active {
+    transform: scale(0.94);
+  }
+  .arrow-nudge {
+    transition:
+      color var(--motion-med) var(--ease-ui-out),
+      transform var(--motion-med) var(--ease-ui-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .lift {
+      transition:
+        background-color var(--motion-fast) var(--ease-ui-out),
+        border-color var(--motion-fast) var(--ease-ui-out),
+        color var(--motion-fast) var(--ease-ui-out);
+    }
+    .lift:hover {
+      @apply border-line-strong bg-surface-2/60;
+      transform: translateY(-2px);
+    }
+    .row-link:hover {
+      transform: translateY(-2px);
+    }
+    .nav-item:hover {
+      transform: translateY(-1px);
+    }
+    .btn:hover,
+    .btn-soft:hover,
+    .btn-primary:hover,
+    .btn-ghost:hover,
+    .glass-btn:hover,
+    .press:hover {
+      transform: translateY(-2px);
+    }
+    .press:active,
+    .btn:active,
+    .btn-soft:active,
+    .btn-primary:active,
+    .btn-ghost:active,
+    .glass-btn:active,
+    .nav-item:active,
+    .row-link:active {
+      transform: scale(0.96);
+    }
+    .icon-button:active {
+      transform: scale(0.9);
+    }
+  }
+}
+
+@layer utilities {
+  .text-safe {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .clip-2 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  /* Entrada com stagger curto para listas/grades (app). */
+  .enter > * {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+    filter: blur(6px);
+    animation: enter 480ms var(--ease-ui-out) forwards;
+  }
+  .enter > *:nth-child(1) { animation-delay: 0ms; }
+  .enter > *:nth-child(2) { animation-delay: 35ms; }
+  .enter > *:nth-child(3) { animation-delay: 70ms; }
+  .enter > *:nth-child(4) { animation-delay: 105ms; }
+  .enter > *:nth-child(5) { animation-delay: 140ms; }
+  .enter > *:nth-child(n + 6) { animation-delay: 175ms; }
+}
+
+/* ---- Movimento da landing ----
+   Gated por .motion (adicionado via JS quando prefers-reduced-motion = no).
+   Sem JS ou com movimento reduzido, NADA disto se aplica → conteúdo visível,
+   nunca trava em branco. */
+
+.motion .hero-rise {
+  opacity: 0;
+  animation: heroRise 900ms var(--ease-ui-out) both;
+  animation-delay: var(--d, 0ms);
+  will-change: transform, opacity;
+}
+@keyframes heroRise {
+  from {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translateY(42px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+
+.motion [data-reveal] {
+  opacity: 0;
+  filter: blur(8px);
+  transform: translateY(34px) scale(0.985);
+  transition:
+    opacity var(--motion-reveal) var(--ease-ui-out),
+    filter var(--motion-reveal) var(--ease-ui-out),
+    transform var(--motion-reveal) var(--ease-ui-out);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: transform, opacity;
+}
+.motion [data-reveal].is-in {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+  will-change: auto;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter > * {
+    transform: none;
+    filter: none;
+    animation: fade 200ms ease both;
+  }
+  .press:active,
+  .press-sm:active,
+  .btn:active,
+  .btn-soft:active,
+  .btn-primary:active,
+  .btn-ghost:active,
+  .glass-btn:active,
+  .nav-item:active,
+  .row-link:active,
+  .icon-button:active {
+    transform: none;
+  }
+  .motion .hero-rise,
+  .motion [data-reveal] {
+    transform: none;
+    filter: none;
+    transition-duration: 180ms;
+  }
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
