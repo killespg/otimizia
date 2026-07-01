@@ -61,11 +61,11 @@
     text-wrap: balance;
   }
 
-  /* Display editorial: usar via .font-display nos titulos grandes. */
+  /* Display editorial: usa a sans serif leve nos titulos grandes. */
   .font-display {
-    font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-sans), system-ui, sans-serif;
     font-feature-settings: "ss01";
-    font-weight: 400;
+    font-weight: 300;
     letter-spacing: -0.018em;
   }
 
@@ -304,10 +304,10 @@
 .landing-page h1.font-black,
 .landing-page h2.font-black,
 .landing-page h3.font-black {
-  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
-  font-style: italic;
-  font-weight: 400 !important;
-  letter-spacing: 0 !important;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 300 !important;
+  letter-spacing: -0.018em !important;
 }
 
 .landing-page h2 {
@@ -318,6 +318,141 @@
 .landing-page h3 {
   font-size: clamp(1.9rem, 3.3vw, 2.7rem);
   line-height: 0.9;
+}
+
+.landing-page .landing-hero-title {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 300 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.landing-button,
+.landing-secondary,
+.motion-card,
+.preview-card {
+  position: relative;
+  isolation: isolate;
+  transition:
+    border-color var(--motion-fast) var(--ease-ui-out),
+    background-color var(--motion-fast) var(--ease-ui-out),
+    color var(--motion-fast) var(--ease-ui-out),
+    transform var(--motion-fast) var(--ease-ui-out);
+}
+
+.landing-button,
+.landing-secondary,
+.motion-card {
+  overflow: hidden;
+}
+
+.landing-button::before,
+.landing-secondary::before,
+.motion-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(-105%, 0, 0) skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.34), transparent);
+  transition:
+    opacity 180ms var(--ease-ui-out),
+    transform 620ms var(--ease-ui-out);
+}
+
+.landing-button > *,
+.landing-secondary > *,
+.motion-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.faq-summary {
+  outline: none;
+}
+
+.faq-answer {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 0;
+  overflow: clip;
+  transform: translate3d(0, -8px, 0) scale(0.985);
+  transition:
+    grid-template-rows 260ms var(--ease-ui-out),
+    opacity 180ms var(--ease-ui-out),
+    transform 260ms var(--ease-ui-out);
+}
+
+.faq-answer > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.faq-item[data-open="true"] .faq-answer {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.faq-item[data-open="true"] .faq-answer > * {
+  animation: faqAnswerIn 280ms var(--ease-ui-out) both;
+}
+
+.faq-item[data-closing="true"] .faq-answer {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transform: translate3d(0, -12px, 0) scale(0.985);
+}
+
+.faq-item[data-closing="true"] .faq-answer > * {
+  animation: faqAnswerOut 240ms var(--ease-ui-out) both;
+}
+
+.faq-icon {
+  transform-origin: center;
+  transition:
+    border-color 180ms var(--ease-ui-out),
+    color 180ms var(--ease-ui-out),
+    background-color 180ms var(--ease-ui-out),
+    transform 220ms var(--ease-ui-out);
+}
+
+.faq-item[data-open="true"] .faq-icon {
+  background-color: rgb(var(--color-surface-2));
+  animation: faqIconPop 260ms var(--ease-ui-out) both;
+  transform: rotate(90deg) scale(1.06);
+}
+
+.faq-item[data-closing="true"] .faq-icon {
+  animation: faqIconClose 240ms var(--ease-ui-out) both;
+}
+
+.motion .faq-item {
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+  animation: faqItemIn 420ms var(--ease-ui-out) both;
+}
+
+.motion .faq-item:nth-child(1) { animation-delay: 40ms; }
+.motion .faq-item:nth-child(2) { animation-delay: 90ms; }
+.motion .faq-item:nth-child(3) { animation-delay: 140ms; }
+.motion .faq-item:nth-child(4) { animation-delay: 190ms; }
+.motion .faq-item:nth-child(5) { animation-delay: 240ms; }
+
+@media (hover: hover) and (pointer: fine) {
+  .faq-summary:hover .faq-question {
+    color: rgb(var(--color-ink-soft));
+  }
+
+  .faq-summary:hover .faq-icon {
+    transform: translate3d(2px, 0, 0) scale(1.04);
+  }
+
+  .faq-item[data-open="true"] .faq-summary:hover .faq-icon {
+    transform: rotate(90deg) translate3d(2px, 0, 0) scale(1.06);
+  }
 }
 
 .dark .card,
@@ -461,6 +596,22 @@
   animation: shellIn 720ms var(--ease-ui-out) both;
 }
 
+.motion .landing-hero-title .block {
+  clip-path: inset(0 0 105% 0);
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+  animation: titleReveal 820ms var(--ease-ui-out) both;
+  will-change: transform, opacity, clip-path;
+}
+
+.motion .landing-hero-title .block:nth-child(1) {
+  animation-delay: 120ms;
+}
+
+.motion .landing-hero-title .block:nth-child(2) {
+  animation-delay: 210ms;
+}
+
 .motion .intro-stagger > *,
 .motion .hero-layer {
   opacity: 0;
@@ -476,9 +627,21 @@
 .motion .intro-stagger > *:nth-child(4) { animation-delay: 230ms; }
 .motion .intro-stagger > *:nth-child(5) { animation-delay: 300ms; }
 
+.motion .hero-proof .motion-card {
+  opacity: 0;
+  transform: translate3d(0, 12px, 0) scale(0.97);
+  animation: proofPop 520ms var(--ease-ui-out) both;
+}
+
+.motion .hero-proof .motion-card:nth-child(1) { animation-delay: 360ms; }
+.motion .hero-proof .motion-card:nth-child(2) { animation-delay: 420ms; }
+.motion .hero-proof .motion-card:nth-child(3) { animation-delay: 480ms; }
+
 .motion .preview-float {
   animation: previewFloat 7600ms var(--ease-ui-in-out) 980ms infinite;
   transform-origin: center;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .motion .preview-card {
@@ -499,11 +662,36 @@
   animation: nodePulse 2200ms var(--ease-ui-out) infinite;
 }
 
+.motion .preview-card:nth-of-type(2n) .preview-node {
+  animation-delay: 180ms;
+}
+
 .motion .preview-chart {
   opacity: 0;
   transform: scaleX(0.78) translateY(8px);
   transform-origin: 12% 50%;
   animation: chartReveal 820ms var(--ease-ui-out) 420ms both;
+}
+
+.motion .preview-chart-area {
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  animation: chartAreaIn 740ms var(--ease-ui-out) 540ms both;
+}
+
+.motion .preview-chart-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: chartLineDraw 1180ms var(--ease-ui-out) 520ms both;
+}
+
+.motion .preview-chart-dot {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation:
+    chartDotIn 360ms var(--ease-ui-out) 1260ms both,
+    dotBreathe 2400ms var(--ease-ui-in-out) 1700ms infinite;
 }
 
 .motion .hero-rise {
@@ -512,6 +700,67 @@
   animation-delay: var(--d, 0ms);
   will-change: transform, opacity;
 }
+
+.motion [data-reveal].is-in.motion-card,
+.motion [data-reveal].is-in .motion-card {
+  animation: cardSettle 520ms var(--ease-ui-out) both;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .landing-button:hover::before,
+  .landing-secondary:hover::before,
+  .motion-card:hover::before {
+    opacity: 1;
+    transform: translate3d(105%, 0, 0) skewX(-18deg);
+  }
+
+  .landing-button:hover {
+    transform: translateY(-2px) scale(1.01);
+  }
+
+  .landing-secondary:hover {
+    transform: translateY(-2px);
+  }
+
+  .motion-card:hover {
+    transform: translateY(-3px);
+  }
+
+  .preview-card:hover {
+    transform: translateY(-2px) scale(1.005);
+  }
+}
+
+@keyframes titleReveal {
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes proofPop {
+  70% {
+    opacity: 1;
+    transform: translate3d(0, -1px, 0) scale(1.012);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes cardSettle {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0) scale(0.975);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
 @keyframes heroRise {
   from {
     opacity: 0;
@@ -546,10 +795,10 @@
 @keyframes previewFloat {
   0%,
   100% {
-    transform: translate3d(0, 0, 0);
+    transform: perspective(1200px) translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg);
   }
   50% {
-    transform: translate3d(0, -8px, 0);
+    transform: perspective(1200px) translate3d(0, -8px, 0) rotateX(1.2deg) rotateY(-1.1deg);
   }
 }
 
@@ -569,6 +818,96 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+@keyframes chartAreaIn {
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes chartLineDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes chartDotIn {
+  from {
+    opacity: 0;
+    transform: scale(0.74);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes dotBreathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.72;
+  }
+}
+
+@keyframes faqItemIn {
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes faqAnswerIn {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translate3d(0, -10px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes faqAnswerOut {
+  from {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translate3d(0, -12px, 0) scale(0.985);
+  }
+}
+
+@keyframes faqIconPop {
+  0% {
+    transform: rotate(0deg) scale(0.92);
+  }
+  72% {
+    transform: rotate(90deg) scale(1.13);
+  }
+  100% {
+    transform: rotate(90deg) scale(1.06);
+  }
+}
+
+@keyframes faqIconClose {
+  from {
+    transform: rotate(90deg) scale(1.06);
+  }
+  to {
+    transform: rotate(0deg) scale(1);
   }
 }
 
@@ -653,12 +992,36 @@
   .motion .preview-row,
   .motion .preview-node,
   .motion .preview-chart,
+  .motion .preview-chart-area,
+  .motion .preview-chart-line,
+  .motion .preview-chart-dot,
+  .motion .landing-hero-title .block,
+  .motion .hero-proof .motion-card,
+  .motion .faq-item,
+  .motion [data-reveal].is-in.motion-card,
+  .motion [data-reveal].is-in .motion-card,
   .motion [data-reveal] {
+    clip-path: none;
     transform: none;
     filter: none;
     opacity: 1;
     animation: fade 180ms ease both;
     transition-duration: 180ms;
+  }
+  .motion .preview-chart-line {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+  .faq-answer {
+    transform: none;
+    transition: opacity 160ms ease;
+  }
+  .faq-item[data-open="true"] .faq-answer > *,
+  .faq-item[data-open="true"] .faq-icon,
+  .faq-item[data-closing="true"] .faq-answer > *,
+  .faq-item[data-closing="true"] .faq-icon {
+    filter: none;
+    animation: fade 160ms ease both;
   }
   .motion .marquee-track {
     animation: none !important;

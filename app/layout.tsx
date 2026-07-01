@@ -32,13 +32,6 @@ const mono = IBM_Plex_Mono({
   variable: "--font-mono",
 });
 
-const display = localFont({
-  src: "./fonts/AlwaysForever-Regular.ttf",
-  display: "swap",
-  variable: "--font-display",
-  weight: "400",
-});
-
 export const metadata: Metadata = {
   title: "OtimizIA - CRM simples para quem vende sozinho",
   description:
@@ -70,7 +63,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${sans.variable} ${mono.variable} ${display.variable}`}
+      className={`${sans.variable} ${mono.variable}`}
       suppressHydrationWarning
     >
       <body>

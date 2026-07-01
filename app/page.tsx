@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { FaqAccordion } from "@/components/FaqAccordion";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   IconArrowRight,
@@ -177,7 +178,7 @@ export default function Home() {
                 CRM simples com IA
               </p>
 
-              <h1 className="mt-6 max-w-full text-[clamp(4.35rem,18vw,9rem)] font-black leading-[0.76] tracking-[-0.04em] text-ink">
+              <h1 className="landing-hero-title mt-6 max-w-full text-[clamp(4.35rem,18vw,9rem)] font-light leading-[0.76] tracking-[-0.04em] text-ink">
                 <span className="block">Venda sem{" "}</span>
                 <span className="block">perder o fio.</span>
               </h1>
@@ -187,21 +188,21 @@ export default function Home() {
                 Você entra, vê a prioridade e age sem ficar cavando conversa antiga.
               </p>
 
-              <div className="flex w-full flex-col gap-3 pt-2 sm:flex-row">
+              <div className="hero-actions flex w-full flex-col gap-3 pt-2 sm:flex-row">
                 <LandingButton href="/signup">Começar grátis</LandingButton>
                 <Link
                   href="/login"
-                  className="nav-item inline-flex min-h-14 w-full items-center justify-center rounded-full border border-line bg-white px-6 text-base font-black text-ink-soft shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] hover:border-brand-200 hover:bg-brand-50 hover:text-brand-800 sm:w-auto"
+                  className="landing-secondary nav-item inline-flex min-h-14 w-full items-center justify-center rounded-full border border-line bg-white px-6 text-base font-black text-ink-soft shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] hover:border-brand-200 hover:bg-brand-50 hover:text-brand-800 sm:w-auto"
                 >
                   Entrar no painel
                 </Link>
               </div>
 
-              <div className="grid gap-2 pt-3 sm:grid-cols-3">
+              <div className="hero-proof grid gap-2 pt-3 sm:grid-cols-3">
                 {proofItems.map(([number, title, body]) => (
                   <article
                     key={title}
-                    className="rounded-lg border border-line bg-white/80 p-3 shadow-[0_12px_34px_-30px_rgba(21,19,46,0.72)]"
+                    className="motion-card rounded-lg border border-line bg-white/80 p-3 shadow-[0_12px_34px_-30px_rgba(21,19,46,0.72)]"
                   >
                     <p className="text-xs font-black text-brand-700">{number}</p>
                     <p className="mt-2 text-sm font-black text-ink">{title}</p>
@@ -256,7 +257,7 @@ export default function Home() {
           <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-6">
             {/* Pipeline (largo) */}
             <article
-              className="lift group flex flex-col overflow-hidden rounded-2xl border border-line bg-white p-6 md:col-span-4"
+              className="lift motion-card group flex flex-col overflow-hidden rounded-2xl border border-line bg-white p-6 md:col-span-4"
               data-reveal
             >
               <div className="flex items-start justify-between gap-4">
@@ -276,7 +277,7 @@ export default function Home() {
 
             {/* Agente IA (alto, gradiente) */}
             <article
-              className="lift relative flex flex-col justify-between overflow-hidden rounded-2xl border border-brand-700 bg-[linear-gradient(160deg,#5f18c4_0%,#7424e8_55%,#0bbfe8_140%)] p-6 text-white md:col-span-2 md:row-span-2"
+              className="lift motion-card relative flex flex-col justify-between overflow-hidden rounded-2xl border border-brand-700 bg-[linear-gradient(160deg,#5f18c4_0%,#7424e8_55%,#0bbfe8_140%)] p-6 text-white md:col-span-2 md:row-span-2"
               data-reveal
               style={{ "--reveal-delay": "70ms" } as CSSProperties}
             >
@@ -308,7 +309,7 @@ export default function Home() {
 
             {/* Lembretes */}
             <article
-              className="lift flex flex-col rounded-2xl border border-line bg-white p-6 md:col-span-2"
+              className="lift motion-card flex flex-col rounded-2xl border border-line bg-white p-6 md:col-span-2"
               data-reveal
               style={{ "--reveal-delay": "40ms" } as CSSProperties}
             >
@@ -323,7 +324,7 @@ export default function Home() {
 
             {/* Contatos */}
             <article
-              className="lift flex flex-col rounded-2xl border border-line bg-white p-6 md:col-span-2"
+              className="lift motion-card flex flex-col rounded-2xl border border-line bg-white p-6 md:col-span-2"
               data-reveal
               style={{ "--reveal-delay": "110ms" } as CSSProperties}
             >
@@ -338,7 +339,7 @@ export default function Home() {
 
             {/* Números (full) */}
             <article
-              className="lift grid grid-cols-1 gap-6 overflow-hidden rounded-2xl border border-line bg-white p-6 md:col-span-6 md:grid-cols-[1fr_1.1fr] md:items-center"
+              className="lift motion-card grid grid-cols-1 gap-6 overflow-hidden rounded-2xl border border-line bg-white p-6 md:col-span-6 md:grid-cols-[1fr_1.1fr] md:items-center"
               data-reveal
             >
               <div>
@@ -497,7 +498,7 @@ export default function Home() {
             {useCases.map((useCase, index) => (
               <figure
                 key={useCase.name}
-                className="lift flex h-full flex-col justify-between rounded-2xl border border-line bg-white p-6"
+                className="lift motion-card flex h-full flex-col justify-between rounded-2xl border border-line bg-white p-6"
                 data-reveal
                 style={{ "--reveal-delay": `${index * 80}ms` } as CSSProperties}
               >
@@ -529,23 +530,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="divide-y divide-line border-y border-line" data-reveal>
-            {faqs.map((faq) => (
-              <details key={faq.q} className="group">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-left">
-                  <span className="text-base font-black text-ink transition-colors group-open:text-brand-800 sm:text-lg">
-                    {faq.q}
-                  </span>
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-line text-ink-muted transition-transform duration-300 ease-out group-open:rotate-90 group-open:border-brand-200 group-open:text-brand-700">
-                    <IconChevronRight className="h-4 w-4" />
-                  </span>
-                </summary>
-                <p className="max-w-2xl pb-5 text-sm font-medium leading-relaxed text-ink-soft sm:text-base">
-                  {faq.a}
-                </p>
-              </details>
-            ))}
-          </div>
+          <FaqAccordion items={faqs.map(({ q, a }) => ({ q, a }))} />
         </div>
       </section>
 
@@ -593,7 +578,7 @@ function LandingButton({
     <Link
       href={href}
       className={
-        "nav-item group inline-flex items-center justify-center rounded-full font-black shadow-[0_18px_34px_-20px_rgba(92,34,232,0.86)] active:scale-[0.97] whitespace-nowrap " +
+        "landing-button nav-item group inline-flex items-center justify-center rounded-full font-black shadow-[0_18px_34px_-20px_rgba(92,34,232,0.86)] active:scale-[0.97] whitespace-nowrap " +
         (compact
           ? "min-h-11 gap-2 px-4 text-sm"
           : "min-h-14 w-full gap-3 px-6 text-base sm:w-auto") +
@@ -672,17 +657,20 @@ function BentoChart() {
         <line key={y} x1="16" x2="604" y1={y} y2={y} stroke="#dbe2ef" strokeDasharray="5 7" />
       ))}
       <path
+        className="preview-chart-area"
         d="M18 138 C60 145 74 96 112 104 C150 112 154 66 196 74 C240 82 236 118 276 110 C318 101 322 58 360 62 C402 66 408 104 448 92 C486 80 494 46 536 52 C570 56 578 84 602 70 L602 180 L18 180 Z"
         fill="url(#bentoArea)"
       />
       <path
+        className="preview-chart-line"
+        pathLength={1}
         d="M18 138 C60 145 74 96 112 104 C150 112 154 66 196 74 C240 82 236 118 276 110 C318 101 322 58 360 62 C402 66 408 104 448 92 C486 80 494 46 536 52 C570 56 578 84 602 70"
         fill="none"
         stroke="#6d28d9"
         strokeLinecap="round"
         strokeWidth="4"
       />
-      <circle cx="536" cy="52" r="6" fill="#6d28d9" />
+      <circle className="preview-chart-dot" cx="536" cy="52" r="6" fill="#6d28d9" />
     </svg>
   );
 }
@@ -763,17 +751,20 @@ function ProductPreview() {
                 ))}
                 <g className="preview-chart">
                   <path
+                    className="preview-chart-area"
                     d="M26 176 C58 183 72 128 110 137 C146 145 151 98 190 106 C230 115 227 72 270 81 C309 90 315 122 350 106 C389 88 397 51 438 62 C470 70 477 107 510 93 C546 78 557 54 600 43 L600 220 L26 220 Z"
                     fill="url(#homeArea)"
                   />
                   <path
+                    className="preview-chart-line"
+                    pathLength={1}
                     d="M26 176 C58 183 72 128 110 137 C146 145 151 98 190 106 C230 115 227 72 270 81 C309 90 315 122 350 106 C389 88 397 51 438 62 C470 70 477 107 510 93 C546 78 557 54 600 43"
                     fill="none"
                     stroke="#6d28d9"
                     strokeLinecap="round"
                     strokeWidth="4"
                   />
-                  <circle cx="438" cy="62" r="7" fill="#6d28d9" />
+                  <circle className="preview-chart-dot" cx="438" cy="62" r="7" fill="#6d28d9" />
                 </g>
               </svg>
             </div>

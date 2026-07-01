@@ -4,6 +4,8 @@
 /build
 *.tsbuildinfo
 next-env.d.ts
+.next-dev.log
+.next-dev.err.log
 .env
 .env*.local
 .DS_Store
