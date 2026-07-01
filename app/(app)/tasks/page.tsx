@@ -1,7 +1,8 @@
+import { PendingButton } from "@/components/PendingButton";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Task } from "@/lib/supabase/types";
 import { createTask } from "../actions";
-import { IconPlus } from "../icons";
+import { IconBell, IconCheckCircle, IconClock, IconPlus } from "../icons";
 import TaskItem from "./TaskItem";
 
 type Tone = "danger" | "today" | "upcoming" | "done";
@@ -21,16 +22,18 @@ export default async function TasksPage() {
   const endOfToday = new Date();
   endOfToday.setHours(23, 59, 59, 999);
 
-  const pending = allTasks.filter((t) => !t.done);
-  const overdue = pending.filter((t) => t.due_at && new Date(t.due_at) < now);
+  const pending = allTasks.filter((task) => !task.done);
+  const overdue = pending.filter((task) => task.due_at && new Date(task.due_at) < now);
   const todayTasks = pending.filter(
-    (t) =>
-      t.due_at && new Date(t.due_at) >= now && new Date(t.due_at) <= endOfToday
+    (task) =>
+      task.due_at &&
+      new Date(task.due_at) >= now &&
+      new Date(task.due_at) <= endOfToday
   );
   const upcoming = pending.filter(
-    (t) => !t.due_at || new Date(t.due_at) > endOfToday
+    (task) => !task.due_at || new Date(task.due_at) > endOfToday
   );
-  const done = allTasks.filter((t) => t.done);
+  const done = allTasks.filter((task) => task.done);
 
   const groups: {
     title: string;
@@ -39,43 +42,41 @@ export default async function TasksPage() {
     tone: Tone;
     empty: string;
   }[] = [
-    { title: "Atrasadas", items: overdue, overdue: true, tone: "danger", empty: "Nada atrasado. Ótimo." },
+    { title: "Atrasadas", items: overdue, overdue: true, tone: "danger", empty: "Nada atrasado. Boa." },
     { title: "Para hoje", items: todayTasks, overdue: false, tone: "today", empty: "Nada para hoje." },
     { title: "Depois", items: upcoming, overdue: false, tone: "upcoming", empty: "Nenhum lembrete para depois." },
     { title: "Feitas", items: done, overdue: false, tone: "done", empty: "Nada marcado como feito ainda." },
   ];
 
-  const topRule: Record<Tone, string> = {
-    danger: "border-t-2 border-t-danger-500",
-    today: "border-t-2 border-t-brand-600",
-    upcoming: "",
-    done: "",
-  };
-  const labelColor: Record<Tone, string> = {
-    danger: "text-danger-700",
-    today: "text-brand-700",
-    upcoming: "text-ink",
-    done: "text-ink-muted",
-  };
-
   return (
-    <div>
-      <header className="enter">
-        <p className="eyebrow">Lembretes</p>
-        <h1 className="font-display mt-3 text-[clamp(1.75rem,5vw,2.75rem)] font-semibold leading-[1.04] tracking-[-0.02em] text-ink">
-          Clientes para chamar
-        </h1>
-        <p className="mt-2 max-w-md text-[15px] text-ink-soft">
-          Escolha o dia e a hora. O que atrasar aparece primeiro.
-        </p>
+    <div className="space-y-5">
+      <header className="enter flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="text-sm font-black text-brand-700">Lembretes</p>
+          <h1 className="mt-2 text-[clamp(2rem,5vw,3.2rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
+            Clientes para chamar
+          </h1>
+          <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-ink-soft">
+            Escolha dia e hora. O que atrasar sobe para o topo da fila.
+          </p>
+        </div>
       </header>
 
-      {/* Novo lembrete */}
-      <form action={createTask} className="card mt-7 p-4 sm:p-5">
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto] sm:items-end">
+      <section className="grid gap-4 sm:grid-cols-3">
+        <MetricCard label="Pendentes" value={String(pending.length)} icon={IconBell} />
+        <MetricCard label="Hoje" value={String(todayTasks.length)} icon={IconClock} pink />
+        <MetricCard label="Feitas" value={String(done.length)} icon={IconCheckCircle} />
+      </section>
+
+      <form action={createTask} className="panel p-4 sm:p-5">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_13rem_minmax(0,1fr)_auto] lg:items-end">
           <div>
             <label className="label" htmlFor="task-title">
               Lembrete
+              <span className="ml-1 text-brand-700" aria-hidden="true">
+                *
+              </span>
+              <span className="sr-only"> obrigatório</span>
             </label>
             <input
               id="task-title"
@@ -90,65 +91,120 @@ export default async function TasksPage() {
             <label className="label" htmlFor="task-when">
               Quando
             </label>
-            <input
-              id="task-when"
-              name="due_at"
-              type="datetime-local"
-              className="field mt-1.5"
-            />
+            <input id="task-when" name="due_at" type="datetime-local" className="field mt-1.5" />
           </div>
           <div>
             <label className="label" htmlFor="task-contact">
               Contato
             </label>
             <select id="task-contact" name="contact_id" className="field mt-1.5">
-              <option value="">—</option>
-              {allContacts.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
+              <option value="">Sem contato</option>
+              {allContacts.map((contact) => (
+                <option key={contact.id} value={contact.id}>
+                  {contact.name}
                 </option>
               ))}
             </select>
           </div>
-          <button type="submit" className="btn h-[42px] w-full sm:w-auto">
+          <PendingButton className="btn h-[42px] w-full lg:w-auto" pendingLabel="Salvando">
             <IconPlus className="h-4 w-4" />
             Salvar
-          </button>
+          </PendingButton>
         </div>
       </form>
 
-      <div className="mt-8 space-y-5">
-        {groups.map((g) => (
-          <section
-            key={g.title}
-            className={"border border-line bg-surface " + topRule[g.tone]}
-          >
-            <div className="flex items-center justify-between border-b border-line px-4 py-3 sm:px-5">
-              <h2
-                className={
-                  "font-mono text-[12px] font-semibold uppercase tracking-[0.12em] " +
-                  labelColor[g.tone]
-                }
-              >
-                {g.title}
-              </h2>
-              <span className="font-mono text-[12px] tabular-nums text-ink-muted">
-                {String(g.items.length).padStart(2, "0")}
-              </span>
-            </div>
-
-            {g.items.length === 0 ? (
-              <p className="px-4 py-4 text-sm text-ink-muted sm:px-5">{g.empty}</p>
-            ) : (
-              <ul className="px-4 sm:px-5">
-                {g.items.map((t) => (
-                  <TaskItem key={t.id} task={t} overdue={g.overdue} />
-                ))}
-              </ul>
-            )}
-          </section>
+      <div className="grid gap-5 xl:grid-cols-2">
+        {groups.map((group) => (
+          <TaskGroup key={group.title} {...group} />
         ))}
       </div>
     </div>
+  );
+}
+
+function TaskGroup({
+  title,
+  items,
+  overdue,
+  tone,
+  empty,
+}: {
+  title: string;
+  items: Task[];
+  overdue: boolean;
+  tone: Tone;
+  empty: string;
+}) {
+  const toneClass: Record<Tone, string> = {
+    danger: "bg-pink-100 text-pink-700",
+    today: "bg-brand-50 text-brand-700",
+    upcoming: "bg-blue-50 text-blue-700",
+    done: "bg-success-50 text-success-700",
+  };
+
+  return (
+    <section className="panel overflow-hidden">
+      <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
+        <div>
+          <h2 className="text-lg font-black tracking-[-0.02em] text-ink">{title}</h2>
+          <p className="mt-1 text-sm font-medium text-ink-muted">
+            {items.length === 0
+              ? empty
+              : `${items.length} ${items.length === 1 ? "item" : "itens"} nesta fila.`}
+          </p>
+        </div>
+        <span className={`rounded-md px-2.5 py-1 text-xs font-black ${toneClass[tone]}`}>
+          {String(items.length).padStart(2, "0")}
+        </span>
+      </div>
+
+      {items.length === 0 ? (
+        <div className="px-5 py-6">
+          <div className="rounded-lg border border-dashed border-line bg-[#f8fbff] p-5 text-center">
+            <p className="text-sm font-black text-ink">Fila vazia</p>
+            <p className="mt-1 text-sm font-medium text-ink-muted">{empty}</p>
+          </div>
+        </div>
+      ) : (
+        <ul className="divide-y divide-line px-5">
+          {items.map((task) => (
+            <TaskItem key={task.id} task={task} overdue={overdue} />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function MetricCard({
+  label,
+  value,
+  icon: Icon,
+  pink = false,
+}: {
+  label: string;
+  value: string;
+  icon: (props: { className?: string }) => JSX.Element;
+  pink?: boolean;
+}) {
+  return (
+    <article className="panel p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-bold text-ink-soft">{label}</p>
+          <p className="mt-3 text-3xl font-black tracking-[-0.04em] text-ink">
+            {value}
+          </p>
+        </div>
+        <span
+          className={
+            "grid h-11 w-11 place-items-center rounded-full " +
+            (pink ? "bg-pink-100 text-pink-600" : "bg-brand-50 text-brand-700")
+          }
+        >
+          <Icon className="h-5 w-5" />
+        </span>
+      </div>
+    </article>
   );
 }

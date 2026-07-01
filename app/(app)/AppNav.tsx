@@ -3,10 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  IconGauge,
-  IconColumns,
-  IconUsers,
   IconBell,
+  IconBot,
+  IconColumns,
+  IconGauge,
+  IconPhone,
+  IconUsers,
+  IconWallet,
   type IconProps,
 } from "./icons";
 
@@ -14,13 +17,18 @@ type NavItem = {
   href: string;
   label: string;
   icon: (p: IconProps) => JSX.Element;
+  passive?: boolean;
+  mobile?: boolean;
 };
 
 const NAV: NavItem[] = [
-  { href: "/dashboard", label: "Painel", icon: IconGauge },
-  { href: "/pipeline", label: "Vendas", icon: IconColumns },
-  { href: "/contacts", label: "Contatos", icon: IconUsers },
-  { href: "/tasks", label: "Lembretes", icon: IconBell },
+  { href: "/dashboard", label: "Painel", icon: IconGauge, mobile: true },
+  { href: "/contacts", label: "Contatos", icon: IconUsers, mobile: true },
+  { href: "/pipeline", label: "Vendas", icon: IconColumns, mobile: true },
+  { href: "/tasks", label: "Lembretes", icon: IconBell, mobile: true },
+  { href: "/dashboard#valor", label: "Valor aberto", icon: IconWallet, passive: true },
+  { href: "/tasks", label: "Clientes para chamar", icon: IconPhone, passive: true },
+  { href: "/dashboard#agente", label: "Agente IA", icon: IconBot, passive: true },
 ];
 
 function useActive() {
@@ -29,30 +37,29 @@ function useActive() {
     pathname === href || pathname.startsWith(href + "/");
 }
 
-/* Sidebar (desktop): links empilhados com ícone + rótulo mono em caixa-alta.
-   Ativo = fundo verde-claro sólido (nada de fio lateral). */
+/* Sidebar desktop. */
 export function SidebarNav() {
   const isActive = useActive();
   return (
     <nav className="flex flex-col gap-1" aria-label="Navegação principal">
-      {NAV.map(({ href, label, icon: Icon }) => {
-        const active = isActive(href);
+      {NAV.map(({ href, label, icon: Icon, passive }) => {
+        const active = !passive && isActive(href);
         return (
           <Link
-            key={href}
+            key={`${href}-${label}`}
             href={href}
             aria-current={active ? "page" : undefined}
             className={
-              "nav-item group flex items-center gap-3 rounded-md px-3 py-2.5 font-mono text-[12px] uppercase tracking-[0.1em] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-600 " +
+              "nav-item group flex min-h-11 items-center gap-3 rounded-lg px-3 text-[15px] font-semibold focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-600 " +
               (active
-                ? "bg-brand-50 font-semibold text-brand-800"
-                : "font-medium text-ink-muted hover:bg-surface-2 hover:text-ink")
+                ? "bg-brand-50 text-brand-800 shadow-[inset_0_0_0_1px_rgba(123,63,242,0.06)]"
+                : "text-ink-soft hover:bg-surface-2 hover:text-ink")
             }
           >
             <Icon
               className={
                 "h-[20px] w-[20px] shrink-0 transition-colors duration-150 ease-out " +
-                (active ? "text-brand-700" : "text-ink-soft group-hover:text-ink")
+                (active ? "text-brand-700" : "text-ink-muted group-hover:text-brand-700")
               }
             />
             {label}
@@ -63,7 +70,7 @@ export function SidebarNav() {
   );
 }
 
-/* Mobile: barra de abas fixa no rodapé — alcance do polegar, alvos ≥56px. */
+/* Mobile tab bar. */
 export function MobileTabBar() {
   const isActive = useActive();
   return (
@@ -72,7 +79,7 @@ export function MobileTabBar() {
       aria-label="Navegação principal"
     >
       <div className="mx-auto grid max-w-md grid-cols-4">
-        {NAV.map(({ href, label, icon: Icon }) => {
+        {NAV.filter((item) => item.mobile).map(({ href, label, icon: Icon }) => {
           const active = isActive(href);
           return (
             <Link

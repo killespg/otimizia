@@ -1,10 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PendingButton } from "@/components/PendingButton";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Interaction, Task } from "@/lib/supabase/types";
 import { formatDateTime } from "@/lib/format";
 import { Avatar } from "../../Avatar";
-import { IconArrowRight, IconPlus, IconTrash, IconCheck } from "../../icons";
+import {
+  IconArrowRight,
+  IconBell,
+  IconCheck,
+  IconMessage,
+  IconPhone,
+  IconPlus,
+  IconTrash,
+} from "../../icons";
 import { updateContact, deleteContact, createInteraction } from "../../actions";
 
 export default async function ContactDetailPage({
@@ -38,61 +47,58 @@ export default async function ContactDetailPage({
 
   const logs = (interactions ?? []) as Interaction[];
   const relatedTasks = (tasks ?? []) as Task[];
-
-  const chips = [c.company, c.phone, c.email, c.source].filter(
-    Boolean
-  ) as string[];
+  const chips = [c.company, c.phone, c.email, c.source].filter(Boolean) as string[];
 
   return (
-    <div>
+    <div className="space-y-5">
       <Link
         href="/contacts"
-        className="nav-item group inline-flex items-center gap-1.5 font-mono text-[12px] uppercase tracking-[0.1em] text-ink-muted hover:text-ink"
+        className="nav-item inline-flex items-center gap-2 text-sm font-black text-ink-muted hover:text-brand-700"
       >
-        <IconArrowRight className="arrow-nudge h-3.5 w-3.5 rotate-180 group-hover:-translate-x-0.5" />
-        Contatos
+        <IconArrowRight className="h-4 w-4 rotate-180" />
+        Voltar para contatos
       </Link>
 
-      {/* Cabeçalho do contato */}
-      <div className="enter mt-4 flex items-center gap-4">
-        <Avatar name={c.name} className="h-14 w-14 text-base" />
-        <div className="min-w-0 flex-1">
-          <h1 className="font-display text-safe text-[clamp(1.5rem,4vw,2.25rem)] font-semibold tracking-[-0.02em] text-ink">
-            {c.name}
-          </h1>
-          {chips.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {chips.map((chip) => (
-                <span
-                  key={chip}
-                  className="tag tag-muted max-w-full whitespace-normal text-safe normal-case tracking-normal"
-                >
-                  {chip}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="mt-7 grid gap-6 lg:grid-cols-2 lg:gap-8">
-        {/* Editar */}
-        <div className="border border-line bg-surface">
-          <div className="border-b border-line px-5 py-3">
-            <h2 className="font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-ink">
-              Dados
-            </h2>
+      <header className="enter panel flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-4">
+          <Avatar name={c.name} className="h-16 w-16 text-lg" />
+          <div className="min-w-0">
+            <p className="text-sm font-black text-brand-700">Contato</p>
+            <h1 className="text-safe text-[clamp(2rem,5vw,3.3rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
+              {c.name}
+            </h1>
+            {chips.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {chips.map((chip) => (
+                  <span key={chip} className="tag bg-surface-2 text-ink-muted">
+                    {chip}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 sm:w-64">
+          <MiniStat label="Conversas" value={String(logs.length)} icon={IconMessage} />
+          <MiniStat label="Lembretes" value={String(relatedTasks.length)} icon={IconBell} pink />
+        </div>
+      </header>
+
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <section className="panel overflow-hidden">
+          <div className="border-b border-line px-5 py-4">
+            <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
+              Dados do cliente
+            </h2>
+            <p className="mt-1 text-sm font-medium text-ink-muted">
+              Atualize os detalhes principais deste contato.
+            </p>
+          </div>
+
           <form action={updateContact} className="space-y-3.5 p-5">
             <input type="hidden" name="id" value={c.id} />
-            <Field
-              name="name"
-              label="Nome"
-              defaultValue={c.name}
-              required
-              maxLength={120}
-              autoComplete="name"
-            />
+            <Field name="name" label="Nome" defaultValue={c.name} required maxLength={120} autoComplete="name" />
             <Field
               name="phone"
               label="Telefone / WhatsApp"
@@ -101,27 +107,9 @@ export default async function ContactDetailPage({
               autoComplete="tel"
               inputMode="tel"
             />
-            <Field
-              name="email"
-              label="E-mail"
-              type="email"
-              defaultValue={c.email ?? ""}
-              maxLength={160}
-              autoComplete="email"
-            />
-            <Field
-              name="company"
-              label="Empresa"
-              defaultValue={c.company ?? ""}
-              maxLength={120}
-              autoComplete="organization"
-            />
-            <Field
-              name="source"
-              label="Origem"
-              defaultValue={c.source ?? ""}
-              maxLength={120}
-            />
+            <Field name="email" label="E-mail" type="email" defaultValue={c.email ?? ""} maxLength={160} autoComplete="email" />
+            <Field name="company" label="Empresa" defaultValue={c.company ?? ""} maxLength={120} autoComplete="organization" />
+            <Field name="source" label="Origem" defaultValue={c.source ?? ""} maxLength={120} />
             <div>
               <label className="label" htmlFor="notes">
                 Observações
@@ -135,44 +123,45 @@ export default async function ContactDetailPage({
                 className="field mt-1.5 min-h-[96px] resize-y"
               />
             </div>
-            <button type="submit" className="btn">
+            <PendingButton className="btn" pendingLabel="Salvando">
               <IconCheck className="h-4 w-4" />
-              Salvar
-            </button>
+              Salvar alterações
+            </PendingButton>
           </form>
 
-          {/* Zona de risco */}
           <form
             action={deleteContact}
-            className="flex items-center justify-between gap-3 border-t border-line bg-surface-2 px-5 py-3.5"
+            className="flex items-center justify-between gap-3 border-t border-line bg-[#f8fbff] px-5 py-4"
           >
             <div>
-              <p className="text-sm font-semibold text-ink">Excluir contato</p>
-              <p className="text-[13px] text-ink-muted">
+              <p className="text-sm font-black text-ink">Excluir contato</p>
+              <p className="text-sm font-medium text-ink-muted">
                 Remove o cliente e as anotações.
               </p>
             </div>
             <input type="hidden" name="id" value={c.id} />
-            <button
-              type="submit"
-              className="press inline-flex shrink-0 items-center gap-1.5 rounded border border-danger-200 bg-surface px-3.5 py-2 text-sm font-semibold text-danger-700 hover:bg-danger-50"
+            <PendingButton
+              className="press inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-danger-200 bg-white px-3.5 py-2 text-sm font-black text-danger-700 hover:bg-danger-50"
+              pendingLabel="Excluindo"
             >
               <IconTrash className="h-4 w-4" />
               Excluir
-            </button>
+            </PendingButton>
           </form>
-        </div>
+        </section>
 
-        {/* Histórico + tarefas */}
-        <div className="space-y-6 lg:space-y-8">
-          <div className="border border-line bg-surface">
-            <div className="border-b border-line px-5 py-3">
-              <h2 className="font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-ink">
+        <div className="space-y-5">
+          <section className="panel overflow-hidden">
+            <div className="border-b border-line px-5 py-4">
+              <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
                 Conversas
               </h2>
+              <p className="mt-1 text-sm font-medium text-ink-muted">
+                Anote ligações, mensagens e combinados.
+              </p>
             </div>
             <div className="p-5">
-              <form action={createInteraction} className="flex gap-2">
+              <form action={createInteraction} className="flex flex-col gap-2 sm:flex-row">
                 <input type="hidden" name="contact_id" value={c.id} />
                 <input
                   name="body"
@@ -181,85 +170,73 @@ export default async function ContactDetailPage({
                   placeholder="Anote uma ligação, mensagem ou conversa..."
                   className="field flex-1"
                 />
-                <button
-                  type="submit"
-                  className="btn shrink-0"
-                  aria-label="Salvar conversa"
-                >
+                <PendingButton className="btn shrink-0" aria-label="Salvar conversa" pendingLabel="Salvando">
                   <IconPlus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Salvar</span>
-                </button>
+                  Salvar
+                </PendingButton>
               </form>
 
               {logs.length === 0 ? (
-                <p className="mt-5 text-sm text-ink-muted">
-                  Nenhuma conversa anotada ainda.
-                </p>
+                <div className="mt-5 rounded-lg border border-dashed border-line bg-[#f8fbff] p-5 text-center">
+                  <IconMessage className="mx-auto h-7 w-7 text-brand-700" />
+                  <p className="mt-3 text-sm font-black text-ink">
+                    Nenhuma conversa anotada ainda.
+                  </p>
+                </div>
               ) : (
-                <ol className="mt-5 border-l border-line">
-                  {logs.map((l) => (
-                    <li key={l.id} className="relative pb-5 pl-5 last:pb-0">
-                      <span className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-sm border-2 border-surface bg-brand-500" />
-                      <p className="text-safe text-[15px] leading-relaxed text-ink">
-                        {l.body}
+                <ol className="mt-5 space-y-3">
+                  {logs.map((log) => (
+                    <li key={log.id} className="rounded-lg border border-line bg-white p-4">
+                      <p className="text-safe text-sm font-medium leading-relaxed text-ink">
+                        {log.body}
                       </p>
-                      <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-muted">
-                        {formatDateTime(l.created_at)}
+                      <p className="mt-2 text-xs font-bold text-ink-muted">
+                        {formatDateTime(log.created_at)}
                       </p>
                     </li>
                   ))}
                 </ol>
               )}
             </div>
-          </div>
+          </section>
 
-          <div className="border border-line bg-surface">
-            <div className="border-b border-line px-5 py-3">
-              <h2 className="font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-ink">
+          <section className="panel overflow-hidden">
+            <div className="border-b border-line px-5 py-4">
+              <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
                 Lembretes deste cliente
               </h2>
             </div>
             <div className="px-5">
               {relatedTasks.length === 0 ? (
-                <p className="py-4 text-sm text-ink-muted">
+                <p className="py-5 text-sm font-medium text-ink-muted">
                   Nenhum lembrete.{" "}
-                  <Link
-                    href="/tasks"
-                    className="nav-item font-semibold text-brand-700 hover:text-brand-800"
-                  >
+                  <Link href="/tasks" className="nav-item font-black text-brand-700 hover:text-brand-900">
                     Criar um
                   </Link>
                 </p>
               ) : (
-                <ul>
-                  {relatedTasks.map((t) => (
-                    <li
-                      key={t.id}
-                      className="flex items-center gap-3 border-b border-line py-2.5 last:border-b-0"
-                    >
+                <ul className="divide-y divide-line">
+                  {relatedTasks.map((task) => (
+                    <li key={task.id} className="flex items-center gap-3 py-3">
                       <span
                         className={
-                          "grid h-5 w-5 shrink-0 place-items-center rounded-sm " +
-                          (t.done
-                            ? "bg-brand-600 text-white"
-                            : "border border-line")
+                          "grid h-5 w-5 shrink-0 place-items-center rounded-full " +
+                          (task.done ? "bg-brand-700 text-white" : "border border-line bg-white")
                         }
                       >
-                        {t.done && <IconCheck className="h-3 w-3" />}
+                        {task.done && <IconCheck className="h-3 w-3" />}
                       </span>
                       <span
                         className={
-                          "clip-2 min-w-0 flex-1 text-safe text-[15px] " +
-                          (t.done
-                            ? "text-ink-muted line-through"
-                            : "font-medium text-ink")
+                          "clip-2 min-w-0 flex-1 text-safe text-sm " +
+                          (task.done ? "text-ink-muted line-through" : "font-black text-ink")
                         }
                       >
-                        {t.title}
+                        {task.title}
                       </span>
-                      {t.due_at && (
-                        <span className="shrink-0 font-mono text-[12px] tabular-nums text-ink-muted">
-                          {formatDateTime(t.due_at)}
+                      {task.due_at && (
+                        <span className="shrink-0 text-xs font-bold tabular-nums text-ink-muted">
+                          {formatDateTime(task.due_at)}
                         </span>
                       )}
                     </li>
@@ -267,9 +244,36 @@ export default async function ContactDetailPage({
                 </ul>
               )}
             </div>
-          </div>
+          </section>
         </div>
       </div>
+    </div>
+  );
+}
+
+function MiniStat({
+  label,
+  value,
+  icon: Icon,
+  pink = false,
+}: {
+  label: string;
+  value: string;
+  icon: (props: { className?: string }) => JSX.Element;
+  pink?: boolean;
+}) {
+  return (
+    <div className="rounded-lg border border-line bg-[#f8fbff] p-3">
+      <span
+        className={
+          "grid h-9 w-9 place-items-center rounded-full " +
+          (pink ? "bg-pink-100 text-pink-600" : "bg-brand-50 text-brand-700")
+        }
+      >
+        <Icon className="h-4 w-4" />
+      </span>
+      <p className="mt-3 text-[11px] font-bold text-ink-muted">{label}</p>
+      <p className="text-xl font-black text-ink">{value}</p>
     </div>
   );
 }
@@ -307,6 +311,14 @@ function Field({
     <div>
       <label className="label" htmlFor={name}>
         {label}
+        {required && (
+          <>
+            <span className="ml-1 text-brand-700" aria-hidden="true">
+              *
+            </span>
+            <span className="sr-only"> obrigatório</span>
+          </>
+        )}
       </label>
       <input
         id={name}

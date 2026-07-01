@@ -1,9 +1,17 @@
 import Link from "next/link";
+import { PendingButton } from "@/components/PendingButton";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact } from "@/lib/supabase/types";
 import { createContact } from "../actions";
 import { Avatar } from "../Avatar";
-import { IconPlus } from "../icons";
+import {
+  IconArrowRight,
+  IconMessage,
+  IconPhone,
+  IconPlus,
+  IconSearch,
+  IconUsers,
+} from "../icons";
 
 export default async function ContactsPage() {
   const supabase = createClient();
@@ -12,83 +20,119 @@ export default async function ContactsPage() {
     .select("*")
     .order("created_at", { ascending: false });
   const contacts = (data ?? []) as Contact[];
+  const withPhone = contacts.filter((contact) => contact.phone).length;
+  const withCompany = contacts.filter((contact) => contact.company).length;
 
   return (
-    <div>
-      <header className="enter">
-        <p className="eyebrow">Contatos</p>
-        <h1 className="font-display mt-3 text-[clamp(1.75rem,5vw,2.75rem)] font-semibold leading-[1.04] tracking-[-0.02em] text-ink">
-          Seus clientes
-        </h1>
-        <p className="mt-2 max-w-md text-[15px] text-ink-soft">
-          {contacts.length === 0
-            ? "Comece adicionando o primeiro cliente."
-            : `${contacts.length} ${contacts.length === 1 ? "contato" : "contatos"} no total.`}
-        </p>
+    <div className="space-y-5">
+      <header className="enter flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="text-sm font-black text-brand-700">Contatos</p>
+          <h1 className="mt-2 text-[clamp(2rem,5vw,3.2rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
+            Seus clientes
+          </h1>
+          <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-ink-soft">
+            Salve clientes, empresas e detalhes para não perder o próximo contato.
+          </p>
+        </div>
+
+        <label className="flex h-11 w-full items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] lg:w-[360px]">
+          <IconSearch className="h-5 w-5 shrink-0 text-ink-muted" />
+          <span className="sr-only">Buscar contatos</span>
+          <input
+            type="search"
+            placeholder="Buscar contato..."
+            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-ink outline-none placeholder:text-ink-muted"
+          />
+        </label>
       </header>
 
-      <div className="mt-7 grid gap-6 lg:grid-cols-3 lg:gap-8">
-        {/* Lista */}
-        <div className="lg:col-span-2">
-          {contacts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center border border-dashed border-line px-6 py-16 text-center">
-              <p className="font-display text-lg font-medium text-ink">
-                Nenhum contato ainda
+      <section className="grid gap-4 sm:grid-cols-3">
+        <MetricCard label="Total" value={String(contacts.length)} icon={IconUsers} />
+        <MetricCard label="Com WhatsApp" value={String(withPhone)} icon={IconPhone} pink />
+        <MetricCard label="Com empresa" value={String(withCompany)} icon={IconMessage} />
+      </section>
+
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <section className="panel overflow-hidden">
+          <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
+            <div>
+              <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
+                Lista de contatos
+              </h2>
+              <p className="mt-1 text-sm font-medium text-ink-muted">
+                {contacts.length === 0
+                  ? "Comece adicionando seu primeiro cliente."
+                  : `${contacts.length} ${contacts.length === 1 ? "contato salvo" : "contatos salvos"}.`}
               </p>
-              <p className="mt-1 max-w-xs text-sm text-ink-soft">
-                Salve nome, telefone e uma observação rápida.
+            </div>
+            <span className="rounded-md bg-surface-2 px-2.5 py-1 text-xs font-black text-ink-muted">
+              {String(contacts.length).padStart(2, "0")}
+            </span>
+          </div>
+
+          {contacts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+              <span className="grid h-14 w-14 place-items-center rounded-full bg-brand-50 text-brand-700">
+                <IconUsers className="h-7 w-7" />
+              </span>
+              <p className="mt-4 text-lg font-black text-ink">Nenhum contato ainda</p>
+              <p className="mt-1 max-w-xs text-sm font-medium leading-relaxed text-ink-muted">
+                Salve nome, WhatsApp e uma observação simples para começar.
               </p>
             </div>
           ) : (
-            <div className="border border-line bg-surface">
-              <div className="flex items-center justify-between border-b border-line px-4 py-2.5 sm:px-5">
-                <span className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-ink-muted">
-                  Nome
-                </span>
-                <span className="font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-ink-muted">
-                  {String(contacts.length).padStart(2, "0")}
-                </span>
-              </div>
-              <ul className="enter">
-                {contacts.map((c) => (
-                  <li key={c.id} className="border-b border-line last:border-b-0">
-                    <Link
-                      href={`/contacts/${c.id}`}
-                      className="row-link group flex items-center gap-3 px-4 py-3 hover:bg-surface-2/70 sm:px-5"
-                    >
-                      <Avatar name={c.name} />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-semibold text-ink">{c.name}</p>
-                        <p className="truncate font-mono text-[12px] text-ink-muted">
-                          {c.company || c.email || c.phone || "sem dados de contato"}
-                        </p>
-                      </div>
-                      <span className="arrow-nudge font-mono text-base text-ink-muted/60 group-hover:translate-x-0.5 group-hover:text-brand-700">
-                        →
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <ul className="enter divide-y divide-line">
+              {contacts.map((contact) => (
+                <li key={contact.id}>
+                  <Link
+                    href={`/contacts/${contact.id}`}
+                    className="row-link group flex items-center gap-3 px-5 py-4 hover:bg-[#f8fbff]"
+                  >
+                    <Avatar name={contact.name} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-black text-ink">
+                        {contact.name}
+                      </p>
+                      <p className="truncate text-xs font-bold text-ink-muted">
+                        {contact.company || contact.email || contact.phone || "Sem dados extras"}
+                      </p>
+                    </div>
+                    <div className="hidden items-center gap-2 sm:flex">
+                      {contact.phone && (
+                        <span className="tag bg-brand-50 text-brand-700">
+                          WhatsApp
+                        </span>
+                      )}
+                      {contact.source && (
+                        <span className="tag bg-surface-2 text-ink-muted">
+                          {contact.source}
+                        </span>
+                      )}
+                    </div>
+                    <IconArrowRight className="h-4 w-4 text-ink-muted transition-transform duration-200 group-hover:translate-x-1 group-hover:text-brand-700" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
           )}
-        </div>
+        </section>
 
-        {/* Novo contato */}
-        <div className="border border-t-2 border-line border-t-brand-700 bg-surface lg:sticky lg:top-24 lg:self-start">
-          <div className="border-b border-line px-5 py-3">
-            <h2 className="font-mono text-[12px] font-semibold uppercase tracking-[0.12em] text-ink">
-              Novo cliente
-            </h2>
+        <section className="panel h-max p-5 xl:sticky xl:top-8">
+          <div className="flex items-center gap-3">
+            <span className="grid h-11 w-11 place-items-center rounded-full bg-brand-50 text-brand-700">
+              <IconPlus className="h-5 w-5" />
+            </span>
+            <div>
+              <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
+                Novo cliente
+              </h2>
+              <p className="text-sm font-medium text-ink-muted">Adicione em poucos campos.</p>
+            </div>
           </div>
-          <form action={createContact} className="space-y-3.5 p-5">
-            <Field
-              name="name"
-              label="Nome"
-              required
-              maxLength={120}
-              autoComplete="name"
-            />
+
+          <form action={createContact} className="mt-5 space-y-3.5">
+            <Field name="name" label="Nome" required maxLength={120} autoComplete="name" />
             <Field
               name="phone"
               label="Telefone / WhatsApp"
@@ -96,20 +140,9 @@ export default async function ContactsPage() {
               autoComplete="tel"
               inputMode="tel"
             />
-            <Field
-              name="email"
-              label="E-mail"
-              type="email"
-              maxLength={160}
-              autoComplete="email"
-            />
-            <Field
-              name="company"
-              label="Empresa"
-              maxLength={120}
-              autoComplete="organization"
-            />
-            <Field name="source" label="Origem (ex: Instagram)" maxLength={120} />
+            <Field name="email" label="E-mail" type="email" maxLength={160} autoComplete="email" />
+            <Field name="company" label="Empresa" maxLength={120} autoComplete="organization" />
+            <Field name="source" label="Origem" maxLength={120} />
             <div>
               <label className="label" htmlFor="notes">
                 Observações
@@ -117,19 +150,52 @@ export default async function ContactsPage() {
               <textarea
                 id="notes"
                 name="notes"
-                rows={2}
+                rows={3}
                 maxLength={1200}
-                className="field mt-1.5 min-h-[76px] resize-y"
+                className="field mt-1.5 min-h-[88px] resize-y"
               />
             </div>
-            <button type="submit" className="btn w-full">
+            <PendingButton className="btn w-full" pendingLabel="Salvando">
               <IconPlus className="h-4 w-4" />
               Salvar cliente
-            </button>
+            </PendingButton>
           </form>
-        </div>
+        </section>
       </div>
     </div>
+  );
+}
+
+function MetricCard({
+  label,
+  value,
+  icon: Icon,
+  pink = false,
+}: {
+  label: string;
+  value: string;
+  icon: (props: { className?: string }) => JSX.Element;
+  pink?: boolean;
+}) {
+  return (
+    <article className="panel p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-bold text-ink-soft">{label}</p>
+          <p className="mt-3 text-3xl font-black tracking-[-0.04em] text-ink">
+            {value}
+          </p>
+        </div>
+        <span
+          className={
+            "grid h-11 w-11 place-items-center rounded-full " +
+            (pink ? "bg-pink-100 text-pink-600" : "bg-brand-50 text-brand-700")
+          }
+        >
+          <Icon className="h-5 w-5" />
+        </span>
+      </div>
+    </article>
   );
 }
 
@@ -164,6 +230,14 @@ function Field({
     <div>
       <label className="label" htmlFor={name}>
         {label}
+        {required && (
+          <>
+            <span className="ml-1 text-brand-700" aria-hidden="true">
+              *
+            </span>
+            <span className="sr-only"> obrigatório</span>
+          </>
+        )}
       </label>
       <input
         id={name}

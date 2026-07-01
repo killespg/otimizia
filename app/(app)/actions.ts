@@ -37,7 +37,7 @@ export async function createContact(formData: FormData) {
     source: emptyToNull(formData.get("source"), LIMIT.source),
     notes: emptyToNull(formData.get("notes"), LIMIT.notes),
   });
-  ensureOk(error, "Nao deu para salvar o contato.");
+  ensureOk(error, "Não deu para salvar o contato.");
   revalidatePath("/contacts");
 }
 
@@ -56,7 +56,7 @@ export async function updateContact(formData: FormData) {
     })
     .eq("id", id)
     .eq("owner_id", user.id);
-  ensureOk(error, "Nao deu para atualizar o contato.");
+  ensureOk(error, "Não deu para atualizar o contato.");
   revalidatePath("/contacts");
   revalidatePath(`/contacts/${id}`);
 }
@@ -69,7 +69,7 @@ export async function deleteContact(formData: FormData) {
     .delete()
     .eq("id", id)
     .eq("owner_id", user.id);
-  ensureOk(error, "Nao deu para excluir o contato.");
+  ensureOk(error, "Não deu para excluir o contato.");
   revalidatePath("/contacts");
   redirect("/contacts");
 }
@@ -83,7 +83,7 @@ export async function createInteraction(formData: FormData) {
     contact_id: contactId,
     body: requiredText(formData.get("body"), "Conversa", LIMIT.interaction),
   });
-  ensureOk(error, "Nao deu para salvar a conversa.");
+  ensureOk(error, "Não deu para salvar a conversa.");
   revalidatePath(`/contacts/${contactId}`);
 }
 
@@ -97,13 +97,13 @@ export async function createDeal(formData: FormData) {
     value_cents: moneyToCents(formData.get("value")),
     stage: "novo",
   });
-  ensureOk(error, "Nao deu para salvar a venda.");
+  ensureOk(error, "Não deu para salvar a venda.");
   revalidatePath("/pipeline");
 }
 
 export async function moveDeal(id: string, stage: DealStage) {
   const { supabase, user } = await requireUser();
-  if (!isDealStage(stage)) throw new Error("Etapa de venda invalida.");
+  if (!isDealStage(stage)) throw new Error("Etapa de venda inválida.");
 
   const closed = stage === "ganho" || stage === "perdido";
   const { error } = await supabase
@@ -111,7 +111,7 @@ export async function moveDeal(id: string, stage: DealStage) {
     .update({ stage, closed_at: closed ? new Date().toISOString() : null })
     .eq("id", id)
     .eq("owner_id", user.id);
-  ensureOk(error, "Nao deu para mover a venda.");
+  ensureOk(error, "Não deu para mover a venda.");
   revalidatePath("/pipeline");
   revalidatePath("/dashboard");
 }
@@ -123,7 +123,7 @@ export async function deleteDeal(formData: FormData) {
     .delete()
     .eq("id", requiredText(formData.get("id"), "Venda", 80))
     .eq("owner_id", user.id);
-  ensureOk(error, "Nao deu para excluir a venda.");
+  ensureOk(error, "Não deu para excluir a venda.");
   revalidatePath("/pipeline");
 }
 
@@ -136,7 +136,7 @@ export async function createTask(formData: FormData) {
     title: requiredText(formData.get("title"), "Lembrete", LIMIT.title),
     due_at: dateTimeOrNull(formData.get("due_at")),
   });
-  ensureOk(error, "Nao deu para salvar o lembrete.");
+  ensureOk(error, "Não deu para salvar o lembrete.");
   revalidatePath("/tasks");
 }
 
@@ -147,7 +147,7 @@ export async function toggleTask(id: string, done: boolean) {
     .update({ done })
     .eq("id", id)
     .eq("owner_id", user.id);
-  ensureOk(error, "Nao deu para atualizar o lembrete.");
+  ensureOk(error, "Não deu para atualizar o lembrete.");
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
 }
@@ -159,7 +159,7 @@ export async function deleteTask(formData: FormData) {
     .delete()
     .eq("id", requiredText(formData.get("id"), "Lembrete", 80))
     .eq("owner_id", user.id);
-  ensureOk(error, "Nao deu para excluir o lembrete.");
+  ensureOk(error, "Não deu para excluir o lembrete.");
   revalidatePath("/tasks");
 }
 
@@ -174,7 +174,7 @@ function requiredText(
   max: number
 ): string {
   const s = text(v, max);
-  if (!s) throw new Error(`${label} obrigatorio.`);
+  if (!s) throw new Error(`${label} obrigatório.`);
   return s;
 }
 
@@ -187,7 +187,7 @@ function emailOrNull(v: FormDataEntryValue | null): string | null {
   const email = emptyToNull(v, LIMIT.email)?.toLowerCase() ?? null;
   if (!email) return null;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new Error("E-mail invalido.");
+    throw new Error("E-mail inválido.");
   }
   return email;
 }

@@ -1,5 +1,3 @@
-/* Avatar de iniciais — quadrado (editorial), mono, fio nítido. */
-
 export function Avatar({
   name,
   className = "h-10 w-10 text-[13px]",
@@ -12,14 +10,14 @@ export function Avatar({
       .trim()
       .split(/\s+/)
       .slice(0, 2)
-      .map((w) => w[0]?.toUpperCase() ?? "")
+      .map((word) => word[0]?.toUpperCase() ?? "")
       .join("") || "?";
 
   return (
     <span
       aria-hidden="true"
       className={
-        "grid shrink-0 place-items-center rounded-sm border border-line bg-surface-2 font-mono font-semibold uppercase text-ink-soft " +
+        "grid shrink-0 place-items-center rounded-full bg-[linear-gradient(135deg,#7b3ff2,#4b16c8)] font-mono font-black uppercase text-white shadow-[0_12px_28px_-18px_rgba(92,34,232,0.8)] " +
         className
       }
     >

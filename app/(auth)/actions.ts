@@ -15,7 +15,7 @@ export async function login(formData: FormData) {
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    redirectWithError("/login", "Nao foi possivel entrar. Confira os dados.");
+    redirectWithError("/login", "Não foi possível entrar. Confira os dados.");
   }
 
   revalidatePath("/", "layout");
@@ -42,7 +42,7 @@ export async function signup(formData: FormData) {
     options: { data: { name } },
   });
   if (error) {
-    redirectWithError("/signup", "Nao foi possivel criar a conta.");
+    redirectWithError("/signup", "Não foi possível criar a conta.");
   }
 
   revalidatePath("/", "layout");

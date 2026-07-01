@@ -30,7 +30,14 @@ export function PendingButton({
       aria-busy={pending || undefined}
       className={`relative ${className}`}
     >
-      <span className={pending ? "invisible" : undefined}>{children}</span>
+      <span
+        className={
+          "inline-flex items-center justify-center gap-2 " +
+          (pending ? "invisible" : "")
+        }
+      >
+        {children}
+      </span>
       {pending && (
         <span
           className="absolute inset-0 flex items-center justify-center gap-2"

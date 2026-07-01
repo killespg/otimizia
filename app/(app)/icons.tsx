@@ -1,5 +1,4 @@
-/* Conjunto de ícones do app — traço ultrafino (1.6), currentColor, viewBox 24.
-   Linhas precisas no espírito Phosphor Light; nada de traço grosso. */
+/* App icons: thin stroke (1.6), currentColor, viewBox 24. */
 
 export type IconProps = { className?: string };
 
@@ -51,6 +50,44 @@ export function IconBell({ className }: IconProps) {
     <svg {...base} className={className}>
       <path d="M18 8.5a6 6 0 1 0-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5Z" {...stroke} />
       <path d="M10.2 19a2 2 0 0 0 3.6 0" {...stroke} />
+    </svg>
+  );
+}
+
+export function IconPhone({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M7.2 4.8 9.5 4a1.5 1.5 0 0 1 1.8.8l1 2.4a1.6 1.6 0 0 1-.4 1.8l-1.2 1.1a11.2 11.2 0 0 0 3.2 3.2l1.1-1.2a1.6 1.6 0 0 1 1.8-.4l2.4 1a1.5 1.5 0 0 1 .8 1.8l-.8 2.3a2.2 2.2 0 0 1-2.3 1.5C10.5 17.7 6.3 13.5 5.7 7.1a2.2 2.2 0 0 1 1.5-2.3Z" {...stroke} />
+    </svg>
+  );
+}
+
+export function IconBot({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="5" y="7.5" width="14" height="11" rx="2.4" {...stroke} />
+      <path d="M12 7.5V4.5" {...stroke} />
+      <path d="M8.5 13h.1M15.4 13h.1" {...stroke} />
+      <path d="M9.5 16h5" {...stroke} />
+      <path d="M3.5 12.5v2M20.5 12.5v2" {...stroke} />
+    </svg>
+  );
+}
+
+export function IconSearch({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <circle cx="10.5" cy="10.5" r="5.7" {...stroke} />
+      <path d="m15 15 4.5 4.5" {...stroke} />
+    </svg>
+  );
+}
+
+export function IconMessage({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v6A2.5 2.5 0 0 1 16.5 15H11l-4.8 4v-4A2.5 2.5 0 0 1 5 12.5v-6Z" {...stroke} />
+      <path d="M8.5 9.5h7M8.5 12h4.5" {...stroke} />
     </svg>
   );
 }

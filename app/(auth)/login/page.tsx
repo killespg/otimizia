@@ -18,7 +18,7 @@ export default function LoginPage({
           Não tem conta?{" "}
           <Link
             href="/signup"
-            className="nav-item font-semibold text-brand-700 hover:text-brand-800"
+            className="nav-item font-black text-brand-700 hover:text-brand-900"
           >
             Criar agora
           </Link>

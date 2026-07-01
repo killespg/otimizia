@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PendingButton } from "@/components/PendingButton";
 import { signup } from "../actions";
 import { AuthShell, AuthField } from "../AuthShell";
 
@@ -10,14 +11,14 @@ export default function SignupPage({
   return (
     <AuthShell
       title="Criar conta"
-      subtitle="Comece a organizar suas vendas em minutos."
+      subtitle="Comece a organizar suas vendas em poucos minutos."
       error={searchParams.error}
       footer={
         <>
           Já tem conta?{" "}
           <Link
             href="/login"
-            className="nav-item font-semibold text-brand-700 hover:text-brand-800"
+            className="nav-item font-black text-brand-700 hover:text-brand-900"
           >
             Entrar
           </Link>
@@ -48,9 +49,9 @@ export default function SignupPage({
           maxLength={200}
           autoComplete="new-password"
         />
-        <button type="submit" className="btn w-full py-3 text-base">
+        <PendingButton className="btn w-full py-3 text-base" pendingLabel="Criando">
           Criar conta grátis
-        </button>
+        </PendingButton>
       </form>
     </AuthShell>
   );
