@@ -35,7 +35,7 @@ export function AssistantChat() {
     <>
       {open && (
         <div
-          className="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-50 flex max-h-[min(600px,calc(100dvh-7rem))] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-[0_24px_70px_-30px_rgba(7,8,28,0.55)] md:inset-x-auto md:bottom-24 md:right-6 md:w-[400px]"
+          className="assistant-sheet fixed inset-x-3 bottom-[calc(6.6rem+env(safe-area-inset-bottom))] z-50 flex max-h-[min(620px,calc(100dvh-8rem))] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-[0_24px_70px_-30px_rgba(7,8,28,0.55)] md:inset-x-auto md:bottom-24 md:right-6 md:w-[400px]"
           role="dialog"
           aria-label="Assistente OtimizIA"
         >
@@ -136,7 +136,7 @@ export function AssistantChat() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_60%,#0bbfe8_100%)] text-white shadow-[0_16px_40px_-14px_rgba(92,34,232,0.9)] transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-brand-600 md:bottom-6 md:right-6"
+        className="assistant-fab fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_60%,#0bbfe8_100%)] text-white shadow-[0_16px_40px_-14px_rgba(92,34,232,0.9)] transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-brand-600 md:bottom-6 md:right-6"
         aria-label={open ? "Fechar assistente" : "Abrir assistente OtimizIA"}
       >
         <IconBot className="h-6 w-6" />

@@ -58,8 +58,8 @@ export default async function AppLayout({
       : handle;
 
   return (
-    <div className="app-frame min-h-[100dvh] bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-2 sm:p-5 md:p-6">
-      <div className="app-shell mx-auto flex min-h-[calc(100dvh-1rem)] max-w-[1580px] overflow-hidden rounded-2xl bg-white shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] md:min-h-[calc(100dvh-3rem)]">
+    <div className="app-frame min-h-[100dvh] bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-0 md:p-6">
+      <div className="app-shell mx-auto flex min-h-[100dvh] max-w-[1580px] overflow-visible bg-white shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] md:min-h-[calc(100dvh-3rem)] md:overflow-hidden md:rounded-2xl">
         <aside className="hidden w-[250px] shrink-0 flex-col border-r border-line bg-white md:flex">
           <div className="flex h-[92px] items-center px-6">
             <Logo />
@@ -102,7 +102,7 @@ export default async function AppLayout({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col bg-[#f8fbff]">
-          <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-white/92 px-4 backdrop-blur-xl md:hidden">
+          <header className="mobile-app-header sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-white/92 px-4 backdrop-blur-xl md:hidden">
             <Logo />
             <div className="flex items-center gap-2">
               <ThemeToggle compact />
@@ -120,7 +120,7 @@ export default async function AppLayout({
             </div>
           </header>
 
-          <main className="mx-auto w-full max-w-[1500px] px-4 pb-28 pt-5 sm:px-6 md:px-8 md:pb-8 md:pt-7 lg:px-10">
+          <main className="mx-auto w-full max-w-[1500px] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-6 md:px-8 md:pb-8 md:pt-7 lg:px-10">
             {children}
           </main>
         </div>

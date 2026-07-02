@@ -54,7 +54,7 @@ export default async function ContactsPage() {
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="panel overflow-hidden">
+        <section className="panel order-2 overflow-hidden xl:order-1">
           <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
             <div>
               <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
@@ -118,7 +118,7 @@ export default async function ContactsPage() {
           )}
         </section>
 
-        <section className="panel h-max p-5 xl:sticky xl:top-8">
+        <section className="panel order-1 h-max p-5 xl:sticky xl:top-8 xl:order-2">
           <div className="flex items-center gap-3">
             <span className="grid h-11 w-11 place-items-center rounded-full bg-brand-50 text-brand-700">
               <IconPlus className="h-5 w-5" />

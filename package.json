@@ -6,12 +6,19 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "android:sync": "cap sync android",
+    "android:open": "cap open android",
+    "android:apk": "cd android && gradlew.bat assembleDebug"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.109.0",
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
+    "claude": "^0.1.1",
     "next": "14.2.15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

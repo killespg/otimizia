@@ -752,6 +752,120 @@
   z-index: 1;
 }
 
+@media (max-width: 767px) {
+  html {
+    scroll-padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+  }
+
+  body {
+    min-width: 320px;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* A animacao de entrada do app-shell deixa um transform residual
+     (mesmo "translate3d(0,0,0)" conta) que vira containing block para
+     os filhos position:fixed - isso prendia a MobileTabBar ao fundo da
+     pagina inteira em vez do fundo da viewport visivel ao rolar. */
+  .motion .app-shell {
+    animation: none;
+  }
+
+  .app-frame {
+    background: rgb(var(--color-canvas)) !important;
+  }
+
+  .app-frame::before {
+    width: 22rem;
+    height: 22rem;
+    left: -9rem;
+    top: -10rem;
+    filter: blur(22px);
+    opacity: 0.42;
+  }
+
+  .app-frame::after {
+    width: 20rem;
+    height: 20rem;
+    right: -10rem;
+    bottom: 10vh;
+    filter: blur(22px);
+    opacity: 0.32;
+  }
+
+  .app-shell {
+    width: 100%;
+    border-radius: 0;
+    box-shadow: none !important;
+  }
+
+  .app-shell::before,
+  .app-shell::after {
+    border-radius: 0;
+  }
+
+  .mobile-app-header {
+    padding-top: env(safe-area-inset-top);
+    height: calc(4rem + env(safe-area-inset-top));
+    box-shadow:
+      0 16px 34px -32px rgba(7, 8, 28, 0.62),
+      inset 0 -1px 0 rgba(139, 61, 255, 0.08);
+  }
+
+  .mobile-tabbar {
+    animation: mobileNavIn 420ms var(--ease-ui-out) 130ms both;
+  }
+
+  .mobile-tab {
+    transform-origin: center bottom;
+    transition:
+      background-color var(--motion-fast) var(--ease-ui-out),
+      color var(--motion-fast) var(--ease-ui-out),
+      transform var(--motion-fast) var(--ease-ui-out);
+  }
+
+  .mobile-tab:active {
+    transform: translateY(1px) scale(0.96);
+  }
+
+  .mobile-tab[aria-current="page"] svg {
+    filter: drop-shadow(0 0 9px rgba(139, 61, 255, 0.28));
+  }
+
+  .mobile-tab-dot {
+    animation: mobileDotPulse 1800ms var(--ease-ui-in-out) infinite;
+  }
+
+  .assistant-fab {
+    animation: assistantFabIn 520ms var(--ease-ui-out) 220ms both;
+  }
+
+  .assistant-sheet {
+    animation: assistantSheetIn 320ms var(--ease-ui-out) both;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  .field,
+  .glass-input {
+    min-height: 46px;
+  }
+
+  .btn,
+  .btn-soft,
+  .glass-btn {
+    min-height: 46px;
+  }
+
+  .panel {
+    border-radius: 10px;
+  }
+}
+
 .bg-white,
 .card,
 .panel,
@@ -1526,6 +1640,57 @@ label[class*="border-line"]::before,
       0 0 0 1px rgba(134, 239, 172, 0.14),
       0 0 48px -24px rgba(134, 239, 172, 0.96),
       inset 0 1px 0 rgba(255, 255, 255, 0.075);
+  }
+}
+
+@keyframes mobileNavIn {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translate3d(0, 18px, 0) scale(0.975);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes mobileDotPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes assistantFabIn {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translate3d(0, 12px, 0) scale(0.88);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes assistantSheetIn {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translate3d(0, 18px, 0) scale(0.965);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 

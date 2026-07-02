@@ -75,10 +75,10 @@ export function MobileTabBar() {
   const isActive = useActive();
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="mobile-tabbar fixed inset-x-3 bottom-3 z-40 rounded-2xl border border-line bg-surface/95 px-2 pb-[calc(0.35rem+env(safe-area-inset-bottom))] pt-1.5 shadow-[0_22px_50px_-30px_rgba(7,8,28,0.75)] backdrop-blur-xl md:hidden"
       aria-label="Navegação principal"
     >
-      <div className="mx-auto grid max-w-md grid-cols-4">
+      <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
         {NAV.filter((item) => item.mobile).map(({ href, label, icon: Icon }) => {
           const active = isActive(href);
           return (
@@ -87,17 +87,17 @@ export function MobileTabBar() {
               href={href}
               aria-current={active ? "page" : undefined}
               className={
-                "nav-item relative flex min-h-[56px] flex-col items-center justify-center gap-1 py-2 " +
-                (active ? "text-brand-700" : "text-ink-muted")
+                "mobile-tab nav-item relative flex min-h-[58px] flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 " +
+                (active ? "bg-brand-50 text-brand-700" : "text-ink-muted")
               }
             >
               {active && (
-                <span className="absolute inset-x-5 top-0 h-[2px] origin-center bg-brand-700" />
+                <span className="mobile-tab-dot absolute top-1.5 h-1 w-1 rounded-full bg-brand-700" />
               )}
               <Icon className="h-[22px] w-[22px]" />
               <span
                 className={
-                  "font-mono text-[10px] uppercase tracking-[0.1em] leading-none " +
+                  "text-[11px] font-black leading-none tracking-[-0.01em] " +
                   (active ? "font-semibold" : "font-medium")
                 }
               >

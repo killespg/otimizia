@@ -344,18 +344,20 @@ function RevenueChart({
               strokeDasharray="5 7"
             />
           ))}
-          {["300k", "250k", "200k", "150k", "100k", "50k"].map((label, index) => (
-            <text
-              key={label}
-              x="20"
-              y={54 + index * 45}
-              fill="#60708f"
-              fontSize="13"
-              fontWeight="700"
-            >
-              {label}
-            </text>
-          ))}
+          <g className="hidden sm:block">
+            {["300k", "250k", "200k", "150k", "100k", "50k"].map((label, index) => (
+              <text
+                key={label}
+                x="20"
+                y={54 + index * 45}
+                fill="#60708f"
+                fontSize="13"
+                fontWeight="700"
+              >
+                {label}
+              </text>
+            ))}
+          </g>
           <path
             d="M64 236 C86 244 92 219 114 198 C143 170 166 181 190 177 C222 172 230 202 260 197 C294 192 296 145 334 146 C374 146 374 186 412 179 C446 173 453 123 492 123 C527 123 534 166 564 151 C592 137 590 101 632 106 C664 110 672 140 701 127 C730 114 738 91 768 95 C786 96 789 69 806 63 L806 300 L64 300 Z"
             fill="url(#dashboardArea)"
@@ -367,20 +369,22 @@ function RevenueChart({
             strokeLinecap="round"
             strokeWidth="4"
           />
-          {["01 Mai", "06 Mai", "11 Mai", "16 Mai", "21 Mai", "26 Mai", "31 Mai"].map(
-            (label, index) => (
-              <text
-                key={label}
-                x={70 + index * 112}
-                y="286"
-                fill="#60708f"
-                fontSize="13"
-                fontWeight="700"
-              >
-                {label}
-              </text>
-            )
-          )}
+          <g className="hidden sm:block">
+            {["01 Mai", "06 Mai", "11 Mai", "16 Mai", "21 Mai", "26 Mai", "31 Mai"].map(
+              (label, index) => (
+                <text
+                  key={label}
+                  x={70 + index * 112}
+                  y="286"
+                  fill="#60708f"
+                  fontSize="13"
+                  fontWeight="700"
+                >
+                  {label}
+                </text>
+              )
+            )}
+          </g>
         </svg>
       </div>
 
@@ -504,7 +508,7 @@ function DealsTable({
         </Link>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-line">
+      <div className="mt-4 overflow-x-auto rounded-lg border border-line">
         <table className="w-full min-w-[620px] border-collapse text-left">
           <thead className="bg-[#f8faff]">
             <tr className="text-[11px] font-bold text-ink-muted">

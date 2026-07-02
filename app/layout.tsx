@@ -33,9 +33,19 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
+  applicationName: "OtimizIA",
   title: "OtimizIA - CRM simples para quem vende sozinho",
   description:
     "Organize clientes, acompanhe vendas e lembre de chamar cada pessoa na hora certa.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "OtimizIA",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   icons: {
     icon: "/otimizia-mark.png",
     apple: "/otimizia-mark.png",
@@ -46,6 +56,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  interactiveWidget: "resizes-content",
   themeColor: "#5c22e8",
 };
 
