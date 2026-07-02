@@ -27,3 +27,5 @@ next-env.d.ts
 config.local.json
 hook.cache.json
 .claude.json
+.vercel
+.env*
