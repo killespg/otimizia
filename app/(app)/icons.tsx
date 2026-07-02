@@ -92,6 +92,15 @@ export function IconMessage({ className }: IconProps) {
   );
 }
 
+export function IconMic({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="8.2" y="3.8" width="7.6" height="11" rx="3.8" {...stroke} />
+      <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.2M8.8 20.2h6.4" {...stroke} />
+    </svg>
+  );
+}
+
 export function IconCheck({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

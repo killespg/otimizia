@@ -92,7 +92,7 @@ export default async function ContactsPage() {
                     <Avatar name={contact.name} />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-black text-ink">
-                        {contact.name}
+                        {displayContactName(contact)}
                       </p>
                       <p className="truncate text-xs font-bold text-ink-muted">
                         {contact.company || contact.email || contact.phone || "Sem dados extras"}
@@ -132,6 +132,7 @@ export default async function ContactsPage() {
           </div>
 
           <form action={createContact} className="mt-5 space-y-3.5">
+            <input type="hidden" name="return_to" value="/contacts" />
             <Field name="name" label="Nome" required maxLength={120} autoComplete="name" />
             <Field
               name="phone"
@@ -208,6 +209,12 @@ type InputMode =
   | "numeric"
   | "decimal"
   | "search";
+
+function displayContactName(contact: Pick<Contact, "name">) {
+  return typeof contact.name === "string" && contact.name.trim()
+    ? contact.name
+    : "Cliente sem nome";
+}
 
 function Field({
   name,

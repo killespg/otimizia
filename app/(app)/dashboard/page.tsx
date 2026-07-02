@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { AgentPanel } from "@/components/AgentPanel";
 import { PendingButton } from "@/components/PendingButton";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -11,10 +11,10 @@ import {
 } from "@/lib/supabase/types";
 import { formatBRL, formatDate } from "@/lib/format";
 import { createTask } from "../actions";
+import { ReminderModal as ReminderModalClient } from "./ReminderModal";
 import {
   IconArrowRight,
   IconBell,
-  IconBot,
   IconCheckCircle,
   IconColumns,
   IconMessage,
@@ -384,7 +384,7 @@ function RevenueChart({
         </svg>
       </div>
 
-      <ReminderModal contacts={contacts} defaultDueAt={defaultDueAt} />
+      <ReminderModalClient contacts={contacts} defaultDueAt={defaultDueAt} />
     </section>
   );
 }
@@ -612,85 +612,6 @@ function TaskQueue({
         Ver todas as tarefas
         <IconArrowRight className="h-4 w-4" />
       </Link>
-    </section>
-  );
-}
-
-function AgentPanel() {
-  const prompts = [
-    {
-      title: "Resumir atividades de hoje",
-      desc: "Veja um resumo do seu dia",
-    },
-    {
-      title: "Quais leads estão mais engajados?",
-      desc: "Análise de engajamento",
-    },
-    {
-      title: "Sugerir próximos passos",
-      desc: "O que fazer agora?",
-    },
-  ];
-
-  return (
-    <section
-      id="agente"
-      className="enter rounded-lg border border-line bg-white p-5 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)]"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Image
-            src="/otimizia-mark.png"
-            alt=""
-            width={32}
-            height={32}
-            className="h-8 w-8"
-          />
-          <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
-            Agente IA
-          </h2>
-        </div>
-        <span className="rounded-md bg-success-50 px-2 py-1 text-xs font-black text-success-700">
-          Online
-        </span>
-      </div>
-
-      <p className="mt-4 text-sm font-medium leading-relaxed text-ink-soft">
-        Olá! Eu sou o OtimizIA, seu assistente inteligente. Como posso ajudar você
-        hoje?
-      </p>
-
-      <div className="mt-4 grid gap-2 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
-        {prompts.map((prompt) => (
-          <button
-            key={prompt.title}
-            type="button"
-            className="nav-item rounded-lg border border-line bg-white p-3 text-left hover:border-brand-200 hover:bg-brand-50"
-          >
-            <span className="flex items-center gap-2 text-[11px] font-black leading-tight text-brand-700">
-              <IconBot className="h-3.5 w-3.5 shrink-0" />
-              {prompt.title}
-            </span>
-            <span className="mt-1 block text-[11px] font-semibold leading-tight text-ink-muted">
-              {prompt.desc}
-            </span>
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-4 flex gap-2">
-        <input
-          placeholder="Pergunte algo..."
-          className="h-11 min-w-0 flex-1 rounded-lg border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition placeholder:text-ink-muted focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
-        />
-        <button
-          type="button"
-          className="nav-item grid h-11 w-11 place-items-center rounded-lg bg-brand-700 text-white shadow-[0_14px_30px_-16px_rgba(109,40,217,0.9)] hover:bg-brand-800"
-          aria-label="Enviar pergunta"
-        >
-          <IconArrowRight className="h-5 w-5 -rotate-45" />
-        </button>
-      </div>
     </section>
   );
 }

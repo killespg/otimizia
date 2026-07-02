@@ -2,12 +2,12 @@ export function Avatar({
   name,
   className = "h-10 w-10 text-[13px]",
 }: {
-  name: string;
+  name: string | null | undefined;
   className?: string;
 }) {
+  const safeName = typeof name === "string" && name.trim() ? name.trim() : "Cliente";
   const initials =
-    name
-      .trim()
+    safeName
       .split(/\s+/)
       .slice(0, 2)
       .map((word) => word[0]?.toUpperCase() ?? "")

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
+import { AssistantChat } from "@/components/AssistantChat";
 import { PendingButton } from "@/components/PendingButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/server";
@@ -22,7 +23,16 @@ function Logo({ compact = false }: { compact?: boolean }) {
         height={compact ? 36 : 58}
         sizes={compact ? "36px" : "196px"}
         priority
-        className={compact ? "h-9 w-9" : "h-10 w-auto"}
+        className={(compact ? "h-9 w-9" : "h-10 w-auto") + " dark:hidden"}
+      />
+      <Image
+        src={compact ? "/otimizia-mark-dark.png" : "/otimizia-logo-dark.png"}
+        alt="OtimizIA"
+        width={compact ? 36 : 205}
+        height={compact ? 36 : 58}
+        sizes={compact ? "36px" : "205px"}
+        priority
+        className={(compact ? "h-9 w-9" : "h-10 w-auto") + " hidden dark:block"}
       />
     </Link>
   );
@@ -48,8 +58,8 @@ export default async function AppLayout({
       : handle;
 
   return (
-    <div className="min-h-[100dvh] bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-2 sm:p-5 md:p-6">
-      <div className="mx-auto flex min-h-[calc(100dvh-1rem)] max-w-[1580px] overflow-hidden rounded-2xl bg-white shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] md:min-h-[calc(100dvh-3rem)]">
+    <div className="app-frame min-h-[100dvh] bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-2 sm:p-5 md:p-6">
+      <div className="app-shell mx-auto flex min-h-[calc(100dvh-1rem)] max-w-[1580px] overflow-hidden rounded-2xl bg-white shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] md:min-h-[calc(100dvh-3rem)]">
         <aside className="hidden w-[250px] shrink-0 flex-col border-r border-line bg-white md:flex">
           <div className="flex h-[92px] items-center px-6">
             <Logo />
@@ -117,6 +127,8 @@ export default async function AppLayout({
 
         <MobileTabBar />
       </div>
+
+      <AssistantChat />
     </div>
   );
 }

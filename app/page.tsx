@@ -141,7 +141,16 @@ export default function Home() {
                 height={58}
                 priority
                 sizes="196px"
-                className="h-9 w-auto sm:h-10"
+                className="h-9 w-auto dark:hidden sm:h-10"
+              />
+              <Image
+                src="/otimizia-logo-dark.png"
+                alt="OtimizIA"
+                width={205}
+                height={58}
+                priority
+                sizes="205px"
+                className="hidden h-9 w-auto dark:block sm:h-10"
               />
             </Link>
 
@@ -888,7 +897,15 @@ function SiteFooter() {
             width={196}
             height={58}
             sizes="176px"
-            className="h-9 w-auto"
+            className="h-9 w-auto dark:hidden"
+          />
+          <Image
+            src="/otimizia-logo-dark.png"
+            alt="OtimizIA"
+            width={205}
+            height={58}
+            sizes="176px"
+            className="hidden h-9 w-auto dark:block"
           />
           <p className="mt-4 max-w-xs text-sm font-medium leading-relaxed text-ink-soft">
             O CRM simples com IA para quem vende sozinho e não pode perder cliente

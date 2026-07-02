@@ -30,7 +30,16 @@ export function AuthShell({
               height={60}
               priority
               sizes="206px"
-              className="h-10 w-auto"
+              className="h-10 w-auto dark:hidden"
+            />
+            <Image
+              src="/otimizia-logo-dark.png"
+              alt="OtimizIA"
+              width={216}
+              height={61}
+              priority
+              sizes="216px"
+              className="hidden h-10 w-auto dark:block"
             />
           </Link>
 
@@ -65,7 +74,16 @@ export function AuthShell({
                 height={60}
                 priority
                 sizes="204px"
-                className="h-10 w-auto"
+                className="h-10 w-auto dark:hidden"
+              />
+              <Image
+                src="/otimizia-logo-dark.png"
+                alt="OtimizIA"
+                width={216}
+                height={61}
+                priority
+                sizes="216px"
+                className="hidden h-10 w-auto dark:block"
               />
             </Link>
 

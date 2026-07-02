@@ -31,6 +31,7 @@ export default async function ContactDetailPage({
 
   if (!contact) notFound();
   const c = contact as Contact;
+  const contactName = displayContactName(c);
 
   const [{ data: interactions }, { data: tasks }] = await Promise.all([
     supabase
@@ -61,11 +62,11 @@ export default async function ContactDetailPage({
 
       <header className="enter panel flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-4">
-          <Avatar name={c.name} className="h-16 w-16 text-lg" />
+          <Avatar name={contactName} className="h-16 w-16 text-lg" />
           <div className="min-w-0">
             <p className="text-sm font-black text-brand-700">Contato</p>
             <h1 className="text-safe text-[clamp(2rem,5vw,3.3rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
-              {c.name}
+              {contactName}
             </h1>
             {chips.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2">
@@ -98,7 +99,7 @@ export default async function ContactDetailPage({
 
           <form action={updateContact} className="space-y-3.5 p-5">
             <input type="hidden" name="id" value={c.id} />
-            <Field name="name" label="Nome" defaultValue={c.name} required maxLength={120} autoComplete="name" />
+            <Field name="name" label="Nome" defaultValue={contactName} required maxLength={120} autoComplete="name" />
             <Field
               name="phone"
               label="Telefone / WhatsApp"
@@ -287,6 +288,12 @@ type InputMode =
   | "numeric"
   | "decimal"
   | "search";
+
+function displayContactName(contact: Pick<Contact, "name">) {
+  return typeof contact.name === "string" && contact.name.trim()
+    ? contact.name
+    : "Cliente sem nome";
+}
 
 function Field({
   name,

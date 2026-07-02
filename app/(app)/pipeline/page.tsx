@@ -44,6 +44,7 @@ export default async function PipelinePage() {
       </section>
 
       <form action={createDeal} className="panel p-4 sm:p-5">
+        <input type="hidden" name="return_to" value="/pipeline" />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_9rem_minmax(0,1fr)_auto] lg:items-end">
           <div>
             <label className="label" htmlFor="deal-title">

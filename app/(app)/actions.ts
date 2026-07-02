@@ -39,6 +39,10 @@ export async function createContact(formData: FormData) {
   });
   ensureOk(error, "Não deu para salvar o contato.");
   revalidatePath("/contacts");
+  revalidatePath("/dashboard");
+  revalidatePath("/pipeline");
+  revalidatePath("/tasks");
+  redirect(safeReturnPath(formData.get("return_to"), "/contacts"));
 }
 
 export async function updateContact(formData: FormData) {
@@ -59,6 +63,9 @@ export async function updateContact(formData: FormData) {
   ensureOk(error, "Não deu para atualizar o contato.");
   revalidatePath("/contacts");
   revalidatePath(`/contacts/${id}`);
+  revalidatePath("/dashboard");
+  revalidatePath("/pipeline");
+  revalidatePath("/tasks");
 }
 
 export async function deleteContact(formData: FormData) {
@@ -99,6 +106,8 @@ export async function createDeal(formData: FormData) {
   });
   ensureOk(error, "Não deu para salvar a venda.");
   revalidatePath("/pipeline");
+  revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/pipeline"));
 }
 
 export async function moveDeal(id: string, stage: DealStage) {
@@ -125,6 +134,7 @@ export async function deleteDeal(formData: FormData) {
     .eq("owner_id", user.id);
   ensureOk(error, "Não deu para excluir a venda.");
   revalidatePath("/pipeline");
+  revalidatePath("/dashboard");
 }
 
 // ---------- Tasks ----------
@@ -138,6 +148,8 @@ export async function createTask(formData: FormData) {
   });
   ensureOk(error, "Não deu para salvar o lembrete.");
   revalidatePath("/tasks");
+  revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }
 
 export async function toggleTask(id: string, done: boolean) {
@@ -161,6 +173,7 @@ export async function deleteTask(formData: FormData) {
     .eq("owner_id", user.id);
   ensureOk(error, "Não deu para excluir o lembrete.");
   revalidatePath("/tasks");
+  revalidatePath("/dashboard");
 }
 
 function text(v: FormDataEntryValue | null, max: number): string {
@@ -219,4 +232,11 @@ function ensureOk(error: unknown, fallback: string) {
   if (!error) return;
   console.error(error);
   throw new Error(fallback);
+}
+
+function safeReturnPath(v: FormDataEntryValue | null, fallback: string): string {
+  const path = typeof v === "string" ? v.trim() : "";
+  if (!path.startsWith("/") || path.startsWith("//")) return fallback;
+  if (path.includes("://")) return fallback;
+  return path.slice(0, 160);
 }

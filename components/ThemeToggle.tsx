@@ -62,19 +62,19 @@ export function ThemeToggle({ className = "", compact = false }: ThemeToggleProp
       aria-label={isDark ? "Usar modo claro" : "Usar modo escuro"}
       onClick={toggleTheme}
       className={
-        "nav-item inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-surface text-xs font-black text-ink-soft hover:bg-surface-2 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 " +
+        "theme-toggle nav-item inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-line bg-surface text-xs font-black text-ink-soft hover:bg-surface-2 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 " +
         (compact ? "px-2.5" : "px-3") +
         " " +
         className
       }
     >
       <span
-        className="relative h-5 w-9 rounded-full border border-line bg-surface-2"
+        className="theme-track relative h-5 w-9 rounded-full border border-line bg-surface-2"
         aria-hidden="true"
       >
         <span
           className={
-            "absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full bg-brand-700 shadow-[0_8px_16px_-8px_rgba(92,34,232,0.8)] transition-transform duration-300 ease-out " +
+            "theme-thumb absolute left-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full bg-brand-700 shadow-[0_8px_16px_-8px_rgba(92,34,232,0.8)] transition-transform duration-300 ease-out " +
             (isDark ? "translate-x-[18px]" : "translate-x-0.5")
           }
         />
