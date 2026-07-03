@@ -188,7 +188,7 @@ export default async function DashboardPage() {
       </section>
 
       <section className="grid gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(23rem,0.72fr)]">
-        <div className="space-y-4 sm:space-y-5">
+        <div className="min-w-0 space-y-4 sm:space-y-5">
           <RevenueChart
             openValue={openValue}
             wonValue={wonValue}
@@ -198,7 +198,7 @@ export default async function DashboardPage() {
           <DealsTable deals={openDeals} contactMap={contactMap} />
         </div>
 
-        <aside className="space-y-4 sm:space-y-5">
+        <aside className="min-w-0 space-y-4 sm:space-y-5">
           <TaskQueue tasks={taskQueue} overdue={overdue} now={now} />
           <AgentPanel />
         </aside>
