@@ -24,11 +24,11 @@ export default async function ContactsPage() {
   const withCompany = contacts.filter((contact) => contact.company).length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <header className="enter flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm font-black text-brand-700">Contatos</p>
-          <h1 className="mt-2 text-[clamp(2rem,5vw,3.2rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
+          <h1 className="mt-2 text-[clamp(1.55rem,6vw,3.2rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
             Seus clientes
           </h1>
           <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-ink-soft">
@@ -47,7 +47,7 @@ export default async function ContactsPage() {
         </label>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-3">
+      <section className="grid grid-cols-3 gap-3 sm:gap-4">
         <MetricCard label="Total" value={String(contacts.length)} icon={IconUsers} />
         <MetricCard label="Com WhatsApp" value={String(withPhone)} icon={IconPhone} pink />
         <MetricCard label="Com empresa" value={String(withCompany)} icon={IconMessage} />
@@ -57,7 +57,7 @@ export default async function ContactsPage() {
         <section className="panel order-2 overflow-hidden xl:order-1">
           <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
             <div>
-              <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
+              <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
                 Lista de contatos
               </h2>
               <p className="mt-1 text-sm font-medium text-ink-muted">
@@ -124,7 +124,7 @@ export default async function ContactsPage() {
               <IconPlus className="h-5 w-5" />
             </span>
             <div>
-              <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
+              <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
                 Novo cliente
               </h2>
               <p className="text-sm font-medium text-ink-muted">Adicione em poucos campos.</p>
@@ -179,17 +179,17 @@ function MetricCard({
   pink?: boolean;
 }) {
   return (
-    <article className="panel p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-bold text-ink-soft">{label}</p>
-          <p className="mt-3 text-3xl font-black tracking-[-0.04em] text-ink">
+    <article className="panel p-3 sm:p-5">
+      <div className="flex items-start justify-between gap-2 sm:gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-bold leading-tight text-ink-soft sm:text-sm">{label}</p>
+          <p className="mt-2 text-2xl font-black tracking-[-0.04em] text-ink sm:mt-3 sm:text-3xl">
             {value}
           </p>
         </div>
         <span
           className={
-            "grid h-11 w-11 place-items-center rounded-full " +
+            "hidden h-11 w-11 place-items-center rounded-full sm:grid " +
             (pink ? "bg-pink-100 text-pink-600" : "bg-brand-50 text-brand-700")
           }
         >

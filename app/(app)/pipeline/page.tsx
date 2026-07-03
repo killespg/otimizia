@@ -24,11 +24,11 @@ export default async function PipelinePage() {
     .reduce((sum, deal) => sum + deal.value_cents, 0);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <header className="enter flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm font-black text-brand-700">Vendas</p>
-          <h1 className="mt-2 text-[clamp(2rem,5vw,3.2rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
+          <h1 className="mt-2 text-[clamp(1.55rem,6vw,3.2rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
             Negócios em andamento
           </h1>
           <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-ink-soft">
@@ -37,7 +37,7 @@ export default async function PipelinePage() {
         </div>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-3">
+      <section className="grid gap-3 sm:grid-cols-3 sm:gap-4">
         <MetricCard label="Abertas" value={String(openDeals.length)} icon={IconColumns} />
         <MetricCard label="Valor aberto" value={formatBRL(openValue)} icon={IconWallet} />
         <MetricCard label="Ganhas" value={formatBRL(wonValue)} icon={IconUsers} pink />
@@ -114,21 +114,21 @@ function MetricCard({
   pink?: boolean;
 }) {
   return (
-    <article className="panel p-5">
-      <div className="flex items-start justify-between gap-3">
+    <article className="panel p-3 sm:p-5">
+      <div className="flex items-center justify-between gap-3 sm:items-start">
         <div className="min-w-0">
-          <p className="text-sm font-bold text-ink-soft">{label}</p>
-          <p className="text-safe mt-3 text-2xl font-black tracking-[-0.04em] text-ink sm:text-3xl">
+          <p className="text-xs font-bold text-ink-soft sm:text-sm">{label}</p>
+          <p className="text-safe mt-0.5 text-xl font-black tracking-[-0.04em] text-ink sm:mt-3 sm:text-3xl">
             {value}
           </p>
         </div>
         <span
           className={
-            "grid h-11 w-11 shrink-0 place-items-center rounded-full " +
+            "grid h-9 w-9 shrink-0 place-items-center rounded-full sm:h-11 sm:w-11 " +
             (pink ? "bg-pink-100 text-pink-600" : "bg-brand-50 text-brand-700")
           }
         >
-          <Icon className="h-5 w-5" />
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </span>
       </div>
     </article>

@@ -140,7 +140,7 @@ export default async function DashboardPage() {
     contacts === 0 && allDeals.length === 0 && openTasks.length === 0;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <header className="enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-[22px] font-black tracking-[-0.02em] text-ink sm:text-2xl">
@@ -187,8 +187,8 @@ export default async function DashboardPage() {
         ))}
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(23rem,0.72fr)]">
-        <div className="space-y-5">
+      <section className="grid gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(23rem,0.72fr)]">
+        <div className="space-y-4 sm:space-y-5">
           <RevenueChart
             openValue={openValue}
             wonValue={wonValue}
@@ -198,7 +198,7 @@ export default async function DashboardPage() {
           <DealsTable deals={openDeals} contactMap={contactMap} />
         </div>
 
-        <aside className="space-y-5">
+        <aside className="space-y-4 sm:space-y-5">
           <TaskQueue tasks={taskQueue} overdue={overdue} now={now} />
           <AgentPanel />
         </aside>
@@ -240,7 +240,7 @@ function MetricCard({
         };
 
   return (
-    <article className="enter relative min-h-[150px] overflow-hidden rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.75)] sm:p-5">
+    <article className="enter relative min-h-[132px] overflow-hidden rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.75)] sm:min-h-[150px] sm:p-5">
       <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold text-ink-soft sm:text-sm">{label}</p>
@@ -300,14 +300,14 @@ function RevenueChart({
   return (
     <section
       id="valor"
-      className="enter relative min-h-[382px] overflow-hidden rounded-lg border border-line bg-white p-5 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-6"
+      className="enter relative overflow-hidden rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:min-h-[382px] sm:p-6"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
+          <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
             Vendas em aberto (R$)
           </h2>
-          <p className="mt-1 text-sm font-medium text-ink-muted">
+          <p className="mt-1 text-xs font-medium text-ink-muted sm:text-sm">
             Total aberto: {formatBRL(openValue)} - recebido no mês:{" "}
             {formatBRL(wonValue)}
           </p>
@@ -320,7 +320,7 @@ function RevenueChart({
         </button>
       </div>
 
-      <div className="mt-5 h-[280px] overflow-hidden rounded-lg bg-[linear-gradient(180deg,#ffffff_0%,#fbf8ff_100%)]">
+      <div className="mt-4 h-[190px] overflow-hidden rounded-lg bg-[linear-gradient(180deg,#ffffff_0%,#fbf8ff_100%)] sm:mt-5 sm:h-[280px]">
         <svg
           viewBox="0 0 820 300"
           className="h-full w-full"
@@ -494,9 +494,9 @@ function DealsTable({
   const recent = deals.slice(0, 4);
 
   return (
-    <section className="enter rounded-lg border border-line bg-white p-5 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)]">
+    <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
+        <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
           Negócios recentes
         </h2>
         <Link
@@ -564,9 +564,9 @@ function TaskQueue({
   now: Date;
 }) {
   return (
-    <section className="enter rounded-lg border border-line bg-white p-5 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)]">
+    <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
+        <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
           Fila de tarefas
         </h2>
         <span className="rounded-md bg-surface-2 px-2.5 py-1 text-xs font-black text-ink-muted">

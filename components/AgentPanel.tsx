@@ -152,7 +152,7 @@ export function AgentPanel() {
   return (
     <section
       id="agente"
-      className="enter rounded-lg border border-line bg-white p-5 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)]"
+      className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5"
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -161,9 +161,9 @@ export function AgentPanel() {
             alt=""
             width={44}
             height={44}
-            className="h-10 w-10 shrink-0 object-contain"
+            className="h-9 w-9 shrink-0 object-contain sm:h-10 sm:w-10"
           />
-          <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
+          <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
             Agente IA
           </h2>
         </div>
