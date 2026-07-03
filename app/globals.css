@@ -326,6 +326,25 @@
   letter-spacing: -0.035em !important;
 }
 
+/* Celular: os tamanhos fluidos acima usam vw com um piso alto demais
+   para telas pequenas (ex.: 18vw trava no minimo ~70px abaixo de ~387px
+   de largura), o que quebra o titulo da hero em varias linhas apertadas.
+   Essas regras so valem abaixo do breakpoint sm do Tailwind (640px),
+   entao tablet/desktop continuam identicos. */
+@media (max-width: 639px) {
+  .landing-page .landing-hero-title {
+    font-size: clamp(2.1rem, 11vw, 4.5rem);
+  }
+
+  .landing-page h2 {
+    font-size: clamp(2.15rem, 9vw, 5.2rem);
+  }
+
+  .landing-page h3 {
+    font-size: clamp(1.5rem, 6vw, 2.7rem);
+  }
+}
+
 .landing-button,
 .landing-secondary,
 .motion-card,

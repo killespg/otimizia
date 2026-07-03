@@ -167,7 +167,7 @@ export default function Home() {
             </nav>
 
             <nav className="flex items-center gap-2">
-              <ThemeToggle compact />
+              <ThemeToggle compact className="hidden sm:inline-flex" />
               <Link
                 href="/login"
                 className="nav-item hidden min-h-11 items-center rounded-full px-4 text-sm font-black text-ink-soft hover:bg-surface-2 hover:text-ink sm:inline-flex"
@@ -251,7 +251,7 @@ export default function Home() {
       </section>
 
       {/* ===== Bento: recursos ===== */}
-      <section id="recursos" className="px-5 py-20 sm:px-8 lg:px-10 lg:py-28">
+      <section id="recursos" className="px-5 py-14 sm:px-8 sm:py-20 lg:px-10 lg:py-28">
         <div className="mx-auto max-w-6xl">
           <div className="max-w-2xl" data-reveal>
             <h2 className="text-[clamp(2.2rem,5vw,4rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
@@ -374,8 +374,8 @@ export default function Home() {
       </section>
 
       {/* ===== Como funciona ===== */}
-      <section id="como-funciona" className="px-5 pb-20 sm:px-8 lg:px-10 lg:pb-28">
-        <div className="mx-auto max-w-6xl rounded-2xl border border-line bg-white px-6 py-12 sm:px-10 lg:py-16">
+      <section id="como-funciona" className="px-5 pb-14 sm:px-8 sm:pb-20 lg:px-10 lg:pb-28">
+        <div className="mx-auto max-w-6xl rounded-2xl border border-line bg-white px-6 py-9 sm:px-10 sm:py-12 lg:py-16">
           <div className="max-w-2xl" data-reveal>
             <h2 className="text-[clamp(2rem,4.6vw,3.4rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
               Do primeiro oi à venda fechada.
@@ -421,7 +421,7 @@ export default function Home() {
       </section>
 
       {/* ===== Spotlight da IA ===== */}
-      <section className="px-5 pb-20 sm:px-8 lg:px-10 lg:pb-28">
+      <section className="px-5 pb-14 sm:px-8 sm:pb-20 lg:px-10 lg:pb-28">
         <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1fr_1fr]">
           <div data-reveal>
             <h2 className="text-[clamp(2rem,4.6vw,3.4rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
@@ -491,7 +491,7 @@ export default function Home() {
       </section>
 
       {/* ===== Casos de uso ===== */}
-      <section id="casos" className="px-5 pb-20 sm:px-8 lg:px-10 lg:pb-28">
+      <section id="casos" className="px-5 pb-14 sm:px-8 sm:pb-20 lg:px-10 lg:pb-28">
         <div className="mx-auto max-w-6xl">
           <div className="max-w-2xl" data-reveal>
             <p className="inline-flex w-max items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-brand-800">
@@ -528,7 +528,7 @@ export default function Home() {
       </section>
 
       {/* ===== FAQ ===== */}
-      <section id="perguntas" className="px-5 pb-20 sm:px-8 lg:px-10 lg:pb-28">
+      <section id="perguntas" className="px-5 pb-14 sm:px-8 sm:pb-20 lg:px-10 lg:pb-28">
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.7fr_1fr]">
           <div data-reveal>
             <h2 className="text-[clamp(2rem,4.6vw,3.4rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
@@ -544,7 +544,7 @@ export default function Home() {
       </section>
 
       {/* ===== CTA final ===== */}
-      <section className="px-5 pb-20 sm:px-8 lg:px-10">
+      <section className="px-5 pb-14 sm:px-8 sm:pb-20 lg:px-10">
         <div
           className="mx-auto grid max-w-6xl gap-5 rounded-2xl bg-[linear-gradient(135deg,#5c22e8,#0bbfe8)] p-2 shadow-[0_32px_90px_-48px_rgba(7,8,28,0.8)] lg:grid-cols-[1fr_auto]"
           data-reveal
@@ -729,7 +729,7 @@ function ProductPreview() {
 
         <div className="grid gap-4 p-4 lg:grid-cols-[1.08fr_0.92fr]">
           <div className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               <MiniMetric label="Valor aberto" value="R$ 252k" icon={IconWallet} />
               <MiniMetric label="Clientes" value="128" icon={IconPhone} pink />
               <MiniMetric label="Conversas" value="87" icon={IconMessage} pink />
@@ -888,7 +888,7 @@ function SiteFooter() {
   ];
 
   return (
-    <footer className="border-t border-line bg-white px-5 py-14 sm:px-8 lg:px-10">
+    <footer className="border-t border-line bg-white px-5 py-10 sm:px-8 sm:py-14 lg:px-10">
       <div className="mx-auto grid max-w-6xl gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <Image
