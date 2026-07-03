@@ -28,7 +28,7 @@ const NAV: NavItem[] = [
   { href: "/tasks", label: "Lembretes", icon: IconBell, mobile: true },
   { href: "/dashboard#valor", label: "Valor aberto", icon: IconWallet, passive: true },
   { href: "/tasks", label: "Clientes para chamar", icon: IconPhone, passive: true },
-  { href: "/dashboard#agente", label: "Agente IA", icon: IconBot, passive: true },
+  { href: "/dashboard#agente", label: "Sócio-Assistente", icon: IconBot, passive: true },
 ];
 
 function useActive() {
@@ -75,7 +75,7 @@ export function MobileTabBar() {
   const isActive = useActive();
   return (
     <nav
-      className="mobile-tabbar fixed inset-x-3 bottom-3 z-40 rounded-2xl border border-line bg-surface/95 px-2 pb-[calc(0.35rem+env(safe-area-inset-bottom))] pt-1.5 shadow-[0_22px_50px_-30px_rgba(7,8,28,0.75)] backdrop-blur-xl md:hidden"
+      className="mobile-tabbar fixed inset-x-3 bottom-3 z-40 rounded-2xl border border-line bg-surface/95 px-2 pb-[calc(0.35rem+env(safe-area-inset-bottom))] pt-1.5 shadow-[0_22px_50px_-30px_rgba(7,8,28,0.75)] backdrop-blur-xl sm:hidden"
       aria-label="Navegação principal"
     >
       <div className="mx-auto grid max-w-md grid-cols-4 gap-1">

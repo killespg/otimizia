@@ -1,18 +1,20 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { IconAlert, IconBell, IconBot, IconColumns } from "../(app)/icons";
+import { IconAlert, IconBell, IconBot, IconCheck, IconColumns } from "../(app)/icons";
 
 export function AuthShell({
   title,
   subtitle,
   error,
+  notice,
   children,
   footer,
 }: {
   title: string;
   subtitle: string;
   error?: string;
+  notice?: string;
   children: React.ReactNode;
   footer: React.ReactNode;
 }) {
@@ -57,7 +59,7 @@ export function AuthShell({
           <div className="mt-12 grid max-w-xl gap-3">
             <PreviewItem icon={IconBell} title="Fila do dia" body="Quem precisa de resposta aparece primeiro." />
             <PreviewItem icon={IconColumns} title="Vendas abertas" body="Etapas claras para cada negócio." />
-            <PreviewItem icon={IconBot} title="Agente IA" body="Ajuda para resumir e decidir o próximo passo." />
+            <PreviewItem icon={IconBot} title="Sócio-Assistente" body="Ajuda para resumir e decidir o próximo passo." />
           </div>
         </section>
 
@@ -100,6 +102,12 @@ export function AuthShell({
                   <div className="mb-5 flex items-start gap-2 rounded-md border border-danger-200 bg-danger-50 px-3.5 py-3 text-sm font-bold text-danger-700">
                     <IconAlert className="mt-0.5 h-4 w-4 shrink-0" />
                     <span className="min-w-0 text-safe">{error}</span>
+                  </div>
+                )}
+                {notice && (
+                  <div className="mb-5 flex items-start gap-2 rounded-md border border-success-200 bg-success-50 px-3.5 py-3 text-sm font-bold text-success-700">
+                    <IconCheck className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span className="min-w-0 text-safe">{notice}</span>
                   </div>
                 )}
 

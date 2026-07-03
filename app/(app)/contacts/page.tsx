@@ -31,12 +31,12 @@ export default async function ContactsPage() {
           <h1 className="mt-2 text-[clamp(1.55rem,6vw,3.2rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
             Seus clientes
           </h1>
-          <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-ink-soft">
+          <p className="mt-2 hidden max-w-xl text-sm font-medium leading-relaxed text-ink-soft sm:block">
             Salve clientes, empresas e detalhes para não perder o próximo contato.
           </p>
         </div>
 
-        <label className="flex h-11 w-full items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] lg:w-[360px]">
+        <label className="hidden h-11 w-full items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:flex lg:w-[360px]">
           <IconSearch className="h-5 w-5 shrink-0 text-ink-muted" />
           <span className="sr-only">Buscar contatos</span>
           <input

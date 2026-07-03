@@ -164,7 +164,7 @@ export function AgentPanel() {
             className="h-9 w-9 shrink-0 object-contain sm:h-10 sm:w-10"
           />
           <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
-            Agente IA
+            Sócio-Assistente
           </h2>
         </div>
         <span className="rounded-md bg-success-50 px-2 py-1 text-xs font-black text-success-700">
@@ -243,7 +243,7 @@ export function AgentPanel() {
                 ? "Ao vivo. Pode falar."
                 : voiceStatus === "connecting"
                   ? "Conectando microfone..."
-                  : voiceError ?? "Converse por audio com o agente."}
+                  : voiceError ?? "Converse por audio com o Sócio-Assistente."}
             </p>
           </div>
           {voiceStatus === "live" || voiceStatus === "connecting" ? (

@@ -35,16 +35,16 @@ export function AssistantChat() {
     <>
       {open && (
         <div
-          className="assistant-sheet fixed inset-x-3 bottom-[calc(6.6rem+env(safe-area-inset-bottom))] z-50 flex max-h-[min(620px,calc(100dvh-8rem))] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-[0_24px_70px_-30px_rgba(7,8,28,0.55)] md:inset-x-auto md:bottom-24 md:right-6 md:w-[400px]"
+          className="assistant-sheet fixed inset-x-3 bottom-[calc(6.6rem+env(safe-area-inset-bottom))] z-50 flex max-h-[min(620px,calc(100dvh-8rem))] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-[0_24px_70px_-30px_rgba(7,8,28,0.55)] sm:inset-x-auto sm:bottom-24 sm:right-6 sm:w-[400px]"
           role="dialog"
-          aria-label="Assistente OtimizIA"
+          aria-label="Sócio-Assistente"
         >
           <div className="flex items-center gap-3 border-b border-line bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_60%,#0bbfe8_100%)] px-4 py-3 text-white">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
               <IconBot className="h-5 w-5" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold leading-tight">Assistente OtimizIA</p>
+              <p className="text-sm font-bold leading-tight">Sócio-Assistente</p>
               <p className="text-xs text-white/75">
                 Cria contatos, move vendas, agenda lembretes e responde sobre seu negócio.
               </p>
@@ -53,7 +53,7 @@ export function AssistantChat() {
               type="button"
               onClick={() => setOpen(false)}
               className="rounded-md px-2 py-1 text-lg leading-none text-white/80 hover:bg-white/15 hover:text-white focus-visible:ring-2 focus-visible:ring-white"
-              aria-label="Fechar assistente"
+              aria-label="Fechar Sócio-Assistente"
             >
               ×
             </button>
@@ -136,8 +136,8 @@ export function AssistantChat() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="assistant-fab fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_60%,#0bbfe8_100%)] text-white shadow-[0_16px_40px_-14px_rgba(92,34,232,0.9)] transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-brand-600 md:bottom-6 md:right-6"
-        aria-label={open ? "Fechar assistente" : "Abrir assistente OtimizIA"}
+        className="assistant-fab fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_60%,#0bbfe8_100%)] text-white shadow-[0_16px_40px_-14px_rgba(92,34,232,0.9)] transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-brand-600 sm:bottom-6 sm:right-6"
+        aria-label={open ? "Fechar Sócio-Assistente" : "Abrir Sócio-Assistente"}
       >
         <IconBot className="h-6 w-6" />
       </button>

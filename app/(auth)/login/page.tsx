@@ -6,13 +6,14 @@ import { AuthShell, AuthField } from "../AuthShell";
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: { error?: string };
+  searchParams: { error?: string; message?: string };
 }) {
   return (
     <AuthShell
       title="Entrar"
       subtitle="Entre e veja quem você precisa chamar hoje."
       error={searchParams.error}
+      notice={searchParams.message}
       footer={
         <>
           Não tem conta?{" "}

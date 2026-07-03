@@ -31,7 +31,7 @@ export default async function PipelinePage() {
           <h1 className="mt-2 text-[clamp(1.55rem,6vw,3.2rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
             Negócios em andamento
           </h1>
-          <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-ink-soft">
+          <p className="mt-2 hidden max-w-xl text-sm font-medium leading-relaxed text-ink-soft sm:block">
             Mova cada venda por etapa e mantenha o próximo passo visível.
           </p>
         </div>
@@ -124,7 +124,7 @@ function MetricCard({
         </div>
         <span
           className={
-            "grid h-9 w-9 shrink-0 place-items-center rounded-full sm:h-11 sm:w-11 " +
+            "hidden h-9 w-9 shrink-0 place-items-center rounded-full sm:grid sm:h-11 sm:w-11 " +
             (pink ? "bg-pink-100 text-pink-600" : "bg-brand-50 text-brand-700")
           }
         >

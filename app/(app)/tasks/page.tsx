@@ -56,7 +56,7 @@ export default async function TasksPage() {
           <h1 className="mt-2 text-[clamp(1.55rem,6vw,3.2rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
             Clientes para chamar
           </h1>
-          <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-ink-soft">
+          <p className="mt-2 hidden max-w-xl text-sm font-medium leading-relaxed text-ink-soft sm:block">
             Escolha dia e hora. O que atrasar sobe para o topo da fila.
           </p>
         </div>

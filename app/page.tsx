@@ -26,9 +26,9 @@ const previewTasks = [
 ];
 
 const proofItems = [
-  ["01", "fila clara", "clientes importantes primeiro"],
-  ["02", "venda visível", "valor e etapa sem procurar"],
-  ["03", "IA pronta", "sugestão quando bater dúvida"],
+  ["01", "Fila clara", "clientes importantes primeiro"],
+  ["02", "Venda visível", "valor e etapa sem procurar"],
+  ["03", "Sócio-Assistente", "sugestão quando bater dúvida"],
 ];
 
 const navLinks = [
@@ -62,7 +62,7 @@ const steps = [
   {
     n: "03",
     title: "Aja na hora certa",
-    body: "O lembrete avisa e a IA sugere o próximo passo.",
+    body: "O lembrete avisa e o sócio-assistente sugere o próximo passo.",
     icon: IconClock,
   },
 ];
@@ -90,7 +90,7 @@ const useCases = [
     name: "Freelancer",
     role: "Várias conversas",
     quote:
-      "Use a IA para resumir o dia, escolher o próximo passo e não deixar oportunidade esfriar.",
+      "Use o sócio-assistente para resumir o dia, escolher o próximo passo e não deixar oportunidade esfriar.",
   },
 ];
 
@@ -108,7 +108,7 @@ const faqs = [
     a: "Cada conta enxerga só os próprios contatos e vendas. Nada é compartilhado com outras pessoas.",
   },
   {
-    q: "O que a IA faz, na prática?",
+    q: "O que o Sócio-Assistente faz, na prática?",
     a: "Resume o seu dia, aponta quem contatar primeiro e sugere o próximo passo de cada venda.",
   },
   {
@@ -122,7 +122,7 @@ export default function Home() {
     <main className="landing-page min-h-[100dvh] overflow-hidden bg-[#f8fbff] text-ink">
       {/* ===== Hero ===== */}
       <section className="bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_45%,#0bbfe8_100%)] p-2 sm:p-5 md:p-6">
-        <div className="intro-shell relative mx-auto min-h-[calc(100dvh-1rem)] max-w-[1580px] overflow-hidden rounded-2xl bg-white shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] md:min-h-[calc(100dvh-3rem)]">
+        <div className="intro-shell relative mx-auto min-h-0 max-w-[1580px] overflow-hidden rounded-2xl bg-white shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] sm:min-h-[calc(100dvh-1rem)] md:min-h-[calc(100dvh-3rem)]">
           <div
             className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(123,63,242,0.10)_0%,rgba(255,255,255,0)_35%,rgba(11,191,232,0.11)_100%)]"
             aria-hidden="true"
@@ -132,7 +132,7 @@ export default function Home() {
             aria-hidden="true"
           />
 
-          <header className="relative z-10 flex items-center justify-between gap-4 px-5 py-4 sm:px-8 lg:px-10">
+          <header className="relative z-10 flex items-center justify-between gap-3 px-4 py-2.5 sm:gap-4 sm:px-8 sm:py-4 lg:px-10">
             <Link href="/" className="nav-item rounded-md">
               <Image
                 src="/otimizia-logo.png"
@@ -141,7 +141,7 @@ export default function Home() {
                 height={58}
                 priority
                 sizes="196px"
-                className="h-9 w-auto dark:hidden sm:h-10"
+                className="h-8 w-auto dark:hidden sm:h-10"
               />
               <Image
                 src="/otimizia-logo-dark.png"
@@ -150,7 +150,7 @@ export default function Home() {
                 height={58}
                 priority
                 sizes="205px"
-                className="hidden h-9 w-auto dark:block sm:h-10"
+                className="hidden h-8 w-auto dark:block sm:h-10"
               />
             </Link>
 
@@ -180,41 +180,36 @@ export default function Home() {
             </nav>
           </header>
 
-          <div className="relative z-10 grid min-w-0 gap-10 px-5 pb-10 pt-6 sm:px-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-center lg:px-10 lg:pb-12 lg:pt-8">
+          <div className="relative z-10 grid min-w-0 gap-10 px-5 pb-5 pt-3 sm:px-8 sm:pb-10 sm:pt-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-center lg:px-10 lg:pb-12 lg:pt-8">
             <div className="intro-stagger min-w-0 max-w-2xl">
-              <p className="inline-flex w-max items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-brand-800">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand-700" />
-                CRM simples com IA
-              </p>
-
-              <h1 className="landing-hero-title mt-6 max-w-full text-[clamp(4.35rem,18vw,9rem)] font-light leading-[0.76] tracking-[-0.04em] text-ink">
+              <h1 className="landing-hero-title max-w-full text-[clamp(4.35rem,18vw,9rem)] font-light leading-[0.78] tracking-[-0.04em] text-ink">
                 <span className="block">Venda sem{" "}</span>
                 <span className="block">perder o fio.</span>
               </h1>
 
-              <p className="mt-6 max-w-full text-lg font-medium leading-relaxed text-ink-soft sm:max-w-xl sm:text-xl">
-                O OtimizIA junta contatos, vendas e lembretes em uma tela bonita.
-                Você entra, vê a prioridade e age sem ficar cavando conversa antiga.
+              <p className="mt-4 max-w-full text-sm font-medium leading-relaxed text-ink-soft sm:mt-6 sm:max-w-xl sm:text-xl">
+                O OtimizIA junta contatos, vendas e lembretes em uma tela simples.
+                Você vê a prioridade e age sem cavar conversa antiga.
               </p>
 
-              <div className="hero-actions flex w-full flex-col gap-3 pt-2 sm:flex-row">
+              <div className="hero-actions flex w-full flex-col gap-2 pt-1 sm:flex-row sm:gap-3 sm:pt-2">
                 <LandingButton href="/signup">Começar grátis</LandingButton>
                 <Link
                   href="/login"
-                  className="landing-secondary nav-item inline-flex min-h-14 w-full items-center justify-center rounded-full border border-line bg-white px-6 text-base font-black text-ink-soft shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] hover:border-brand-200 hover:bg-brand-50 hover:text-brand-800 sm:w-auto"
+                  className="landing-secondary nav-item inline-flex min-h-8 w-full items-center justify-center rounded-full px-3 text-sm font-black text-brand-700 hover:text-brand-900 sm:min-h-14 sm:w-auto sm:border sm:border-line sm:bg-white sm:px-6 sm:text-base sm:text-ink-soft sm:shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] sm:hover:border-brand-200 sm:hover:bg-brand-50 sm:hover:text-brand-800"
                 >
                   Entrar no painel
                 </Link>
               </div>
 
-              <div className="hero-proof grid gap-2 pt-3 sm:grid-cols-3">
+              <div className="hero-proof hidden grid-cols-3 gap-2 pt-3 sm:grid">
                 {proofItems.map(([number, title, body]) => (
                   <article
                     key={title}
-                    className="motion-card rounded-lg border border-line bg-white/80 p-3 shadow-[0_12px_34px_-30px_rgba(21,19,46,0.72)]"
+                    className="motion-card rounded-lg border border-line bg-white/80 p-2 shadow-[0_12px_34px_-30px_rgba(21,19,46,0.72)] sm:p-3"
                   >
                     <p className="text-xs font-black text-brand-700">{number}</p>
-                    <p className="mt-2 text-sm font-black text-ink">{title}</p>
+                    <p className="mt-1.5 text-xs font-black leading-tight text-ink sm:mt-2 sm:text-sm">{title}</p>
                     <p className="mt-1 text-xs font-bold leading-snug text-ink-muted">
                       {body}
                     </p>
@@ -223,7 +218,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="hero-layer min-w-0" style={{ "--d": "190ms" } as CSSProperties}>
+            <div className="hero-layer hidden min-w-0 sm:block" style={{ "--d": "190ms" } as CSSProperties}>
               <ProductPreview />
             </div>
           </div>
@@ -233,7 +228,7 @@ export default function Home() {
       {/* ===== Marquee: o que ele tira do seu caminho ===== */}
       <section
         aria-label="O que o OtimizIA tira do seu caminho"
-        className="marquee overflow-hidden border-y border-line bg-white py-4 [mask-image:linear-gradient(90deg,transparent,#000_7%,#000_93%,transparent)]"
+        className="marquee hidden overflow-hidden border-y border-line bg-white py-4 [mask-image:linear-gradient(90deg,transparent,#000_7%,#000_93%,transparent)] sm:block"
       >
         <div className="marquee-track flex items-center gap-4">
           {[...marqueeItems, ...marqueeItems].map((item, index) => (
@@ -251,31 +246,31 @@ export default function Home() {
       </section>
 
       {/* ===== Bento: recursos ===== */}
-      <section id="recursos" className="px-5 py-14 sm:px-8 sm:py-20 lg:px-10 lg:py-28">
-        <div className="mx-auto max-w-6xl">
+      <section id="recursos" className="px-5 py-8 sm:px-8 sm:py-20 lg:px-10 lg:py-28">
+        <div className="mx-auto max-w-[1500px]">
           <div className="max-w-2xl" data-reveal>
             <h2 className="text-[clamp(2.2rem,5vw,4rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
-              Tudo o que você precisa numa tela só.
+              Tudo o que você precisa na palma da sua mão.
             </h2>
-            <p className="mt-4 text-lg font-medium leading-relaxed text-ink-soft">
-              Contatos, vendas, lembretes e a IA no mesmo lugar. Sem pular entre
+            <p className="mt-2 text-sm font-medium leading-relaxed text-ink-soft sm:mt-4 sm:text-lg">
+              Contatos, vendas, lembretes e o seu Sócio-Assistente no mesmo lugar. Sem pular entre
               cinco apps para fechar um negócio.
             </p>
           </div>
 
-          <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-6">
+          <div className="mt-5 grid grid-cols-2 gap-2.5 sm:mt-10 sm:gap-4 md:grid-cols-6">
             {/* Pipeline (largo) */}
             <article
-              className="lift motion-card group flex flex-col overflow-hidden rounded-2xl border border-line bg-white p-6 md:col-span-4"
+              className="lift motion-card group col-span-2 flex flex-col overflow-hidden rounded-lg border border-line bg-white p-3.5 sm:rounded-2xl sm:p-6 md:col-span-4"
               data-reveal
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <BentoIcon icon={IconColumns} />
-                  <h3 className="mt-5 text-xl font-black tracking-[-0.02em] text-ink">
+                  <h3 className="mt-2 text-base font-black tracking-[-0.02em] text-ink sm:mt-5 sm:text-xl">
                     Vendas em etapas visuais
                   </h3>
-                  <p className="mt-2 max-w-md text-sm font-medium leading-relaxed text-ink-soft">
+                  <p className="mt-1 max-w-md text-sm font-medium leading-snug text-ink-soft sm:mt-2 sm:leading-relaxed">
                     Arraste cada negócio de novo até ganho. O valor em aberto se
                     atualiza sozinho.
                   </p>
@@ -284,84 +279,84 @@ export default function Home() {
               <KanbanMini />
             </article>
 
-            {/* Agente IA (alto, gradiente) */}
+            {/* Sócio-Assistente (alto, gradiente) */}
             <article
-              className="lift motion-card relative flex flex-col justify-between overflow-hidden rounded-2xl border border-brand-700 bg-[linear-gradient(160deg,#5f18c4_0%,#7424e8_55%,#0bbfe8_140%)] p-6 text-white md:col-span-2 md:row-span-2"
+              className="lift motion-card relative col-span-2 flex flex-col justify-between overflow-hidden rounded-lg border border-brand-700 bg-[linear-gradient(160deg,#5f18c4_0%,#7424e8_55%,#0bbfe8_140%)] p-3.5 text-white sm:rounded-2xl sm:p-6 md:col-span-2 md:row-span-2"
               data-reveal
               style={{ "--reveal-delay": "70ms" } as CSSProperties}
             >
               <div
-                className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/15 blur-2xl"
+                className="pointer-events-none !absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/15 blur-2xl"
                 aria-hidden="true"
               />
               <div className="relative">
                 <span className="grid h-11 w-11 place-items-center rounded-full bg-white/15 text-white">
                   <IconBot className="h-5 w-5" />
                 </span>
-                <h3 className="mt-5 text-2xl font-black tracking-[-0.02em]">
-                  Agente IA no fluxo
+                <h3 className="mt-2 text-lg font-black tracking-[-0.02em] sm:mt-5 sm:text-2xl">
+                  Sócio-Assistente no fluxo
                 </h3>
-                <p className="mt-2 text-sm font-semibold leading-relaxed text-white/85">
+                <p className="mt-1 text-sm font-semibold leading-snug text-white/85 sm:mt-2 sm:leading-relaxed">
                   Resume o dia, aponta quem chamar primeiro e sugere o próximo
                   passo de cada venda.
                 </p>
               </div>
-              <div className="relative mt-6 flex flex-wrap gap-2">
+              <div className="relative mt-3 hidden flex-wrap gap-2 sm:mt-6 sm:flex">
                 <span className="rounded-full bg-white/15 px-3 py-1.5 text-xs font-black">
-                  resumir meu dia
+                  Resumir meu dia
                 </span>
                 <span className="rounded-full bg-white/15 px-3 py-1.5 text-xs font-black">
-                  quem chamar agora
+                  Quem chamar agora
                 </span>
               </div>
             </article>
 
             {/* Lembretes */}
             <article
-              className="lift motion-card flex flex-col rounded-2xl border border-line bg-white p-6 md:col-span-2"
+              className="lift motion-card flex flex-col rounded-lg border border-line bg-white p-3.5 sm:rounded-2xl sm:p-6 md:col-span-2"
               data-reveal
               style={{ "--reveal-delay": "40ms" } as CSSProperties}
             >
               <BentoIcon icon={IconBell} pink />
-              <h3 className="mt-5 text-lg font-black tracking-[-0.02em] text-ink">
+              <h3 className="mt-2 text-base font-black tracking-[-0.02em] text-ink sm:mt-5 sm:text-lg">
                 Lembretes na hora certa
               </h3>
-              <p className="mt-2 text-sm font-medium leading-relaxed text-ink-soft">
+              <p className="mt-1 hidden text-sm font-medium leading-snug text-ink-soft sm:mt-2 sm:block sm:leading-relaxed">
                 O que atrasa sobe para o topo da fila.
               </p>
             </article>
 
             {/* Contatos */}
             <article
-              className="lift motion-card flex flex-col rounded-2xl border border-line bg-white p-6 md:col-span-2"
+              className="lift motion-card flex flex-col rounded-lg border border-line bg-white p-3.5 sm:rounded-2xl sm:p-6 md:col-span-2"
               data-reveal
               style={{ "--reveal-delay": "110ms" } as CSSProperties}
             >
               <BentoIcon icon={IconUsers} />
-              <h3 className="mt-5 text-lg font-black tracking-[-0.02em] text-ink">
+              <h3 className="mt-2 text-base font-black tracking-[-0.02em] text-ink sm:mt-5 sm:text-lg">
                 Contatos sem bagunça
               </h3>
-              <p className="mt-2 text-sm font-medium leading-relaxed text-ink-soft">
+              <p className="mt-1 hidden text-sm font-medium leading-snug text-ink-soft sm:mt-2 sm:block sm:leading-relaxed">
                 Nome, WhatsApp e histórico juntos.
               </p>
             </article>
 
             {/* Números (full) */}
             <article
-              className="lift motion-card grid grid-cols-1 gap-6 overflow-hidden rounded-2xl border border-line bg-white p-6 md:col-span-6 md:grid-cols-[1fr_1.1fr] md:items-center"
+              className="lift motion-card col-span-2 grid grid-cols-1 gap-3 overflow-hidden rounded-lg border border-line bg-white p-3.5 sm:gap-6 sm:rounded-2xl sm:p-6 md:col-span-6 md:grid-cols-[1fr_1.1fr] md:items-center"
               data-reveal
             >
               <div>
                 <BentoIcon icon={IconWallet} />
-                <h3 className="mt-5 text-xl font-black tracking-[-0.02em] text-ink">
+                <h3 className="mt-2 text-base font-black tracking-[-0.02em] text-ink sm:mt-5 sm:text-xl">
                   Seus números, claros
                 </h3>
-                <p className="mt-2 max-w-md text-sm font-medium leading-relaxed text-ink-soft">
+                <p className="mt-1 max-w-md text-sm font-medium leading-snug text-ink-soft sm:mt-2 sm:leading-relaxed">
                   Valor em aberto, ganho no mês e conversas do dia. Tudo somado
                   para você, sem abrir planilha.
                 </p>
               </div>
-              <div className="rounded-lg border border-line bg-[linear-gradient(180deg,#ffffff,#fbf8ff)] p-4">
+              <div className="hidden rounded-lg border border-line bg-[linear-gradient(180deg,#ffffff,#fbf8ff)] p-4 sm:block">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-black text-ink">Vendas em aberto</p>
                   <span className="text-xs font-black text-brand-700">Este mês</span>
@@ -374,18 +369,18 @@ export default function Home() {
       </section>
 
       {/* ===== Como funciona ===== */}
-      <section id="como-funciona" className="px-5 pb-14 sm:px-8 sm:pb-20 lg:px-10 lg:pb-28">
-        <div className="mx-auto max-w-6xl rounded-2xl border border-line bg-white px-6 py-9 sm:px-10 sm:py-12 lg:py-16">
+      <section id="como-funciona" className="px-5 pb-8 sm:px-8 sm:pb-20 lg:px-10 lg:pb-28">
+        <div className="mx-auto max-w-[1500px] rounded-lg border border-line bg-white px-4 py-5 sm:rounded-2xl sm:px-10 sm:py-12 lg:py-16">
           <div className="max-w-2xl" data-reveal>
             <h2 className="text-[clamp(2rem,4.6vw,3.4rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
               Do primeiro oi à venda fechada.
             </h2>
-            <p className="mt-4 text-lg font-medium leading-relaxed text-ink-soft">
+            <p className="mt-2 text-sm font-medium leading-relaxed text-ink-soft sm:mt-4 sm:text-lg">
               Três passos e o painel já trabalha por você.
             </p>
           </div>
 
-          <ol className="relative mt-12 grid gap-8 md:grid-cols-3">
+          <ol className="relative mt-5 grid gap-4 sm:mt-12 sm:gap-8 md:grid-cols-3">
             <div
               className="pointer-events-none absolute left-0 right-0 top-6 hidden h-px bg-gradient-to-r from-brand-200 via-line to-transparent md:block"
               aria-hidden="true"
@@ -400,17 +395,17 @@ export default function Home() {
                   style={{ "--reveal-delay": `${index * 90}ms` } as CSSProperties}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-brand-200 bg-brand-50 font-mono text-sm font-black text-brand-700">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-brand-200 bg-brand-50 font-mono text-xs font-black text-brand-700 sm:h-12 sm:w-12 sm:text-sm">
                       {step.n}
                     </span>
-                    <span className="grid h-10 w-10 place-items-center rounded-full bg-surface-2 text-brand-700 md:hidden">
+                    <span className="hidden h-10 w-10 place-items-center rounded-full bg-surface-2 text-brand-700 sm:grid md:hidden">
                       <Icon className="h-5 w-5" />
                     </span>
                   </div>
-                  <h3 className="mt-5 text-xl font-black tracking-[-0.02em] text-ink">
+                  <h3 className="mt-2 text-base font-black tracking-[-0.02em] text-ink sm:mt-5 sm:text-xl">
                     {step.title}
                   </h3>
-                  <p className="mt-2 max-w-xs text-sm font-medium leading-relaxed text-ink-soft">
+                  <p className="mt-1 hidden max-w-xs text-sm font-medium leading-snug text-ink-soft sm:mt-2 sm:block sm:leading-relaxed">
                     {step.body}
                   </p>
                 </li>
@@ -421,17 +416,17 @@ export default function Home() {
       </section>
 
       {/* ===== Spotlight da IA ===== */}
-      <section className="px-5 pb-14 sm:px-8 sm:pb-20 lg:px-10 lg:pb-28">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1fr_1fr]">
+      <section className="px-5 pb-8 sm:px-8 sm:pb-20 lg:px-10 lg:pb-28">
+        <div className="mx-auto grid max-w-[1500px] items-center gap-5 sm:gap-10 lg:grid-cols-[1fr_1fr]">
           <div data-reveal>
             <h2 className="text-[clamp(2rem,4.6vw,3.4rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
-              A IA que trabalha junto com você.
+              O Sócio-Assistente trabalha junto com você, disponível 24h por dia.
             </h2>
-            <p className="mt-4 max-w-lg text-lg font-medium leading-relaxed text-ink-soft">
-              Não é mais um chat solto. Ela entende o seu funil e te empurra para
+            <p className="mt-2 max-w-lg text-sm font-medium leading-relaxed text-ink-soft sm:mt-4 sm:text-lg">
+              Não é mais um chat solto. Ele entende sua empresa e te empurra para
               a próxima ação certa.
             </p>
-            <ul className="mt-8 space-y-3">
+            <ul className="mt-5 hidden space-y-3 sm:mt-8 sm:block">
               {agentDoes.map((item) => (
                 <li key={item} className="flex items-center gap-3">
                   <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-success-50 text-success-700">
@@ -441,13 +436,13 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <div className="mt-9">
-              <LandingButton href="/signup">Ver a IA em ação</LandingButton>
+            <div className="mt-5 sm:mt-9">
+              <LandingButton href="/signup">Ver o sócio-assistente em ação</LandingButton>
             </div>
           </div>
 
           <div
-            className="relative overflow-hidden rounded-2xl border border-line bg-[linear-gradient(160deg,#f5f0ff,#ffffff_60%)] p-6 sm:p-8"
+            className="relative hidden overflow-hidden rounded-2xl border border-line bg-[linear-gradient(160deg,#f5f0ff,#ffffff_60%)] p-6 sm:block sm:p-8"
             data-reveal
             style={{ "--reveal-delay": "80ms" } as CSSProperties}
           >
@@ -460,8 +455,8 @@ export default function Home() {
                 className="h-10 w-10"
               />
               <div>
-                <p className="text-sm font-black text-ink">Agente OtimizIA</p>
-                <p className="text-xs font-bold text-success-700">pronto para ajudar</p>
+                <p className="text-sm font-black text-ink">Sócio-Assistente</p>
+                <p className="text-xs font-bold text-success-700">Pronto para ajudar</p>
               </div>
             </div>
 
@@ -491,8 +486,8 @@ export default function Home() {
       </section>
 
       {/* ===== Casos de uso ===== */}
-      <section id="casos" className="px-5 pb-14 sm:px-8 sm:pb-20 lg:px-10 lg:pb-28">
-        <div className="mx-auto max-w-6xl">
+      <section id="casos" className="hidden px-5 pb-14 sm:block sm:px-8 sm:pb-20 lg:px-10 lg:pb-28">
+        <div className="mx-auto max-w-[1500px]">
           <div className="max-w-2xl" data-reveal>
             <p className="inline-flex w-max items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-brand-800">
               <span className="h-1.5 w-1.5 rounded-full bg-brand-700" />
@@ -528,13 +523,13 @@ export default function Home() {
       </section>
 
       {/* ===== FAQ ===== */}
-      <section id="perguntas" className="px-5 pb-14 sm:px-8 sm:pb-20 lg:px-10 lg:pb-28">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.7fr_1fr]">
+      <section id="perguntas" className="px-5 pb-8 sm:px-8 sm:pb-20 lg:px-10 lg:pb-28">
+        <div className="mx-auto grid max-w-[1500px] gap-5 sm:gap-10 lg:grid-cols-[0.7fr_1fr]">
           <div data-reveal>
             <h2 className="text-[clamp(2rem,4.6vw,3.4rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
               Perguntas frequentes.
             </h2>
-            <p className="mt-4 max-w-sm text-lg font-medium leading-relaxed text-ink-soft">
+            <p className="mt-2 max-w-sm text-sm font-medium leading-relaxed text-ink-soft sm:mt-4 sm:text-lg">
               O básico antes de você criar a conta.
             </p>
           </div>
@@ -544,22 +539,22 @@ export default function Home() {
       </section>
 
       {/* ===== CTA final ===== */}
-      <section className="px-5 pb-14 sm:px-8 sm:pb-20 lg:px-10">
+      <section className="px-5 pb-8 sm:px-8 sm:pb-20 lg:px-10">
         <div
-          className="mx-auto grid max-w-6xl gap-5 rounded-2xl bg-[linear-gradient(135deg,#5c22e8,#0bbfe8)] p-2 shadow-[0_32px_90px_-48px_rgba(7,8,28,0.8)] lg:grid-cols-[1fr_auto]"
+          className="mx-auto grid max-w-[1500px] gap-2 rounded-lg bg-[linear-gradient(135deg,#5c22e8,#0bbfe8)] p-1.5 shadow-[0_32px_90px_-48px_rgba(7,8,28,0.8)] sm:gap-5 sm:rounded-2xl sm:p-2 lg:grid-cols-[1fr_auto]"
           data-reveal
         >
-          <div className="rounded-xl bg-white p-6 sm:p-8">
+          <div className="rounded-lg bg-white p-4 sm:rounded-xl sm:p-8">
             <p className="text-sm font-black text-brand-700">Comece hoje</p>
             <h2 className="mt-3 max-w-3xl text-[clamp(2rem,5vw,4.2rem)] font-black leading-[0.96] tracking-[-0.04em] text-ink">
               Abra o painel e organize a primeira venda.
             </h2>
-            <p className="mt-4 max-w-xl text-base font-medium leading-relaxed text-ink-soft">
+            <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-ink-soft sm:mt-4 sm:text-base">
               Cadastre um contato, crie uma venda e deixe o próximo lembrete pronto.
               Leva menos de dois minutos.
             </p>
           </div>
-          <div className="flex items-center rounded-xl bg-white/12 p-6 text-white sm:p-8">
+          <div className="flex items-center rounded-lg bg-white/12 p-4 text-white sm:rounded-xl sm:p-8">
             <LandingButton href="/signup" inverted>
               Criar conta grátis
             </LandingButton>
@@ -590,7 +585,7 @@ function LandingButton({
         "landing-button nav-item group inline-flex items-center justify-center rounded-full font-black shadow-[0_18px_34px_-20px_rgba(92,34,232,0.86)] active:scale-[0.97] whitespace-nowrap " +
         (compact
           ? "min-h-11 gap-2 px-4 text-sm"
-          : "min-h-14 w-full gap-3 px-6 text-base sm:w-auto") +
+          : "min-h-12 w-full gap-3 px-6 text-sm sm:min-h-14 sm:w-auto sm:text-base") +
         " " +
         (inverted
           ? "bg-white text-brand-800 hover:bg-brand-50"
@@ -616,11 +611,11 @@ function BentoIcon({ icon: Icon, pink = false }: { icon: (p: IconProps) => JSX.E
   return (
     <span
       className={
-        "grid h-11 w-11 place-items-center rounded-full " +
+        "grid h-9 w-9 place-items-center rounded-full sm:h-11 sm:w-11 " +
         (pink ? "bg-pink-100 text-pink-600" : "bg-brand-50 text-brand-700")
       }
     >
-      <Icon className="h-5 w-5" />
+      <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
     </span>
   );
 }
@@ -632,7 +627,7 @@ function KanbanMini() {
     { label: "Ganho", tone: "bg-success-500", cards: 1 },
   ];
   return (
-    <div className="mt-6 grid grid-cols-3 gap-2.5" aria-hidden="true">
+    <div className="mt-6 hidden grid-cols-3 gap-2.5 sm:grid" aria-hidden="true">
       {columns.map((col) => (
         <div key={col.label} className="rounded-lg border border-line bg-[#f8fbff] p-2.5">
           <div className="flex items-center gap-1.5">
@@ -722,7 +717,7 @@ function ProductPreview() {
               Online
             </span>
             <span className="hidden rounded-full bg-brand-700 px-3 py-1 text-xs font-black text-white sm:inline-flex">
-              IA ativa
+              Sócio ativo
             </span>
           </div>
         </div>
@@ -817,8 +812,8 @@ function ProductPreview() {
                   className="h-8 w-8"
                 />
                 <div>
-                  <p className="text-sm font-black text-ink">Agente IA</p>
-                  <p className="text-xs font-bold text-success-700">pronto para ajudar</p>
+                  <p className="text-sm font-black text-ink">Sócio-Assistente</p>
+                  <p className="text-xs font-bold text-success-700">Pronto para ajudar</p>
                 </div>
               </div>
               <p className="mt-3 text-sm font-medium leading-relaxed text-ink-soft">
@@ -829,7 +824,7 @@ function ProductPreview() {
                   resumir dia
                 </span>
                 <span className="rounded-lg bg-pink-50 px-3 py-2 text-xs font-black text-pink-700">
-                  próximos passos
+                  Próximos passos
                 </span>
               </div>
             </div>
@@ -880,7 +875,7 @@ function SiteFooter() {
     {
       title: "No painel",
       links: [
-        ["Como funciona", "#como-funciona"],
+        ["Como funciona?", "#como-funciona"],
         ["Casos de uso", "#casos"],
         ["Perguntas", "#perguntas"],
       ],
@@ -888,8 +883,8 @@ function SiteFooter() {
   ];
 
   return (
-    <footer className="border-t border-line bg-white px-5 py-10 sm:px-8 sm:py-14 lg:px-10">
-      <div className="mx-auto grid max-w-6xl gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
+    <footer className="border-t border-line bg-white px-5 py-6 sm:px-8 sm:py-14 lg:px-10">
+      <div className="mx-auto grid max-w-[1500px] gap-6 sm:grid-cols-2 sm:gap-10 lg:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <Image
             src="/otimizia-logo.png"
@@ -897,7 +892,7 @@ function SiteFooter() {
             width={196}
             height={58}
             sizes="176px"
-            className="h-9 w-auto dark:hidden"
+            className="h-8 w-auto dark:hidden sm:h-9"
           />
           <Image
             src="/otimizia-logo-dark.png"
@@ -905,15 +900,15 @@ function SiteFooter() {
             width={205}
             height={58}
             sizes="176px"
-            className="hidden h-9 w-auto dark:block"
+            className="hidden h-8 w-auto dark:block sm:h-9"
           />
-          <p className="mt-4 max-w-xs text-sm font-medium leading-relaxed text-ink-soft">
-            O CRM simples com IA para quem vende sozinho e não pode perder cliente
+          <p className="mt-3 max-w-xs text-sm font-medium leading-snug text-ink-soft sm:mt-4 sm:leading-relaxed">
+            O CRM simples com um sócio-assistente para quem vende sozinho e não pode perder cliente
             no caminho.
           </p>
           <Link
             href="/signup"
-            className="nav-item mt-6 inline-flex items-center gap-1.5 text-sm font-black text-brand-700 hover:text-brand-900"
+            className="nav-item mt-4 inline-flex items-center gap-1.5 text-sm font-black text-brand-700 hover:text-brand-900 sm:mt-6"
           >
             Começar grátis
             <IconArrowUpRight className="h-4 w-4" />
@@ -921,7 +916,7 @@ function SiteFooter() {
         </div>
 
         {groups.map((group) => (
-          <div key={group.title}>
+          <div key={group.title} className="hidden sm:block">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-ink-muted">
               {group.title}
             </p>
@@ -941,11 +936,11 @@ function SiteFooter() {
         ))}
       </div>
 
-      <div className="mx-auto mt-12 flex max-w-6xl flex-col gap-2 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto mt-6 flex max-w-[1500px] flex-col gap-1.5 border-t border-line pt-4 sm:mt-12 sm:flex-row sm:items-center sm:justify-between sm:gap-2 sm:pt-6">
         <p className="text-xs font-bold text-ink-muted">
           © 2026 OtimizIA. Feito para empreendedores que fazem acontecer.
         </p>
-        <p className="text-xs font-bold text-ink-muted">CRM simples com IA</p>
+        <p className="text-xs font-bold text-ink-muted">CRM simplificado com o sócio-assistente</p>
       </div>
     </footer>
   );
