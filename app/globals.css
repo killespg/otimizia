@@ -1090,6 +1090,50 @@ label[class*="border-line"]::before,
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
+.voice-orb {
+  --level: 0;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(135deg, #8b3dff, #5c22e8);
+  transform: scale(calc(1 + var(--level, 0) * 0.22));
+  transition:
+    transform 90ms linear,
+    background-image 240ms var(--ease-ui-out);
+}
+
+.voice-orb::before {
+  content: "";
+  position: absolute;
+  inset: -0.5rem;
+  z-index: -1;
+  border-radius: inherit;
+  background: inherit;
+  opacity: calc(var(--level, 0) * 0.6);
+  filter: blur(12px);
+  transition: opacity 90ms linear;
+}
+
+.voice-orb.is-listening {
+  background: linear-gradient(135deg, #17b26a, #0e9e5c);
+}
+
+.voice-orb.is-speaking {
+  background: linear-gradient(135deg, #7a1fff, #0bbfe8);
+}
+
+.motion .voice-orb.is-speaking {
+  animation: voiceOrbSpeak 1500ms var(--ease-ui-in-out) infinite;
+}
+
+.voice-captions {
+  scrollbar-width: thin;
+}
+
 .theme-track {
   transition:
     background-color 220ms var(--ease-ui-out),
@@ -1670,6 +1714,16 @@ label[class*="border-line"]::before,
       0 0 0 1px rgba(134, 239, 172, 0.14),
       0 0 48px -24px rgba(134, 239, 172, 0.96),
       inset 0 1px 0 rgba(255, 255, 255, 0.075);
+  }
+}
+
+@keyframes voiceOrbSpeak {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(122, 31, 255, 0.38);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(122, 31, 255, 0);
   }
 }
 

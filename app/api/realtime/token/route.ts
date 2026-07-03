@@ -45,6 +45,12 @@ export async function GET() {
           output: {
             voice: "marin",
           },
+          input: {
+            transcription: {
+              model: "gpt-4o-mini-transcribe",
+              language: "pt",
+            },
+          },
         },
       },
     }),
