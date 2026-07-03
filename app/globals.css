@@ -1076,6 +1076,14 @@ label[class*="border-line"]::before,
     0 0 0 1px rgba(23, 178, 106, 0.08),
     0 0 34px -28px rgba(23, 178, 106, 0.62),
     inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  /* .voice-panel is a direct child of .enter, whose "enter 480ms ... forwards"
+     mount animation leaves it at opacity:1 via fill-mode. The "animation"
+     shorthand below replaces that whole animation list (not just adds to it),
+     so without these explicit resets the panel snaps back to the "enter"
+     keyframe's 0% state (invisible, blurred, offset) the moment a call goes live. */
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0);
   animation: voiceLiveGlow 1900ms var(--ease-ui-in-out) infinite;
 }
 
