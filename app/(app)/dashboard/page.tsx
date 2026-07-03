@@ -181,7 +181,7 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <section className="enter grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="enter grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         {metrics.map((metric) => (
           <MetricCard key={metric.label} {...metric} />
         ))}
@@ -240,20 +240,20 @@ function MetricCard({
         };
 
   return (
-    <article className="enter relative min-h-[150px] overflow-hidden rounded-lg border border-line bg-white p-5 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.75)]">
-      <div className="flex items-start justify-between gap-3">
+    <article className="enter relative min-h-[150px] overflow-hidden rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.75)] sm:p-5">
+      <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-ink-soft">{label}</p>
-          <p className="text-safe mt-3 text-2xl font-black leading-none tracking-[-0.03em] text-ink">
+          <p className="text-xs font-semibold text-ink-soft sm:text-sm">{label}</p>
+          <p className="text-safe mt-2 text-xl font-black leading-none tracking-[-0.03em] text-ink sm:mt-3 sm:text-2xl">
             {value}
           </p>
         </div>
-        <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${toneClass.icon}`}>
-          <Icon className="h-5 w-5" />
+        <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full sm:h-11 sm:w-11 ${toneClass.icon}`}>
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </span>
       </div>
 
-      <div className="relative z-10 mt-4 flex items-center gap-2 text-xs font-bold">
+      <div className="relative z-10 mt-3 flex flex-wrap items-center gap-1.5 text-xs font-bold sm:mt-4 sm:gap-2">
         <span className={`rounded-md px-2 py-1 ${toneClass.badge}`}>+ {delta}</span>
         <span className="text-ink-muted">{compare}</span>
       </div>
