@@ -771,6 +771,16 @@
   z-index: 1;
 }
 
+/* A MobileTabBar e filha direta de .app-shell, entao a regra generica
+   acima sobrescrevia seu position:fixed (mesma especificidade, definida
+   depois) e ela virava mais um item em fluxo do flex row do app-shell -
+   aparecia como uma coluna vertical inteira ao lado do conteudo, em vez
+   de uma barra fixada no rodape da tela. */
+.app-shell > .mobile-tabbar {
+  position: fixed;
+  z-index: 40;
+}
+
 @media (max-width: 767px) {
   html {
     scroll-padding-bottom: calc(7rem + env(safe-area-inset-bottom));
