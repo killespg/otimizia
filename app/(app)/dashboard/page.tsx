@@ -508,48 +508,84 @@ function DealsTable({
         </Link>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-lg border border-line">
-        <table className="w-full min-w-[620px] border-collapse text-left">
-          <thead className="bg-[#f8faff]">
-            <tr className="text-[11px] font-bold text-ink-muted">
-              <th className="px-3 py-3">Negócio</th>
-              <th className="px-3 py-3">Cliente</th>
-              <th className="px-3 py-3">Etapa</th>
-              <th className="px-3 py-3">Valor</th>
-              <th className="px-3 py-3">Previsão</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line bg-white">
-            {recent.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-3 py-8 text-center text-sm font-medium text-ink-muted">
-                  Nenhum negócio aberto ainda.
-                </td>
-              </tr>
-            ) : (
-              recent.map((deal) => {
-                const stage = stageMeta(deal.stage);
-                const contact = deal.contact_id ? contactMap.get(deal.contact_id) : null;
-                return (
-                  <tr key={deal.id} className="text-xs font-semibold text-ink-soft">
-                    <td className="px-3 py-3 text-ink">{deal.title}</td>
-                    <td className="px-3 py-3">
-                      {contact?.company ?? contact?.name ?? "-"}
-                    </td>
-                    <td className="px-3 py-3">
-                      <span className={`rounded-md px-2 py-1 text-[11px] font-black ${stage.className}`}>
-                        {stage.label}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3">{formatBRL(deal.value_cents)}</td>
-                    <td className="px-3 py-3">{formatDate(deal.created_at)}</td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+      {recent.length === 0 ? (
+        <p className="mt-4 rounded-lg border border-dashed border-line bg-[#f8fbff] px-3 py-8 text-center text-sm font-medium text-ink-muted">
+          Nenhum negócio aberto ainda.
+        </p>
+      ) : (
+        <>
+          {/* Celular: cada negócio vira um card empilhado (a tabela larga
+              nao cabe na tela e virava scroll horizontal). */}
+          <ul className="mt-4 space-y-2 md:hidden">
+            {recent.map((deal) => {
+              const stage = stageMeta(deal.stage);
+              const contact = deal.contact_id ? contactMap.get(deal.contact_id) : null;
+              return (
+                <li
+                  key={deal.id}
+                  className="rounded-lg border border-line bg-white p-3 shadow-[0_8px_28px_-24px_rgba(15,23,42,0.55)]"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="clip-2 text-safe min-w-0 text-sm font-black leading-snug text-ink">
+                      {deal.title}
+                    </p>
+                    <span className={`shrink-0 rounded-md px-2 py-1 text-[11px] font-black ${stage.className}`}>
+                      {stage.label}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <span className="truncate text-xs font-bold text-ink-muted">
+                      {contact?.company ?? contact?.name ?? "Sem contato"}
+                    </span>
+                    <span className="shrink-0 text-sm font-black tabular-nums text-brand-700">
+                      {formatBRL(deal.value_cents)}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[11px] font-semibold text-ink-muted">
+                    {formatDate(deal.created_at)}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* Tablet/desktop: tabela completa. */}
+          <div className="mt-4 hidden overflow-x-auto rounded-lg border border-line md:block">
+            <table className="w-full min-w-[620px] border-collapse text-left">
+              <thead className="bg-[#f8faff]">
+                <tr className="text-[11px] font-bold text-ink-muted">
+                  <th className="px-3 py-3">Negócio</th>
+                  <th className="px-3 py-3">Cliente</th>
+                  <th className="px-3 py-3">Etapa</th>
+                  <th className="px-3 py-3">Valor</th>
+                  <th className="px-3 py-3">Previsão</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line bg-white">
+                {recent.map((deal) => {
+                  const stage = stageMeta(deal.stage);
+                  const contact = deal.contact_id ? contactMap.get(deal.contact_id) : null;
+                  return (
+                    <tr key={deal.id} className="text-xs font-semibold text-ink-soft">
+                      <td className="px-3 py-3 text-ink">{deal.title}</td>
+                      <td className="px-3 py-3">
+                        {contact?.company ?? contact?.name ?? "-"}
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className={`rounded-md px-2 py-1 text-[11px] font-black ${stage.className}`}>
+                          {stage.label}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3">{formatBRL(deal.value_cents)}</td>
+                      <td className="px-3 py-3">{formatDate(deal.created_at)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </section>
   );
 }
