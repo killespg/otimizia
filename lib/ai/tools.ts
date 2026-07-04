@@ -75,7 +75,7 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
   {
     name: "create_contact",
     description:
-      "Cria um novo contato. Somente 'nome' é obrigatório. Antes de criar, verifique com list_contacts se já não existe um contato parecido para evitar duplicados.",
+      "Cria um novo contato. Somente 'nome' é obrigatório. Antes de criar, verifique com list_contacts se já não existe um contato parecido para evitar duplicados. Use 'detalhes' para os campos extras da profissão do usuário (ex: bairro, orçamento, tipo de cliente) — eles aparecem no contexto do sistema.",
     input_schema: {
       type: "object",
       properties: {
@@ -85,6 +85,11 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
         empresa: { type: "string" },
         origem: { type: "string", description: "De onde veio (indicação, Instagram etc.)" },
         anotacoes: { type: "string" },
+        detalhes: {
+          type: "object",
+          description: "Campos extras específicos da profissão do usuário. Só preencha os que o usuário mencionar.",
+          additionalProperties: { type: "string" },
+        },
       },
       required: ["nome"],
     },
@@ -103,6 +108,11 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
         empresa: { type: "string" },
         origem: { type: "string" },
         anotacoes: { type: "string" },
+        detalhes: {
+          type: "object",
+          description: "Campos extras específicos da profissão do usuário para atualizar (mescla com os já existentes).",
+          additionalProperties: { type: "string" },
+        },
       },
       required: ["contato_id"],
     },
@@ -123,13 +133,18 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
   {
     name: "create_deal",
     description:
-      "Cria uma venda no funil (entra na etapa 'novo'). Valor em reais (ex.: 1500.50). Vincule a um contato quando possível.",
+      "Cria uma venda no funil (entra na etapa 'novo'). Valor em reais (ex.: 1500.50). Vincule a um contato quando possível. Use 'detalhes' para os campos extras da profissão do usuário (ex: área do direito, tipo de imóvel).",
     input_schema: {
       type: "object",
       properties: {
         titulo: { type: "string", description: "Título da venda" },
         valor_reais: { type: "number", description: "Valor em reais (opcional)" },
         contato_id: { type: "string", description: "ID do contato relacionado (opcional)" },
+        detalhes: {
+          type: "object",
+          description: "Campos extras específicos da profissão do usuário. Só preencha os que o usuário mencionar.",
+          additionalProperties: { type: "string" },
+        },
       },
       required: ["titulo"],
     },
@@ -286,7 +301,7 @@ async function listContacts(supabase: SupabaseClient, userId: string, input: Too
   const limit = clampInt(input.limite, 1, 50, 20);
   let query = supabase
     .from("contacts")
-    .select("id, name, phone, email, company, source, created_at")
+    .select("id, name, phone, email, company, source, details, created_at")
     .eq("owner_id", userId)
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -321,7 +336,7 @@ async function getContact(supabase: SupabaseClient, userId: string, input: ToolI
   const [deals, tasks, interactions] = await Promise.all([
     supabase
       .from("deals")
-      .select("id, title, value_cents, stage, created_at, closed_at")
+      .select("id, title, value_cents, stage, details, created_at, closed_at")
       .eq("owner_id", userId)
       .eq("contact_id", id)
       .order("created_at", { ascending: false })
@@ -356,7 +371,7 @@ async function getContact(supabase: SupabaseClient, userId: string, input: ToolI
 async function listDeals(supabase: SupabaseClient, userId: string, input: ToolInput) {
   let query = supabase
     .from("deals")
-    .select("id, title, value_cents, stage, contact_id, created_at, closed_at")
+    .select("id, title, value_cents, stage, contact_id, details, created_at, closed_at")
     .eq("owner_id", userId)
     .order("created_at", { ascending: false })
     .limit(50);
@@ -473,6 +488,7 @@ async function createContact(supabase: SupabaseClient, userId: string, input: To
       company: optionalStr(input.empresa, 120),
       source: optionalStr(input.origem, 120),
       notes: optionalStr(input.anotacoes, 1200),
+      details: detailsObject(input.detalhes),
     })
     .select("id, name")
     .single();
@@ -482,13 +498,22 @@ async function createContact(supabase: SupabaseClient, userId: string, input: To
 
 async function updateContact(supabase: SupabaseClient, userId: string, input: ToolInput) {
   const id = str(input.contato_id, "contato_id");
-  const patch: Record<string, string | null> = {};
+  const patch: Record<string, string | null | Record<string, string>> = {};
   if (input.nome !== undefined) patch.name = str(input.nome, "nome", 120);
   if (input.telefone !== undefined) patch.phone = optionalStr(input.telefone, 40);
   if (input.email !== undefined) patch.email = emailOrNull(input.email);
   if (input.empresa !== undefined) patch.company = optionalStr(input.empresa, 120);
   if (input.origem !== undefined) patch.source = optionalStr(input.origem, 120);
   if (input.anotacoes !== undefined) patch.notes = optionalStr(input.anotacoes, 1200);
+  if (input.detalhes !== undefined) {
+    const { data: existing } = await supabase
+      .from("contacts")
+      .select("details")
+      .eq("id", id)
+      .eq("owner_id", userId)
+      .maybeSingle();
+    patch.details = { ...(existing?.details ?? {}), ...detailsObject(input.detalhes) };
+  }
   if (Object.keys(patch).length === 0) throw new Error("Nenhum campo para atualizar.");
 
   const { data, error } = await supabase
@@ -534,6 +559,7 @@ async function createDeal(supabase: SupabaseClient, userId: string, input: ToolI
       title: str(input.titulo, "titulo", 160),
       value_cents: cents,
       stage: "novo",
+      details: detailsObject(input.detalhes),
     })
     .select("id, title, value_cents, stage")
     .single();
@@ -621,6 +647,17 @@ function str(v: unknown, field: string, max = 80): string {
   const s = typeof v === "string" ? v.trim() : "";
   if (!s) throw new Error(`Campo obrigatório: ${field}.`);
   return s.length > max ? s.slice(0, max) : s;
+}
+
+function detailsObject(v: unknown): Record<string, string> {
+  if (!v || typeof v !== "object") return {};
+  const result: Record<string, string> = {};
+  for (const [key, value] of Object.entries(v as Record<string, unknown>)) {
+    if (typeof value === "string" && value.trim()) {
+      result[key.slice(0, 60)] = value.trim().slice(0, 200);
+    }
+  }
+  return result;
 }
 
 function optionalStr(v: unknown, max: number): string | null {

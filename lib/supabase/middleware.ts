@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getPlanAccess } from "@/lib/plan";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -53,6 +54,20 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
+  }
+
+  if (user && isProtected) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("plan, plan_status, trial_ends_at, stripe_subscription_id")
+      .eq("id", user.id)
+      .maybeSingle();
+    const access = getPlanAccess(profile);
+    if (!access.hasAccess) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/upgrade";
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

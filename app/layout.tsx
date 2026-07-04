@@ -71,6 +71,8 @@ export default function RootLayout({
 
   const revealObserver = `(function(){try{var d=document.documentElement;if(!d.classList.contains('motion')||!('IntersectionObserver' in window))return;var els=[].slice.call(document.querySelectorAll('[data-reveal]'));var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('is-in');io.unobserve(e.target);}});},{threshold:0.15,rootMargin:'0px 0px -8% 0px'});els.forEach(function(el){io.observe(el);});setTimeout(function(){els.forEach(function(el){el.classList.add('is-in');});},3000);}catch(e){}})();`;
 
+  const heroInteraction = `(function(){function init(){try{var stage=document.querySelector('[data-interactive-hero]');if(!stage||stage.dataset.heroReady==='true')return;stage.dataset.heroReady='true';var copy=stage.querySelector('[data-hero-copy]');var triggers=[].slice.call(stage.querySelectorAll('[data-hero-trigger]'));var targets=[].slice.call(stage.querySelectorAll('[data-preview-target]'));var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;function setState(state,description){stage.dataset.heroState=state;targets.forEach(function(el){el.classList.toggle('is-active',el.dataset.previewTarget===state);});triggers.forEach(function(el){var on=el.dataset.heroTrigger===state;el.classList.toggle('is-active',on);el.setAttribute('aria-pressed',on?'true':'false');});if(copy&&description)copy.textContent=description;}triggers.forEach(function(btn){btn.addEventListener('pointerenter',function(){setState(btn.dataset.heroTrigger,btn.dataset.description);});btn.addEventListener('focus',function(){setState(btn.dataset.heroTrigger,btn.dataset.description);});btn.addEventListener('click',function(){setState(btn.dataset.heroTrigger,btn.dataset.description);});});targets.forEach(function(el){el.addEventListener('pointerenter',function(){var match=triggers.find(function(btn){return btn.dataset.heroTrigger===el.dataset.previewTarget;});setState(el.dataset.previewTarget,match&&match.dataset.description);});});if(!reduce){stage.addEventListener('pointermove',function(e){var r=stage.getBoundingClientRect();var x=(e.clientX-r.left)/Math.max(1,r.width);var y=(e.clientY-r.top)/Math.max(1,r.height);stage.style.setProperty('--hero-pointer-x',(x*100).toFixed(1)+'%');stage.style.setProperty('--hero-pointer-y',(y*100).toFixed(1)+'%');stage.style.setProperty('--hero-tilt-x',((0.5-y)*5.5).toFixed(2)+'deg');stage.style.setProperty('--hero-tilt-y',((x-0.5)*-7).toFixed(2)+'deg');});stage.addEventListener('pointerleave',function(){stage.style.setProperty('--hero-tilt-x','0deg');stage.style.setProperty('--hero-tilt-y','0deg');});}setState(stage.dataset.heroState||'sales','Pipeline e valor aberto ganham destaque.');}catch(e){}}if(document.readyState==='complete'){setTimeout(init,500);}else{addEventListener('load',function(){setTimeout(init,500);},{once:true});}})();`;
+
   return (
     <html
       lang="pt-BR"
@@ -82,6 +84,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: motionGate }} />
         {children}
         <script dangerouslySetInnerHTML={{ __html: revealObserver }} />
+        <script dangerouslySetInnerHTML={{ __html: heroInteraction }} />
       </body>
     </html>
   );

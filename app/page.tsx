@@ -218,8 +218,14 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="hero-layer hidden min-w-0 sm:block" style={{ "--d": "190ms" } as CSSProperties}>
+            <div
+              className="hero-layer interactive-hero hidden min-w-0 sm:block"
+              data-interactive-hero
+              data-hero-state="sales"
+              style={{ "--d": "190ms" } as CSSProperties}
+            >
               <ProductPreview />
+              <HeroInteractionControls />
             </div>
           </div>
         </div>
@@ -567,6 +573,35 @@ export default function Home() {
   );
 }
 
+function HeroInteractionControls() {
+  const controls = [
+    ["contacts", "Contatos", "Cadastro e historico ficam em foco."],
+    ["sales", "Vendas", "Pipeline e valor aberto ganham destaque."],
+    ["assistant", "Assistente", "O proximo passo aparece na hora."],
+  ];
+
+  return (
+    <div className="hero-interaction-panel" aria-label="Explore o painel OtimizIA">
+      <p className="hero-interaction-copy" data-hero-copy>
+        Passe o mouse pelo painel ou escolha um foco.
+      </p>
+      <div className="hero-interaction-controls">
+        {controls.map(([state, label, description]) => (
+          <button
+            key={state}
+            type="button"
+            className="hero-interaction-button"
+            data-hero-trigger={state}
+            data-description={description}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function LandingButton({
   href,
   children,
@@ -697,6 +732,7 @@ function Initials({ name }: { name: string }) {
 function ProductPreview() {
   return (
     <figure className="preview-float w-full rounded-[1.65rem] border border-white/70 bg-white/45 p-2 shadow-[0_34px_90px_-52px_rgba(7,8,28,0.85)] [&_*]:min-w-0">
+      <span className="hero-pointer-glow" aria-hidden="true" />
       <div className="overflow-hidden rounded-[1.2rem] border border-line bg-[#f8fbff] shadow-[inset_0_1px_0_rgba(255,255,255,0.88)]">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-white px-4 py-3">
           <div className="flex items-center gap-3">
@@ -725,12 +761,12 @@ function ProductPreview() {
         <div className="grid gap-4 p-4 lg:grid-cols-[1.08fr_0.92fr]">
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              <MiniMetric label="Valor aberto" value="R$ 252k" icon={IconWallet} />
-              <MiniMetric label="Clientes" value="128" icon={IconPhone} pink />
-              <MiniMetric label="Conversas" value="87" icon={IconMessage} pink />
+              <MiniMetric label="Valor aberto" value="R$ 252k" icon={IconWallet} target="sales" />
+              <MiniMetric label="Clientes" value="128" icon={IconPhone} pink target="contacts" />
+              <MiniMetric label="Conversas" value="87" icon={IconMessage} pink target="contacts" />
             </div>
 
-            <div className="preview-card rounded-lg border border-line bg-white p-4">
+            <div className="preview-card rounded-lg border border-line bg-white p-4" data-preview-target="sales">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-black text-ink">Vendas em aberto</p>
                 <span className="text-xs font-black text-brand-700">Este mês</span>
@@ -775,7 +811,7 @@ function ProductPreview() {
           </div>
 
           <div className="space-y-4">
-            <div className="preview-card rounded-lg border border-line bg-white p-4">
+            <div className="preview-card rounded-lg border border-line bg-white p-4" data-preview-target="contacts">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-black text-ink">Fila de tarefas</p>
                 <span className="rounded-md bg-surface-2 px-2 py-1 text-xs font-black text-ink-muted">
@@ -802,7 +838,7 @@ function ProductPreview() {
               </ul>
             </div>
 
-            <div className="preview-card rounded-lg border border-line bg-white p-4">
+            <div className="preview-card rounded-lg border border-line bg-white p-4" data-preview-target="assistant">
               <div className="flex items-center gap-3">
                 <Image
                   src="/otimizia-mark.png"
@@ -840,14 +876,16 @@ function MiniMetric({
   value,
   icon: Icon,
   pink = false,
+  target,
 }: {
   label: string;
   value: string;
   icon: (props: { className?: string }) => JSX.Element;
   pink?: boolean;
+  target?: string;
 }) {
   return (
-    <div className="preview-card rounded-lg border border-line bg-white p-3">
+    <div className="preview-card rounded-lg border border-line bg-white p-3" data-preview-target={target}>
       <span
         className={
           "grid h-9 w-9 place-items-center rounded-full " +

@@ -2,10 +2,20 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { PendingButton } from "@/components/PendingButton";
+import type { FieldSpec } from "@/lib/professions";
 import { DEAL_STAGES, type Deal, type DealStage } from "@/lib/supabase/types";
 import { formatBRL } from "@/lib/format";
 import { moveDeal, deleteDeal } from "../actions";
 import { IconCheck, IconChevronRight, IconGrip, IconTrash } from "../icons";
+
+function firstDetail(details: Record<string, string> | undefined, fields: FieldSpec[]) {
+  if (!details) return null;
+  for (const field of fields) {
+    const value = details[field.key];
+    if (value) return `${field.label}: ${value}`;
+  }
+  return null;
+}
 
 const STAGE_META: Record<
   DealStage,
@@ -41,9 +51,13 @@ const STAGE_META: Record<
 export default function Board({
   initialDeals,
   contactNames,
+  stages,
+  dealFields = [],
 }: {
   initialDeals: Deal[];
   contactNames: Record<string, string>;
+  stages?: Record<DealStage, { label: string; empty: string }>;
+  dealFields?: FieldSpec[];
 }) {
   const [deals, setDeals] = useState(initialDeals);
   const [dragId, setDragId] = useState<string | null>(null);
@@ -100,6 +114,10 @@ export default function Board({
     >
       {DEAL_STAGES.map((stage) => {
         const meta = STAGE_META[stage.key];
+        const stageCopy = stages?.[stage.key] ?? {
+          label: stage.label,
+          empty: meta.empty,
+        };
         const stageDeals = deals.filter((deal) => deal.stage === stage.key);
         const total = stageDeals.reduce((sum, deal) => sum + deal.value_cents, 0);
         const isOver = overStage === stage.key;
@@ -126,7 +144,7 @@ export default function Board({
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <span className={`h-2.5 w-2.5 rounded-full ${meta.dot}`} />
-                  <h2 className="text-sm font-black text-ink">{stage.label}</h2>
+                  <h2 className="text-sm font-black text-ink">{stageCopy.label}</h2>
                 </div>
                 <span className={`rounded-md px-2.5 py-1 text-xs font-black ${meta.chip}`}>
                   {String(stageDeals.length).padStart(2, "0")}
@@ -144,7 +162,7 @@ export default function Board({
                     {isOver ? "Solte aqui" : "Vazio"}
                   </p>
                   <p className="mt-1 text-xs font-medium leading-relaxed text-ink-muted">
-                    {meta.empty}
+                    {stageCopy.empty}
                   </p>
                 </div>
               ) : (
@@ -183,6 +201,11 @@ export default function Board({
                             {deal.contact_id && contactNames[deal.contact_id] && (
                               <p className="mt-1 truncate text-xs font-bold text-ink-muted">
                                 {contactNames[deal.contact_id]}
+                              </p>
+                            )}
+                            {firstDetail(deal.details, dealFields) && (
+                              <p className="mt-1 truncate text-xs font-medium text-ink-muted">
+                                {firstDetail(deal.details, dealFields)}
                               </p>
                             )}
                           </div>
@@ -235,7 +258,7 @@ export default function Board({
                               }}
                               className="rounded-md border border-line bg-white px-2.5 py-1.5 text-xs font-bold text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
                             >
-                              {s.label}
+                          {stages?.[s.key]?.label ?? s.label}
                             </button>
                           ))}
                         </div>

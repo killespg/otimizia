@@ -428,6 +428,174 @@
   opacity: 0.68;
 }
 
+.interactive-hero {
+  --hero-pointer-x: 68%;
+  --hero-pointer-y: 42%;
+  --hero-tilt-x: 0deg;
+  --hero-tilt-y: 0deg;
+  --hero-accent-x: 52%;
+  --hero-accent-y: 54%;
+  perspective: 1200px;
+  padding-bottom: 4.5rem;
+}
+
+.interactive-hero[data-hero-state="contacts"] {
+  --hero-accent-x: 66%;
+  --hero-accent-y: 30%;
+}
+
+.interactive-hero[data-hero-state="sales"] {
+  --hero-accent-x: 45%;
+  --hero-accent-y: 56%;
+}
+
+.interactive-hero[data-hero-state="assistant"] {
+  --hero-accent-x: 77%;
+  --hero-accent-y: 72%;
+}
+
+.interactive-hero .preview-float {
+  transform: rotateX(var(--hero-tilt-x)) rotateY(var(--hero-tilt-y));
+  transition:
+    transform 220ms var(--ease-ui-out),
+    box-shadow 220ms var(--ease-ui-out);
+}
+
+.hero-pointer-glow {
+  position: absolute;
+  inset: -1px;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at var(--hero-pointer-x) var(--hero-pointer-y), rgba(255, 255, 255, 0.74), transparent 0 9rem),
+    radial-gradient(circle at var(--hero-accent-x) var(--hero-accent-y), rgba(139, 61, 255, 0.24), transparent 0 12rem);
+  opacity: 0.86;
+  mix-blend-mode: screen;
+  transition: background-position 160ms var(--ease-ui-out);
+}
+
+.interactive-hero [data-preview-target] {
+  transition:
+    border-color 220ms var(--ease-ui-out),
+    background-color 220ms var(--ease-ui-out),
+    box-shadow 220ms var(--ease-ui-out),
+    opacity 220ms var(--ease-ui-out),
+    transform 220ms var(--ease-ui-out),
+    filter 220ms var(--ease-ui-out);
+}
+
+.interactive-hero[data-hero-ready="true"]:has([data-preview-target].is-active) [data-preview-target]:not(.is-active) {
+  opacity: 0.58;
+  filter: saturate(0.86);
+}
+
+.interactive-hero[data-hero-state="contacts"] [data-preview-target="contacts"],
+.interactive-hero[data-hero-state="sales"] [data-preview-target="sales"],
+.interactive-hero[data-hero-state="assistant"] [data-preview-target="assistant"],
+.interactive-hero [data-preview-target].is-active {
+  border-color: rgba(139, 61, 255, 0.42) !important;
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  box-shadow:
+    0 18px 40px -30px rgba(48, 28, 102, 0.42),
+    0 0 34px -22px rgba(139, 61, 255, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  transform: translateY(-2px) scale(1.012);
+  opacity: 1;
+  filter: saturate(1.08);
+}
+
+.hero-interaction-panel {
+  position: absolute;
+  left: clamp(1.25rem, 5vw, 4rem);
+  right: clamp(1.25rem, 5vw, 4rem);
+  bottom: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid rgba(222, 213, 239, 0.82);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 0.45rem;
+  box-shadow:
+    0 18px 42px -34px rgba(21, 19, 46, 0.78),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+}
+
+.hero-interaction-copy {
+  min-width: 0;
+  padding-left: 0.8rem;
+  color: rgb(var(--color-ink-soft));
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.hero-interaction-controls {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.35rem;
+}
+
+.hero-interaction-button {
+  min-height: 2.2rem;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 0 0.82rem;
+  color: rgb(var(--color-ink-soft));
+  font-size: 0.76rem;
+  font-weight: 900;
+  outline: none;
+  transition:
+    background-color 180ms var(--ease-ui-out),
+    color 180ms var(--ease-ui-out),
+    box-shadow 180ms var(--ease-ui-out),
+    transform 180ms var(--ease-ui-out);
+}
+
+.hero-interaction-button:hover,
+.hero-interaction-button:focus-visible,
+.interactive-hero[data-hero-state="contacts"] [data-hero-trigger="contacts"],
+.interactive-hero[data-hero-state="sales"] [data-hero-trigger="sales"],
+.interactive-hero[data-hero-state="assistant"] [data-hero-trigger="assistant"],
+.hero-interaction-button.is-active {
+  color: #fff;
+  background: linear-gradient(135deg, #8b3dff, #5f18c4);
+  box-shadow:
+    0 12px 24px -18px rgba(92, 34, 232, 0.82),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.dark .hero-pointer-glow {
+  opacity: 0.64;
+}
+
+.dark .hero-interaction-panel {
+  border-color: rgba(90, 88, 116, 0.56);
+  background: rgba(20, 21, 34, 0.78);
+}
+
+.dark .interactive-hero[data-hero-state="contacts"] [data-preview-target="contacts"],
+.dark .interactive-hero[data-hero-state="sales"] [data-preview-target="sales"],
+.dark .interactive-hero[data-hero-state="assistant"] [data-preview-target="assistant"],
+.dark .interactive-hero [data-preview-target].is-active {
+  border-color: rgba(174, 132, 255, 0.54) !important;
+  background-color: rgb(24 25 39 / 0.96) !important;
+  box-shadow:
+    0 18px 42px -30px rgba(0, 0, 0, 0.86),
+    0 0 34px -24px rgba(174, 132, 255, 0.76),
+    inset 0 1px 0 rgba(255, 255, 255, 0.065);
+}
+
+.dark .interactive-hero[data-hero-ready="true"]:has([data-preview-target].is-active) [data-preview-target]:not(.is-active) {
+  opacity: 0.68;
+  filter: saturate(0.9) brightness(0.92);
+}
+
 /* Celular: os tamanhos fluidos acima usam vw com um piso alto demais
    para telas pequenas (ex.: 18vw trava no minimo ~70px abaixo de ~387px
    de largura), o que quebra o titulo da hero em varias linhas apertadas.
@@ -1406,6 +1574,10 @@ label[class*="border-line"]::before,
   will-change: transform;
 }
 
+.motion .interactive-hero .preview-float {
+  animation: interactivePreviewFloat 7600ms var(--ease-ui-in-out) 980ms infinite;
+}
+
 .motion .preview-card {
   opacity: 0;
   transform: translateY(14px) scale(0.985);
@@ -1581,6 +1753,16 @@ label[class*="border-line"]::before,
   }
   50% {
     transform: perspective(1200px) translate3d(0, -8px, 0) rotateX(1.2deg) rotateY(-1.1deg);
+  }
+}
+
+@keyframes interactivePreviewFloat {
+  0%,
+  100% {
+    transform: perspective(1200px) translate3d(0, 0, 0) rotateX(var(--hero-tilt-x)) rotateY(var(--hero-tilt-y));
+  }
+  50% {
+    transform: perspective(1200px) translate3d(0, -8px, 0) rotateX(calc(var(--hero-tilt-x) + 1.2deg)) rotateY(calc(var(--hero-tilt-y) - 1.1deg));
   }
 }
 
@@ -1919,4 +2101,12 @@ label[class*="border-line"]::before,
 @keyframes fade {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactive-hero .preview-float,
+  .interactive-hero [data-preview-target],
+  .hero-interaction-button {
+    transition: none !important;
+  }
 }

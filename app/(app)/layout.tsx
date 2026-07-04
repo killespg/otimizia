@@ -3,12 +3,14 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { AssistantChat } from "@/components/AssistantChat";
 import { PendingButton } from "@/components/PendingButton";
+import { getPlanAccess } from "@/lib/plan";
+import { getProfessionPreset } from "@/lib/professions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "../(auth)/actions";
 import { SidebarNav, MobileTabBar } from "./AppNav";
 import { Avatar } from "./Avatar";
-import { IconChevronRight, IconLogout } from "./icons";
+import { IconChevronRight, IconLogout, IconSettings } from "./icons";
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
@@ -50,6 +52,17 @@ export default async function AppLayout({
 
   if (!user) redirect("/login");
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("profession_type, plan, plan_status, trial_ends_at, stripe_subscription_id")
+    .eq("id", user.id)
+    .maybeSingle();
+  const preset = getProfessionPreset(
+    profile?.profession_type ?? user.user_metadata?.profession_type
+  );
+  const access = getPlanAccess(profile);
+  const showTrialBanner = access.status === "trialing" && (access.trialDaysLeft ?? 99) <= 7;
+
   const email = user.email ?? "Conta";
   const handle = email.split("@")[0] || "João";
   const displayName =
@@ -66,24 +79,33 @@ export default async function AppLayout({
           </div>
 
           <div className="flex-1 overflow-y-auto px-5 py-3">
-            <SidebarNav />
+            <SidebarNav
+              labels={{
+                pipeline: preset.pipelineLabel,
+                value: preset.valueLabel,
+                followups: "Retornos do dia",
+              }}
+            />
           </div>
 
           <div className="space-y-3 px-5 pb-5">
             <ThemeToggle className="w-full justify-between" />
 
-            <div className="flex items-center gap-3 rounded-lg bg-surface-2 px-3 py-3">
+            <Link
+              href="/settings"
+              className="nav-item flex items-center gap-3 rounded-lg bg-surface-2 px-3 py-3 hover:bg-brand-50"
+            >
               <Avatar name={displayName} className="h-11 w-11 text-[13px]" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold text-ink">
                   {displayName}
                 </p>
                 <p className="truncate text-xs font-medium text-ink-muted">
-                  Administrador
+                  Configurações
                 </p>
               </div>
-              <IconChevronRight className="h-4 w-4 rotate-90 text-ink-muted" />
-            </div>
+              <IconChevronRight className="h-4 w-4 text-ink-muted" />
+            </Link>
 
             <form action={logout}>
               <PendingButton
@@ -105,6 +127,13 @@ export default async function AppLayout({
           <header className="mobile-app-header sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-white/92 px-4 backdrop-blur-xl sm:hidden">
             <Logo />
             <div className="flex items-center gap-2">
+              <Link
+                href="/settings"
+                aria-label="Configurações"
+                className="nav-item grid h-9 w-9 place-items-center rounded-md text-ink-muted hover:bg-surface-2 hover:text-ink focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-600"
+              >
+                <IconSettings className="h-[18px] w-[18px]" />
+              </Link>
               <ThemeToggle compact />
               <form action={logout}>
                 <PendingButton
@@ -120,12 +149,22 @@ export default async function AppLayout({
             </div>
           </header>
 
+          {showTrialBanner && (
+            <Link
+              href="/settings"
+              className="nav-item flex items-center justify-center gap-2 bg-brand-700 px-4 py-2 text-center text-xs font-bold text-white hover:bg-brand-800 sm:text-sm"
+            >
+              Faltam {access.trialDaysLeft} {access.trialDaysLeft === 1 ? "dia" : "dias"} no
+              seu teste grátis — Assinar agora
+            </Link>
+          )}
+
           <main className="mx-auto w-full max-w-[1500px] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-8 sm:pb-8 sm:pt-7 lg:px-10">
             {children}
           </main>
         </div>
 
-        <MobileTabBar />
+        <MobileTabBar labels={{ pipeline: preset.pipelineLabel }} />
       </div>
 
       <AssistantChat />

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getProfessionPreset, normalizeProfession, type FieldSpec } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import { DEAL_STAGES, type DealStage } from "@/lib/supabase/types";
 
@@ -25,9 +26,37 @@ async function requireUser() {
   return { supabase, user };
 }
 
+async function requireUserWithPreset() {
+  const { supabase, user } = await requireUser();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("profession_type")
+    .eq("id", user.id)
+    .maybeSingle();
+  const preset = getProfessionPreset(profile?.profession_type ?? user.user_metadata?.profession_type);
+  return { supabase, user, preset };
+}
+
+export async function updateProfession(formData: FormData) {
+  const { supabase, user } = await requireUser();
+  const professionType = normalizeProfession(formData.get("profession_type"));
+  const { error } = await supabase
+    .from("profiles")
+    .update({ profession_type: professionType })
+    .eq("id", user.id);
+  ensureOk(error, "Não deu para trocar o perfil.");
+
+  revalidatePath("/", "layout");
+  revalidatePath("/dashboard");
+  revalidatePath("/contacts");
+  revalidatePath("/pipeline");
+  revalidatePath("/tasks");
+  redirect(safeReturnPath(formData.get("return_to"), "/dashboard"));
+}
+
 // ---------- Contacts ----------
 export async function createContact(formData: FormData) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user, preset } = await requireUserWithPreset();
   const { error } = await supabase.from("contacts").insert({
     owner_id: user.id,
     name: requiredText(formData.get("name"), "Nome", LIMIT.name),
@@ -36,6 +65,7 @@ export async function createContact(formData: FormData) {
     company: emptyToNull(formData.get("company"), LIMIT.company),
     source: emptyToNull(formData.get("source"), LIMIT.source),
     notes: emptyToNull(formData.get("notes"), LIMIT.notes),
+    details: collectDetails(formData, preset.contactFields),
   });
   ensureOk(error, "Não deu para salvar o contato.");
   revalidatePath("/contacts");
@@ -46,8 +76,18 @@ export async function createContact(formData: FormData) {
 }
 
 export async function updateContact(formData: FormData) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user, preset } = await requireUserWithPreset();
   const id = requiredText(formData.get("id"), "Contato", 80);
+  const { data: existing } = await supabase
+    .from("contacts")
+    .select("details")
+    .eq("id", id)
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  const details = {
+    ...(existing?.details ?? {}),
+    ...collectDetails(formData, preset.contactFields),
+  };
   const { error } = await supabase
     .from("contacts")
     .update({
@@ -57,6 +97,7 @@ export async function updateContact(formData: FormData) {
       company: emptyToNull(formData.get("company"), LIMIT.company),
       source: emptyToNull(formData.get("source"), LIMIT.source),
       notes: emptyToNull(formData.get("notes"), LIMIT.notes),
+      details,
     })
     .eq("id", id)
     .eq("owner_id", user.id);
@@ -96,13 +137,14 @@ export async function createInteraction(formData: FormData) {
 
 // ---------- Deals ----------
 export async function createDeal(formData: FormData) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user, preset } = await requireUserWithPreset();
   const { error } = await supabase.from("deals").insert({
     owner_id: user.id,
     contact_id: emptyToNull(formData.get("contact_id"), 80),
     title: requiredText(formData.get("title"), "Venda", LIMIT.title),
     value_cents: moneyToCents(formData.get("value")),
     stage: "novo",
+    details: collectDetails(formData, preset.dealFields),
   });
   ensureOk(error, "Não deu para salvar a venda.");
   revalidatePath("/pipeline");
@@ -226,6 +268,17 @@ function dateTimeOrNull(v: FormDataEntryValue | null): string | null {
 
 function isDealStage(stage: string): stage is DealStage {
   return DEAL_STAGES.some((item) => item.key === stage);
+}
+
+function collectDetails(formData: FormData, fields: FieldSpec[]): Record<string, string> {
+  const details: Record<string, string> = {};
+  for (const field of fields) {
+    const raw = text(formData.get(`details.${field.key}`), 200);
+    if (!raw) continue;
+    if (field.type === "select" && field.options && !field.options.includes(raw)) continue;
+    details[field.key] = raw;
+  }
+  return details;
 }
 
 function ensureOk(error: unknown, fallback: string) {

@@ -21,6 +21,12 @@ type NavItem = {
   mobile?: boolean;
 };
 
+type NavLabels = {
+  pipeline: string;
+  value: string;
+  followups: string;
+};
+
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "Painel", icon: IconGauge, mobile: true },
   { href: "/contacts", label: "Contatos", icon: IconUsers, mobile: true },
@@ -38,11 +44,24 @@ function useActive() {
 }
 
 /* Sidebar desktop. */
-export function SidebarNav() {
+export function SidebarNav({ labels }: { labels?: NavLabels }) {
   const isActive = useActive();
+  const text = labels ?? {
+    pipeline: "Vendas",
+    value: "Valor aberto",
+    followups: "Clientes para chamar",
+  };
   return (
     <nav className="flex flex-col gap-1" aria-label="Navegação principal">
       {NAV.map(({ href, label, icon: Icon, passive }) => {
+        const displayLabel =
+          href === "/pipeline"
+            ? text.pipeline
+            : label === "Valor aberto"
+            ? text.value
+            : label === "Clientes para chamar"
+            ? text.followups
+            : label;
         const active = !passive && isActive(href);
         return (
           <Link
@@ -62,7 +81,7 @@ export function SidebarNav() {
                 (active ? "text-brand-700" : "text-ink-muted group-hover:text-brand-700")
               }
             />
-            {label}
+            {displayLabel}
           </Link>
         );
       })}
@@ -71,8 +90,9 @@ export function SidebarNav() {
 }
 
 /* Mobile tab bar. */
-export function MobileTabBar() {
+export function MobileTabBar({ labels }: { labels?: Pick<NavLabels, "pipeline"> }) {
   const isActive = useActive();
+  const pipelineLabel = labels?.pipeline ?? "Vendas";
   return (
     <nav
       className="mobile-tabbar fixed inset-x-3 bottom-3 z-40 rounded-2xl border border-line bg-surface/95 px-2 pb-[calc(0.35rem+env(safe-area-inset-bottom))] pt-1.5 shadow-[0_22px_50px_-30px_rgba(7,8,28,0.75)] backdrop-blur-xl sm:hidden"
@@ -81,6 +101,7 @@ export function MobileTabBar() {
       <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
         {NAV.filter((item) => item.mobile).map(({ href, label, icon: Icon }) => {
           const active = isActive(href);
+          const displayLabel = href === "/pipeline" ? pipelineLabel : label;
           return (
             <Link
               key={href}
@@ -101,7 +122,7 @@ export function MobileTabBar() {
                   (active ? "font-semibold" : "font-medium")
                 }
               >
-                {label}
+                {displayLabel}
               </span>
             </Link>
           );

@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { User } from "@supabase/supabase-js";
+import { getProfessionPreset, type ProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import { CRM_TOOLS, executeTool, isMutatingTool } from "@/lib/ai/tools";
 
@@ -41,6 +42,15 @@ export async function POST(req: Request) {
     return Response.json({ error: "Envie ao menos uma mensagem." }, { status: 400 });
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("profession_type")
+    .eq("id", user.id)
+    .maybeSingle();
+  const preset = getProfessionPreset(
+    profile?.profession_type ?? user.user_metadata?.profession_type
+  );
+
   const client = new Anthropic();
   const encoder = new TextEncoder();
 
@@ -58,7 +68,7 @@ export async function POST(req: Request) {
             model: MODEL,
             max_tokens: 64000,
             thinking: { type: "adaptive" },
-            system: buildSystemPrompt(user),
+            system: buildSystemPrompt(user, preset),
             tools: CRM_TOOLS,
             messages,
           });
@@ -127,7 +137,7 @@ export async function POST(req: Request) {
   });
 }
 
-function buildSystemPrompt(user: User): string {
+function buildSystemPrompt(user: User, preset: ProfessionPreset): string {
   const name =
     typeof user.user_metadata?.name === "string" && user.user_metadata.name
       ? user.user_metadata.name
@@ -139,9 +149,20 @@ function buildSystemPrompt(user: User): string {
     timeStyle: "short",
   });
 
+  const stageLine = (["novo", "em_contato", "negociacao", "ganho", "perdido"] as const)
+    .map((key) => `${key} (exibida como "${preset.stages[key].label}")`)
+    .join(", ");
+
+  const extraFieldsLine = [...preset.contactFields, ...preset.dealFields]
+    .map((field) => field.label)
+    .join(", ");
+
   return `Você é sócio(a) de ${name} no negócio dele(a). Vocês dois tocam a empresa juntos e usam o OtimizIA (o CRM) para organizar contatos, vendas, lembretes e conversas com clientes. Você tem acesso direto a esses dados através de ferramentas e cuida da parte operacional para ${name} poder focar em vender e atender.
 
 Data e hora atuais (America/Sao_Paulo): ${now}.
+
+Contexto profissional: ${preset.assistantContext}
+${extraFieldsLine ? `Campos extras disponíveis para contatos/vendas deste perfil (use 'detalhes' nas ferramentas quando o usuário mencionar algum): ${extraFieldsLine}.` : ""}
 
 Como conversar:
 - Fale como uma pessoa de verdade batendo papo com o sócio, em português do Brasil — natural, direto, sem formalidade de atendimento. Nada de "Como posso ajudar?", "Estou à disposição", "Se precisar de mais alguma coisa, é só avisar" ou qualquer clichê de robô de suporte.
@@ -153,7 +174,7 @@ Como conversar:
 Como agir:
 - Use as ferramentas para tudo que envolver dados reais. Nunca invente contatos, valores ou datas — consulte antes de afirmar.
 - Quando o usuário citar uma pessoa pelo nome, localize-a com list_contacts antes de agir. Se houver mais de um resultado possível, pergunte qual é.
-- Etapas do funil: novo, em_contato, negociacao (exibida como "Proposta"), ganho, perdido.
+- Etapas do funil: ${stageLine}.
 - Valores em reais (R$ 1.234,56). Datas em formato brasileiro na resposta; em ISO 8601 nas ferramentas.
 - Ações de criação e edição pedidas explicitamente podem ser executadas direto. Exclusões: confirme antes de chamar a ferramenta de exclusão.
 - Se uma ferramenta der erro, explique em linguagem simples e sugira o próximo passo — sem citar mensagens técnicas.

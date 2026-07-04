@@ -179,6 +179,21 @@ export function IconTrash({ className }: IconProps) {
   );
 }
 
+export function IconSettings({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path
+        d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+        {...stroke}
+      />
+      <path
+        d="M19.4 13.5c.1-.5.1-1 0-1.5l1.6-1.3-1.6-2.7-1.9.6a5.6 5.6 0 0 0-1.3-.8l-.3-2H10.1l-.3 2c-.5.2-.9.5-1.3.8l-1.9-.6-1.6 2.7 1.6 1.3c-.1.5-.1 1 0 1.5l-1.6 1.3 1.6 2.7 1.9-.6c.4.3.8.6 1.3.8l.3 2h3.8l.3-2c.5-.2.9-.5 1.3-.8l1.9.6 1.6-2.7-1.6-1.3Z"
+        {...stroke}
+      />
+    </svg>
+  );
+}
+
 export function IconChevronRight({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

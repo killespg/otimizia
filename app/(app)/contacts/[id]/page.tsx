@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PendingButton } from "@/components/PendingButton";
+import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Interaction, Task } from "@/lib/supabase/types";
 import { formatDateTime } from "@/lib/format";
@@ -15,6 +16,7 @@ import {
   IconTrash,
 } from "../../icons";
 import { updateContact, deleteContact, createInteraction } from "../../actions";
+import { PresetFields } from "../../PresetFields";
 
 export default async function ContactDetailPage({
   params,
@@ -23,11 +25,20 @@ export default async function ContactDetailPage({
 }) {
   const supabase = createClient();
 
-  const { data: contact } = await supabase
-    .from("contacts")
-    .select("*")
-    .eq("id", params.id)
-    .single();
+  const [
+    {
+      data: { user },
+    },
+    { data: profile },
+    { data: contact },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("profiles").select("profession_type").maybeSingle(),
+    supabase.from("contacts").select("*").eq("id", params.id).single(),
+  ]);
+  const preset = getProfessionPreset(
+    profile?.profession_type ?? user?.user_metadata?.profession_type
+  );
 
   if (!contact) notFound();
   const c = contact as Contact;
@@ -48,7 +59,10 @@ export default async function ContactDetailPage({
 
   const logs = (interactions ?? []) as Interaction[];
   const relatedTasks = (tasks ?? []) as Task[];
-  const chips = [c.company, c.phone, c.email, c.source].filter(Boolean) as string[];
+  const detailChips = preset.contactFields
+    .map((field) => (c.details?.[field.key] ? `${field.label}: ${c.details[field.key]}` : null))
+    .filter(Boolean) as string[];
+  const chips = [c.company, c.phone, c.email, c.source, ...detailChips].filter(Boolean) as string[];
 
   return (
     <div className="space-y-5">
@@ -111,6 +125,7 @@ export default async function ContactDetailPage({
             <Field name="email" label="E-mail" type="email" defaultValue={c.email ?? ""} maxLength={160} autoComplete="email" />
             <Field name="company" label="Empresa" defaultValue={c.company ?? ""} maxLength={120} autoComplete="organization" />
             <Field name="source" label="Origem" defaultValue={c.source ?? ""} maxLength={120} />
+            <PresetFields fields={preset.contactFields} values={c.details} />
             <div>
               <label className="label" htmlFor="notes">
                 Observações

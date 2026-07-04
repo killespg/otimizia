@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AgentPanel } from "@/components/AgentPanel";
 import { PendingButton } from "@/components/PendingButton";
+import { getProfessionPreset, type MetricKey, type ProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import {
   DEAL_STAGES,
@@ -12,17 +13,29 @@ import {
 import { formatBRL, formatDate } from "@/lib/format";
 import { createTask } from "../actions";
 import { ReminderModal as ReminderModalClient } from "./ReminderModal";
+import { RevenueLineChart } from "./RevenueLineChart";
 import {
   IconArrowRight,
   IconBell,
   IconCheckCircle,
   IconColumns,
   IconMessage,
-  IconPhone,
   IconSearch,
   IconUsers,
   IconWallet,
 } from "../icons";
+
+const METRIC_ICONS: Record<MetricKey, (props: { className?: string }) => JSX.Element> = {
+  open_value: IconWallet,
+  open_deals: IconColumns,
+  won_value_month: IconWallet,
+  won_count_month: IconCheckCircle,
+  contacts: IconUsers,
+  overdue_tasks: IconBell,
+  conversations_today: IconMessage,
+  conversion_rate: IconCheckCircle,
+  avg_ticket: IconWallet,
+};
 
 type ContactOption = Pick<Contact, "id" | "name" | "company">;
 
@@ -42,6 +55,7 @@ export default async function DashboardPage() {
     { data: deals },
     { data: tasks },
     { data: contactOptions },
+    { data: profile },
     { count: contactsCount },
     { count: conversationsToday },
   ] = await Promise.all([
@@ -56,6 +70,7 @@ export default async function DashboardPage() {
       .from("contacts")
       .select("id,name,company")
       .order("name", { ascending: true }),
+    supabase.from("profiles").select("profession_type").maybeSingle(),
     supabase.from("contacts").select("*", { count: "exact", head: true }),
     supabase
       .from("interactions")
@@ -68,6 +83,9 @@ export default async function DashboardPage() {
   const contacts = contactsCount ?? 0;
   const contactsForForms = (contactOptions ?? []) as ContactOption[];
   const contactMap = new Map(contactsForForms.map((contact) => [contact.id, contact]));
+  const preset = getProfessionPreset(
+    profile?.profession_type ?? user?.user_metadata?.profession_type
+  );
 
   const displayName =
     typeof user?.user_metadata?.name === "string" && user.user_metadata.name
@@ -85,6 +103,33 @@ export default async function DashboardPage() {
       new Date(deal.closed_at) >= monthStart
   );
   const wonValue = wonThisMonth.reduce((sum, deal) => sum + deal.value_cents, 0);
+  const lostThisMonth = allDeals.filter(
+    (deal) =>
+      deal.stage === "perdido" &&
+      deal.closed_at &&
+      new Date(deal.closed_at) >= monthStart
+  );
+  const closedThisMonth = wonThisMonth.length + lostThisMonth.length;
+  const conversionRate = closedThisMonth > 0
+    ? Math.round((wonThisMonth.length / closedThisMonth) * 100)
+    : null;
+  const avgTicketCents = wonThisMonth.length > 0
+    ? Math.round(wonValue / wonThisMonth.length)
+    : null;
+
+  const daysElapsed = now.getDate();
+  const dailyWonCents = new Array(daysElapsed).fill(0);
+  for (const deal of wonThisMonth) {
+    const dayIndex = new Date(deal.closed_at!).getDate() - 1;
+    if (dayIndex >= 0 && dayIndex < daysElapsed) {
+      dailyWonCents[dayIndex] += deal.value_cents;
+    }
+  }
+  let runningCents = 0;
+  const wonSeries = dailyWonCents.map((cents, index) => {
+    runningCents += cents;
+    return { day: index + 1, cumulativeCents: runningCents };
+  });
 
   const overdue = openTasks
     .filter((task) => task.due_at && new Date(task.due_at) < now)
@@ -101,40 +146,24 @@ export default async function DashboardPage() {
     .filter((task, index, arr) => arr.findIndex((item) => item.id === task.id) === index)
     .slice(0, 5);
 
-  const metrics = [
-    {
-      label: "Valor aberto",
-      value: formatBRL(openValue),
-      compare: "vs mês anterior",
-      delta: "12,5%",
-      tone: "purple" as const,
-      icon: IconWallet,
-    },
-    {
-      label: "Clientes para chamar",
-      value: String(overdue.length + todayTasks.length || openTasks.length),
-      compare: "vs semana anterior",
-      delta: "8,1%",
-      tone: "pink" as const,
-      icon: IconPhone,
-    },
-    {
-      label: "Negócios em andamento",
-      value: String(openDeals.length),
-      compare: "vs mês anterior",
-      delta: "15,3%",
-      tone: "purple" as const,
-      icon: IconColumns,
-    },
-    {
-      label: "Conversas hoje",
-      value: String(conversationsToday ?? 0),
-      compare: "vs ontem",
-      delta: "6,7%",
-      tone: "pink" as const,
-      icon: IconMessage,
-    },
-  ];
+  const metricValues: Record<MetricKey, string> = {
+    open_value: formatBRL(openValue),
+    open_deals: String(openDeals.length),
+    won_value_month: formatBRL(wonValue),
+    won_count_month: String(wonThisMonth.length),
+    contacts: String(contacts),
+    overdue_tasks: String(overdue.length),
+    conversations_today: String(conversationsToday ?? 0),
+    conversion_rate: conversionRate === null ? "—" : `${conversionRate}%`,
+    avg_ticket: avgTicketCents === null ? "—" : formatBRL(avgTicketCents),
+  };
+
+  const metrics = preset.metrics.map((metric, index) => ({
+    label: metric.label,
+    value: metricValues[metric.key],
+    tone: index % 2 === 0 ? ("purple" as const) : ("pink" as const),
+    icon: METRIC_ICONS[metric.key],
+  }));
 
   const isFirstRun =
     contacts === 0 && allDeals.length === 0 && openTasks.length === 0;
@@ -192,10 +221,12 @@ export default async function DashboardPage() {
           <RevenueChart
             openValue={openValue}
             wonValue={wonValue}
+            series={wonSeries}
             contacts={contactsForForms}
             defaultDueAt={defaultDateTimeValue(now)}
+            preset={preset}
           />
-          <DealsTable deals={openDeals} contactMap={contactMap} />
+          <DealsTable deals={openDeals} contactMap={contactMap} preset={preset} />
         </div>
 
         <aside className="min-w-0 space-y-4 sm:space-y-5">
@@ -204,7 +235,7 @@ export default async function DashboardPage() {
         </aside>
       </section>
 
-      {isFirstRun && <FirstRunPanel />}
+      {isFirstRun && <FirstRunPanel preset={preset} />}
     </div>
   );
 }
@@ -219,8 +250,8 @@ function MetricCard({
 }: {
   label: string;
   value: string;
-  compare: string;
-  delta: string;
+  compare?: string;
+  delta?: string;
   tone: "purple" | "pink";
   icon: (props: { className?: string }) => JSX.Element;
 }) {
@@ -229,14 +260,10 @@ function MetricCard({
       ? {
           icon: "bg-pink-100 text-pink-600",
           badge: "bg-pink-100 text-pink-700",
-          stroke: "#ff6b9c",
-          fill: "rgba(255,107,156,0.18)",
         }
       : {
           icon: "bg-brand-100 text-brand-700",
           badge: "bg-brand-100 text-brand-800",
-          stroke: "#7b3ff2",
-          fill: "rgba(123,63,242,0.18)",
         };
 
   return (
@@ -253,49 +280,30 @@ function MetricCard({
         </span>
       </div>
 
-      <div className="relative z-10 mt-3 hidden flex-wrap items-center gap-1.5 text-xs font-bold sm:mt-4 sm:flex sm:gap-2">
-        <span className={`rounded-md px-2 py-1 ${toneClass.badge}`}>+ {delta}</span>
-        <span className="text-ink-muted">{compare}</span>
-      </div>
-
-      <Sparkline stroke={toneClass.stroke} fill={toneClass.fill} />
+      {(delta || compare) && (
+        <div className="relative z-10 mt-3 hidden flex-wrap items-center gap-1.5 text-xs font-bold sm:mt-4 sm:flex sm:gap-2">
+          {delta && <span className={`rounded-md px-2 py-1 ${toneClass.badge}`}>{delta}</span>}
+          {compare && <span className="text-ink-muted">{compare}</span>}
+        </div>
+      )}
     </article>
-  );
-}
-
-function Sparkline({ stroke, fill }: { stroke: string; fill: string }) {
-  return (
-    <svg
-      viewBox="0 0 320 70"
-      preserveAspectRatio="none"
-      className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-16 w-full sm:block"
-      aria-hidden="true"
-    >
-      <path
-        d="M0 55 C35 57 48 50 72 50 C102 50 118 38 145 43 C170 48 184 41 204 46 C230 52 238 31 268 34 C292 36 300 22 320 25 L320 70 L0 70 Z"
-        fill={fill}
-      />
-      <path
-        d="M0 55 C35 57 48 50 72 50 C102 50 118 38 145 43 C170 48 184 41 204 46 C230 52 238 31 268 34 C292 36 300 22 320 25"
-        fill="none"
-        stroke={stroke}
-        strokeLinecap="round"
-        strokeWidth="2.2"
-      />
-    </svg>
   );
 }
 
 function RevenueChart({
   openValue,
   wonValue,
+  series,
   contacts,
   defaultDueAt,
+  preset,
 }: {
   openValue: number;
   wonValue: number;
+  series: { day: number; cumulativeCents: number }[];
   contacts: ContactOption[];
   defaultDueAt: string;
+  preset: ProfessionPreset;
 }) {
   return (
     <section
@@ -305,88 +313,16 @@ function RevenueChart({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
-            Vendas em aberto (R$)
+            {preset.wonLabel} no mês (R$)
           </h2>
           <p className="mt-1 text-xs font-medium text-ink-muted sm:text-sm">
             Total aberto: {formatBRL(openValue)} - recebido no mês:{" "}
             {formatBRL(wonValue)}
           </p>
         </div>
-        <button
-          type="button"
-          className="nav-item hidden rounded-lg border border-line bg-white px-3 py-2 text-sm font-bold text-ink-soft shadow-[0_10px_28px_-24px_rgba(15,23,42,0.55)] hover:text-brand-700 sm:block"
-        >
-          Este mês
-        </button>
       </div>
 
-      <div className="mt-4 h-[190px] overflow-hidden rounded-lg bg-[linear-gradient(180deg,#ffffff_0%,#fbf8ff_100%)] sm:mt-5 sm:h-[280px]">
-        <svg
-          viewBox="0 0 820 300"
-          className="h-full w-full"
-          role="img"
-          aria-label="Grafico visual das vendas em aberto"
-        >
-          <defs>
-            <linearGradient id="dashboardArea" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#7b3ff2" stopOpacity="0.24" />
-              <stop offset="100%" stopColor="#7b3ff2" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          {[52, 98, 144, 190, 236].map((y) => (
-            <line
-              key={y}
-              x1="64"
-              x2="790"
-              y1={y}
-              y2={y}
-              stroke="#dbe2ef"
-              strokeDasharray="5 7"
-            />
-          ))}
-          <g className="hidden sm:block">
-            {["300k", "250k", "200k", "150k", "100k", "50k"].map((label, index) => (
-              <text
-                key={label}
-                x="20"
-                y={54 + index * 45}
-                fill="#60708f"
-                fontSize="13"
-                fontWeight="700"
-              >
-                {label}
-              </text>
-            ))}
-          </g>
-          <path
-            d="M64 236 C86 244 92 219 114 198 C143 170 166 181 190 177 C222 172 230 202 260 197 C294 192 296 145 334 146 C374 146 374 186 412 179 C446 173 453 123 492 123 C527 123 534 166 564 151 C592 137 590 101 632 106 C664 110 672 140 701 127 C730 114 738 91 768 95 C786 96 789 69 806 63 L806 300 L64 300 Z"
-            fill="url(#dashboardArea)"
-          />
-          <path
-            d="M64 236 C86 244 92 219 114 198 C143 170 166 181 190 177 C222 172 230 202 260 197 C294 192 296 145 334 146 C374 146 374 186 412 179 C446 173 453 123 492 123 C527 123 534 166 564 151 C592 137 590 101 632 106 C664 110 672 140 701 127 C730 114 738 91 768 95 C786 96 789 69 806 63"
-            fill="none"
-            stroke="#6d28d9"
-            strokeLinecap="round"
-            strokeWidth="4"
-          />
-          <g className="hidden sm:block">
-            {["01 Mai", "06 Mai", "11 Mai", "16 Mai", "21 Mai", "26 Mai", "31 Mai"].map(
-              (label, index) => (
-                <text
-                  key={label}
-                  x={70 + index * 112}
-                  y="286"
-                  fill="#60708f"
-                  fontSize="13"
-                  fontWeight="700"
-                >
-                  {label}
-                </text>
-              )
-            )}
-          </g>
-        </svg>
-      </div>
+      <RevenueLineChart series={series} />
 
       <ReminderModalClient contacts={contacts} defaultDueAt={defaultDueAt} />
     </section>
@@ -487,9 +423,11 @@ function ReminderModal({
 function DealsTable({
   deals,
   contactMap,
+  preset,
 }: {
   deals: Deal[];
   contactMap: Map<string, ContactOption>;
+  preset: ProfessionPreset;
 }) {
   const recent = deals.slice(0, 4);
 
@@ -518,7 +456,7 @@ function DealsTable({
               nao cabe na tela e virava scroll horizontal). */}
           <ul className="mt-4 space-y-2 sm:hidden">
             {recent.map((deal) => {
-              const stage = stageMeta(deal.stage);
+              const stage = stageMeta(deal.stage, preset);
               const contact = deal.contact_id ? contactMap.get(deal.contact_id) : null;
               return (
                 <li
@@ -563,7 +501,7 @@ function DealsTable({
               </thead>
               <tbody className="divide-y divide-line bg-white">
                 {recent.map((deal) => {
-                  const stage = stageMeta(deal.stage);
+                  const stage = stageMeta(deal.stage, preset);
                   const contact = deal.contact_id ? contactMap.get(deal.contact_id) : null;
                   return (
                     <tr key={deal.id} className="text-xs font-semibold text-ink-soft">
@@ -656,22 +594,22 @@ function TaskQueue({
   );
 }
 
-function FirstRunPanel() {
+function FirstRunPanel({ preset }: { preset: ProfessionPreset }) {
   const steps = [
     {
-      title: "Cadastre um contato",
+      title: preset.firstSteps[0],
       desc: "Comece com quem você está atendendo agora.",
       href: "/contacts",
       icon: IconUsers,
     },
     {
-      title: "Crie uma venda",
+      title: preset.firstSteps[1],
       desc: "Anote valor, etapa e próximo passo.",
       href: "/pipeline",
       icon: IconColumns,
     },
     {
-      title: "Crie um lembrete",
+      title: preset.firstSteps[2],
       desc: "Escolha quando chamar o cliente de novo.",
       href: "/tasks",
       icon: IconBell,
@@ -706,8 +644,8 @@ function FirstRunPanel() {
   );
 }
 
-function stageMeta(stage: DealStage) {
-  const label = DEAL_STAGES.find((item) => item.key === stage)?.label ?? "Etapa";
+function stageMeta(stage: DealStage, preset: ProfessionPreset) {
+  const label = preset.stages[stage]?.label ?? DEAL_STAGES.find((item) => item.key === stage)?.label ?? "Etapa";
   const map: Record<DealStage, string> = {
     novo: "bg-blue-50 text-blue-700",
     em_contato: "bg-brand-50 text-brand-700",

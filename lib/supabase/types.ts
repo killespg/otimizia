@@ -13,6 +13,21 @@ export const DEAL_STAGES: { key: DealStage; label: string }[] = [
   { key: "perdido", label: "Perdido" },
 ];
 
+export type Profile = {
+  id: string;
+  name: string | null;
+  profession_type: string;
+  cpf: string | null;
+  terms_accepted_at: string | null;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  plan: "free" | "pro";
+  plan_status: string | null;
+  current_period_end: string | null;
+  trial_ends_at: string | null;
+  created_at: string;
+};
+
 export type Contact = {
   id: string;
   owner_id: string;
@@ -22,6 +37,7 @@ export type Contact = {
   company: string | null;
   source: string | null;
   notes: string | null;
+  details: Record<string, string>;
   created_at: string;
 };
 
@@ -33,6 +49,7 @@ export type Deal = {
   value_cents: number;
   stage: DealStage;
   position: number;
+  details: Record<string, string>;
   created_at: string;
   closed_at: string | null;
 };

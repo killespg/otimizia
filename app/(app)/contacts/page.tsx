@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { PendingButton } from "@/components/PendingButton";
+import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact } from "@/lib/supabase/types";
 import { createContact } from "../actions";
 import { Avatar } from "../Avatar";
+import { PresetFields } from "../PresetFields";
 import {
   IconArrowRight,
   IconMessage,
@@ -15,10 +17,20 @@ import {
 
 export default async function ContactsPage() {
   const supabase = createClient();
-  const { data } = await supabase
-    .from("contacts")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const [
+    {
+      data: { user },
+    },
+    { data: profile },
+    { data },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("profiles").select("profession_type").maybeSingle(),
+    supabase.from("contacts").select("*").order("created_at", { ascending: false }),
+  ]);
+  const preset = getProfessionPreset(
+    profile?.profession_type ?? user?.user_metadata?.profession_type
+  );
   const contacts = (data ?? []) as Contact[];
   const withPhone = contacts.filter((contact) => contact.phone).length;
   const withCompany = contacts.filter((contact) => contact.company).length;
@@ -29,7 +41,7 @@ export default async function ContactsPage() {
         <div>
           <p className="text-sm font-black text-brand-700">Contatos</p>
           <h1 className="mt-2 text-[clamp(1.55rem,6vw,3.2rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
-            Seus clientes
+            {preset.contactsTitle}
           </h1>
           <p className="mt-2 hidden max-w-xl text-sm font-medium leading-relaxed text-ink-soft sm:block">
             Salve clientes, empresas e detalhes para não perder o próximo contato.
@@ -125,7 +137,7 @@ export default async function ContactsPage() {
             </span>
             <div>
               <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
-                Novo cliente
+                {preset.newContactTitle}
               </h2>
               <p className="text-sm font-medium text-ink-muted">Adicione em poucos campos.</p>
             </div>
@@ -144,6 +156,7 @@ export default async function ContactsPage() {
             <Field name="email" label="E-mail" type="email" maxLength={160} autoComplete="email" />
             <Field name="company" label="Empresa" maxLength={120} autoComplete="organization" />
             <Field name="source" label="Origem" maxLength={120} />
+            <PresetFields fields={preset.contactFields} />
             <div>
               <label className="label" htmlFor="notes">
                 Observações
