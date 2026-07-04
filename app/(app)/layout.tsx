@@ -11,6 +11,7 @@ import { logout } from "../(auth)/actions";
 import { SidebarNav, MobileTabBar } from "./AppNav";
 import { Avatar } from "./Avatar";
 import { IconChevronRight, IconLogout, IconSettings } from "./icons";
+import { TrialBanner } from "./TrialBanner";
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
@@ -61,7 +62,6 @@ export default async function AppLayout({
     profile?.profession_type ?? user.user_metadata?.profession_type
   );
   const access = getPlanAccess(profile);
-  const showTrialBanner = access.status === "trialing" && (access.trialDaysLeft ?? 99) <= 7;
 
   const email = user.email ?? "Conta";
   const handle = email.split("@")[0] || "João";
@@ -90,6 +90,22 @@ export default async function AppLayout({
 
           <div className="space-y-3 px-5 pb-5">
             <ThemeToggle className="w-full justify-between" />
+
+            {access.status === "trialing" && (
+              <div className="rounded-lg border border-line bg-surface-2 p-3">
+                <p className="text-xs font-black uppercase tracking-[0.12em] text-brand-700">
+                  Teste grátis
+                </p>
+                <p className="mt-1 text-sm font-bold text-ink">
+                  Faltam {access.trialDaysLeft}{" "}
+                  {access.trialDaysLeft === 1 ? "dia" : "dias"}
+                </p>
+                <p className="mt-1 text-xs font-medium leading-relaxed text-ink-muted">
+                  Depois do período, você precisa assinar o Pro pra continuar
+                  usando o OtimizIA.
+                </p>
+              </div>
+            )}
 
             <Link
               href="/settings"
@@ -149,14 +165,8 @@ export default async function AppLayout({
             </div>
           </header>
 
-          {showTrialBanner && (
-            <Link
-              href="/settings"
-              className="nav-item flex items-center justify-center gap-2 bg-brand-700 px-4 py-2 text-center text-xs font-bold text-white hover:bg-brand-800 sm:text-sm"
-            >
-              Faltam {access.trialDaysLeft} {access.trialDaysLeft === 1 ? "dia" : "dias"} no
-              seu teste grátis — Assinar agora
-            </Link>
+          {access.status === "trialing" && access.trialDaysLeft !== null && (
+            <TrialBanner trialDaysLeft={access.trialDaysLeft} />
           )}
 
           <main className="mx-auto w-full max-w-[1500px] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-8 sm:pb-8 sm:pt-7 lg:px-10">

@@ -82,6 +82,29 @@ export async function signup(formData: FormData) {
   redirect("/dashboard");
 }
 
+export async function requestPasswordReset(formData: FormData) {
+  const supabase = createClient();
+  const email = emailField(formData.get("email"));
+  if (!email) {
+    redirectWithError("/forgot-password", "Informe um e-mail válido.");
+  }
+
+  const headersList = headers();
+  const host = headersList.get("x-forwarded-host") ?? headersList.get("host");
+  const protocol = headersList.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
+
+  await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${protocol}://${host}/reset-password`,
+  });
+
+  // Sempre mostra a mesma mensagem, exista ou não conta com esse e-mail —
+  // evita revelar quais e-mails têm cadastro.
+  redirectWithMessage(
+    "/login",
+    "Se esse e-mail tiver uma conta, enviamos um link para redefinir a senha."
+  );
+}
+
 export async function logout() {
   const supabase = createClient();
   await supabase.auth.signOut();

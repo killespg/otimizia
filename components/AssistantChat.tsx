@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { IconArrowRight, IconBot } from "@/app/(app)/icons";
 import { useAssistantChat } from "@/lib/ai/useAssistantChat";
+import { VoicePanel } from "./VoicePanel";
 
 const SUGGESTIONS = [
   "Como está meu negócio hoje?",
@@ -104,6 +105,10 @@ export function AssistantChat() {
                 {status}
               </div>
             )}
+          </div>
+
+          <div className="border-t border-line px-3 py-3">
+            <VoicePanel />
           </div>
 
           <form

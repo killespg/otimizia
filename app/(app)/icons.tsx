@@ -179,6 +179,14 @@ export function IconTrash({ className }: IconProps) {
   );
 }
 
+export function IconX({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M6 6l12 12M18 6 6 18" {...stroke} />
+    </svg>
+  );
+}
+
 export function IconSettings({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

@@ -35,14 +35,22 @@ export default function LoginPage({
           maxLength={160}
           autoComplete="email"
         />
-        <AuthField
-          name="password"
-          label="Senha"
-          type="password"
-          required
-          maxLength={200}
-          autoComplete="current-password"
-        />
+        <div>
+          <AuthField
+            name="password"
+            label="Senha"
+            type="password"
+            required
+            maxLength={200}
+            autoComplete="current-password"
+          />
+          <Link
+            href="/forgot-password"
+            className="nav-item mt-1.5 inline-block text-xs font-bold text-ink-muted hover:text-brand-700"
+          >
+            Esqueci minha senha
+          </Link>
+        </div>
         <PendingButton className="btn w-full py-3 text-base" pendingLabel="Entrando">
           Entrar
         </PendingButton>

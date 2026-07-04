@@ -1227,6 +1227,28 @@ label[class*="border-line"] > *,
   z-index: 1;
 }
 
+/* .reminder-launch/.reminder-modal sao filhos diretos do card do grafico
+   (uma <section> com "border-line" na classe), entao a regra generica
+   acima forcava position:relative neles (mesma especificidade de
+   ".absolute"/".fixed" do Tailwind, definida depois) - o botao "Novo
+   lembrete" deixava de flutuar no canto do card e virava só mais um item
+   no fluxo normal, aparecendo embaixo à esquerda em vez de fixo no canto
+   inferior direito. Selector mais especifico (parent + classe) garante
+   que vença independente da ordem no arquivo. O modal aberto usa
+   fixed no mobile (vira uma folha inteira na tela) e absolute só a
+   partir do lg, então precisa do mesmo responsivo aqui. */
+section[class*="border-line"] > .reminder-launch {
+  position: absolute;
+}
+section[class*="border-line"] > .reminder-modal {
+  position: fixed;
+}
+@media (min-width: 1024px) {
+  section[class*="border-line"] > .reminder-modal {
+    position: absolute;
+  }
+}
+
 article[class*="border-line"]::before,
 section[class*="border-line"]::before,
 form[class*="border-line"]::before,

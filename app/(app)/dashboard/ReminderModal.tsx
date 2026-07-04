@@ -24,7 +24,7 @@ export function ReminderModal({ contacts, defaultDueAt }: ReminderModalProps) {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="reminder-launch nav-item absolute bottom-4 right-4 z-10 inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-3 py-2.5 text-sm font-black text-brand-700 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] hover:bg-surface-2 sm:px-4 sm:py-3 lg:bottom-6 lg:right-6"
+        className="reminder-launch nav-item absolute top-4 right-4 z-10 inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-3 py-2.5 text-sm font-black text-brand-700 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] hover:bg-surface-2 sm:px-4 sm:py-3 lg:top-6 lg:right-6"
       >
         <IconBell className="h-5 w-5" />
         <span className="hidden sm:inline">Novo lembrete</span>
@@ -35,7 +35,7 @@ export function ReminderModal({ contacts, defaultDueAt }: ReminderModalProps) {
   return (
     <form
       action={createTask}
-      className="reminder-modal fixed inset-x-3 bottom-[calc(6.6rem+env(safe-area-inset-bottom))] z-50 max-h-[min(560px,calc(100dvh-8rem))] overflow-y-auto rounded-lg border border-line bg-white p-5 shadow-[0_22px_60px_-28px_rgba(15,23,42,0.65)] lg:absolute lg:inset-x-auto lg:bottom-6 lg:right-6 lg:z-10 lg:max-h-none lg:w-[360px] lg:overflow-visible"
+      className="reminder-modal fixed inset-x-3 bottom-[calc(6.6rem+env(safe-area-inset-bottom))] z-50 max-h-[min(560px,calc(100dvh-8rem))] overflow-y-auto rounded-lg border border-line bg-white p-5 shadow-[0_22px_60px_-28px_rgba(15,23,42,0.65)] lg:absolute lg:inset-x-auto lg:bottom-auto lg:top-6 lg:right-6 lg:z-10 lg:max-h-none lg:w-[360px] lg:overflow-visible"
     >
       <input type="hidden" name="return_to" value="/dashboard" />
       <div className="flex items-center justify-between gap-3">
