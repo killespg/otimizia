@@ -42,7 +42,7 @@ export default function TaskItem({
       <div className="flex shrink-0 items-center gap-2">
         {task.due_at &&
           (isOverdue ? (
-            <span className="rounded-md bg-pink-100 px-2.5 py-1 text-xs font-black tabular-nums text-pink-700">
+            <span className="rounded-md bg-danger-50 px-2.5 py-1 text-xs font-black tabular-nums text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]">
               {formatDateTime(task.due_at)}
             </span>
           ) : (
@@ -53,7 +53,7 @@ export default function TaskItem({
         <form action={deleteTask}>
           <input type="hidden" name="id" value={task.id} />
           <PendingButton
-            className="icon-button grid h-9 w-9 place-items-center rounded-md text-ink-muted/50 opacity-100 hover:bg-danger-50 hover:text-danger-600 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+            className="icon-button grid h-11 w-11 place-items-center rounded-md text-ink-muted/50 opacity-100 hover:bg-danger-50 hover:text-danger-600 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
             title="Excluir tarefa"
             aria-label={`Excluir ${task.title}`}
             iconOnly

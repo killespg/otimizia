@@ -154,7 +154,7 @@ function MetricCard({
         <span
           className={
             "hidden h-9 w-9 shrink-0 place-items-center rounded-full sm:grid sm:h-11 sm:w-11 " +
-            (pink ? "bg-pink-100 text-pink-600" : "bg-brand-50 text-brand-700")
+            (pink ? "bg-[#fff7e6] text-[#8a6500]" : "bg-brand-50 text-brand-700")
           }
         >
           <Icon className="h-4 w-4 sm:h-5 sm:w-5" />

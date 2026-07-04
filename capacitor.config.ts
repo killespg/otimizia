@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: "OtimizIA",
   webDir: "public",
   server: {
-    url: "https://saas-red-beta.vercel.app",
+    url: "https://useotimizia.com",
     cleartext: false,
   },
   android: {

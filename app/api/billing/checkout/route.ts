@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
@@ -25,16 +26,25 @@ export async function POST(request: Request) {
       metadata: { supabase_user_id: user.id },
     });
     customerId = customer.id;
-    await supabase
+    const { error } = await createAdminClient()
       .from("profiles")
       .update({ stripe_customer_id: customerId })
       .eq("id", user.id);
+    if (error) {
+      console.error("[billing/checkout] falha ao vincular customer", error);
+      return NextResponse.redirect(new URL("/settings?checkout=error", request.url));
+    }
   }
 
   const origin = new URL(request.url).origin;
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
+    client_reference_id: user.id,
+    metadata: { supabase_user_id: user.id },
+    subscription_data: {
+      metadata: { supabase_user_id: user.id },
+    },
     line_items: [{ price: process.env.STRIPE_PRICE_ID_PRO!, quantity: 1 }],
     success_url: `${origin}/settings?checkout=success`,
     cancel_url: `${origin}/settings?checkout=cancel`,

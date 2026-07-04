@@ -1,4 +1,5 @@
 import { createHash } from "crypto";
+import { getUserPlanAccess } from "@/lib/plan-access";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -13,6 +14,10 @@ export async function GET() {
 
   if (!user) {
     return Response.json({ error: "Nao autorizado." }, { status: 401 });
+  }
+  const access = await getUserPlanAccess(supabase, user.id);
+  if (!access.hasAccess) {
+    return Response.json({ error: "Seu teste gratis acabou." }, { status: 402 });
   }
 
   const apiKey = process.env.OPENAI_API_KEY;

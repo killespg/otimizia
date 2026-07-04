@@ -103,6 +103,19 @@ export default function SignupPage({
             .
           </span>
         </label>
+        <label className="flex items-start gap-2.5 rounded-lg border border-line bg-surface-2 p-3 text-sm font-medium text-ink-soft">
+          <input
+            type="checkbox"
+            name="trial_notice_accepted"
+            required
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
+          />
+          <span>
+            Estou ciente de que o teste gratis dura 30 dias e que, depois disso,
+            sera necessario contratar um plano pago para continuar usando o
+            OtimizIA.
+          </span>
+        </label>
         <PendingButton className="btn w-full py-3 text-base" pendingLabel="Criando">
           Criar conta grátis
         </PendingButton>

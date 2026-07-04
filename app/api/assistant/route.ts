@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { User } from "@supabase/supabase-js";
+import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset, type ProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import { CRM_TOOLS, executeTool, isMutatingTool } from "@/lib/ai/tools";
@@ -23,6 +24,10 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser();
   if (!user) {
     return Response.json({ error: "Não autorizado." }, { status: 401 });
+  }
+  const access = await getUserPlanAccess(supabase, user.id);
+  if (!access.hasAccess) {
+    return Response.json({ error: "Seu teste gratis acabou." }, { status: 402 });
   }
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json(

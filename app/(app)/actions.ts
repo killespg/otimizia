@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset, normalizeProfession, type FieldSpec } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import { DEAL_STAGES, type DealStage } from "@/lib/supabase/types";
@@ -26,8 +27,15 @@ async function requireUser() {
   return { supabase, user };
 }
 
-async function requireUserWithPreset() {
+async function requireActiveUser() {
   const { supabase, user } = await requireUser();
+  const access = await getUserPlanAccess(supabase, user.id);
+  if (!access.hasAccess) redirect("/upgrade");
+  return { supabase, user };
+}
+
+async function requireUserWithPreset() {
+  const { supabase, user } = await requireActiveUser();
   const { data: profile } = await supabase
     .from("profiles")
     .select("profession_type")
@@ -110,7 +118,7 @@ export async function updateContact(formData: FormData) {
 }
 
 export async function deleteContact(formData: FormData) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireActiveUser();
   const id = requiredText(formData.get("id"), "Contato", 80);
   const { error } = await supabase
     .from("contacts")
@@ -124,8 +132,12 @@ export async function deleteContact(formData: FormData) {
 
 // ---------- Interactions ----------
 export async function createInteraction(formData: FormData) {
-  const { supabase, user } = await requireUser();
-  const contactId = requiredText(formData.get("contact_id"), "Contato", 80);
+  const { supabase, user } = await requireActiveUser();
+  const contactId = await requireOwnedContactId(
+    supabase,
+    user.id,
+    formData.get("contact_id")
+  );
   const { error } = await supabase.from("interactions").insert({
     owner_id: user.id,
     contact_id: contactId,
@@ -138,9 +150,14 @@ export async function createInteraction(formData: FormData) {
 // ---------- Deals ----------
 export async function createDeal(formData: FormData) {
   const { supabase, user, preset } = await requireUserWithPreset();
+  const contactId = await ownedContactIdOrNull(
+    supabase,
+    user.id,
+    formData.get("contact_id")
+  );
   const { error } = await supabase.from("deals").insert({
     owner_id: user.id,
-    contact_id: emptyToNull(formData.get("contact_id"), 80),
+    contact_id: contactId,
     title: requiredText(formData.get("title"), "Venda", LIMIT.title),
     value_cents: moneyToCents(formData.get("value")),
     stage: "novo",
@@ -153,7 +170,7 @@ export async function createDeal(formData: FormData) {
 }
 
 export async function moveDeal(id: string, stage: DealStage) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireActiveUser();
   if (!isDealStage(stage)) throw new Error("Etapa de venda inválida.");
 
   const closed = stage === "ganho" || stage === "perdido";
@@ -168,7 +185,7 @@ export async function moveDeal(id: string, stage: DealStage) {
 }
 
 export async function deleteDeal(formData: FormData) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireActiveUser();
   const { error } = await supabase
     .from("deals")
     .delete()
@@ -181,10 +198,15 @@ export async function deleteDeal(formData: FormData) {
 
 // ---------- Tasks ----------
 export async function createTask(formData: FormData) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireActiveUser();
+  const contactId = await ownedContactIdOrNull(
+    supabase,
+    user.id,
+    formData.get("contact_id")
+  );
   const { error } = await supabase.from("tasks").insert({
     owner_id: user.id,
-    contact_id: emptyToNull(formData.get("contact_id"), 80),
+    contact_id: contactId,
     title: requiredText(formData.get("title"), "Lembrete", LIMIT.title),
     due_at: dateTimeOrNull(formData.get("due_at")),
   });
@@ -195,7 +217,7 @@ export async function createTask(formData: FormData) {
 }
 
 export async function toggleTask(id: string, done: boolean) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireActiveUser();
   const { error } = await supabase
     .from("tasks")
     .update({ done })
@@ -207,7 +229,7 @@ export async function toggleTask(id: string, done: boolean) {
 }
 
 export async function deleteTask(formData: FormData) {
-  const { supabase, user } = await requireUser();
+  const { supabase, user } = await requireActiveUser();
   const { error } = await supabase
     .from("tasks")
     .delete()
@@ -264,6 +286,34 @@ function dateTimeOrNull(v: FormDataEntryValue | null): string | null {
   if (!raw) return null;
   const date = new Date(raw);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+async function ownedContactIdOrNull(
+  supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
+  userId: string,
+  v: FormDataEntryValue | null
+): Promise<string | null> {
+  const id = emptyToNull(v, 80);
+  if (!id) return null;
+  const { data, error } = await supabase
+    .from("contacts")
+    .select("id")
+    .eq("id", id)
+    .eq("owner_id", userId)
+    .maybeSingle();
+  ensureOk(error, "Contato invÃ¡lido.");
+  if (!data) throw new Error("Contato invÃ¡lido.");
+  return id;
+}
+
+async function requireOwnedContactId(
+  supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
+  userId: string,
+  v: FormDataEntryValue | null
+): Promise<string> {
+  const id = await ownedContactIdOrNull(supabase, userId, v);
+  if (!id) throw new Error("Contato obrigatÃ³rio.");
+  return id;
 }
 
 function isDealStage(stage: string): stage is DealStage {

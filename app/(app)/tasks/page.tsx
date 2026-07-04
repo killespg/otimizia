@@ -137,10 +137,10 @@ function TaskGroup({
   empty: string;
 }) {
   const toneClass: Record<Tone, string> = {
-    danger: "bg-pink-100 text-pink-700",
-    today: "bg-brand-50 text-brand-700",
-    upcoming: "bg-blue-50 text-blue-700",
-    done: "bg-success-50 text-success-700",
+    danger: "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
+    today: "bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-brand-200",
+    upcoming: "bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-200",
+    done: "bg-success-50 text-success-700 dark:bg-[#062d1c] dark:text-[#9ff0c5]",
   };
 
   return (
@@ -200,7 +200,7 @@ function MetricCard({
         <span
           className={
             "hidden h-11 w-11 place-items-center rounded-full sm:grid " +
-            (pink ? "bg-pink-100 text-pink-600" : "bg-brand-50 text-brand-700")
+            (pink ? "bg-[#fff7e6] text-[#8a6500]" : "bg-brand-50 text-brand-700")
           }
         >
           <Icon className="h-5 w-5" />

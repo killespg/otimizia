@@ -33,6 +33,7 @@ export async function signup(formData: FormData) {
   const professionType = normalizeProfession(formData.get("profession_type"));
   const cpf = onlyDigits(textField(formData.get("cpf"), 14));
   const termsAccepted = formData.get("terms_accepted") === "on";
+  const trialNoticeAccepted = formData.get("trial_notice_accepted") === "on";
 
   if (!email || !password) {
     redirectWithError("/signup", "Preencha e-mail e senha.");
@@ -50,6 +51,13 @@ export async function signup(formData: FormData) {
     redirectWithError("/signup", "É necessário aceitar os termos para criar a conta.");
   }
 
+  if (!trialNoticeAccepted) {
+    redirectWithError(
+      "/signup",
+      "E necessario confirmar que o teste gratis dura 30 dias e que depois sera preciso pagar."
+    );
+  }
+
   const headersList = headers();
   const host = headersList.get("x-forwarded-host") ?? headersList.get("host");
   const protocol = headersList.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
@@ -63,6 +71,7 @@ export async function signup(formData: FormData) {
         profession_type: professionType,
         cpf,
         terms_accepted: "true",
+        trial_notice_accepted: "true",
       },
       emailRedirectTo: `${protocol}://${host}/login`,
     },

@@ -75,6 +75,15 @@ export default async function SettingsPage({
             required
             maxLength={160}
           />
+          <Field
+            id="email-current-password"
+            name="current_password"
+            label="Senha atual"
+            type="password"
+            required
+            minLength={6}
+            maxLength={200}
+          />
           <p className="text-xs font-medium text-ink-muted">
             Você vai receber um e-mail de confirmação no endereço novo antes da troca valer.
           </p>
@@ -94,6 +103,15 @@ export default async function SettingsPage({
         </div>
 
         <form action={updatePassword} className="space-y-2 border-t border-line pt-4">
+          <Field
+            id="password-current-password"
+            name="current_password"
+            label="Senha atual"
+            type="password"
+            required
+            minLength={6}
+            maxLength={200}
+          />
           <Field name="password" label="Nova senha" type="password" minLength={6} maxLength={200} />
           <PendingButton className="btn-soft" pendingLabel="Salvando">
             Atualizar senha
@@ -223,6 +241,7 @@ function SectionCard({
 }
 
 function Field({
+  id,
   name,
   label,
   type = "text",
@@ -231,6 +250,7 @@ function Field({
   minLength,
   maxLength,
 }: {
+  id?: string;
   name: string;
   label: string;
   type?: string;
@@ -241,7 +261,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="label" htmlFor={name}>
+      <label className="label" htmlFor={id ?? name}>
         {label}
         {required && (
           <>
@@ -253,7 +273,7 @@ function Field({
         )}
       </label>
       <input
-        id={name}
+        id={id ?? name}
         name={name}
         type={type}
         required={required}

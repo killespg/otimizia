@@ -17,6 +17,8 @@ export function AssistantChat() {
   const { messages, status, sending, send } = useAssistantChat();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const fabRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -25,6 +27,41 @@ export function AssistantChat() {
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+        fabRef.current?.focus();
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+      const sheet = sheetRef.current;
+      if (!sheet) return;
+      const focusable = Array.from(
+        sheet.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
   function submit(text: string) {
@@ -36,8 +73,10 @@ export function AssistantChat() {
     <>
       {open && (
         <div
+          ref={sheetRef}
           className="assistant-sheet fixed inset-x-3 bottom-[calc(6.6rem+env(safe-area-inset-bottom))] z-50 flex max-h-[min(620px,calc(100dvh-8rem))] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-[0_24px_70px_-30px_rgba(7,8,28,0.55)] sm:inset-x-auto sm:bottom-24 sm:right-6 sm:w-[400px]"
           role="dialog"
+          aria-modal="true"
           aria-label="Sócio-Assistente"
         >
           <div className="flex items-center gap-3 border-b border-line bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_60%,#0bbfe8_100%)] px-4 py-3 text-white">
@@ -52,8 +91,11 @@ export function AssistantChat() {
             </div>
             <button
               type="button"
-              onClick={() => setOpen(false)}
-              className="rounded-md px-2 py-1 text-lg leading-none text-white/80 hover:bg-white/15 hover:text-white focus-visible:ring-2 focus-visible:ring-white"
+              onClick={() => {
+                setOpen(false);
+                fabRef.current?.focus();
+              }}
+              className="grid min-h-11 min-w-11 place-items-center rounded-md text-lg leading-none text-white/80 hover:bg-white/15 hover:text-white focus-visible:ring-2 focus-visible:ring-white"
               aria-label="Fechar Sócio-Assistente"
             >
               ×
@@ -124,12 +166,12 @@ export function AssistantChat() {
               onChange={(event) => setInput(event.target.value)}
               placeholder="Fala comigo…"
               maxLength={4000}
-              className="h-10 min-w-0 flex-1 rounded-lg border border-line bg-surface-2 px-3 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+              className="h-11 min-w-0 flex-1 rounded-lg border border-line bg-surface-2 px-3 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
             />
             <button
               type="submit"
               disabled={sending || !input.trim()}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] text-white transition-opacity disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-brand-600"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] text-white transition-opacity disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-brand-600"
               aria-label="Enviar mensagem"
             >
               <IconArrowRight className="h-4 w-4" />
@@ -138,14 +180,17 @@ export function AssistantChat() {
         </div>
       )}
 
+      {!open && (
       <button
+        ref={fabRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(true)}
         className="assistant-fab fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_60%,#0bbfe8_100%)] text-white shadow-[0_16px_40px_-14px_rgba(92,34,232,0.9)] transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-brand-600 sm:bottom-6 sm:right-6"
-        aria-label={open ? "Fechar Sócio-Assistente" : "Abrir Sócio-Assistente"}
+        aria-label="Abrir Sócio-Assistente"
       >
         <IconBot className="h-6 w-6" />
       </button>
+      )}
     </>
   );
 }

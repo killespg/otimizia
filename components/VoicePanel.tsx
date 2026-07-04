@@ -40,7 +40,7 @@ export function VoicePanel() {
             <button
               type="button"
               onClick={stopVoice}
-              className="nav-item inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-danger-200 bg-danger-50 px-2.5 text-[11px] font-black text-danger-700 hover:bg-danger-100"
+              className="nav-item inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg border border-danger-200 bg-danger-50 px-3 text-[11px] font-black text-danger-700 hover:bg-danger-100"
             >
               Encerrar
             </button>
@@ -128,7 +128,7 @@ export function VoicePanel() {
             <button
               type="button"
               onClick={stopVoice}
-              className="nav-item inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-danger-200 bg-danger-50 px-3 text-xs font-black text-danger-700 hover:bg-danger-100"
+              className="nav-item inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-danger-200 bg-danger-50 px-3 text-xs font-black text-danger-700 hover:bg-danger-100"
             >
               Cancelar
             </button>
@@ -136,7 +136,7 @@ export function VoicePanel() {
             <button
               type="button"
               onClick={startVoice}
-              className="nav-item inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-brand-700 px-3 text-xs font-black text-white hover:bg-brand-800"
+              className="nav-item inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg bg-brand-700 px-3 text-xs font-black text-white hover:bg-brand-800"
             >
               <IconMic className="h-4 w-4" />
               {voiceStatus === "error" ? "Tentar de novo" : "Falar"}

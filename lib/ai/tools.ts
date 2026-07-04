@@ -529,11 +529,12 @@ async function updateContact(supabase: SupabaseClient, userId: string, input: To
 }
 
 async function logInteraction(supabase: SupabaseClient, userId: string, input: ToolInput) {
+  const contactId = await requireOwnedContactId(supabase, userId, input.contato_id);
   const { data, error } = await supabase
     .from("interactions")
     .insert({
       owner_id: userId,
-      contact_id: str(input.contato_id, "contato_id"),
+      contact_id: contactId,
       body: str(input.texto, "texto", 1200),
     })
     .select("id")
@@ -551,11 +552,13 @@ async function createDeal(supabase: SupabaseClient, userId: string, input: ToolI
     cents = Math.min(Math.round(n * 100), 999_999_999_99);
   }
 
+  const contactId = await ownedContactIdOrNull(supabase, userId, input.contato_id);
+
   const { data, error } = await supabase
     .from("deals")
     .insert({
       owner_id: userId,
-      contact_id: optionalStr(input.contato_id, 80),
+      contact_id: contactId,
       title: str(input.titulo, "titulo", 160),
       value_cents: cents,
       stage: "novo",
@@ -594,11 +597,13 @@ async function createTask(supabase: SupabaseClient, userId: string, input: ToolI
     dueAt = date.toISOString();
   }
 
+  const contactId = await ownedContactIdOrNull(supabase, userId, input.contato_id);
+
   const { data, error } = await supabase
     .from("tasks")
     .insert({
       owner_id: userId,
-      contact_id: optionalStr(input.contato_id, 80),
+      contact_id: contactId,
       title: str(input.titulo, "titulo", 160),
       due_at: dueAt,
     })
@@ -672,6 +677,34 @@ function emailOrNull(v: unknown): string | null {
   if (!email) return null;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("E-mail inválido.");
   return email;
+}
+
+async function ownedContactIdOrNull(
+  supabase: SupabaseClient,
+  userId: string,
+  v: unknown
+): Promise<string | null> {
+  const id = optionalStr(v, 80);
+  if (!id) return null;
+  const { data, error } = await supabase
+    .from("contacts")
+    .select("id")
+    .eq("id", id)
+    .eq("owner_id", userId)
+    .maybeSingle();
+  ensureOk(error);
+  if (!data) throw new Error("Contato nÃ£o encontrado.");
+  return id;
+}
+
+async function requireOwnedContactId(
+  supabase: SupabaseClient,
+  userId: string,
+  v: unknown
+): Promise<string> {
+  const id = await ownedContactIdOrNull(supabase, userId, v);
+  if (!id) throw new Error("Campo obrigatÃ³rio: contato_id.");
+  return id;
 }
 
 function clampInt(v: unknown, min: number, max: number, fallback: number): number {

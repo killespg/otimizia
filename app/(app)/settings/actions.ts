@@ -30,7 +30,8 @@ export async function updateName(formData: FormData) {
 }
 
 export async function updateEmail(formData: FormData) {
-  const { supabase } = await requireUser();
+  const { supabase, user } = await requireUser();
+  await verifyCurrentPassword(supabase, user, formData);
   const email = text(formData.get("email"), 160).toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw new Error("E-mail inválido.");
@@ -42,7 +43,8 @@ export async function updateEmail(formData: FormData) {
 }
 
 export async function updatePassword(formData: FormData) {
-  const { supabase } = await requireUser();
+  const { supabase, user } = await requireUser();
+  await verifyCurrentPassword(supabase, user, formData);
   const password = text(formData.get("password"), 200);
   if (password.length < 6) {
     throw new Error("Use uma senha com pelo menos 6 caracteres.");
@@ -54,7 +56,8 @@ export async function updatePassword(formData: FormData) {
 }
 
 export async function deleteAccount(formData: FormData) {
-  const { user } = await requireUser();
+  const { supabase, user } = await requireUser();
+  await verifyCurrentPassword(supabase, user, formData);
   const confirmation = text(formData.get("confirmation"), 20).toUpperCase();
   if (confirmation !== "EXCLUIR") {
     throw new Error('Digite "EXCLUIR" para confirmar.');
@@ -89,6 +92,23 @@ function requiredText(v: FormDataEntryValue | null, label: string, max: number):
   const s = text(v, max);
   if (!s) throw new Error(`${label} obrigatório.`);
   return s;
+}
+
+async function verifyCurrentPassword(
+  supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
+  user: Awaited<ReturnType<typeof requireUser>>["user"],
+  formData: FormData
+) {
+  const currentPassword = text(formData.get("current_password"), 200);
+  if (!user.email || currentPassword.length < 6) {
+    throw new Error("Confirme sua senha atual.");
+  }
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: currentPassword,
+  });
+  ensureOk(error, "Senha atual incorreta.");
 }
 
 function ensureOk(error: unknown, fallback: string) {

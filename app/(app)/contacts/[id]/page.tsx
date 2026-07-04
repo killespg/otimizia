@@ -283,7 +283,7 @@ function MiniStat({
       <span
         className={
           "grid h-9 w-9 place-items-center rounded-full " +
-          (pink ? "bg-pink-100 text-pink-600" : "bg-brand-50 text-brand-700")
+          (pink ? "bg-[#fff7e6] text-[#8a6500]" : "bg-brand-50 text-brand-700")
         }
       >
         <Icon className="h-4 w-4" />

@@ -196,7 +196,7 @@ export default function Home() {
                 <LandingButton href="/signup">Começar grátis</LandingButton>
                 <Link
                   href="/login"
-                  className="landing-secondary nav-item inline-flex min-h-8 w-full items-center justify-center rounded-full px-3 text-sm font-black text-brand-700 hover:text-brand-900 sm:min-h-14 sm:w-auto sm:border sm:border-line sm:bg-white sm:px-6 sm:text-base sm:text-ink-soft sm:shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] sm:hover:border-brand-200 sm:hover:bg-brand-50 sm:hover:text-brand-800"
+                  className="landing-secondary nav-item inline-flex min-h-12 w-full items-center justify-center rounded-full border border-white/18 bg-white/8 px-6 text-sm font-black text-white shadow-[0_18px_36px_-28px_rgba(0,0,0,0.75)] hover:border-white/30 hover:bg-white/14 hover:text-white sm:min-h-14 sm:w-auto sm:text-base"
                 >
                   Entrar no painel
                 </Link>

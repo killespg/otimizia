@@ -22,8 +22,8 @@ const STAGE_META: Record<
   { dot: string; chip: string; empty: string }
 > = {
   novo: {
-    dot: "bg-blue-500",
-    chip: "bg-blue-50 text-blue-700",
+    dot: "bg-sky-500",
+    chip: "bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-200",
     empty: "Novas vendas entram aqui.",
   },
   em_contato: {
@@ -32,18 +32,18 @@ const STAGE_META: Record<
     empty: "Sem contato em aberto.",
   },
   negociacao: {
-    dot: "bg-pink-500",
-    chip: "bg-pink-50 text-pink-700",
+    dot: "bg-honey",
+    chip: "bg-[#fff7e6] text-[#8a6500] dark:bg-[#3b2b0a] dark:text-[#f8d278]",
     empty: "Nenhuma proposta agora.",
   },
   ganho: {
     dot: "bg-success-500",
-    chip: "bg-success-50 text-success-700",
+    chip: "bg-success-50 text-success-700 dark:bg-[#062d1c] dark:text-[#9ff0c5]",
     empty: "Vendas ganhas aparecem aqui.",
   },
   perdido: {
     dot: "bg-danger-500",
-    chip: "bg-danger-50 text-danger-700",
+    chip: "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
     empty: "Sem perdas registradas.",
   },
 };
@@ -220,7 +220,7 @@ export default function Board({
                             aria-expanded={menuOpen}
                             aria-label={`Mover ${deal.title} para outra etapa`}
                             className={
-                              "icon-button grid h-8 w-8 place-items-center rounded-md text-ink-muted/50 hover:bg-brand-50 hover:text-brand-700 " +
+                              "icon-button grid h-11 w-11 place-items-center rounded-md text-ink-muted/50 hover:bg-brand-50 hover:text-brand-700 " +
                               (menuOpen ? "bg-brand-50 text-brand-700" : "")
                             }
                           >
@@ -234,7 +234,7 @@ export default function Board({
                           <form action={deleteDeal} className="shrink-0">
                             <input type="hidden" name="id" value={deal.id} />
                             <PendingButton
-                              className="icon-button grid h-8 w-8 place-items-center rounded-md text-ink-muted/50 opacity-100 hover:bg-danger-50 hover:text-danger-600 sm:opacity-0 sm:group-hover:opacity-100"
+                              className="icon-button grid h-11 w-11 place-items-center rounded-md text-ink-muted/50 opacity-100 hover:bg-danger-50 hover:text-danger-600 sm:opacity-0 sm:group-hover:opacity-100"
                               title="Excluir venda"
                               aria-label={`Excluir ${deal.title}`}
                               iconOnly
@@ -256,7 +256,7 @@ export default function Board({
                                 commitMove(deal.id, s.key);
                                 setMenuId(null);
                               }}
-                              className="rounded-md border border-line bg-white px-2.5 py-1.5 text-xs font-bold text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                              className="min-h-11 rounded-md border border-line bg-white px-3 py-2 text-xs font-bold text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
                             >
                           {stages?.[s.key]?.label ?? s.label}
                             </button>

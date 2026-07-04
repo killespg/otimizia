@@ -32,24 +32,45 @@ export async function POST(request: Request) {
       const session = event.data.object as Stripe.Checkout.Session;
       const customerId = session.customer as string;
       const subscriptionId = session.subscription as string | null;
+      const userId =
+        session.client_reference_id ?? session.metadata?.supabase_user_id ?? undefined;
       if (subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        await syncSubscription(supabase, customerId, subscription);
+        await syncSubscription(supabase, customerId, subscription, userId);
       }
       break;
     }
     case "customer.subscription.created":
     case "customer.subscription.updated": {
       const subscription = event.data.object as Stripe.Subscription;
-      await syncSubscription(supabase, subscription.customer as string, subscription);
+      await syncSubscription(
+        supabase,
+        subscription.customer as string,
+        subscription,
+        subscription.metadata?.supabase_user_id
+      );
       break;
     }
     case "customer.subscription.deleted": {
       const subscription = event.data.object as Stripe.Subscription;
-      await supabase
+      const { data } = await supabase
         .from("profiles")
         .update({ plan: "free", plan_status: "canceled", stripe_subscription_id: null })
-        .eq("stripe_customer_id", subscription.customer as string);
+        .eq("stripe_customer_id", subscription.customer as string)
+        .select("id")
+        .maybeSingle();
+      const userId = subscription.metadata?.supabase_user_id;
+      if (!data && userId) {
+        await supabase
+          .from("profiles")
+          .update({
+            plan: "free",
+            plan_status: "canceled",
+            stripe_subscription_id: null,
+            stripe_customer_id: subscription.customer as string,
+          })
+          .eq("id", userId);
+      }
       break;
     }
     default:
@@ -62,7 +83,8 @@ export async function POST(request: Request) {
 async function syncSubscription(
   supabase: ReturnType<typeof createAdminClient>,
   customerId: string,
-  subscription: Stripe.Subscription
+  subscription: Stripe.Subscription,
+  userId?: string
 ) {
   const activeStatuses = new Set(["active", "trialing", "past_due"]);
   const plan = activeStatuses.has(subscription.status) ? "pro" : "free";
@@ -71,7 +93,7 @@ async function syncSubscription(
     ? new Date(periodEndSeconds * 1000).toISOString()
     : null;
 
-  await supabase
+  const { data } = await supabase
     .from("profiles")
     .update({
       plan,
@@ -79,5 +101,20 @@ async function syncSubscription(
       stripe_subscription_id: subscription.id,
       current_period_end: currentPeriodEnd,
     })
-    .eq("stripe_customer_id", customerId);
+    .eq("stripe_customer_id", customerId)
+    .select("id")
+    .maybeSingle();
+
+  if (!data && userId) {
+    await supabase
+      .from("profiles")
+      .update({
+        plan,
+        plan_status: subscription.status,
+        stripe_customer_id: customerId,
+        stripe_subscription_id: subscription.id,
+        current_period_end: currentPeriodEnd,
+      })
+      .eq("id", userId);
+  }
 }

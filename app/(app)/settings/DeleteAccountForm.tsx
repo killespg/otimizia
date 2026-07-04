@@ -15,6 +15,25 @@ export function DeleteAccountForm({
   return (
     <form action={action} className="space-y-3">
       <div>
+        <label className="label" htmlFor="delete-current-password">
+          Senha atual
+          <span className="ml-1 text-brand-700" aria-hidden="true">
+            *
+          </span>
+          <span className="sr-only"> obrigatorio</span>
+        </label>
+        <input
+          id="delete-current-password"
+          name="current_password"
+          type="password"
+          required
+          minLength={6}
+          maxLength={200}
+          autoComplete="current-password"
+          className="field mt-1.5"
+        />
+      </div>
+      <div>
         <label className="label" htmlFor="confirmation">
           Digite <strong>EXCLUIR</strong> para confirmar
         </label>

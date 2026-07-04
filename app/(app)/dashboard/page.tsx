@@ -178,30 +178,40 @@ export default async function DashboardPage() {
         </div>
 
         <div className="hidden flex-col gap-3 sm:flex sm:flex-row sm:items-center">
-          <label className="flex h-11 w-full min-w-0 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:w-[430px]">
+          <form
+            action="/contacts"
+            className="flex h-11 w-full min-w-0 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:w-[430px]"
+          >
             <IconSearch className="h-5 w-5 shrink-0 text-ink-muted" />
-            <span className="sr-only">Buscar</span>
+            <label className="sr-only" htmlFor="dashboard-contact-search">
+              Buscar contatos
+            </label>
             <input
+              id="dashboard-contact-search"
+              name="q"
               type="search"
               placeholder="Buscar contatos, empresas..."
               className="min-w-0 flex-1 bg-transparent text-sm font-medium text-ink outline-none placeholder:text-ink-muted"
             />
-            <kbd className="hidden rounded-md bg-surface-2 px-2 py-1 text-[11px] font-bold text-ink-muted sm:inline-flex">
-              Ctrl + K
-            </kbd>
-          </label>
+            <button
+              type="submit"
+              className="rounded-md bg-surface-2 px-2 py-1 text-[11px] font-bold text-ink-muted hover:bg-brand-50 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-600"
+            >
+              Buscar
+            </button>
+          </form>
 
           <div className="flex items-center gap-3">
-            <button
-              type="button"
+            <Link
+              href="/tasks"
               className="nav-item relative grid h-11 w-11 place-items-center rounded-lg border border-line bg-white text-ink-soft shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] hover:text-brand-700"
-              aria-label="Notificacoes"
+              aria-label="Ver lembretes"
             >
               <IconBell className="h-5 w-5" />
               <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-danger-500 px-1 text-[11px] font-black text-white">
                 {Math.min(overdue.length, 9)}
               </span>
-            </button>
+            </Link>
             <div className="relative grid h-12 w-12 place-items-center rounded-full bg-[linear-gradient(135deg,#6d28d9,#3b16c6)] text-sm font-black text-white shadow-[0_16px_36px_-18px_rgba(92,34,232,0.8)]">
               {initials(displayName)}
               <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-success-500" />
@@ -258,8 +268,8 @@ function MetricCard({
   const toneClass =
     tone === "pink"
       ? {
-          icon: "bg-pink-100 text-pink-600",
-          badge: "bg-pink-100 text-pink-700",
+          icon: "bg-[#fff7e6] text-[#8a6500]",
+          badge: "bg-[#fff7e6] text-[#8a6500]",
         }
       : {
           icon: "bg-brand-100 text-brand-700",
@@ -647,11 +657,11 @@ function FirstRunPanel({ preset }: { preset: ProfessionPreset }) {
 function stageMeta(stage: DealStage, preset: ProfessionPreset) {
   const label = preset.stages[stage]?.label ?? DEAL_STAGES.find((item) => item.key === stage)?.label ?? "Etapa";
   const map: Record<DealStage, string> = {
-    novo: "bg-blue-50 text-blue-700",
-    em_contato: "bg-brand-50 text-brand-700",
-    negociacao: "bg-pink-50 text-pink-700",
-    ganho: "bg-success-50 text-success-700",
-    perdido: "bg-danger-50 text-danger-700",
+    novo: "bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-200",
+    em_contato: "bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-brand-200",
+    negociacao: "bg-[#fff7e6] text-[#8a6500] dark:bg-[#3b2b0a] dark:text-[#f8d278]",
+    ganho: "bg-success-50 text-success-700 dark:bg-[#062d1c] dark:text-[#9ff0c5]",
+    perdido: "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
   };
 
   return {
@@ -664,18 +674,18 @@ function taskPriority(task: Task, overdue: Task[], index: number) {
   if (overdue.some((item) => item.id === task.id) || index === 0) {
     return {
       label: "Alta",
-      className: "bg-pink-100 text-pink-700",
+      className: "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
     };
   }
   if (index === 1) {
     return {
       label: "Média",
-      className: "bg-orange-100 text-orange-700",
+      className: "bg-[#fff7e6] text-[#8a6500] dark:bg-[#3b2b0a] dark:text-[#f8d278]",
     };
   }
   return {
     label: "Baixa",
-    className: "bg-blue-50 text-blue-700",
+    className: "bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-200",
   };
 }
 

@@ -15,8 +15,13 @@ import {
   IconUsers,
 } from "../icons";
 
-export default async function ContactsPage() {
+export default async function ContactsPage({
+  searchParams,
+}: {
+  searchParams?: { q?: string };
+}) {
   const supabase = createClient();
+  const search = normalizeSearch(searchParams?.q);
   const [
     {
       data: { user },
@@ -31,9 +36,12 @@ export default async function ContactsPage() {
   const preset = getProfessionPreset(
     profile?.profession_type ?? user?.user_metadata?.profession_type
   );
-  const contacts = (data ?? []) as Contact[];
-  const withPhone = contacts.filter((contact) => contact.phone).length;
-  const withCompany = contacts.filter((contact) => contact.company).length;
+  const allContacts = (data ?? []) as Contact[];
+  const contacts = search
+    ? allContacts.filter((contact) => contactMatchesSearch(contact, search))
+    : allContacts;
+  const withPhone = allContacts.filter((contact) => contact.phone).length;
+  const withCompany = allContacts.filter((contact) => contact.company).length;
 
   return (
     <div className="space-y-4 sm:space-y-5">
@@ -48,19 +56,33 @@ export default async function ContactsPage() {
           </p>
         </div>
 
-        <label className="hidden h-11 w-full items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:flex lg:w-[360px]">
+        <form
+          action="/contacts"
+          className="hidden h-11 w-full items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:flex lg:w-[360px]"
+        >
           <IconSearch className="h-5 w-5 shrink-0 text-ink-muted" />
-          <span className="sr-only">Buscar contatos</span>
+          <label className="sr-only" htmlFor="contacts-search">
+            Buscar contatos
+          </label>
           <input
+            id="contacts-search"
+            name="q"
             type="search"
+            defaultValue={search}
             placeholder="Buscar contato..."
             className="min-w-0 flex-1 bg-transparent text-sm font-medium text-ink outline-none placeholder:text-ink-muted"
           />
-        </label>
+          <button
+            type="submit"
+            className="rounded-md bg-surface-2 px-2 py-1 text-[11px] font-bold text-ink-muted hover:bg-brand-50 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-600"
+          >
+            Buscar
+          </button>
+        </form>
       </header>
 
       <section className="grid grid-cols-3 gap-3 sm:gap-4">
-        <MetricCard label="Total" value={String(contacts.length)} icon={IconUsers} />
+        <MetricCard label="Total" value={String(allContacts.length)} icon={IconUsers} />
         <MetricCard label="Com WhatsApp" value={String(withPhone)} icon={IconPhone} pink />
         <MetricCard label="Com empresa" value={String(withCompany)} icon={IconMessage} />
       </section>
@@ -73,9 +95,13 @@ export default async function ContactsPage() {
                 Lista de contatos
               </h2>
               <p className="mt-1 text-sm font-medium text-ink-muted">
-                {contacts.length === 0
-                  ? "Comece adicionando seu primeiro cliente."
-                  : `${contacts.length} ${contacts.length === 1 ? "contato salvo" : "contatos salvos"}.`}
+                {search
+                  ? contacts.length === 0
+                    ? `Nenhum resultado para "${search}".`
+                    : `${contacts.length} ${contacts.length === 1 ? "resultado" : "resultados"} para "${search}".`
+                  : contacts.length === 0
+                    ? "Comece adicionando seu primeiro cliente."
+                    : `${contacts.length} ${contacts.length === 1 ? "contato salvo" : "contatos salvos"}.`}
               </p>
             </div>
             <span className="rounded-md bg-surface-2 px-2.5 py-1 text-xs font-black text-ink-muted">
@@ -88,10 +114,19 @@ export default async function ContactsPage() {
               <span className="grid h-14 w-14 place-items-center rounded-full bg-brand-50 text-brand-700">
                 <IconUsers className="h-7 w-7" />
               </span>
-              <p className="mt-4 text-lg font-black text-ink">Nenhum contato ainda</p>
+              <p className="mt-4 text-lg font-black text-ink">
+                {search ? "Nenhum resultado" : "Nenhum contato ainda"}
+              </p>
+              {search && (
+                <p className="mt-1 max-w-xs text-sm font-medium leading-relaxed text-ink-muted">
+                  Tente buscar por outro nome, empresa, telefone ou origem.
+                </p>
+              )}
+              {!search && (
               <p className="mt-1 max-w-xs text-sm font-medium leading-relaxed text-ink-muted">
                 Salve nome, WhatsApp e uma observação simples para começar.
               </p>
+              )}
             </div>
           ) : (
             <ul className="enter divide-y divide-line">
@@ -203,7 +238,7 @@ function MetricCard({
         <span
           className={
             "hidden h-11 w-11 place-items-center rounded-full sm:grid " +
-            (pink ? "bg-pink-100 text-pink-600" : "bg-brand-50 text-brand-700")
+            (pink ? "bg-[#fff7e6] text-[#8a6500]" : "bg-brand-50 text-brand-700")
           }
         >
           <Icon className="h-5 w-5" />
@@ -227,6 +262,26 @@ function displayContactName(contact: Pick<Contact, "name">) {
   return typeof contact.name === "string" && contact.name.trim()
     ? contact.name
     : "Cliente sem nome";
+}
+
+function normalizeSearch(value: string | undefined) {
+  return value?.trim().slice(0, 80) ?? "";
+}
+
+function contactMatchesSearch(contact: Contact, search: string) {
+  const haystack = [
+    contact.name,
+    contact.company,
+    contact.email,
+    contact.phone,
+    contact.source,
+    contact.notes,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLocaleLowerCase("pt-BR");
+
+  return haystack.includes(search.toLocaleLowerCase("pt-BR"));
 }
 
 function Field({
