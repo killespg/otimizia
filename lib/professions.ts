@@ -36,6 +36,17 @@ export type MetricSpec = {
   label: string;
 };
 
+export type MessageTemplate = {
+  key: string;
+  label: string;
+  body: string;
+};
+
+export type FollowUpOffset = {
+  label: string;
+  days: number;
+};
+
 export type ProfessionPreset = {
   key: ProfessionType;
   signupLabel: string;
@@ -58,6 +69,8 @@ export type ProfessionPreset = {
   contactFields: FieldSpec[];
   dealFields: FieldSpec[];
   metrics: [MetricSpec, MetricSpec, MetricSpec, MetricSpec];
+  messageTemplates: MessageTemplate[];
+  followUpOffsets: FollowUpOffset[];
 };
 
 const DEFAULT_STAGES: ProfessionPreset["stages"] = {
@@ -99,6 +112,23 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
       { key: "open_deals", label: "Vendas em andamento" },
       { key: "won_value_month", label: "Ganhas no mês" },
       { key: "overdue_tasks", label: "Follow-ups atrasados" },
+    ],
+    messageTemplates: [
+      {
+        key: "follow_up",
+        label: "Follow-up de proposta",
+        body: "Oi {{primeiro_nome}}! Passando para saber se você decidiu sobre a proposta.",
+      },
+      {
+        key: "agradecimento",
+        label: "Agradecimento pós-venda",
+        body: "{{primeiro_nome}}, obrigado pela confiança! Qualquer coisa é só chamar.",
+      },
+    ],
+    followUpOffsets: [
+      { label: "Retornar amanhã", days: 1 },
+      { label: "Retornar em 3 dias", days: 3 },
+      { label: "Retornar em 1 semana", days: 7 },
     ],
   },
   law_office: {
@@ -143,6 +173,22 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
       { key: "open_deals", label: "Contratações em andamento" },
       { key: "won_count_month", label: "Contratos no mês" },
       { key: "conversion_rate", label: "Taxa de contratação" },
+    ],
+    messageTemplates: [
+      {
+        key: "retorno_documentos",
+        label: "Cobrar documentos",
+        body: "{{primeiro_nome}}, para dar andamento preciso dos documentos que combinamos. Consegue me enviar?",
+      },
+      {
+        key: "proposta_honorarios",
+        label: "Proposta de honorários",
+        body: "{{primeiro_nome}}, segue a proposta de honorários do seu caso. Fico à disposição.",
+      },
+    ],
+    followUpOffsets: [
+      { label: "Cobrar documentos em 3 dias", days: 3 },
+      { label: "Retornar em 1 semana", days: 7 },
     ],
   },
   real_estate_broker: {
@@ -194,6 +240,22 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
       { key: "won_count_month", label: "Fechados no mês" },
       { key: "conversion_rate", label: "Conversão de leads" },
     ],
+    messageTemplates: [
+      {
+        key: "primeiro_contato",
+        label: "Primeiro contato",
+        body: "Oi {{primeiro_nome}}! Aqui é {{meu_nome}}, corretor(a). Separei alguns imóveis no seu perfil, posso te enviar?",
+      },
+      {
+        key: "pos_visita",
+        label: "Depois da visita",
+        body: "{{primeiro_nome}}, o que achou do imóvel? Quer que eu monte uma proposta?",
+      },
+    ],
+    followUpOffsets: [
+      { label: "Retornar em 2 dias", days: 2 },
+      { label: "Retornar em 1 semana", days: 7 },
+    ],
   },
   service_provider: {
     key: "service_provider",
@@ -237,6 +299,22 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
       { key: "won_count_month", label: "Aprovados no mês" },
       { key: "avg_ticket", label: "Ticket médio" },
     ],
+    messageTemplates: [
+      {
+        key: "orcamento_enviado",
+        label: "Orçamento enviado",
+        body: "{{primeiro_nome}}, enviei o orçamento. Posso agendar?",
+      },
+      {
+        key: "pos_servico",
+        label: "Depois do serviço",
+        body: "{{primeiro_nome}}, serviço concluído! Se precisar de manutenção, me chama.",
+      },
+    ],
+    followUpOffsets: [
+      { label: "Cobrar aprovação em 2 dias", days: 2 },
+      { label: "Retornar em 1 semana", days: 7 },
+    ],
   },
   consultant: {
     key: "consultant",
@@ -277,6 +355,22 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
       { key: "won_count_month", label: "Fechados no mês" },
       { key: "avg_ticket", label: "Ticket médio" },
     ],
+    messageTemplates: [
+      {
+        key: "diagnostico_pronto",
+        label: "Diagnóstico pronto",
+        body: "{{primeiro_nome}}, terminei o diagnóstico. Posso te apresentar os próximos passos essa semana?",
+      },
+      {
+        key: "proposta_enviada",
+        label: "Proposta enviada",
+        body: "{{primeiro_nome}}, segue a proposta do projeto. Fico à disposição pra qualquer ajuste.",
+      },
+    ],
+    followUpOffsets: [
+      { label: "Retornar em 3 dias", days: 3 },
+      { label: "Retornar em 1 semana", days: 7 },
+    ],
   },
   freelancer: {
     key: "freelancer",
@@ -315,6 +409,22 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
       { key: "open_deals", label: "Em andamento" },
       { key: "won_count_month", label: "Entregues no mês" },
       { key: "overdue_tasks", label: "Prazos atrasados" },
+    ],
+    messageTemplates: [
+      {
+        key: "briefing_recebido",
+        label: "Briefing recebido",
+        body: "{{primeiro_nome}}, recebi o briefing! Te mando a proposta em breve.",
+      },
+      {
+        key: "aprovacao_entrega",
+        label: "Aguardando aprovação",
+        body: "{{primeiro_nome}}, o projeto tá pronto pra revisão. Dá uma olhada e me fala o que achou?",
+      },
+    ],
+    followUpOffsets: [
+      { label: "Cobrar aprovação em 2 dias", days: 2 },
+      { label: "Retornar em 1 semana", days: 7 },
     ],
   },
   small_business: {
@@ -359,6 +469,22 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
       { key: "won_value_month", label: "Vendido no mês" },
       { key: "avg_ticket", label: "Ticket médio" },
     ],
+    messageTemplates: [
+      {
+        key: "pedido_pronto",
+        label: "Pedido pronto",
+        body: "{{primeiro_nome}}, seu pedido já está pronto! Como prefere receber ou retirar?",
+      },
+      {
+        key: "recompra",
+        label: "Sugestão de recompra",
+        body: "Oi {{primeiro_nome}}! Faz um tempo que você não passa por aqui — separei umas novidades que combinam com você.",
+      },
+    ],
+    followUpOffsets: [
+      { label: "Cobrar pagamento em 2 dias", days: 2 },
+      { label: "Sugerir recompra em 30 dias", days: 30 },
+    ],
   },
   other: {
     key: "other",
@@ -388,6 +514,22 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
       { key: "open_deals", label: "Oportunidades em andamento" },
       { key: "won_count_month", label: "Fechadas no mês" },
       { key: "overdue_tasks", label: "Tarefas atrasadas" },
+    ],
+    messageTemplates: [
+      {
+        key: "follow_up",
+        label: "Follow-up",
+        body: "Oi {{primeiro_nome}}! Passando pra saber se ficou alguma dúvida ou se posso ajudar em algo.",
+      },
+      {
+        key: "agradecimento",
+        label: "Agradecimento",
+        body: "{{primeiro_nome}}, obrigado pelo contato! Qualquer coisa é só chamar.",
+      },
+    ],
+    followUpOffsets: [
+      { label: "Retornar em 3 dias", days: 3 },
+      { label: "Retornar em 1 semana", days: 7 },
     ],
   },
 };

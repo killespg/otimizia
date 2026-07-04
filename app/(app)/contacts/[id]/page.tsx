@@ -15,8 +15,9 @@ import {
   IconPlus,
   IconTrash,
 } from "../../icons";
-import { updateContact, deleteContact, createInteraction } from "../../actions";
+import { createTask, updateContact, deleteContact, createInteraction } from "../../actions";
 import { PresetFields } from "../../PresetFields";
+import { MessageTemplates } from "./MessageTemplates";
 
 export default async function ContactDetailPage({
   params,
@@ -33,16 +34,19 @@ export default async function ContactDetailPage({
     { data: contact },
   ] = await Promise.all([
     supabase.auth.getUser(),
-    supabase.from("profiles").select("profession_type").maybeSingle(),
+    supabase.from("profiles").select("profession_type, name").maybeSingle(),
     supabase.from("contacts").select("*").eq("id", params.id).single(),
   ]);
   const preset = getProfessionPreset(
     profile?.profession_type ?? user?.user_metadata?.profession_type
   );
+  const myName =
+    profile?.name || (typeof user?.user_metadata?.name === "string" ? user.user_metadata.name : "");
 
   if (!contact) notFound();
   const c = contact as Contact;
   const contactName = displayContactName(c);
+  const now = new Date();
 
   const [{ data: interactions }, { data: tasks }] = await Promise.all([
     supabase
@@ -167,6 +171,47 @@ export default async function ContactDetailPage({
         </section>
 
         <div className="space-y-5">
+          <MessageTemplates
+            templates={preset.messageTemplates}
+            contactName={contactName}
+            contactPhone={c.phone}
+            contactCompany={c.company}
+            myName={myName}
+          />
+
+          {preset.followUpOffsets.length > 0 && (
+            <section className="panel overflow-hidden">
+              <div className="border-b border-line px-5 py-4">
+                <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
+                  Lembrete rápido
+                </h2>
+                <p className="mt-1 text-sm font-medium text-ink-muted">
+                  Um toque para agendar o próximo retorno.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 p-5">
+                {preset.followUpOffsets.map((offset) => (
+                  <form key={offset.label} action={createTask}>
+                    <input type="hidden" name="contact_id" value={c.id} />
+                    <input type="hidden" name="return_to" value={`/contacts/${c.id}`} />
+                    <input type="hidden" name="title" value={`Retornar para ${contactName}`} />
+                    <input
+                      type="hidden"
+                      name="due_at"
+                      value={new Date(now.getTime() + offset.days * 86_400_000).toISOString()}
+                    />
+                    <PendingButton
+                      className="min-h-9 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                      pendingLabel="Agendando"
+                    >
+                      {offset.label}
+                    </PendingButton>
+                  </form>
+                ))}
+              </div>
+            </section>
+          )}
+
           <section className="panel overflow-hidden">
             <div className="border-b border-line px-5 py-4">
               <h2 className="text-lg font-black tracking-[-0.02em] text-ink">

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { IconArrowRight, IconBot } from "@/app/(app)/icons";
-import { useAssistantChat } from "@/lib/ai/useAssistantChat";
+import { useAssistantChat } from "@/lib/ai/AssistantChatProvider";
 import { VoicePanel } from "./VoicePanel";
 
 const SUGGESTIONS = [

@@ -39,6 +39,7 @@ export function useVoiceCall() {
   const levelFrameRef = useRef<number | null>(null);
   const callTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const assistantTextRef = useRef("");
+  const callSecondsRef = useRef(0);
 
   function startLevelLoop() {
     function tick() {
@@ -50,7 +51,24 @@ export function useVoiceCall() {
     levelFrameRef.current = requestAnimationFrame(tick);
   }
 
+  function reportUsage() {
+    const seconds = callSecondsRef.current;
+    callSecondsRef.current = 0;
+    if (seconds <= 0) return;
+    try {
+      void fetch("/api/realtime/usage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ seconds }),
+        keepalive: true,
+      });
+    } catch {
+      // Perder um registro de uso pontual não é crítico.
+    }
+  }
+
   function stopVoice() {
+    reportUsage();
     peerRef.current?.close();
     peerRef.current = null;
 
@@ -231,7 +249,8 @@ export function useVoiceCall() {
       setVoiceStatus("live");
       startLevelLoop();
       callTimerRef.current = setInterval(() => {
-        setCallSeconds((s) => s + 1);
+        callSecondsRef.current += 1;
+        setCallSeconds(callSecondsRef.current);
       }, 1000);
     } catch (error) {
       stopVoice();

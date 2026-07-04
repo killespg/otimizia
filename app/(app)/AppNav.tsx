@@ -34,7 +34,7 @@ const NAV: NavItem[] = [
   { href: "/tasks", label: "Lembretes", icon: IconBell, mobile: true },
   { href: "/dashboard#valor", label: "Valor aberto", icon: IconWallet, passive: true },
   { href: "/tasks", label: "Clientes para chamar", icon: IconPhone, passive: true },
-  { href: "/dashboard#agente", label: "Sócio-Assistente", icon: IconBot, passive: true },
+  { href: "/assistant", label: "Sócio-Assistente", icon: IconBot },
 ];
 
 function useActive() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
@@ -32,10 +32,19 @@ type StreamEvent = {
   mutated?: boolean;
 };
 
-// Hook compartilhado por todas as superfícies de chat do app (widget
-// flutuante e o painel embutido no dashboard) para conversar com
-// /api/assistant sem duplicar a lógica de streaming.
-export function useAssistantChat() {
+type AssistantChatValue = {
+  messages: ChatMessage[];
+  status: string | null;
+  sending: boolean;
+  send: (text: string) => Promise<void>;
+};
+
+const AssistantChatContext = createContext<AssistantChatValue | null>(null);
+
+// Estado único do chat com o assistente, compartilhado por todas as
+// superfícies do app (balão flutuante, painel do dashboard e a página
+// dedicada /assistant) para que todas mostrem a mesma conversa.
+export function AssistantChatProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [status, setStatus] = useState<string | null>(null);
@@ -154,5 +163,17 @@ export function useAssistantChat() {
     [router, updateMessages]
   );
 
-  return { messages, status, sending, send };
+  return (
+    <AssistantChatContext.Provider value={{ messages, status, sending, send }}>
+      {children}
+    </AssistantChatContext.Provider>
+  );
+}
+
+export function useAssistantChat() {
+  const ctx = useContext(AssistantChatContext);
+  if (!ctx) {
+    throw new Error("useAssistantChat precisa estar dentro de um AssistantChatProvider.");
+  }
+  return ctx;
 }

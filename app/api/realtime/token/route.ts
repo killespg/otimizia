@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { createClient } from "@/lib/supabase/server";
+import { currentYearMonth, VOICE_MONTHLY_LIMIT_SECONDS } from "@/lib/voice-limit";
 
 export const runtime = "nodejs";
 
@@ -18,6 +19,19 @@ export async function GET() {
   const access = await getUserPlanAccess(supabase, user.id);
   if (!access.hasAccess) {
     return Response.json({ error: "Seu teste gratis acabou." }, { status: 402 });
+  }
+
+  const { data: usage } = await supabase
+    .from("voice_usage")
+    .select("seconds_used")
+    .eq("owner_id", user.id)
+    .eq("year_month", currentYearMonth())
+    .maybeSingle();
+  if ((usage?.seconds_used ?? 0) >= VOICE_MONTHLY_LIMIT_SECONDS) {
+    return Response.json(
+      { error: "Você atingiu o limite de 20 minutos de chamada de voz neste mês." },
+      { status: 402 }
+    );
   }
 
   const apiKey = process.env.OPENAI_API_KEY;

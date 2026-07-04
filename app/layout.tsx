@@ -1,26 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
-import { IBM_Plex_Mono } from "next/font/google";
+import { IBM_Plex_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 
-const sans = localFont({
-  src: [
-    {
-      path: "./fonts/Vegur-Light.otf",
-      weight: "300",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Vegur-Regular.otf",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Vegur-Bold.otf",
-      weight: "700",
-      style: "normal",
-    },
-  ],
+// Geométrica e arredondada como a Vegur (que ela substitui). font-black
+// aponta pra 800 (ver tailwind.config.ts) em vez do 900 nativo da Outfit,
+// que ficava pesado demais nos ~160 usos de font-black pelo app.
+const sans = Outfit({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
   variable: "--font-sans",
 });

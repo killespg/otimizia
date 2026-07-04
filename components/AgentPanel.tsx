@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { IconArrowRight, IconBot } from "@/app/(app)/icons";
-import { useAssistantChat } from "@/lib/ai/useAssistantChat";
+import { useAssistantChat } from "@/lib/ai/AssistantChatProvider";
 import { VoicePanel } from "./VoicePanel";
 
 const PROMPTS = [
@@ -54,9 +55,18 @@ export function AgentPanel() {
             Sócio-Assistente
           </h2>
         </div>
-        <span className="rounded-md bg-success-50 px-2 py-1 text-xs font-black text-success-700">
-          Online
-        </span>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="hidden rounded-md bg-success-50 px-2 py-1 text-xs font-black text-success-700 sm:inline-block">
+            Online
+          </span>
+          <Link
+            href="/assistant"
+            className="nav-item inline-flex items-center gap-1 text-xs font-black text-brand-700 hover:text-brand-900"
+          >
+            Tela cheia
+            <IconArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
       </div>
 
       {messages.length === 0 ? (
