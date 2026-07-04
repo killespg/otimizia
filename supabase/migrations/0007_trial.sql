@@ -1,6 +1,17 @@
 -- Teste grátis de 30 dias do Pro pra toda conta nova, sem cartão.
 alter table public.profiles add column if not exists trial_ends_at timestamptz;
 
+-- Contas criadas antes do trial existir tambem recebem 30 dias a partir da
+-- aplicacao desta migration, desde que ainda nao tenham assinatura Stripe.
+update public.profiles
+set
+  plan = 'pro',
+  plan_status = 'trialing',
+  trial_ends_at = now() + interval '30 days'
+where trial_ends_at is null
+  and stripe_subscription_id is null
+  and coalesce(plan_status, '') not in ('active', 'trialing', 'past_due');
+
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
