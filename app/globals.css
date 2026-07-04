@@ -326,6 +326,108 @@
   letter-spacing: -0.035em !important;
 }
 
+.landing-page .intro-shell {
+  isolation: isolate;
+}
+
+.landing-page .intro-shell::before,
+.landing-page .intro-shell::after,
+.landing-page .hero-layer::before,
+.landing-page .preview-float::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.landing-page .intro-shell::before {
+  inset: -18% -12% auto auto;
+  z-index: 0;
+  width: min(48rem, 88vw);
+  height: min(48rem, 88vw);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.92), transparent 0 20%),
+    radial-gradient(circle at 50% 50%, rgba(11, 191, 232, 0.22), transparent 0 44%),
+    radial-gradient(circle at 42% 58%, rgba(181, 24, 255, 0.16), transparent 0 68%);
+  filter: blur(8px);
+  opacity: 0.9;
+  mix-blend-mode: screen;
+}
+
+.landing-page .intro-shell::after {
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(112deg, transparent 0 28%, rgba(255, 255, 255, 0.58) 37%, transparent 49% 100%),
+    radial-gradient(circle at 18% 18%, rgba(139, 61, 255, 0.12), transparent 0 28rem),
+    radial-gradient(circle at 86% 78%, rgba(11, 191, 232, 0.13), transparent 0 30rem);
+  opacity: 0.48;
+  transform: translate3d(-10%, -8%, 0);
+}
+
+.landing-page .hero-layer {
+  position: relative;
+  isolation: isolate;
+}
+
+.landing-page .hero-layer::before {
+  inset: 8% -7% 4% 0;
+  z-index: -1;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 58% 42%, rgba(11, 191, 232, 0.28), transparent 0 38%),
+    radial-gradient(circle at 38% 58%, rgba(139, 61, 255, 0.2), transparent 0 52%);
+  filter: blur(26px);
+  opacity: 0.78;
+}
+
+.landing-page .preview-float {
+  position: relative;
+  isolation: isolate;
+}
+
+.landing-page .preview-float > * {
+  position: relative;
+  z-index: 1;
+}
+
+.landing-page .preview-float::after {
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(130deg, rgba(255, 255, 255, 0.5), transparent 24% 72%, rgba(11, 191, 232, 0.16)),
+    radial-gradient(circle at 24% 0%, rgba(255, 255, 255, 0.72), transparent 0 30%);
+  opacity: 0.58;
+}
+
+.dark .landing-page .intro-shell::before {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.16), transparent 0 22%),
+    radial-gradient(circle at 50% 50%, rgba(11, 191, 232, 0.22), transparent 0 48%),
+    radial-gradient(circle at 42% 58%, rgba(174, 132, 255, 0.3), transparent 0 70%);
+  opacity: 0.78;
+}
+
+.dark .landing-page .intro-shell::after {
+  background:
+    linear-gradient(112deg, transparent 0 30%, rgba(255, 255, 255, 0.07) 39%, transparent 51% 100%),
+    radial-gradient(circle at 18% 18%, rgba(174, 132, 255, 0.2), transparent 0 28rem),
+    radial-gradient(circle at 86% 78%, rgba(11, 191, 232, 0.16), transparent 0 30rem);
+  opacity: 0.72;
+}
+
+.dark .landing-page .hero-layer::before {
+  opacity: 0.62;
+}
+
+.dark .landing-page .preview-float::after {
+  background:
+    linear-gradient(130deg, rgba(255, 255, 255, 0.09), transparent 24% 72%, rgba(11, 191, 232, 0.12)),
+    radial-gradient(circle at 24% 0%, rgba(255, 255, 255, 0.14), transparent 0 30%);
+  opacity: 0.68;
+}
+
 /* Celular: os tamanhos fluidos acima usam vw com um piso alto demais
    para telas pequenas (ex.: 18vw trava no minimo ~70px abaixo de ~387px
    de largura), o que quebra o titulo da hero em varias linhas apertadas.
@@ -1248,6 +1350,14 @@ label[class*="border-line"]::before,
   animation: shellIn 720ms var(--ease-ui-out) both;
 }
 
+.motion .intro-shell::before {
+  animation: landingLightDrift 9200ms var(--ease-ui-in-out) 760ms infinite alternate;
+}
+
+.motion .intro-shell::after {
+  animation: landingLightSweep 6800ms var(--ease-ui-in-out) 920ms infinite alternate;
+}
+
 .motion .landing-hero-title .block {
   clip-path: inset(0 0 105% 0);
   opacity: 0;
@@ -1434,6 +1544,26 @@ label[class*="border-line"]::before,
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+@keyframes landingLightDrift {
+  from {
+    transform: translate3d(-1.2rem, -0.8rem, 0) scale(0.98);
+  }
+  to {
+    transform: translate3d(1rem, 1.1rem, 0) scale(1.04);
+  }
+}
+
+@keyframes landingLightSweep {
+  from {
+    opacity: 0.38;
+    transform: translate3d(-14%, -10%, 0);
+  }
+  to {
+    opacity: 0.58;
+    transform: translate3d(4%, 3%, 0);
   }
 }
 
