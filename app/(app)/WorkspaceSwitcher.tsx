@@ -38,7 +38,7 @@ export function WorkspaceSwitcher({
         onChange={() => formRef.current?.requestSubmit()}
         className={
           compact
-            ? "h-9 max-w-[132px] rounded-md border border-line bg-surface px-2 text-xs font-black text-ink outline-none focus:border-brand-600 focus:shadow-focus"
+            ? "h-10 w-full rounded-md border border-line bg-surface px-3 text-sm font-black text-ink outline-none focus:border-brand-600 focus:shadow-focus"
             : "field h-11 text-sm font-black"
         }
       >
