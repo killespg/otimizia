@@ -1,6 +1,7 @@
 import { PendingButton } from "@/components/PendingButton";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Task } from "@/lib/supabase/types";
+import { getWorkspaceKey } from "@/lib/workspaces";
 import { createTask } from "../actions";
 import { IconBell, IconCheckCircle, IconClock, IconPlus } from "../icons";
 import TaskItem from "./TaskItem";
@@ -10,9 +11,30 @@ type Tone = "danger" | "today" | "upcoming" | "done";
 export default async function TasksPage() {
   const supabase = createClient();
 
+  const [
+    {
+      data: { user },
+    },
+    { data: profile },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("profiles").select("profession_type").maybeSingle(),
+  ]);
+  const workspaceKey = getWorkspaceKey(
+    profile?.profession_type,
+    user?.user_metadata?.profession_type
+  );
   const [{ data: tasks }, { data: contacts }] = await Promise.all([
-    supabase.from("tasks").select("*").order("due_at", { ascending: true }),
-    supabase.from("contacts").select("id, name").order("name"),
+    supabase
+      .from("tasks")
+      .select("*")
+      .eq("workspace_key", workspaceKey)
+      .order("due_at", { ascending: true }),
+    supabase
+      .from("contacts")
+      .select("id, name")
+      .eq("workspace_key", workspaceKey)
+      .order("name"),
   ]);
 
   const allTasks = (tasks ?? []) as Task[];

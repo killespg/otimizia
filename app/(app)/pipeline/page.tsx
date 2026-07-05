@@ -3,6 +3,7 @@ import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Deal } from "@/lib/supabase/types";
 import { formatBRL } from "@/lib/format";
+import { getWorkspaceKey } from "@/lib/workspaces";
 import { createDeal } from "../actions";
 import { IconColumns, IconPlus, IconUsers, IconWallet } from "../icons";
 import { PresetFields } from "../PresetFields";
@@ -16,17 +17,27 @@ export default async function PipelinePage() {
       data: { user },
     },
     { data: profile },
-    { data: deals },
-    { data: contacts },
   ] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from("profiles").select("profession_type").maybeSingle(),
-    supabase.from("deals").select("*").order("created_at", { ascending: false }),
-    supabase.from("contacts").select("id, name").order("name"),
   ]);
-  const preset = getProfessionPreset(
-    profile?.profession_type ?? user?.user_metadata?.profession_type
+  const workspaceKey = getWorkspaceKey(
+    profile?.profession_type,
+    user?.user_metadata?.profession_type
   );
+  const preset = getProfessionPreset(workspaceKey);
+  const [{ data: deals }, { data: contacts }] = await Promise.all([
+    supabase
+      .from("deals")
+      .select("*")
+      .eq("workspace_key", workspaceKey)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("contacts")
+      .select("id, name")
+      .eq("workspace_key", workspaceKey)
+      .order("name"),
+  ]);
 
   const allDeals = (deals ?? []) as Deal[];
   const allContacts = (contacts ?? []) as Pick<Contact, "id" | "name">[];

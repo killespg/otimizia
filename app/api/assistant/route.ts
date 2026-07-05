@@ -4,6 +4,7 @@ import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset, type ProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import { CRM_TOOLS, executeTool, isMutatingTool } from "@/lib/ai/tools";
+import { getWorkspaceKey } from "@/lib/workspaces";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -52,9 +53,11 @@ export async function POST(req: Request) {
     .select("profession_type")
     .eq("id", user.id)
     .maybeSingle();
-  const preset = getProfessionPreset(
-    profile?.profession_type ?? user.user_metadata?.profession_type
+  const workspaceKey = getWorkspaceKey(
+    profile?.profession_type,
+    user.user_metadata?.profession_type
   );
+  const preset = getProfessionPreset(workspaceKey);
 
   const client = new Anthropic();
   const encoder = new TextEncoder();
@@ -108,7 +111,13 @@ export async function POST(req: Request) {
             let content: string;
             let isError = false;
             try {
-              content = await executeTool(supabase, user.id, toolUse.name, toolUse.input);
+              content = await executeTool(
+                supabase,
+                user.id,
+                workspaceKey,
+                toolUse.name,
+                toolUse.input
+              );
               if (isMutatingTool(toolUse.name)) mutated = true;
             } catch (error) {
               isError = true;
@@ -171,6 +180,7 @@ function buildSystemPrompt(user: User, preset: ProfessionPreset): string {
 Data e hora atuais (America/Sao_Paulo): ${now}.
 
 Contexto profissional: ${preset.assistantContext}
+Area ativa no CRM: ${preset.signupLabel}. Todas as consultas e acoes devem considerar apenas essa area.
 ${extraFieldsLine ? `Campos extras disponíveis para contatos/vendas deste perfil (use 'detalhes' nas ferramentas quando o usuário mencionar algum): ${extraFieldsLine}.` : ""}
 ${templatesLine ? `Modelos de mensagem prontos deste perfil (use como base ao redigir uma mensagem para o cliente, adaptando ao contexto e substituindo {{primeiro_nome}}, {{empresa}} etc. pelos dados reais):\n${templatesLine}` : ""}
 

@@ -5,6 +5,7 @@ import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Interaction, Task } from "@/lib/supabase/types";
 import { formatDateTime } from "@/lib/format";
+import { getWorkspaceKey } from "@/lib/workspaces";
 import { Avatar } from "../../Avatar";
 import {
   IconArrowRight,
@@ -31,15 +32,21 @@ export default async function ContactDetailPage({
       data: { user },
     },
     { data: profile },
-    { data: contact },
   ] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from("profiles").select("profession_type, name").maybeSingle(),
-    supabase.from("contacts").select("*").eq("id", params.id).single(),
   ]);
-  const preset = getProfessionPreset(
-    profile?.profession_type ?? user?.user_metadata?.profession_type
+  const workspaceKey = getWorkspaceKey(
+    profile?.profession_type,
+    user?.user_metadata?.profession_type
   );
+  const preset = getProfessionPreset(workspaceKey);
+  const { data: contact } = await supabase
+    .from("contacts")
+    .select("*")
+    .eq("id", params.id)
+    .eq("workspace_key", workspaceKey)
+    .maybeSingle();
   const myName =
     profile?.name || (typeof user?.user_metadata?.name === "string" ? user.user_metadata.name : "");
 
@@ -53,11 +60,13 @@ export default async function ContactDetailPage({
       .from("interactions")
       .select("*")
       .eq("contact_id", c.id)
+      .eq("workspace_key", workspaceKey)
       .order("created_at", { ascending: false }),
     supabase
       .from("tasks")
       .select("*")
       .eq("contact_id", c.id)
+      .eq("workspace_key", workspaceKey)
       .order("due_at", { ascending: true }),
   ]);
 

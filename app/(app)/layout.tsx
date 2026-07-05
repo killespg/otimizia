@@ -119,7 +119,7 @@ export default async function AppLayout({
                   {displayName}
                 </p>
                 <p className="truncate text-xs font-medium text-ink-muted">
-                  Configurações
+                  {preset.signupLabel}
                 </p>
               </div>
               <IconChevronRight className="h-4 w-4 text-ink-muted" />

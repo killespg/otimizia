@@ -6,6 +6,7 @@ import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset, normalizeProfession, type FieldSpec } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import { DEAL_STAGES, type DealStage } from "@/lib/supabase/types";
+import { getWorkspaceKey } from "@/lib/workspaces";
 
 const LIMIT = {
   name: 120,
@@ -41,8 +42,9 @@ async function requireUserWithPreset() {
     .select("profession_type")
     .eq("id", user.id)
     .maybeSingle();
-  const preset = getProfessionPreset(profile?.profession_type ?? user.user_metadata?.profession_type);
-  return { supabase, user, preset };
+  const workspaceKey = getWorkspaceKey(profile?.profession_type, user.user_metadata?.profession_type);
+  const preset = getProfessionPreset(workspaceKey);
+  return { supabase, user, preset, workspaceKey };
 }
 
 export async function updateProfession(formData: FormData) {
@@ -64,9 +66,10 @@ export async function updateProfession(formData: FormData) {
 
 // ---------- Contacts ----------
 export async function createContact(formData: FormData) {
-  const { supabase, user, preset } = await requireUserWithPreset();
+  const { supabase, user, preset, workspaceKey } = await requireUserWithPreset();
   const { error } = await supabase.from("contacts").insert({
     owner_id: user.id,
+    workspace_key: workspaceKey,
     name: requiredText(formData.get("name"), "Nome", LIMIT.name),
     phone: emptyToNull(formData.get("phone"), LIMIT.phone),
     email: emailOrNull(formData.get("email")),
@@ -84,13 +87,14 @@ export async function createContact(formData: FormData) {
 }
 
 export async function updateContact(formData: FormData) {
-  const { supabase, user, preset } = await requireUserWithPreset();
+  const { supabase, user, preset, workspaceKey } = await requireUserWithPreset();
   const id = requiredText(formData.get("id"), "Contato", 80);
   const { data: existing } = await supabase
     .from("contacts")
     .select("details")
     .eq("id", id)
     .eq("owner_id", user.id)
+    .eq("workspace_key", workspaceKey)
     .maybeSingle();
   const details = {
     ...(existing?.details ?? {}),
@@ -108,7 +112,8 @@ export async function updateContact(formData: FormData) {
       details,
     })
     .eq("id", id)
-    .eq("owner_id", user.id);
+    .eq("owner_id", user.id)
+    .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para atualizar o contato.");
   revalidatePath("/contacts");
   revalidatePath(`/contacts/${id}`);
@@ -118,13 +123,14 @@ export async function updateContact(formData: FormData) {
 }
 
 export async function deleteContact(formData: FormData) {
-  const { supabase, user } = await requireActiveUser();
+  const { supabase, user, workspaceKey } = await requireUserWithPreset();
   const id = requiredText(formData.get("id"), "Contato", 80);
   const { error } = await supabase
     .from("contacts")
     .delete()
     .eq("id", id)
-    .eq("owner_id", user.id);
+    .eq("owner_id", user.id)
+    .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para excluir o contato.");
   revalidatePath("/contacts");
   redirect("/contacts");
@@ -132,14 +138,16 @@ export async function deleteContact(formData: FormData) {
 
 // ---------- Interactions ----------
 export async function createInteraction(formData: FormData) {
-  const { supabase, user } = await requireActiveUser();
+  const { supabase, user, workspaceKey } = await requireUserWithPreset();
   const contactId = await requireOwnedContactId(
     supabase,
     user.id,
+    workspaceKey,
     formData.get("contact_id")
   );
   const { error } = await supabase.from("interactions").insert({
     owner_id: user.id,
+    workspace_key: workspaceKey,
     contact_id: contactId,
     body: requiredText(formData.get("body"), "Conversa", LIMIT.interaction),
   });
@@ -149,14 +157,16 @@ export async function createInteraction(formData: FormData) {
 
 // ---------- Deals ----------
 export async function createDeal(formData: FormData) {
-  const { supabase, user, preset } = await requireUserWithPreset();
+  const { supabase, user, preset, workspaceKey } = await requireUserWithPreset();
   const contactId = await ownedContactIdOrNull(
     supabase,
     user.id,
+    workspaceKey,
     formData.get("contact_id")
   );
   const { error } = await supabase.from("deals").insert({
     owner_id: user.id,
+    workspace_key: workspaceKey,
     contact_id: contactId,
     title: requiredText(formData.get("title"), "Venda", LIMIT.title),
     value_cents: moneyToCents(formData.get("value")),
@@ -170,7 +180,7 @@ export async function createDeal(formData: FormData) {
 }
 
 export async function moveDeal(id: string, stage: DealStage) {
-  const { supabase, user } = await requireActiveUser();
+  const { supabase, user, workspaceKey } = await requireUserWithPreset();
   if (!isDealStage(stage)) throw new Error("Etapa de venda inválida.");
 
   const closed = stage === "ganho" || stage === "perdido";
@@ -178,19 +188,21 @@ export async function moveDeal(id: string, stage: DealStage) {
     .from("deals")
     .update({ stage, closed_at: closed ? new Date().toISOString() : null })
     .eq("id", id)
-    .eq("owner_id", user.id);
+    .eq("owner_id", user.id)
+    .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para mover a venda.");
   revalidatePath("/pipeline");
   revalidatePath("/dashboard");
 }
 
 export async function deleteDeal(formData: FormData) {
-  const { supabase, user } = await requireActiveUser();
+  const { supabase, user, workspaceKey } = await requireUserWithPreset();
   const { error } = await supabase
     .from("deals")
     .delete()
     .eq("id", requiredText(formData.get("id"), "Venda", 80))
-    .eq("owner_id", user.id);
+    .eq("owner_id", user.id)
+    .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para excluir a venda.");
   revalidatePath("/pipeline");
   revalidatePath("/dashboard");
@@ -198,14 +210,16 @@ export async function deleteDeal(formData: FormData) {
 
 // ---------- Tasks ----------
 export async function createTask(formData: FormData) {
-  const { supabase, user } = await requireActiveUser();
+  const { supabase, user, workspaceKey } = await requireUserWithPreset();
   const contactId = await ownedContactIdOrNull(
     supabase,
     user.id,
+    workspaceKey,
     formData.get("contact_id")
   );
   const { error } = await supabase.from("tasks").insert({
     owner_id: user.id,
+    workspace_key: workspaceKey,
     contact_id: contactId,
     title: requiredText(formData.get("title"), "Lembrete", LIMIT.title),
     due_at: dateTimeOrNull(formData.get("due_at")),
@@ -217,24 +231,26 @@ export async function createTask(formData: FormData) {
 }
 
 export async function toggleTask(id: string, done: boolean) {
-  const { supabase, user } = await requireActiveUser();
+  const { supabase, user, workspaceKey } = await requireUserWithPreset();
   const { error } = await supabase
     .from("tasks")
     .update({ done })
     .eq("id", id)
-    .eq("owner_id", user.id);
+    .eq("owner_id", user.id)
+    .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para atualizar o lembrete.");
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
 }
 
 export async function deleteTask(formData: FormData) {
-  const { supabase, user } = await requireActiveUser();
+  const { supabase, user, workspaceKey } = await requireUserWithPreset();
   const { error } = await supabase
     .from("tasks")
     .delete()
     .eq("id", requiredText(formData.get("id"), "Lembrete", 80))
-    .eq("owner_id", user.id);
+    .eq("owner_id", user.id)
+    .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para excluir o lembrete.");
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
@@ -291,6 +307,7 @@ function dateTimeOrNull(v: FormDataEntryValue | null): string | null {
 async function ownedContactIdOrNull(
   supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
   userId: string,
+  workspaceKey: string,
   v: FormDataEntryValue | null
 ): Promise<string | null> {
   const id = emptyToNull(v, 80);
@@ -300,6 +317,7 @@ async function ownedContactIdOrNull(
     .select("id")
     .eq("id", id)
     .eq("owner_id", userId)
+    .eq("workspace_key", workspaceKey)
     .maybeSingle();
   ensureOk(error, "Contato invÃ¡lido.");
   if (!data) throw new Error("Contato invÃ¡lido.");
@@ -309,9 +327,10 @@ async function ownedContactIdOrNull(
 async function requireOwnedContactId(
   supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
   userId: string,
+  workspaceKey: string,
   v: FormDataEntryValue | null
 ): Promise<string> {
-  const id = await ownedContactIdOrNull(supabase, userId, v);
+  const id = await ownedContactIdOrNull(supabase, userId, workspaceKey, v);
   if (!id) throw new Error("Contato obrigatÃ³rio.");
   return id;
 }

@@ -11,6 +11,7 @@ import {
   type Task,
 } from "@/lib/supabase/types";
 import { formatBRL, formatDate } from "@/lib/format";
+import { getWorkspaceKey } from "@/lib/workspaces";
 import { createTask } from "../actions";
 import { ReminderModal as ReminderModalClient } from "./ReminderModal";
 import { RevenueLineChart } from "./RevenueLineChart";
@@ -52,29 +53,46 @@ export default async function DashboardPage() {
     {
       data: { user },
     },
+    { data: profile },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("profiles").select("profession_type").maybeSingle(),
+  ]);
+  const workspaceKey = getWorkspaceKey(
+    profile?.profession_type,
+    user?.user_metadata?.profession_type
+  );
+  const [
     { data: deals },
     { data: tasks },
     { data: contactOptions },
-    { data: profile },
     { count: contactsCount },
     { count: conversationsToday },
   ] = await Promise.all([
-    supabase.auth.getUser(),
-    supabase.from("deals").select("*").order("created_at", { ascending: false }),
+    supabase
+      .from("deals")
+      .select("*")
+      .eq("workspace_key", workspaceKey)
+      .order("created_at", { ascending: false }),
     supabase
       .from("tasks")
       .select("*")
+      .eq("workspace_key", workspaceKey)
       .eq("done", false)
       .order("due_at", { ascending: true }),
     supabase
       .from("contacts")
       .select("id,name,company")
+      .eq("workspace_key", workspaceKey)
       .order("name", { ascending: true }),
-    supabase.from("profiles").select("profession_type").maybeSingle(),
-    supabase.from("contacts").select("*", { count: "exact", head: true }),
+    supabase
+      .from("contacts")
+      .select("*", { count: "exact", head: true })
+      .eq("workspace_key", workspaceKey),
     supabase
       .from("interactions")
       .select("*", { count: "exact", head: true })
+      .eq("workspace_key", workspaceKey)
       .gte("created_at", startOfToday.toISOString()),
   ]);
 
@@ -83,9 +101,7 @@ export default async function DashboardPage() {
   const contacts = contactsCount ?? 0;
   const contactsForForms = (contactOptions ?? []) as ContactOption[];
   const contactMap = new Map(contactsForForms.map((contact) => [contact.id, contact]));
-  const preset = getProfessionPreset(
-    profile?.profession_type ?? user?.user_metadata?.profession_type
-  );
+  const preset = getProfessionPreset(workspaceKey);
 
   const displayName =
     typeof user?.user_metadata?.name === "string" && user.user_metadata.name

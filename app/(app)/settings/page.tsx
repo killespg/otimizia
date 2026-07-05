@@ -119,12 +119,12 @@ export default async function SettingsPage({
         </form>
       </SectionCard>
 
-      <SectionCard title="Preferências" description="Como o app se adapta ao seu jeito de trabalhar.">
+      <SectionCard title="Áreas de atuação" description="Escolha qual operação quer ver e alimentar agora.">
         <form action={updateProfession} className="space-y-3">
           <input type="hidden" name="return_to" value="/settings" />
           <div>
             <label className="label" htmlFor="profession-type">
-              Perfil profissional
+              Área ativa
             </label>
             <select
               id="profession-type"
@@ -139,8 +139,11 @@ export default async function SettingsPage({
               ))}
             </select>
           </div>
+          <p className="text-xs font-medium leading-relaxed text-ink-muted">
+            Contatos, negócios, lembretes e assistente ficam separados por área.
+          </p>
           <PendingButton className="btn-soft" pendingLabel="Aplicando">
-            Aplicar perfil
+            Trocar área
           </PendingButton>
         </form>
       </SectionCard>
