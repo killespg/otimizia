@@ -8,11 +8,13 @@ import { getPlanAccess } from "@/lib/plan";
 import { getProfessionPreset } from "@/lib/professions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/server";
+import { getWorkspaceOptions } from "@/lib/workspaces";
 import { logout } from "../(auth)/actions";
 import { SidebarNav, MobileTabBar } from "./AppNav";
 import { Avatar } from "./Avatar";
 import { IconChevronRight, IconLogout, IconSettings } from "./icons";
 import { TrialBanner } from "./TrialBanner";
+import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
@@ -56,12 +58,13 @@ export default async function AppLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("profession_type, plan, plan_status, trial_ends_at, stripe_subscription_id")
+    .select("profession_type, profession_types, plan, plan_status, trial_ends_at, stripe_subscription_id")
     .eq("id", user.id)
     .maybeSingle();
   const preset = getProfessionPreset(
     profile?.profession_type ?? user.user_metadata?.profession_type
   );
+  const workspaceOptions = getWorkspaceOptions(profile?.profession_types, preset.key);
   const access = getPlanAccess(profile);
 
   const email = user.email ?? "Conta";
@@ -78,6 +81,13 @@ export default async function AppLayout({
         <aside className="hidden w-[250px] shrink-0 flex-col border-r border-line bg-white sm:flex">
           <div className="flex h-[92px] items-center px-6">
             <Logo />
+          </div>
+
+          <div className="border-b border-line px-5 pb-4">
+            <WorkspaceSwitcher
+              options={workspaceOptions}
+              value={preset.key}
+            />
           </div>
 
           <div className="flex-1 overflow-y-auto px-5 py-3">
@@ -145,6 +155,11 @@ export default async function AppLayout({
           <header className="mobile-app-header sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-white/92 px-4 backdrop-blur-xl sm:hidden">
             <Logo />
             <div className="flex items-center gap-2">
+              <WorkspaceSwitcher
+                options={workspaceOptions}
+                value={preset.key}
+                compact
+              />
               <Link
                 href="/settings"
                 aria-label="Configurações"

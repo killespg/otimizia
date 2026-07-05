@@ -3,10 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getUserPlanAccess } from "@/lib/plan-access";
-import { getProfessionPreset, normalizeProfession, type FieldSpec } from "@/lib/professions";
+import { getProfessionPreset, normalizeProfession, type FieldSpec, type ProfessionType } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import { DEAL_STAGES, type DealStage } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey, isWorkspaceEnabled, normalizeWorkspaceKeys } from "@/lib/workspaces";
 
 const LIMIT = {
   name: 120,
@@ -50,6 +50,14 @@ async function requireUserWithPreset() {
 export async function updateProfession(formData: FormData) {
   const { supabase, user } = await requireUser();
   const professionType = normalizeProfession(formData.get("profession_type"));
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("profession_types")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (!isWorkspaceEnabled(professionType, profile?.profession_types)) {
+    throw new Error("Essa área não está habilitada na sua conta.");
+  }
   const { error } = await supabase
     .from("profiles")
     .update({ profession_type: professionType })
@@ -62,6 +70,32 @@ export async function updateProfession(formData: FormData) {
   revalidatePath("/pipeline");
   revalidatePath("/tasks");
   redirect(safeReturnPath(formData.get("return_to"), "/dashboard"));
+}
+
+export async function updateProfessionTypes(formData: FormData) {
+  const { supabase, user } = await requireUser();
+  const professionTypes = selectedProfessionTypes(formData);
+  const requestedActive = normalizeProfession(formData.get("active_profession_type"));
+  const professionType = professionTypes.includes(requestedActive)
+    ? requestedActive
+    : professionTypes[0];
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      profession_type: professionType,
+      profession_types: professionTypes,
+    })
+    .eq("id", user.id);
+  ensureOk(error, "Não deu para atualizar suas áreas.");
+
+  revalidatePath("/", "layout");
+  revalidatePath("/dashboard");
+  revalidatePath("/contacts");
+  revalidatePath("/pipeline");
+  revalidatePath("/tasks");
+  revalidatePath("/settings");
+  redirect("/settings");
 }
 
 // ---------- Contacts ----------
@@ -337,6 +371,10 @@ async function requireOwnedContactId(
 
 function isDealStage(stage: string): stage is DealStage {
   return DEAL_STAGES.some((item) => item.key === stage);
+}
+
+function selectedProfessionTypes(formData: FormData): ProfessionType[] {
+  return normalizeWorkspaceKeys(formData.getAll("profession_types"));
 }
 
 function collectDetails(formData: FormData, fields: FieldSpec[]): Record<string, string> {

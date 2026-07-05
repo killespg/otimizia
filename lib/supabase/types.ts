@@ -17,6 +17,7 @@ export type Profile = {
   id: string;
   name: string | null;
   profession_type: string;
+  profession_types: string[];
   cpf: string | null;
   terms_accepted_at: string | null;
   stripe_customer_id: string | null;

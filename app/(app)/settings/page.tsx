@@ -6,7 +6,7 @@ import { getPlanAccess } from "@/lib/plan";
 import { getProfessionPreset, PROFESSION_OPTIONS } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/supabase/types";
-import { updateProfession } from "../actions";
+import { updateProfessionTypes } from "../actions";
 import { IconAlert, IconCheck } from "../icons";
 import { DeleteAccountForm } from "./DeleteAccountForm";
 import { deleteAccount, updateEmail, updateName, updatePassword } from "./actions";
@@ -120,30 +120,30 @@ export default async function SettingsPage({
       </SectionCard>
 
       <SectionCard title="Áreas de atuação" description="Escolha qual operação quer ver e alimentar agora.">
-        <form action={updateProfession} className="space-y-3">
-          <input type="hidden" name="return_to" value="/settings" />
-          <div>
-            <label className="label" htmlFor="profession-type">
-              Área ativa
-            </label>
-            <select
-              id="profession-type"
-              name="profession_type"
-              defaultValue={preset.key}
-              className="field mt-1.5"
-            >
-              {PROFESSION_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+        <form action={updateProfessionTypes} className="space-y-3">
+          <input type="hidden" name="active_profession_type" value={preset.key} />
+          <div className="grid gap-2 sm:grid-cols-2">
+            {PROFESSION_OPTIONS.map((option) => (
+              <label
+                key={option.value}
+                className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line bg-surface px-3 py-2 text-sm font-bold text-ink-soft"
+              >
+                <input
+                  type="checkbox"
+                  name="profession_types"
+                  value={option.value}
+                  defaultChecked={(profile?.profession_types ?? [preset.key]).includes(option.value)}
+                  className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
+                />
+                <span>{option.label}</span>
+              </label>
+            ))}
           </div>
           <p className="text-xs font-medium leading-relaxed text-ink-muted">
             Contatos, negócios, lembretes e assistente ficam separados por área.
           </p>
           <PendingButton className="btn-soft" pendingLabel="Aplicando">
-            Trocar área
+            Salvar áreas
           </PendingButton>
         </form>
       </SectionCard>
