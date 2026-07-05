@@ -7,6 +7,7 @@ export type ProfessionType =
   | "service_provider"
   | "consultant"
   | "freelancer"
+  | "livestock_producer"
   | "small_business"
   | "other";
 
@@ -424,6 +425,75 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
     ],
     followUpOffsets: [
       { label: "Cobrar aprovação em 2 dias", days: 2 },
+      { label: "Retornar em 1 semana", days: 7 },
+    ],
+  },
+  livestock_producer: {
+    key: "livestock_producer",
+    signupLabel: "Pecuarista",
+    shortLabel: "Pecuária",
+    pipelineLabel: "Negócios",
+    pipelineTitle: "Negócios pecuários em andamento",
+    pipelineDescription: "Acompanhe lotes, compradores, fornecedores, propostas e próximos retornos.",
+    dealSingular: "negócio",
+    dealPlural: "negócios",
+    dealFieldLabel: "Negócio",
+    dealPlaceholder: "Ex: Lote de 30 bezerros",
+    valueLabel: "Valor em negociação",
+    wonLabel: "Fechados",
+    contactsTitle: "Contatos da pecuária",
+    contactsDescription: "Salve compradores, fornecedores, parceiros, fazendas e próximos retornos.",
+    newContactTitle: "Novo contato rural",
+    firstSteps: ["Cadastre um contato", "Crie um negócio", "Agende um retorno"],
+    assistantContext: "A pessoa atua como pecuarista. Priorize lotes, rebanho, compra e venda de animais, fornecedores, compradores, prazos, sanidade, reposição e retorno por WhatsApp.",
+    stages: {
+      novo: { label: "Novo contato", empty: "Novas oportunidades entram aqui." },
+      em_contato: { label: "Em avaliação", empty: "Nenhum lote em avaliação." },
+      negociacao: { label: "Negociação", empty: "Nenhuma negociação aberta." },
+      ganho: { label: "Fechado", empty: "Negócios fechados aparecem aqui." },
+      perdido: { label: "Perdido", empty: "Sem oportunidades perdidas." },
+    },
+    contactFields: [
+      {
+        key: "tipo_contato",
+        label: "Tipo de contato",
+        type: "select",
+        options: ["Comprador", "Fornecedor", "Veterinário", "Transportador", "Parceiro", "Outro"],
+      },
+      { key: "fazenda", label: "Fazenda", type: "text", placeholder: "Ex: Fazenda Boa Vista" },
+      { key: "cidade", label: "Cidade/UF", type: "text", placeholder: "Ex: Goiânia - GO" },
+    ],
+    dealFields: [
+      {
+        key: "tipo_animal",
+        label: "Tipo de animal",
+        type: "select",
+        options: ["Boi gordo", "Bezerro", "Novilha", "Vaca", "Matriz", "Touro", "Outro"],
+      },
+      { key: "quantidade", label: "Quantidade", type: "text", placeholder: "Ex: 30 cabeças" },
+      { key: "peso_medio", label: "Peso médio", type: "text", placeholder: "Ex: 12 arrobas" },
+    ],
+    metrics: [
+      { key: "open_value", label: "Valor em negociação" },
+      { key: "open_deals", label: "Negócios em andamento" },
+      { key: "won_value_month", label: "Fechado no mês" },
+      { key: "overdue_tasks", label: "Retornos atrasados" },
+    ],
+    messageTemplates: [
+      {
+        key: "retorno_lote",
+        label: "Retorno sobre lote",
+        body: "Oi {{primeiro_nome}}! Passando para saber se você avaliou o lote e se seguimos com a negociação.",
+      },
+      {
+        key: "confirmar_visita",
+        label: "Confirmar visita",
+        body: "{{primeiro_nome}}, confirmando nossa visita para olhar os animais. O horário continua bom para você?",
+      },
+    ],
+    followUpOffsets: [
+      { label: "Retornar amanhã", days: 1 },
+      { label: "Retornar em 3 dias", days: 3 },
       { label: "Retornar em 1 semana", days: 7 },
     ],
   },
