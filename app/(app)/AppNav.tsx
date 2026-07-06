@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   IconBell,
   IconBot,
+  IconChartBar,
   IconColumns,
   IconGauge,
   IconPhone,
@@ -44,16 +45,25 @@ function useActive() {
 }
 
 /* Sidebar desktop. */
-export function SidebarNav({ labels }: { labels?: NavLabels }) {
+export function SidebarNav({
+  labels,
+  isAdmin = false,
+}: {
+  labels?: NavLabels;
+  isAdmin?: boolean;
+}) {
   const isActive = useActive();
   const text = labels ?? {
     pipeline: "Vendas",
     value: "Valor aberto",
     followups: "Clientes para chamar",
   };
+  const items = isAdmin
+    ? [...NAV, { href: "/dev", label: "Métricas", icon: IconChartBar }]
+    : NAV;
   return (
     <nav className="flex flex-col gap-1" aria-label="Navegação principal">
-      {NAV.map(({ href, label, icon: Icon, passive }) => {
+      {items.map(({ href, label, icon: Icon, passive }) => {
         const displayLabel =
           href === "/pipeline"
             ? text.pipeline

@@ -35,6 +35,14 @@ export function IconColumns({ className }: IconProps) {
   );
 }
 
+export function IconChartBar({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4 20V10M12 20V4M20 20v-7" {...stroke} />
+    </svg>
+  );
+}
+
 export function IconUsers({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

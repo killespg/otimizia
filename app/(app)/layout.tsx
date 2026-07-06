@@ -56,7 +56,7 @@ export default async function AppLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("profession_type, plan, plan_status, trial_ends_at, stripe_subscription_id")
+    .select("profession_type, plan, plan_status, trial_ends_at, stripe_subscription_id, is_admin")
     .eq("id", user.id)
     .maybeSingle();
   const preset = getProfessionPreset(
@@ -87,6 +87,7 @@ export default async function AppLayout({
                 value: preset.valueLabel,
                 followups: "Retornos do dia",
               }}
+              isAdmin={profile?.is_admin ?? false}
             />
           </div>
 
