@@ -37,6 +37,7 @@ export type Contact = {
   name: string;
   phone: string | null;
   email: string | null;
+  instagram: string | null;
   company: string | null;
   source: string | null;
   notes: string | null;

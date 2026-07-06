@@ -96,8 +96,18 @@ export default async function ContactDetailPage({
             <h1 className="text-safe text-[clamp(2rem,5vw,3.3rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
               {contactName}
             </h1>
-            {chips.length > 0 && (
+            {(chips.length > 0 || c.instagram) && (
               <div className="mt-3 flex flex-wrap gap-2">
+                {c.instagram && (
+                  <a
+                    href={`https://instagram.com/${c.instagram}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="tag bg-surface-2 text-ink-muted hover:text-brand-700"
+                  >
+                    @{c.instagram}
+                  </a>
+                )}
                 {chips.map((chip) => (
                   <span key={chip} className="tag bg-surface-2 text-ink-muted">
                     {chip}
@@ -137,6 +147,7 @@ export default async function ContactDetailPage({
               inputMode="tel"
             />
             <Field name="email" label="E-mail" type="email" defaultValue={c.email ?? ""} maxLength={160} autoComplete="email" />
+            <Field name="instagram" label="Instagram" defaultValue={c.instagram ?? ""} maxLength={60} placeholder="@usuario" />
             <Field name="company" label="Empresa" defaultValue={c.company ?? ""} maxLength={120} autoComplete="organization" />
             <Field name="source" label="Origem" defaultValue={c.source ?? ""} maxLength={120} />
             <PresetFields fields={preset.contactFields} values={c.details} />
@@ -374,6 +385,7 @@ function Field({
   maxLength,
   autoComplete,
   inputMode,
+  placeholder,
 }: {
   name: string;
   label: string;
@@ -383,6 +395,7 @@ function Field({
   maxLength?: number;
   autoComplete?: string;
   inputMode?: InputMode;
+  placeholder?: string;
 }) {
   return (
     <div>
@@ -406,6 +419,7 @@ function Field({
         maxLength={maxLength}
         autoComplete={autoComplete}
         inputMode={inputMode}
+        placeholder={placeholder}
         className="field mt-1.5"
       />
     </div>

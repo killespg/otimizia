@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Contact, Task } from "@/lib/supabase/types";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { createTask } from "../actions";
+import { ContactField } from "../ContactField";
 import { IconBell, IconCheckCircle, IconClock, IconPlus } from "../icons";
 import TaskItem from "./TaskItem";
 
@@ -117,19 +118,7 @@ export default async function TasksPage() {
             </label>
             <input id="task-when" name="due_at" type="datetime-local" className="field mt-1.5" />
           </div>
-          <div>
-            <label className="label" htmlFor="task-contact">
-              Contato
-            </label>
-            <select id="task-contact" name="contact_id" className="field mt-1.5">
-              <option value="">Sem contato</option>
-              {allContacts.map((contact) => (
-                <option key={contact.id} value={contact.id}>
-                  {contact.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <ContactField contacts={allContacts} />
           <PendingButton className="btn h-[42px] w-full lg:w-auto" pendingLabel="Salvando">
             <IconPlus className="h-4 w-4" />
             Salvar

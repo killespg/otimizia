@@ -149,13 +149,18 @@ export default async function ContactsPage({
                         {displayContactName(contact)}
                       </p>
                       <p className="truncate text-xs font-bold text-ink-muted">
-                        {contact.company || contact.email || contact.phone || "Sem dados extras"}
+                        {contact.company || contact.instagram || contact.email || contact.phone || "Sem dados extras"}
                       </p>
                     </div>
                     <div className="hidden items-center gap-2 sm:flex">
                       {contact.phone && (
                         <span className="tag bg-brand-50 text-brand-700">
                           WhatsApp
+                        </span>
+                      )}
+                      {contact.instagram && (
+                        <span className="tag bg-surface-2 text-ink-muted">
+                          Instagram
                         </span>
                       )}
                       {contact.source && (
@@ -196,6 +201,7 @@ export default async function ContactsPage({
               inputMode="tel"
             />
             <Field name="email" label="E-mail" type="email" maxLength={160} autoComplete="email" />
+            <Field name="instagram" label="Instagram" maxLength={60} placeholder="@usuario" />
             <Field name="company" label="Empresa" maxLength={120} autoComplete="organization" />
             <Field name="source" label="Origem" maxLength={120} />
             <PresetFields fields={preset.contactFields} />
@@ -299,6 +305,7 @@ function Field({
   maxLength,
   autoComplete,
   inputMode,
+  placeholder,
 }: {
   name: string;
   label: string;
@@ -307,6 +314,7 @@ function Field({
   maxLength?: number;
   autoComplete?: string;
   inputMode?: InputMode;
+  placeholder?: string;
 }) {
   return (
     <div>
@@ -329,6 +337,7 @@ function Field({
         maxLength={maxLength}
         autoComplete={autoComplete}
         inputMode={inputMode}
+        placeholder={placeholder}
         className="field mt-1.5"
       />
     </div>

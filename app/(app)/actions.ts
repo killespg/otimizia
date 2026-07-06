@@ -12,6 +12,7 @@ const LIMIT = {
   name: 120,
   phone: 40,
   email: 160,
+  instagram: 60,
   company: 120,
   source: 120,
   notes: 1200,
@@ -39,10 +40,14 @@ async function requireUserWithPreset() {
   const { supabase, user } = await requireActiveUser();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("profession_type")
+    .select("profession_type, is_admin")
     .eq("id", user.id)
     .maybeSingle();
-  const workspaceKey = getWorkspaceKey(profile?.profession_type, user.user_metadata?.profession_type);
+  const workspaceKey = getWorkspaceKey(
+    profile?.profession_type,
+    user.user_metadata?.profession_type,
+    profile?.is_admin ?? false
+  );
   const preset = getProfessionPreset(workspaceKey);
   return { supabase, user, preset, workspaceKey };
 }
@@ -107,6 +112,7 @@ export async function createContact(formData: FormData) {
     name: requiredText(formData.get("name"), "Nome", LIMIT.name),
     phone: emptyToNull(formData.get("phone"), LIMIT.phone),
     email: emailOrNull(formData.get("email")),
+    instagram: normalizeInstagram(formData.get("instagram")),
     company: emptyToNull(formData.get("company"), LIMIT.company),
     source: emptyToNull(formData.get("source"), LIMIT.source),
     notes: emptyToNull(formData.get("notes"), LIMIT.notes),
@@ -140,6 +146,7 @@ export async function updateContact(formData: FormData) {
       name: requiredText(formData.get("name"), "Nome", LIMIT.name),
       phone: emptyToNull(formData.get("phone"), LIMIT.phone),
       email: emailOrNull(formData.get("email")),
+      instagram: normalizeInstagram(formData.get("instagram")),
       company: emptyToNull(formData.get("company"), LIMIT.company),
       source: emptyToNull(formData.get("source"), LIMIT.source),
       notes: emptyToNull(formData.get("notes"), LIMIT.notes),
@@ -245,12 +252,7 @@ export async function deleteDeal(formData: FormData) {
 // ---------- Tasks ----------
 export async function createTask(formData: FormData) {
   const { supabase, user, workspaceKey } = await requireUserWithPreset();
-  const contactId = await ownedContactIdOrNull(
-    supabase,
-    user.id,
-    workspaceKey,
-    formData.get("contact_id")
-  );
+  const contactId = await resolveTaskContactId(supabase, user.id, workspaceKey, formData);
   const { error } = await supabase.from("tasks").insert({
     owner_id: user.id,
     workspace_key: workspaceKey,
@@ -261,7 +263,43 @@ export async function createTask(formData: FormData) {
   ensureOk(error, "Não deu para salvar o lembrete.");
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
+  revalidatePath("/contacts");
   redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
+}
+
+// Permite criar o lembrete e o contato juntos, num só envio — evita ter que
+// ir em /contacts, preencher o formulário completo e só depois voltar para
+// criar o lembrete.
+async function resolveTaskContactId(
+  supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
+  userId: string,
+  workspaceKey: string,
+  formData: FormData
+): Promise<string | null> {
+  const existingId = await ownedContactIdOrNull(
+    supabase,
+    userId,
+    workspaceKey,
+    formData.get("contact_id")
+  );
+  if (existingId) return existingId;
+
+  const newName = text(formData.get("new_contact_name"), LIMIT.name);
+  if (!newName) return null;
+
+  const { data, error } = await supabase
+    .from("contacts")
+    .insert({
+      owner_id: userId,
+      workspace_key: workspaceKey,
+      name: newName,
+      phone: emptyToNull(formData.get("new_contact_phone"), LIMIT.phone),
+      instagram: normalizeInstagram(formData.get("new_contact_instagram")),
+    })
+    .select("id")
+    .single();
+  ensureOk(error, "Não deu para criar o contato.");
+  return data?.id ?? null;
 }
 
 export async function toggleTask(id: string, done: boolean) {
@@ -317,6 +355,15 @@ function emailOrNull(v: FormDataEntryValue | null): string | null {
     throw new Error("E-mail inválido.");
   }
   return email;
+}
+
+function normalizeInstagram(v: FormDataEntryValue | null): string | null {
+  let handle = text(v, 200);
+  if (!handle) return null;
+  handle = handle.replace(/^https?:\/\/(www\.)?instagram\.com\//i, "");
+  handle = handle.replace(/^@/, "");
+  handle = handle.split(/[/?]/)[0].trim();
+  return handle ? handle.slice(0, LIMIT.instagram) : null;
 }
 
 function moneyToCents(v: FormDataEntryValue | null): number {
