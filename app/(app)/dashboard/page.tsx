@@ -11,6 +11,7 @@ import {
   type Task,
 } from "@/lib/supabase/types";
 import { formatBRL, formatDate } from "@/lib/format";
+import { getWorkspaceKey } from "@/lib/workspaces";
 import { createTask } from "../actions";
 import { ReminderModal as ReminderModalClient } from "./ReminderModal";
 import { RevenueLineChart } from "./RevenueLineChart";
@@ -39,6 +40,18 @@ const METRIC_ICONS: Record<MetricKey, (props: { className?: string }) => JSX.Ele
 
 type ContactOption = Pick<Contact, "id" | "name" | "company">;
 
+const DASHBOARD_GREETINGS: Record<ProfessionPreset["key"], string> = {
+  autonomous_seller: "Bora olhar os clientes quentes e destravar os próximos fechamentos.",
+  law_office: "Triagens, propostas e retornos em ordem para o escritório respirar melhor.",
+  real_estate_broker: "Vamos cuidar dos leads, visitas e propostas que podem virar negócio.",
+  service_provider: "Pedidos, orçamentos e agenda alinhados para o serviço fluir.",
+  consultant: "Hora de acompanhar propostas, diagnósticos e próximos passos com clareza.",
+  freelancer: "Projetos, prazos e aprovações no radar para nada escapar.",
+  livestock_producer: "Lotes, compradores e retornos organizados para tocar a pecuária.",
+  small_business: "Pedidos, clientes e recompra no ponto para vender com mais ritmo.",
+  other: "Seu painel está pronto para organizar contatos, oportunidades e retornos.",
+};
+
 export default async function DashboardPage() {
   const supabase = createClient();
   const now = new Date();
@@ -52,29 +65,46 @@ export default async function DashboardPage() {
     {
       data: { user },
     },
+    { data: profile },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("profiles").select("profession_type").maybeSingle(),
+  ]);
+  const workspaceKey = getWorkspaceKey(
+    profile?.profession_type,
+    user?.user_metadata?.profession_type
+  );
+  const [
     { data: deals },
     { data: tasks },
     { data: contactOptions },
-    { data: profile },
     { count: contactsCount },
     { count: conversationsToday },
   ] = await Promise.all([
-    supabase.auth.getUser(),
-    supabase.from("deals").select("*").order("created_at", { ascending: false }),
+    supabase
+      .from("deals")
+      .select("*")
+      .eq("workspace_key", workspaceKey)
+      .order("created_at", { ascending: false }),
     supabase
       .from("tasks")
       .select("*")
+      .eq("workspace_key", workspaceKey)
       .eq("done", false)
       .order("due_at", { ascending: true }),
     supabase
       .from("contacts")
       .select("id,name,company")
+      .eq("workspace_key", workspaceKey)
       .order("name", { ascending: true }),
-    supabase.from("profiles").select("profession_type").maybeSingle(),
-    supabase.from("contacts").select("*", { count: "exact", head: true }),
+    supabase
+      .from("contacts")
+      .select("*", { count: "exact", head: true })
+      .eq("workspace_key", workspaceKey),
     supabase
       .from("interactions")
       .select("*", { count: "exact", head: true })
+      .eq("workspace_key", workspaceKey)
       .gte("created_at", startOfToday.toISOString()),
   ]);
 
@@ -83,9 +113,7 @@ export default async function DashboardPage() {
   const contacts = contactsCount ?? 0;
   const contactsForForms = (contactOptions ?? []) as ContactOption[];
   const contactMap = new Map(contactsForForms.map((contact) => [contact.id, contact]));
-  const preset = getProfessionPreset(
-    profile?.profession_type ?? user?.user_metadata?.profession_type
-  );
+  const preset = getProfessionPreset(workspaceKey);
 
   const displayName =
     typeof user?.user_metadata?.name === "string" && user.user_metadata.name
@@ -167,14 +195,22 @@ export default async function DashboardPage() {
 
   const isFirstRun =
     contacts === 0 && allDeals.length === 0 && openTasks.length === 0;
+  const greeting = dashboardGreeting(preset, {
+    overdueCount: overdue.length,
+    todayCount: todayTasks.length,
+    isFirstRun,
+  });
 
   return (
     <div className="space-y-4 sm:space-y-5">
       <header className="enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
+        <div className="max-w-2xl">
           <h1 className="text-[22px] font-black tracking-[-0.02em] text-ink sm:text-2xl">
             Olá, {displayName}!
           </h1>
+          <p className="mt-1 text-sm font-semibold leading-relaxed text-ink-soft sm:text-base">
+            {greeting}
+          </p>
         </div>
 
         <div className="hidden flex-col gap-3 sm:flex sm:flex-row sm:items-center">
@@ -726,4 +762,23 @@ function initials(value: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("") || "JS";
+}
+
+function dashboardGreeting(
+  preset: ProfessionPreset,
+  state: { overdueCount: number; todayCount: number; isFirstRun: boolean }
+) {
+  if (state.isFirstRun) {
+    return `Comece pela área de ${preset.signupLabel}: cadastre um contato, crie um ${preset.dealSingular} e deixe um lembrete.`;
+  }
+
+  if (state.overdueCount > 0) {
+    return `${state.overdueCount} ${state.overdueCount === 1 ? "retorno atrasado" : "retornos atrasados"} pedindo atenção na área de ${preset.signupLabel}.`;
+  }
+
+  if (state.todayCount > 0) {
+    return `${state.todayCount} ${state.todayCount === 1 ? "lembrete" : "lembretes"} para hoje. Um bom dia para avançar ${preset.dealPlural}.`;
+  }
+
+  return DASHBOARD_GREETINGS[preset.key];
 }

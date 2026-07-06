@@ -3,6 +3,7 @@ import { PendingButton } from "@/components/PendingButton";
 import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact } from "@/lib/supabase/types";
+import { getWorkspaceKey } from "@/lib/workspaces";
 import { createContact } from "../actions";
 import { Avatar } from "../Avatar";
 import { PresetFields } from "../PresetFields";
@@ -27,15 +28,20 @@ export default async function ContactsPage({
       data: { user },
     },
     { data: profile },
-    { data },
   ] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from("profiles").select("profession_type").maybeSingle(),
-    supabase.from("contacts").select("*").order("created_at", { ascending: false }),
   ]);
-  const preset = getProfessionPreset(
-    profile?.profession_type ?? user?.user_metadata?.profession_type
+  const workspaceKey = getWorkspaceKey(
+    profile?.profession_type,
+    user?.user_metadata?.profession_type
   );
+  const preset = getProfessionPreset(workspaceKey);
+  const { data } = await supabase
+    .from("contacts")
+    .select("*")
+    .eq("workspace_key", workspaceKey)
+    .order("created_at", { ascending: false });
   const allContacts = (data ?? []) as Contact[];
   const contacts = search
     ? allContacts.filter((contact) => contactMatchesSearch(contact, search))
@@ -52,7 +58,7 @@ export default async function ContactsPage({
             {preset.contactsTitle}
           </h1>
           <p className="mt-2 hidden max-w-xl text-sm font-medium leading-relaxed text-ink-soft sm:block">
-            Salve clientes, empresas e detalhes para não perder o próximo contato.
+            {preset.contactsDescription}
           </p>
         </div>
 

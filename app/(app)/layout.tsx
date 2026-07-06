@@ -8,11 +8,13 @@ import { getPlanAccess } from "@/lib/plan";
 import { getProfessionPreset } from "@/lib/professions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/server";
+import { getWorkspaceOptions } from "@/lib/workspaces";
 import { logout } from "../(auth)/actions";
 import { SidebarNav, MobileTabBar } from "./AppNav";
 import { Avatar } from "./Avatar";
 import { IconChevronRight, IconLogout, IconSettings } from "./icons";
 import { TrialBanner } from "./TrialBanner";
+import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
@@ -56,12 +58,15 @@ export default async function AppLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("profession_type, plan, plan_status, trial_ends_at, stripe_subscription_id, is_admin")
+    .select(
+      "profession_type, profession_types, plan, plan_status, trial_ends_at, stripe_subscription_id, is_admin"
+    )
     .eq("id", user.id)
     .maybeSingle();
   const preset = getProfessionPreset(
     profile?.profession_type ?? user.user_metadata?.profession_type
   );
+  const workspaceOptions = getWorkspaceOptions(profile?.profession_types, preset.key);
   const access = getPlanAccess(profile);
 
   const email = user.email ?? "Conta";
@@ -79,6 +84,15 @@ export default async function AppLayout({
           <div className="flex h-[92px] items-center px-6">
             <Logo />
           </div>
+
+          {workspaceOptions.length > 1 && (
+            <div className="border-b border-line px-5 pb-4">
+              <WorkspaceSwitcher
+                options={workspaceOptions}
+                value={preset.key}
+              />
+            </div>
+          )}
 
           <div className="flex-1 overflow-y-auto px-5 py-3">
             <SidebarNav
@@ -120,7 +134,7 @@ export default async function AppLayout({
                   {displayName}
                 </p>
                 <p className="truncate text-xs font-medium text-ink-muted">
-                  Configurações
+                  {preset.signupLabel}
                 </p>
               </div>
               <IconChevronRight className="h-4 w-4 text-ink-muted" />
@@ -167,6 +181,16 @@ export default async function AppLayout({
               </form>
             </div>
           </header>
+
+          {workspaceOptions.length > 1 && (
+            <div className="border-b border-line bg-white/92 px-4 py-2 backdrop-blur-xl sm:hidden">
+              <WorkspaceSwitcher
+                options={workspaceOptions}
+                value={preset.key}
+                compact
+              />
+            </div>
+          )}
 
           {access.status === "trialing" && access.trialDaysLeft !== null && (
             <TrialBanner trialDaysLeft={access.trialDaysLeft} />

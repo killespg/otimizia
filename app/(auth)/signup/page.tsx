@@ -70,20 +70,26 @@ export default function SignupPage({
             className="field mt-1.5"
           />
         </div>
-        <label className="block">
-          <span className="label">Qual perfil combina mais com você?</span>
-          <select
-            name="profession_type"
-            className="field mt-1.5"
-            defaultValue="autonomous_seller"
-          >
-            {PROFESSION_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
+        <fieldset className="space-y-2">
+          <legend className="label">Em quais áreas você atua?</legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {PROFESSION_OPTIONS.map((option, index) => (
+              <label
+                key={option.value}
+                className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line bg-surface px-3 py-2 text-sm font-bold text-ink-soft"
+              >
+                <input
+                  type="checkbox"
+                  name="profession_types"
+                  value={option.value}
+                  defaultChecked={index === 0}
+                  className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
+                />
+                <span>{option.label}</span>
+              </label>
             ))}
-          </select>
-        </label>
+          </div>
+        </fieldset>
         <label className="flex items-start gap-2.5 text-sm font-medium text-ink-soft">
           <input
             type="checkbox"

@@ -17,6 +17,7 @@ export type Profile = {
   id: string;
   name: string | null;
   profession_type: string;
+  profession_types: string[];
   cpf: string | null;
   terms_accepted_at: string | null;
   stripe_customer_id: string | null;
@@ -32,6 +33,7 @@ export type Profile = {
 export type Contact = {
   id: string;
   owner_id: string;
+  workspace_key: string;
   name: string;
   phone: string | null;
   email: string | null;
@@ -45,6 +47,7 @@ export type Contact = {
 export type Deal = {
   id: string;
   owner_id: string;
+  workspace_key: string;
   contact_id: string | null;
   title: string;
   value_cents: number;
@@ -58,6 +61,7 @@ export type Deal = {
 export type Task = {
   id: string;
   owner_id: string;
+  workspace_key: string;
   contact_id: string | null;
   deal_id: string | null;
   title: string;
@@ -69,6 +73,7 @@ export type Task = {
 export type Interaction = {
   id: string;
   owner_id: string;
+  workspace_key: string;
   contact_id: string;
   body: string;
   created_at: string;

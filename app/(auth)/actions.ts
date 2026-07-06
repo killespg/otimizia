@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { isValidCPF, onlyDigits } from "@/lib/cpf";
-import { normalizeProfession } from "@/lib/professions";
+import { normalizeProfession, type ProfessionType } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 
 export async function login(formData: FormData) {
@@ -30,7 +30,8 @@ export async function signup(formData: FormData) {
   const email = emailField(formData.get("email"));
   const password = passwordField(formData.get("password"));
   const name = textField(formData.get("name"), 120);
-  const professionType = normalizeProfession(formData.get("profession_type"));
+  const professionTypes = professionTypeFields(formData);
+  const professionType = professionTypes[0];
   const cpf = onlyDigits(textField(formData.get("cpf"), 14));
   const termsAccepted = formData.get("terms_accepted") === "on";
   const trialNoticeAccepted = formData.get("trial_notice_accepted") === "on";
@@ -69,6 +70,7 @@ export async function signup(formData: FormData) {
       data: {
         name,
         profession_type: professionType,
+        profession_types: professionTypes,
         cpf,
         terms_accepted: "true",
         trial_notice_accepted: "true",
@@ -133,6 +135,15 @@ function emailField(v: FormDataEntryValue | null): string {
 
 function passwordField(v: FormDataEntryValue | null): string {
   return typeof v === "string" ? v.slice(0, 200) : "";
+}
+
+function professionTypeFields(formData: FormData): ProfessionType[] {
+  const selected = formData
+    .getAll("profession_types")
+    .map((value) => normalizeProfession(value))
+    .filter((value, index, arr) => arr.indexOf(value) === index);
+
+  return selected.length > 0 ? selected : ["autonomous_seller"];
 }
 
 function redirectWithError(path: string, message: string): never {

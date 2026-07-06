@@ -254,6 +254,7 @@ type ToolInput = Record<string, unknown>;
 export async function executeTool(
   supabase: SupabaseClient,
   userId: string,
+  workspaceKey: string,
   name: string,
   rawInput: unknown
 ): Promise<string> {
@@ -261,29 +262,29 @@ export async function executeTool(
 
   switch (name) {
     case "list_contacts":
-      return listContacts(supabase, userId, input);
+      return listContacts(supabase, userId, workspaceKey, input);
     case "get_contact":
-      return getContact(supabase, userId, input);
+      return getContact(supabase, userId, workspaceKey, input);
     case "list_deals":
-      return listDeals(supabase, userId, input);
+      return listDeals(supabase, userId, workspaceKey, input);
     case "list_tasks":
-      return listTasks(supabase, userId, input);
+      return listTasks(supabase, userId, workspaceKey, input);
     case "get_business_summary":
-      return getBusinessSummary(supabase, userId);
+      return getBusinessSummary(supabase, userId, workspaceKey);
     case "create_contact":
-      return createContact(supabase, userId, input);
+      return createContact(supabase, userId, workspaceKey, input);
     case "update_contact":
-      return updateContact(supabase, userId, input);
+      return updateContact(supabase, userId, workspaceKey, input);
     case "log_interaction":
-      return logInteraction(supabase, userId, input);
+      return logInteraction(supabase, userId, workspaceKey, input);
     case "create_deal":
-      return createDeal(supabase, userId, input);
+      return createDeal(supabase, userId, workspaceKey, input);
     case "move_deal":
-      return moveDeal(supabase, userId, input);
+      return moveDeal(supabase, userId, workspaceKey, input);
     case "create_task":
-      return createTask(supabase, userId, input);
+      return createTask(supabase, userId, workspaceKey, input);
     case "toggle_task":
-      return toggleTask(supabase, userId, input);
+      return toggleTask(supabase, userId, workspaceKey, input);
     case "delete_contact":
       return deleteRow(supabase, userId, "contacts", str(input.contato_id, "contato_id"), "Contato excluído.");
     case "delete_deal":
@@ -297,12 +298,13 @@ export async function executeTool(
 
 // ---------- Leitura ----------
 
-async function listContacts(supabase: SupabaseClient, userId: string, input: ToolInput) {
+async function listContacts(supabase: SupabaseClient, userId: string, workspaceKey: string, input: ToolInput) {
   const limit = clampInt(input.limite, 1, 50, 20);
   let query = supabase
     .from("contacts")
     .select("id, name, phone, email, company, source, details, created_at")
     .eq("owner_id", userId)
+    .eq("workspace_key", workspaceKey)
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -321,7 +323,7 @@ async function listContacts(supabase: SupabaseClient, userId: string, input: Too
   return JSON.stringify({ total: data?.length ?? 0, contatos: data ?? [] });
 }
 
-async function getContact(supabase: SupabaseClient, userId: string, input: ToolInput) {
+async function getContact(supabase: SupabaseClient, userId: string, workspaceKey: string, input: ToolInput) {
   const id = str(input.contato_id, "contato_id");
 
   const { data: contact, error } = await supabase
@@ -329,6 +331,7 @@ async function getContact(supabase: SupabaseClient, userId: string, input: ToolI
     .select("*")
     .eq("id", id)
     .eq("owner_id", userId)
+    .eq("workspace_key", workspaceKey)
     .maybeSingle();
   ensureOk(error);
   if (!contact) return JSON.stringify({ erro: "Contato não encontrado." });
@@ -338,6 +341,7 @@ async function getContact(supabase: SupabaseClient, userId: string, input: ToolI
       .from("deals")
       .select("id, title, value_cents, stage, details, created_at, closed_at")
       .eq("owner_id", userId)
+      .eq("workspace_key", workspaceKey)
       .eq("contact_id", id)
       .order("created_at", { ascending: false })
       .limit(20),
@@ -345,6 +349,7 @@ async function getContact(supabase: SupabaseClient, userId: string, input: ToolI
       .from("tasks")
       .select("id, title, due_at, done")
       .eq("owner_id", userId)
+      .eq("workspace_key", workspaceKey)
       .eq("contact_id", id)
       .order("created_at", { ascending: false })
       .limit(20),
@@ -352,6 +357,7 @@ async function getContact(supabase: SupabaseClient, userId: string, input: ToolI
       .from("interactions")
       .select("id, body, created_at")
       .eq("owner_id", userId)
+      .eq("workspace_key", workspaceKey)
       .eq("contact_id", id)
       .order("created_at", { ascending: false })
       .limit(10),
@@ -368,11 +374,12 @@ async function getContact(supabase: SupabaseClient, userId: string, input: ToolI
   });
 }
 
-async function listDeals(supabase: SupabaseClient, userId: string, input: ToolInput) {
+async function listDeals(supabase: SupabaseClient, userId: string, workspaceKey: string, input: ToolInput) {
   let query = supabase
     .from("deals")
     .select("id, title, value_cents, stage, contact_id, details, created_at, closed_at")
     .eq("owner_id", userId)
+    .eq("workspace_key", workspaceKey)
     .order("created_at", { ascending: false })
     .limit(50);
 
@@ -393,7 +400,7 @@ async function listDeals(supabase: SupabaseClient, userId: string, input: ToolIn
   });
 }
 
-async function listTasks(supabase: SupabaseClient, userId: string, input: ToolInput) {
+async function listTasks(supabase: SupabaseClient, userId: string, workspaceKey: string, input: ToolInput) {
   const filtro = optionalStr(input.filtro, 20) ?? "abertos";
   const nowIso = new Date().toISOString();
 
@@ -401,6 +408,7 @@ async function listTasks(supabase: SupabaseClient, userId: string, input: ToolIn
     .from("tasks")
     .select("id, title, due_at, done, contact_id")
     .eq("owner_id", userId)
+    .eq("workspace_key", workspaceKey)
     .order("due_at", { ascending: true, nullsFirst: false })
     .limit(50);
 
@@ -424,7 +432,7 @@ async function listTasks(supabase: SupabaseClient, userId: string, input: ToolIn
   return JSON.stringify({ filtro, total: data?.length ?? 0, lembretes: data ?? [] });
 }
 
-async function getBusinessSummary(supabase: SupabaseClient, userId: string) {
+async function getBusinessSummary(supabase: SupabaseClient, userId: string, workspaceKey: string) {
   const nowIso = new Date().toISOString();
   const monthStart = new Date();
   monthStart.setDate(1);
@@ -434,15 +442,18 @@ async function getBusinessSummary(supabase: SupabaseClient, userId: string) {
     supabase
       .from("contacts")
       .select("id", { count: "exact", head: true })
-      .eq("owner_id", userId),
+      .eq("owner_id", userId)
+      .eq("workspace_key", workspaceKey),
     supabase
       .from("deals")
       .select("stage, value_cents, closed_at")
-      .eq("owner_id", userId),
+      .eq("owner_id", userId)
+      .eq("workspace_key", workspaceKey),
     supabase
       .from("tasks")
       .select("id, due_at")
       .eq("owner_id", userId)
+      .eq("workspace_key", workspaceKey)
       .eq("done", false),
   ]);
   ensureOk(contacts.error);
@@ -477,11 +488,12 @@ async function getBusinessSummary(supabase: SupabaseClient, userId: string) {
 
 // ---------- Escrita ----------
 
-async function createContact(supabase: SupabaseClient, userId: string, input: ToolInput) {
+async function createContact(supabase: SupabaseClient, userId: string, workspaceKey: string, input: ToolInput) {
   const { data, error } = await supabase
     .from("contacts")
     .insert({
       owner_id: userId,
+      workspace_key: workspaceKey,
       name: str(input.nome, "nome", 120),
       phone: optionalStr(input.telefone, 40),
       email: emailOrNull(input.email),
@@ -496,7 +508,7 @@ async function createContact(supabase: SupabaseClient, userId: string, input: To
   return JSON.stringify({ ok: true, contato: data });
 }
 
-async function updateContact(supabase: SupabaseClient, userId: string, input: ToolInput) {
+async function updateContact(supabase: SupabaseClient, userId: string, workspaceKey: string, input: ToolInput) {
   const id = str(input.contato_id, "contato_id");
   const patch: Record<string, string | null | Record<string, string>> = {};
   if (input.nome !== undefined) patch.name = str(input.nome, "nome", 120);
@@ -511,6 +523,7 @@ async function updateContact(supabase: SupabaseClient, userId: string, input: To
       .select("details")
       .eq("id", id)
       .eq("owner_id", userId)
+      .eq("workspace_key", workspaceKey)
       .maybeSingle();
     patch.details = { ...(existing?.details ?? {}), ...detailsObject(input.detalhes) };
   }
@@ -521,6 +534,7 @@ async function updateContact(supabase: SupabaseClient, userId: string, input: To
     .update(patch)
     .eq("id", id)
     .eq("owner_id", userId)
+    .eq("workspace_key", workspaceKey)
     .select("id, name")
     .maybeSingle();
   ensureOk(error);
@@ -528,12 +542,13 @@ async function updateContact(supabase: SupabaseClient, userId: string, input: To
   return JSON.stringify({ ok: true, contato: data });
 }
 
-async function logInteraction(supabase: SupabaseClient, userId: string, input: ToolInput) {
-  const contactId = await requireOwnedContactId(supabase, userId, input.contato_id);
+async function logInteraction(supabase: SupabaseClient, userId: string, workspaceKey: string, input: ToolInput) {
+  const contactId = await requireOwnedContactId(supabase, userId, workspaceKey, input.contato_id);
   const { data, error } = await supabase
     .from("interactions")
     .insert({
       owner_id: userId,
+      workspace_key: workspaceKey,
       contact_id: contactId,
       body: str(input.texto, "texto", 1200),
     })
@@ -543,7 +558,7 @@ async function logInteraction(supabase: SupabaseClient, userId: string, input: T
   return JSON.stringify({ ok: true, interacao_id: data?.id });
 }
 
-async function createDeal(supabase: SupabaseClient, userId: string, input: ToolInput) {
+async function createDeal(supabase: SupabaseClient, userId: string, workspaceKey: string, input: ToolInput) {
   const valor = input.valor_reais;
   let cents = 0;
   if (valor !== undefined && valor !== null) {
@@ -552,12 +567,13 @@ async function createDeal(supabase: SupabaseClient, userId: string, input: ToolI
     cents = Math.min(Math.round(n * 100), 999_999_999_99);
   }
 
-  const contactId = await ownedContactIdOrNull(supabase, userId, input.contato_id);
+  const contactId = await ownedContactIdOrNull(supabase, userId, workspaceKey, input.contato_id);
 
   const { data, error } = await supabase
     .from("deals")
     .insert({
       owner_id: userId,
+      workspace_key: workspaceKey,
       contact_id: contactId,
       title: str(input.titulo, "titulo", 160),
       value_cents: cents,
@@ -570,7 +586,7 @@ async function createDeal(supabase: SupabaseClient, userId: string, input: ToolI
   return JSON.stringify({ ok: true, venda: data });
 }
 
-async function moveDeal(supabase: SupabaseClient, userId: string, input: ToolInput) {
+async function moveDeal(supabase: SupabaseClient, userId: string, workspaceKey: string, input: ToolInput) {
   const id = str(input.venda_id, "venda_id");
   const etapa = str(input.etapa, "etapa", 40);
   if (!isStage(etapa)) throw new Error(`Etapa inválida: ${etapa}`);
@@ -581,6 +597,7 @@ async function moveDeal(supabase: SupabaseClient, userId: string, input: ToolInp
     .update({ stage: etapa, closed_at: closed ? new Date().toISOString() : null })
     .eq("id", id)
     .eq("owner_id", userId)
+    .eq("workspace_key", workspaceKey)
     .select("id, title, stage")
     .maybeSingle();
   ensureOk(error);
@@ -588,7 +605,7 @@ async function moveDeal(supabase: SupabaseClient, userId: string, input: ToolInp
   return JSON.stringify({ ok: true, venda: data });
 }
 
-async function createTask(supabase: SupabaseClient, userId: string, input: ToolInput) {
+async function createTask(supabase: SupabaseClient, userId: string, workspaceKey: string, input: ToolInput) {
   let dueAt: string | null = null;
   const vencimento = optionalStr(input.vencimento, 64);
   if (vencimento) {
@@ -597,12 +614,13 @@ async function createTask(supabase: SupabaseClient, userId: string, input: ToolI
     dueAt = date.toISOString();
   }
 
-  const contactId = await ownedContactIdOrNull(supabase, userId, input.contato_id);
+  const contactId = await ownedContactIdOrNull(supabase, userId, workspaceKey, input.contato_id);
 
   const { data, error } = await supabase
     .from("tasks")
     .insert({
       owner_id: userId,
+      workspace_key: workspaceKey,
       contact_id: contactId,
       title: str(input.titulo, "titulo", 160),
       due_at: dueAt,
@@ -613,7 +631,7 @@ async function createTask(supabase: SupabaseClient, userId: string, input: ToolI
   return JSON.stringify({ ok: true, lembrete: data });
 }
 
-async function toggleTask(supabase: SupabaseClient, userId: string, input: ToolInput) {
+async function toggleTask(supabase: SupabaseClient, userId: string, workspaceKey: string, input: ToolInput) {
   const id = str(input.lembrete_id, "lembrete_id");
   if (typeof input.concluido !== "boolean") throw new Error("'concluido' deve ser true ou false.");
 
@@ -622,6 +640,7 @@ async function toggleTask(supabase: SupabaseClient, userId: string, input: ToolI
     .update({ done: input.concluido })
     .eq("id", id)
     .eq("owner_id", userId)
+    .eq("workspace_key", workspaceKey)
     .select("id, title, done")
     .maybeSingle();
   ensureOk(error);
@@ -682,6 +701,7 @@ function emailOrNull(v: unknown): string | null {
 async function ownedContactIdOrNull(
   supabase: SupabaseClient,
   userId: string,
+  workspaceKey: string,
   v: unknown
 ): Promise<string | null> {
   const id = optionalStr(v, 80);
@@ -691,6 +711,7 @@ async function ownedContactIdOrNull(
     .select("id")
     .eq("id", id)
     .eq("owner_id", userId)
+    .eq("workspace_key", workspaceKey)
     .maybeSingle();
   ensureOk(error);
   if (!data) throw new Error("Contato nÃ£o encontrado.");
@@ -700,9 +721,10 @@ async function ownedContactIdOrNull(
 async function requireOwnedContactId(
   supabase: SupabaseClient,
   userId: string,
+  workspaceKey: string,
   v: unknown
 ): Promise<string> {
-  const id = await ownedContactIdOrNull(supabase, userId, v);
+  const id = await ownedContactIdOrNull(supabase, userId, workspaceKey, v);
   if (!id) throw new Error("Campo obrigatÃ³rio: contato_id.");
   return id;
 }
