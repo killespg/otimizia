@@ -199,12 +199,7 @@ export async function createInteraction(formData: FormData) {
 // ---------- Deals ----------
 export async function createDeal(formData: FormData) {
   const { supabase, user, preset, workspaceKey } = await requireUserWithPreset();
-  const contactId = await ownedContactIdOrNull(
-    supabase,
-    user.id,
-    workspaceKey,
-    formData.get("contact_id")
-  );
+  const contactId = await resolveOrCreateContactId(supabase, user.id, workspaceKey, formData);
   const { error } = await supabase.from("deals").insert({
     owner_id: user.id,
     workspace_key: workspaceKey,
@@ -217,6 +212,7 @@ export async function createDeal(formData: FormData) {
   ensureOk(error, "Não deu para salvar a venda.");
   revalidatePath("/pipeline");
   revalidatePath("/dashboard");
+  revalidatePath("/contacts");
   redirect(safeReturnPath(formData.get("return_to"), "/pipeline"));
 }
 
@@ -252,7 +248,7 @@ export async function deleteDeal(formData: FormData) {
 // ---------- Tasks ----------
 export async function createTask(formData: FormData) {
   const { supabase, user, workspaceKey } = await requireUserWithPreset();
-  const contactId = await resolveTaskContactId(supabase, user.id, workspaceKey, formData);
+  const contactId = await resolveOrCreateContactId(supabase, user.id, workspaceKey, formData);
   const { error } = await supabase.from("tasks").insert({
     owner_id: user.id,
     workspace_key: workspaceKey,
@@ -267,10 +263,10 @@ export async function createTask(formData: FormData) {
   redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }
 
-// Permite criar o lembrete e o contato juntos, num só envio — evita ter que
-// ir em /contacts, preencher o formulário completo e só depois voltar para
-// criar o lembrete.
-async function resolveTaskContactId(
+// Permite criar o lembrete/negócio e o contato juntos, num só envio — evita
+// ter que ir em /contacts, preencher o formulário completo e só depois
+// voltar para o que estava fazendo.
+async function resolveOrCreateContactId(
   supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
   userId: string,
   workspaceKey: string,

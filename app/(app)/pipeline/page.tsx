@@ -5,6 +5,7 @@ import type { Contact, Deal } from "@/lib/supabase/types";
 import { formatBRL } from "@/lib/format";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { createDeal } from "../actions";
+import { ContactField } from "../ContactField";
 import { IconColumns, IconPlus, IconUsers, IconWallet } from "../icons";
 import { PresetFields } from "../PresetFields";
 import Board from "./Board";
@@ -107,19 +108,7 @@ export default async function PipelinePage() {
               className="field mt-1.5"
             />
           </div>
-          <div>
-            <label className="label" htmlFor="deal-contact">
-              Contato
-            </label>
-            <select id="deal-contact" name="contact_id" className="field mt-1.5">
-              <option value="">Sem contato</option>
-              {allContacts.map((contact) => (
-                <option key={contact.id} value={contact.id}>
-                  {contact.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <ContactField contacts={allContacts} />
           <PendingButton className="btn h-[42px] w-full lg:w-auto" pendingLabel="Salvando">
             <IconPlus className="h-4 w-4" />
             Salvar
