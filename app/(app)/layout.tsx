@@ -8,7 +8,7 @@ import { getPlanAccess } from "@/lib/plan";
 import { getProfessionPreset } from "@/lib/professions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/server";
-import { getWorkspaceOptions } from "@/lib/workspaces";
+import { getWorkspaceKey, getWorkspaceOptions } from "@/lib/workspaces";
 import { logout } from "../(auth)/actions";
 import { SidebarNav, MobileTabBar } from "./AppNav";
 import { Avatar } from "./Avatar";
@@ -63,10 +63,16 @@ export default async function AppLayout({
     )
     .eq("id", user.id)
     .maybeSingle();
-  const preset = getProfessionPreset(
-    profile?.profession_type ?? user.user_metadata?.profession_type
+  const isAdmin = profile?.is_admin ?? false;
+  const workspaceKey = getWorkspaceKey(
+    profile?.profession_type,
+    user.user_metadata?.profession_type,
+    isAdmin
   );
-  const workspaceOptions = getWorkspaceOptions(profile?.profession_types, preset.key);
+  const preset = getProfessionPreset(workspaceKey);
+  const workspaceOptions = isAdmin
+    ? []
+    : getWorkspaceOptions(profile?.profession_types, preset.key);
   const access = getPlanAccess(profile);
 
   const email = user.email ?? "Conta";
@@ -101,7 +107,7 @@ export default async function AppLayout({
                 value: preset.valueLabel,
                 followups: "Retornos do dia",
               }}
-              isAdmin={profile?.is_admin ?? false}
+              isAdmin={isAdmin}
             />
           </div>
 

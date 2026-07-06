@@ -34,11 +34,12 @@ export default async function ContactDetailPage({
     { data: profile },
   ] = await Promise.all([
     supabase.auth.getUser(),
-    supabase.from("profiles").select("profession_type, name").maybeSingle(),
+    supabase.from("profiles").select("profession_type, name, is_admin").maybeSingle(),
   ]);
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
-    user?.user_metadata?.profession_type
+    user?.user_metadata?.profession_type,
+    profile?.is_admin ?? false
   );
   const preset = getProfessionPreset(workspaceKey);
   const { data: contact } = await supabase

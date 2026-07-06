@@ -6,6 +6,7 @@ import { getPlanAccess } from "@/lib/plan";
 import { getProfessionPreset, PROFESSION_OPTIONS } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/supabase/types";
+import { getWorkspaceKey } from "@/lib/workspaces";
 import { updateProfessionTypes } from "../actions";
 import { IconAlert, IconCheck } from "../icons";
 import { DeleteAccountForm } from "./DeleteAccountForm";
@@ -29,9 +30,13 @@ export default async function SettingsPage({
     .maybeSingle();
   const profile = profileData as Profile | null;
 
-  const preset = getProfessionPreset(
-    profile?.profession_type ?? user.user_metadata?.profession_type
+  const isAdmin = profile?.is_admin ?? false;
+  const workspaceKey = getWorkspaceKey(
+    profile?.profession_type,
+    user.user_metadata?.profession_type,
+    isAdmin
   );
+  const preset = getProfessionPreset(workspaceKey);
   const displayName =
     typeof user.user_metadata?.name === "string" ? user.user_metadata.name : "";
   const access = getPlanAccess(profile);
@@ -119,34 +124,44 @@ export default async function SettingsPage({
         </form>
       </SectionCard>
 
-      <SectionCard title="Áreas de atuação" description="Escolha qual operação quer ver e alimentar agora.">
-        <form action={updateProfessionTypes} className="space-y-3">
-          <input type="hidden" name="active_profession_type" value={preset.key} />
-          <div className="grid gap-2 sm:grid-cols-2">
-            {PROFESSION_OPTIONS.map((option) => (
-              <label
-                key={option.value}
-                className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line bg-surface px-3 py-2 text-sm font-bold text-ink-soft"
-              >
-                <input
-                  type="checkbox"
-                  name="profession_types"
-                  value={option.value}
-                  defaultChecked={(profile?.profession_types ?? [preset.key]).includes(option.value)}
-                  className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
-                />
-                <span>{option.label}</span>
-              </label>
-            ))}
-          </div>
-          <p className="text-xs font-medium leading-relaxed text-ink-muted">
-            Contatos, negócios, lembretes e assistente ficam separados por área.
+      {isAdmin ? (
+        <SectionCard title="Perfil" description="Sua conta usa o modo fundador do OtimizIA.">
+          <p className="text-sm font-medium text-ink-muted">
+            Sua conta é especial: em vez de escolher uma área de atuação, o painel
+            já vem pronto para acompanhar sua própria prospecção de clientes e as
+            métricas do produto.
           </p>
-          <PendingButton className="btn-soft" pendingLabel="Aplicando">
-            Salvar áreas
-          </PendingButton>
-        </form>
-      </SectionCard>
+        </SectionCard>
+      ) : (
+        <SectionCard title="Áreas de atuação" description="Escolha qual operação quer ver e alimentar agora.">
+          <form action={updateProfessionTypes} className="space-y-3">
+            <input type="hidden" name="active_profession_type" value={preset.key} />
+            <div className="grid gap-2 sm:grid-cols-2">
+              {PROFESSION_OPTIONS.map((option) => (
+                <label
+                  key={option.value}
+                  className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line bg-surface px-3 py-2 text-sm font-bold text-ink-soft"
+                >
+                  <input
+                    type="checkbox"
+                    name="profession_types"
+                    value={option.value}
+                    defaultChecked={(profile?.profession_types ?? [preset.key]).includes(option.value)}
+                    className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
+                  />
+                  <span>{option.label}</span>
+                </label>
+              ))}
+            </div>
+            <p className="text-xs font-medium leading-relaxed text-ink-muted">
+              Contatos, negócios, lembretes e assistente ficam separados por área.
+            </p>
+            <PendingButton className="btn-soft" pendingLabel="Aplicando">
+              Salvar áreas
+            </PendingButton>
+          </form>
+        </SectionCard>
+      )}
 
       <SectionCard title="Plano" description="Gerencie sua assinatura.">
         {access.status === "active" && (

@@ -9,7 +9,8 @@ export type ProfessionType =
   | "freelancer"
   | "livestock_producer"
   | "small_business"
-  | "other";
+  | "other"
+  | "founder";
 
 export type FieldType = "text" | "select" | "date";
 
@@ -556,6 +557,66 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
       { label: "Sugerir recompra em 30 dias", days: 30 },
     ],
   },
+  founder: {
+    key: "founder",
+    signupLabel: "Fundador",
+    shortLabel: "Prospecção",
+    pipelineLabel: "Prospecção",
+    pipelineTitle: "Prospecção do OtimizIA",
+    pipelineDescription: "Acompanhe quem você abordou, quem respondeu e quem virou cliente pagante.",
+    dealSingular: "prospect",
+    dealPlural: "prospects",
+    dealFieldLabel: "Prospect",
+    dealPlaceholder: "Ex: Personal trainer abordado no Instagram",
+    valueLabel: "Potencial em conversa",
+    wonLabel: "Convertidos",
+    contactsTitle: "Pessoas abordadas",
+    contactsDescription: "Salve quem você chamou, por qual canal, e o retorno que deu.",
+    newContactTitle: "Nova pessoa abordada",
+    firstSteps: ["Cadastre quem você abordou", "Marque o estágio da conversa", "Agende um retorno"],
+    assistantContext: "A pessoa é a fundadora do OtimizIA e usa o próprio CRM para gerenciar a prospecção de clientes do produto (mensagem direta, vídeos, indicação). Priorize taxa de resposta, conversão de contato para cadastro e de cadastro para cliente pagante.",
+    stages: {
+      novo: { label: "Identificado", empty: "Pessoas que você quer abordar entram aqui." },
+      em_contato: { label: "Mensagem enviada", empty: "Nenhuma mensagem em aberto." },
+      negociacao: { label: "Conversando", empty: "Ninguém respondendo agora." },
+      ganho: { label: "Cliente pagante", empty: "Conversões aparecem aqui." },
+      perdido: { label: "Não converteu", empty: "Sem descartes registrados." },
+    },
+    contactFields: [
+      {
+        key: "canal_abordagem",
+        label: "Canal de abordagem",
+        type: "select",
+        options: ["Mensagem direta", "Indicação", "TikTok/Reels", "Grupo", "Outro"],
+      },
+    ],
+    dealFields: [
+      { key: "status_conversa", label: "Status da conversa", type: "text", placeholder: "Ex: Pediu mais informações" },
+    ],
+    metrics: [
+      { key: "contacts", label: "Pessoas abordadas" },
+      { key: "open_deals", label: "Em conversa" },
+      { key: "won_count_month", label: "Viraram clientes no mês" },
+      { key: "conversion_rate", label: "Taxa de conversão" },
+    ],
+    messageTemplates: [
+      {
+        key: "abordagem_inicial",
+        label: "Abordagem inicial",
+        body: "Oi {{primeiro_nome}}, vi que você é {{profissao}}. Tô desenvolvendo um app pra ajudar quem vende pelo WhatsApp a não perder cliente e lembrete — queria muito seu feedback sincero. Topa dar uma olhada?",
+      },
+      {
+        key: "follow_up_video",
+        label: "Follow-up pós-vídeo",
+        body: "{{primeiro_nome}}, vi que você curtiu o vídeo — se quiser eu te mostro rapidinho como funciona, sem compromisso.",
+      },
+    ],
+    followUpOffsets: [
+      { label: "Retornar amanhã", days: 1 },
+      { label: "Retornar em 3 dias", days: 3 },
+      { label: "Retornar em 1 semana", days: 7 },
+    ],
+  },
   other: {
     key: "other",
     signupLabel: "Outro",
@@ -604,17 +665,27 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
   },
 };
 
-export const PROFESSION_OPTIONS = Object.values(PROFESSION_PRESETS).map((preset) => ({
-  value: preset.key,
-  label: preset.signupLabel,
-}));
+// "founder" nunca aparece aqui — é um preset interno, atribuído só por
+// is_admin (ver lib/workspaces.ts), nunca selecionável por conta comum.
+export const PROFESSION_OPTIONS = Object.values(PROFESSION_PRESETS)
+  .filter((preset) => preset.key !== "founder")
+  .map((preset) => ({
+    value: preset.key,
+    label: preset.signupLabel,
+  }));
 
+// Só valida contra as opções públicas — garante que nenhuma entrada vinda de
+// usuário (formulário ou chamada direta à API) resolva para "founder".
 export function normalizeProfession(value: unknown): ProfessionType {
-  return typeof value === "string" && value in PROFESSION_PRESETS
+  return typeof value === "string" &&
+    PROFESSION_OPTIONS.some((option) => option.value === value)
     ? (value as ProfessionType)
     : "autonomous_seller";
 }
 
-export function getProfessionPreset(value: unknown): ProfessionPreset {
-  return PROFESSION_PRESETS[normalizeProfession(value)];
+// Recebe uma chave já resolvida e confiável (via normalizeProfession ou o
+// bypass de is_admin em getWorkspaceKey) — não re-valida contra a lista
+// pública, então pode retornar o preset "founder".
+export function getProfessionPreset(key: ProfessionType): ProfessionPreset {
+  return PROFESSION_PRESETS[key] ?? PROFESSION_PRESETS.autonomous_seller;
 }

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { AgentPanel } from "@/components/AgentPanel";
 import { PendingButton } from "@/components/PendingButton";
+import { computeDevMetrics, type DevMetrics } from "@/lib/devMetrics";
 import { getProfessionPreset, type MetricKey, type ProfessionPreset } from "@/lib/professions";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
   DEAL_STAGES,
@@ -50,6 +52,7 @@ const DASHBOARD_GREETINGS: Record<ProfessionPreset["key"], string> = {
   livestock_producer: "Lotes, compradores e retornos organizados para tocar a pecuária.",
   small_business: "Pedidos, clientes e recompra no ponto para vender com mais ritmo.",
   other: "Seu painel está pronto para organizar contatos, oportunidades e retornos.",
+  founder: "Acompanhe sua prospecção e as métricas do OtimizIA num só lugar.",
 };
 
 export default async function DashboardPage() {
@@ -68,11 +71,14 @@ export default async function DashboardPage() {
     { data: profile },
   ] = await Promise.all([
     supabase.auth.getUser(),
-    supabase.from("profiles").select("profession_type").maybeSingle(),
+    supabase.from("profiles").select("profession_type, is_admin").maybeSingle(),
   ]);
+  const isAdmin = profile?.is_admin ?? false;
+  const founderMetrics = isAdmin ? await loadFounderMetrics() : null;
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
-    user?.user_metadata?.profession_type
+    user?.user_metadata?.profession_type,
+    isAdmin
   );
   const [
     { data: deals },
@@ -262,6 +268,8 @@ export default async function DashboardPage() {
         ))}
       </section>
 
+      {founderMetrics && <FounderMetricsPanel metrics={founderMetrics} />}
+
       <section className="grid gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(23rem,0.72fr)]">
         <div className="min-w-0 space-y-4 sm:space-y-5">
           <RevenueChart
@@ -333,6 +341,54 @@ function MetricCard({
         </div>
       )}
     </article>
+  );
+}
+
+async function loadFounderMetrics(): Promise<DevMetrics> {
+  const admin = createAdminClient();
+  const [{ data: profiles }, { data: contacts }, { data: deals }] = await Promise.all([
+    admin
+      .from("profiles")
+      .select("name,plan,plan_status,trial_ends_at,stripe_subscription_id,created_at"),
+    admin.from("contacts").select("owner_id"),
+    admin.from("deals").select("owner_id,stage,value_cents"),
+  ]);
+  return computeDevMetrics(profiles ?? [], contacts ?? [], deals ?? []);
+}
+
+function FounderMetricsPanel({ metrics }: { metrics: DevMetrics }) {
+  const activationRate =
+    metrics.totalUsers > 0 ? Math.round((metrics.activatedUsers / metrics.totalUsers) * 100) : 0;
+  const tiles = [
+    { label: "Cadastros totais", value: String(metrics.totalUsers) },
+    { label: "Ativados", value: `${metrics.activatedUsers} (${activationRate}%)` },
+    { label: "Em teste", value: String(metrics.planCounts.trialing) },
+    { label: "Pagantes", value: String(metrics.planCounts.active) },
+  ];
+
+  return (
+    <section className="enter rounded-lg border border-brand-200 bg-brand-50 p-4 sm:p-5">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-black text-brand-800">Métricas do OtimizIA</p>
+        <Link
+          href="/dev"
+          className="nav-item inline-flex items-center gap-1 text-xs font-black text-brand-700 hover:text-brand-900"
+        >
+          Ver tudo
+          <IconArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+        {tiles.map((tile) => (
+          <div key={tile.label} className="rounded-lg border border-brand-200 bg-white p-3">
+            <p className="text-xs font-semibold text-ink-soft">{tile.label}</p>
+            <p className="mt-1 text-lg font-black leading-none tracking-[-0.02em] text-ink">
+              {tile.value}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 

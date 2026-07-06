@@ -6,7 +6,15 @@ import {
 
 export type WorkspaceKey = ProfessionType;
 
-export function getWorkspaceKey(profileValue: unknown, metadataValue?: unknown): WorkspaceKey {
+// Fundador (is_admin) sempre cai no workspace "founder", ignorando
+// profession_type/profession_types — não escolhe, não pode ser setado via
+// formulário (normalizeProfession nunca resolve "founder" a partir de input).
+export function getWorkspaceKey(
+  profileValue: unknown,
+  metadataValue?: unknown,
+  isAdmin?: boolean
+): WorkspaceKey {
+  if (isAdmin) return "founder";
   return normalizeProfession(profileValue ?? metadataValue);
 }
 
