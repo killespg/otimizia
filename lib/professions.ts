@@ -8,6 +8,7 @@ export type ProfessionType =
   | "consultant"
   | "freelancer"
   | "small_business"
+  | "livestock_producer"
   | "other";
 
 export type FieldType = "text" | "select" | "date";
@@ -484,6 +485,80 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
     followUpOffsets: [
       { label: "Cobrar pagamento em 2 dias", days: 2 },
       { label: "Sugerir recompra em 30 dias", days: 30 },
+    ],
+  },
+  livestock_producer: {
+    key: "livestock_producer",
+    signupLabel: "Pecuária",
+    shortLabel: "Pecuária",
+    pipelineLabel: "Vendas",
+    pipelineTitle: "Quadro da pecuária",
+    pipelineDescription: "Acompanhe plantel, inseminações, nascimentos, manejos, vendas, perdas e observações por lista.",
+    dealSingular: "venda",
+    dealPlural: "vendas",
+    dealFieldLabel: "Venda ou negociação",
+    dealPlaceholder: "Ex: Touro PO, lote de terneiros...",
+    valueLabel: "Valor em aberto",
+    wonLabel: "Vendidos",
+    contactsTitle: "Sujeitos",
+    contactsDescription: "Cadastre pessoas, compradores, fornecedores ou referências da pecuária.",
+    newContactTitle: "Novo sujeito",
+    firstSteps: ["Cadastre um sujeito", "Organize o quadro", "Agende um manejo"],
+    assistantContext: "A pessoa trabalha com pecuária. Use linguagem de plantel, animais, inseminações, nascimentos, manejo sanitário, vendas e perdas.",
+    stages: {
+      novo: { label: "Novo", empty: "Novos cards entram aqui." },
+      em_contato: { label: "Em acompanhamento", empty: "Nenhum acompanhamento em aberto." },
+      negociacao: { label: "Negociação", empty: "Nenhuma negociação agora." },
+      ganho: { label: "Vendido", empty: "Vendas concluídas aparecem aqui." },
+      perdido: { label: "Perda", empty: "Sem perdas registradas." },
+    },
+    contactFields: [
+      {
+        key: "categoria",
+        label: "Categoria",
+        type: "select",
+        options: [
+          "Plantel",
+          "Plantel pai",
+          "Inseminação",
+          "Nascimento",
+          "Controle sanitário",
+          "Plantio/adubação",
+          "Observação",
+          "Investimento",
+          "Venda",
+          "Perda",
+          "Outro",
+        ],
+      },
+      { key: "identificacao", label: "Identificação", type: "text", placeholder: "Ex: brinco, registro, lote" },
+    ],
+    dealFields: [
+      { key: "categoria", label: "Categoria", type: "select", options: ["Animal", "Lote", "Serviço", "Outro"] },
+      { key: "proximo_passo", label: "Próximo passo", type: "text", placeholder: "Ex: combinar retirada" },
+    ],
+    metrics: [
+      { key: "contacts", label: "Sujeitos" },
+      { key: "open_deals", label: "Vendas abertas" },
+      { key: "won_value_month", label: "Vendido no período" },
+      { key: "overdue_tasks", label: "Manejos atrasados" },
+    ],
+    messageTemplates: [
+      {
+        key: "retorno_interesse",
+        label: "Retorno de interesse",
+        body: "Oi {{primeiro_nome}}! Passando para retomar aquele assunto da pecuária. Posso te mandar mais detalhes?",
+      },
+      {
+        key: "confirmar_manejo",
+        label: "Confirmar manejo",
+        body: "{{primeiro_nome}}, só confirmando o combinado para o manejo. Qual horário fica melhor?",
+      },
+    ],
+    followUpOffsets: [
+      { label: "Retornar amanhã", days: 1 },
+      { label: "Retornar em 1 semana", days: 7 },
+      { label: "Revisar em 30 dias", days: 30 },
     ],
   },
   other: {

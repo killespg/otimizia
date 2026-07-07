@@ -1,5 +1,5 @@
-export function formatBRL(cents: number): string {
-  const safeCents = Number.isFinite(cents) ? cents : 0;
+export function formatBRL(cents: number | null | undefined): string {
+  const safeCents = typeof cents === "number" && Number.isFinite(cents) ? cents : 0;
   return (safeCents / 100).toLocaleString("pt-BR", {
     style: "currency",
     currency: "BRL",

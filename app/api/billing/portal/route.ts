@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getStripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,19 +13,25 @@ export async function POST(request: Request) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
+  const orgId = await getActiveOrgId(supabase, user.id);
+  const role = await getOrgRole(supabase, orgId, user.id);
+  if (role !== "admin") {
+    return NextResponse.redirect(new URL("/settings", request.url));
+  }
+
+  const { data: org } = await supabase
+    .from("organizations")
     .select("stripe_customer_id")
-    .eq("id", user.id)
+    .eq("id", orgId)
     .maybeSingle();
 
-  if (!profile?.stripe_customer_id) {
+  if (!org?.stripe_customer_id) {
     return NextResponse.redirect(new URL("/settings", request.url));
   }
 
   const origin = new URL(request.url).origin;
   const session = await stripe.billingPortal.sessions.create({
-    customer: profile.stripe_customer_id,
+    customer: org.stripe_customer_id,
     return_url: `${origin}/settings`,
   });
 

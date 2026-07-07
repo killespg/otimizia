@@ -27,32 +27,39 @@ export default async function ContactsPage({
       data: { user },
     },
     { data: profile },
-    { data },
   ] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from("profiles").select("profession_type").maybeSingle(),
-    supabase.from("contacts").select("*").order("created_at", { ascending: false }),
   ]);
   const preset = getProfessionPreset(
     profile?.profession_type ?? user?.user_metadata?.profession_type
   );
+  const { data } = await supabase
+    .from("contacts")
+    .select("*")
+    .eq("workspace_key", preset.key)
+    .order("created_at", { ascending: false });
   const allContacts = (data ?? []) as Contact[];
   const contacts = search
     ? allContacts.filter((contact) => contactMatchesSearch(contact, search))
     : allContacts;
+  const isLivestock = preset.key === "livestock_producer";
   const withPhone = allContacts.filter((contact) => contact.phone).length;
-  const withCompany = allContacts.filter((contact) => contact.company).length;
+  const withSecondary = isLivestock
+    ? allContacts.filter((contact) => contact.company || contact.source).length
+    : allContacts.filter((contact) => contact.company).length;
+  const copy = contactCopy(isLivestock);
 
   return (
     <div className="space-y-4 sm:space-y-5">
       <header className="enter flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm font-black text-brand-700">Contatos</p>
+          <p className="text-sm font-black text-brand-700">{copy.section}</p>
           <h1 className="mt-2 text-[clamp(1.55rem,6vw,3.2rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
             {preset.contactsTitle}
           </h1>
           <p className="mt-2 hidden max-w-xl text-sm font-medium leading-relaxed text-ink-soft sm:block">
-            Salve clientes, empresas e detalhes para não perder o próximo contato.
+            {preset.contactsDescription}
           </p>
         </div>
 
@@ -62,14 +69,14 @@ export default async function ContactsPage({
         >
           <IconSearch className="h-5 w-5 shrink-0 text-ink-muted" />
           <label className="sr-only" htmlFor="contacts-search">
-            Buscar contatos
+            {copy.searchLabel}
           </label>
           <input
             id="contacts-search"
             name="q"
             type="search"
             defaultValue={search}
-            placeholder="Buscar contato..."
+            placeholder={copy.searchPlaceholder}
             className="min-w-0 flex-1 bg-transparent text-sm font-medium text-ink outline-none placeholder:text-ink-muted"
           />
           <button
@@ -83,8 +90,8 @@ export default async function ContactsPage({
 
       <section className="grid grid-cols-3 gap-3 sm:gap-4">
         <MetricCard label="Total" value={String(allContacts.length)} icon={IconUsers} />
-        <MetricCard label="Com WhatsApp" value={String(withPhone)} icon={IconPhone} pink />
-        <MetricCard label="Com empresa" value={String(withCompany)} icon={IconMessage} />
+        <MetricCard label={copy.phoneMetric} value={String(withPhone)} icon={IconPhone} pink />
+        <MetricCard label={copy.companyMetric} value={String(withSecondary)} icon={IconMessage} />
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -92,7 +99,7 @@ export default async function ContactsPage({
           <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
             <div>
               <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
-                Lista de contatos
+                {copy.listTitle}
               </h2>
               <p className="mt-1 text-sm font-medium text-ink-muted">
                 {search
@@ -100,8 +107,8 @@ export default async function ContactsPage({
                     ? `Nenhum resultado para "${search}".`
                     : `${contacts.length} ${contacts.length === 1 ? "resultado" : "resultados"} para "${search}".`
                   : contacts.length === 0
-                    ? "Comece adicionando seu primeiro cliente."
-                    : `${contacts.length} ${contacts.length === 1 ? "contato salvo" : "contatos salvos"}.`}
+                    ? copy.emptyStart
+                    : `${contacts.length} ${contacts.length === 1 ? copy.savedSingular : copy.savedPlural}.`}
               </p>
             </div>
             <span className="rounded-md bg-surface-2 px-2.5 py-1 text-xs font-black text-ink-muted">
@@ -115,16 +122,16 @@ export default async function ContactsPage({
                 <IconUsers className="h-7 w-7" />
               </span>
               <p className="mt-4 text-lg font-black text-ink">
-                {search ? "Nenhum resultado" : "Nenhum contato ainda"}
+                {search ? "Nenhum resultado" : copy.emptyTitle}
               </p>
               {search && (
                 <p className="mt-1 max-w-xs text-sm font-medium leading-relaxed text-ink-muted">
-                  Tente buscar por outro nome, empresa, telefone ou origem.
+                  {copy.emptySearch}
                 </p>
               )}
               {!search && (
               <p className="mt-1 max-w-xs text-sm font-medium leading-relaxed text-ink-muted">
-                Salve nome, WhatsApp e uma observação simples para começar.
+                {copy.emptyHint}
               </p>
               )}
             </div>
@@ -183,13 +190,13 @@ export default async function ContactsPage({
             <Field name="name" label="Nome" required maxLength={120} autoComplete="name" />
             <Field
               name="phone"
-              label="Telefone / WhatsApp"
+              label={copy.phoneField}
               maxLength={40}
               autoComplete="tel"
               inputMode="tel"
             />
             <Field name="email" label="E-mail" type="email" maxLength={160} autoComplete="email" />
-            <Field name="company" label="Empresa" maxLength={120} autoComplete="organization" />
+            <Field name="company" label={copy.companyField} maxLength={120} autoComplete="organization" />
             <Field name="source" label="Origem" maxLength={120} />
             <PresetFields fields={preset.contactFields} />
             <div>
@@ -206,7 +213,7 @@ export default async function ContactsPage({
             </div>
             <PendingButton className="btn w-full" pendingLabel="Salvando">
               <IconPlus className="h-4 w-4" />
-              Salvar cliente
+              {copy.saveButton}
             </PendingButton>
           </form>
         </section>
@@ -268,6 +275,50 @@ function normalizeSearch(value: string | undefined) {
   return value?.trim().slice(0, 80) ?? "";
 }
 
+function contactCopy(isLivestock: boolean) {
+  if (isLivestock) {
+    return {
+      section: "Sujeitos",
+      searchLabel: "Buscar sujeitos",
+      searchPlaceholder: "Buscar sujeito...",
+      phoneMetric: "Com telefone",
+      companyMetric: "Com origem",
+      listTitle: "Lista de sujeitos",
+      emptyStart: "Comece adicionando seu primeiro sujeito.",
+      savedSingular: "sujeito salvo",
+      savedPlural: "sujeitos salvos",
+      emptyTitle: "Nenhum sujeito ainda",
+      emptySearch: "Tente buscar por nome, telefone, e-mail ou origem.",
+      emptyHint: "Salve nome, telefone e uma observação simples para começar.",
+      phoneField: "Telefone / WhatsApp",
+      companyField: "Origem",
+      saveButton: "Salvar sujeito",
+    };
+  }
+
+  return {
+    section: "Contatos",
+    searchLabel: "Buscar contatos",
+    searchPlaceholder: "Buscar contato...",
+    phoneMetric: "Com WhatsApp",
+    companyMetric: "Com empresa",
+    listTitle: "Lista de contatos",
+    emptyStart: "Comece adicionando seu primeiro cliente.",
+    savedSingular: "contato salvo",
+    savedPlural: "contatos salvos",
+    emptyTitle: "Nenhum contato ainda",
+    emptySearch: "Tente buscar por outro nome, empresa, telefone ou origem.",
+    emptyHint: "Salve nome, WhatsApp e uma observação simples para começar.",
+    phoneField: "Telefone / WhatsApp",
+    companyField: "Empresa",
+    saveButton: "Salvar cliente",
+  };
+}
+
+function contactList(contact: Contact) {
+  return contact.details?.trello_list || contact.details?.pipeline_list || "";
+}
+
 function contactMatchesSearch(contact: Contact, search: string) {
   const haystack = [
     contact.name,
@@ -276,6 +327,8 @@ function contactMatchesSearch(contact: Contact, search: string) {
     contact.phone,
     contact.source,
     contact.notes,
+    contactList(contact),
+    ...Object.values(contact.details ?? {}),
   ]
     .filter(Boolean)
     .join(" ")

@@ -1,20 +1,29 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getActiveOrgId } from "@/lib/org";
 import { getPlanAccess, type PlanAccess } from "@/lib/plan";
 
+// Plano/billing vivem na organização (não mais em profiles) — uma
+// assinatura cobre todos os membros da empresa.
 export async function getUserPlanAccess(
   supabase: SupabaseClient,
   userId: string
 ): Promise<PlanAccess> {
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("plan, plan_status, trial_ends_at, stripe_subscription_id")
-    .eq("id", userId)
-    .maybeSingle();
+  try {
+    const orgId = await getActiveOrgId(supabase, userId);
+    const { data: org, error } = await supabase
+      .from("organizations")
+      .select("plan, plan_status, trial_ends_at, stripe_subscription_id")
+      .eq("id", orgId)
+      .maybeSingle();
 
-  if (error) {
+    if (error) {
+      console.error("[plan-access]", error);
+      return { hasAccess: false, status: "free", trialDaysLeft: null };
+    }
+
+    return getPlanAccess(org);
+  } catch (error) {
     console.error("[plan-access]", error);
     return { hasAccess: false, status: "free", trialDaysLeft: null };
   }
-
-  return getPlanAccess(profile);
 }

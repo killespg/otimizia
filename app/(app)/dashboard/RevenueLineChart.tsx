@@ -59,7 +59,7 @@ export function RevenueLineChart({ series }: { series: Point[] }) {
         preserveAspectRatio="none"
         className="h-full w-full"
         role="img"
-        aria-label="Evolução do valor recebido ao longo do mês"
+        aria-label="Evolução do valor recebido ao longo do período"
       >
         <defs>
           <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
@@ -166,7 +166,7 @@ export function RevenueLineChart({ series }: { series: Point[] }) {
 
       {n === 0 && (
         <p className="absolute inset-0 flex items-center justify-center text-sm font-medium text-ink-muted">
-          Ainda sem valores recebidos neste mês.
+          Ainda sem valores recebidos neste período.
         </p>
       )}
     </div>

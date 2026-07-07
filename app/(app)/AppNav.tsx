@@ -22,6 +22,7 @@ type NavItem = {
 };
 
 type NavLabels = {
+  contacts: string;
   pipeline: string;
   value: string;
   followups: string;
@@ -35,6 +36,7 @@ const NAV: NavItem[] = [
   { href: "/dashboard#valor", label: "Valor aberto", icon: IconWallet, passive: true },
   { href: "/tasks", label: "Clientes para chamar", icon: IconPhone, passive: true },
   { href: "/assistant", label: "Sócio-Assistente", icon: IconBot },
+  { href: "/team", label: "Equipe", icon: IconUsers },
 ];
 
 function useActive() {
@@ -47,6 +49,7 @@ function useActive() {
 export function SidebarNav({ labels }: { labels?: NavLabels }) {
   const isActive = useActive();
   const text = labels ?? {
+    contacts: "Contatos",
     pipeline: "Vendas",
     value: "Valor aberto",
     followups: "Clientes para chamar",
@@ -57,6 +60,8 @@ export function SidebarNav({ labels }: { labels?: NavLabels }) {
         const displayLabel =
           href === "/pipeline"
             ? text.pipeline
+            : href === "/contacts"
+            ? text.contacts
             : label === "Valor aberto"
             ? text.value
             : label === "Clientes para chamar"
@@ -90,8 +95,9 @@ export function SidebarNav({ labels }: { labels?: NavLabels }) {
 }
 
 /* Mobile tab bar. */
-export function MobileTabBar({ labels }: { labels?: Pick<NavLabels, "pipeline"> }) {
+export function MobileTabBar({ labels }: { labels?: Pick<NavLabels, "contacts" | "pipeline"> }) {
   const isActive = useActive();
+  const contactsLabel = labels?.contacts ?? "Contatos";
   const pipelineLabel = labels?.pipeline ?? "Vendas";
   return (
     <nav
@@ -101,7 +107,8 @@ export function MobileTabBar({ labels }: { labels?: Pick<NavLabels, "pipeline"> 
       <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
         {NAV.filter((item) => item.mobile).map(({ href, label, icon: Icon }) => {
           const active = isActive(href);
-          const displayLabel = href === "/pipeline" ? pipelineLabel : label;
+          const displayLabel =
+            href === "/pipeline" ? pipelineLabel : href === "/contacts" ? contactsLabel : label;
           return (
             <Link
               key={href}

@@ -2,10 +2,11 @@ import { redirect } from "next/navigation";
 import { PendingButton } from "@/components/PendingButton";
 import { formatCPF } from "@/lib/cpf";
 import { formatDate } from "@/lib/format";
+import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getPlanAccess } from "@/lib/plan";
 import { getProfessionPreset, PROFESSION_OPTIONS } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
-import type { Profile } from "@/lib/supabase/types";
+import type { Organization, Profile } from "@/lib/supabase/types";
 import { updateProfession } from "../actions";
 import { IconAlert, IconCheck } from "../icons";
 import { DeleteAccountForm } from "./DeleteAccountForm";
@@ -22,19 +23,22 @@ export default async function SettingsPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: profileData } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .maybeSingle();
+  const orgId = await getActiveOrgId(supabase, user.id);
+  const [{ data: profileData }, { data: orgData }, role] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+    supabase.from("organizations").select("*").eq("id", orgId).maybeSingle(),
+    getOrgRole(supabase, orgId, user.id),
+  ]);
   const profile = profileData as Profile | null;
+  const org = orgData as Organization | null;
+  const isAdmin = role === "admin";
 
   const preset = getProfessionPreset(
     profile?.profession_type ?? user.user_metadata?.profession_type
   );
   const displayName =
     typeof user.user_metadata?.name === "string" ? user.user_metadata.name : "";
-  const access = getPlanAccess(profile);
+  const access = getPlanAccess(org);
 
   return (
     <div className="max-w-2xl space-y-4 sm:space-y-5">
@@ -130,7 +134,8 @@ export default async function SettingsPage({
               id="profession-type"
               name="profession_type"
               defaultValue={preset.key}
-              className="field mt-1.5"
+              disabled={!isAdmin}
+              className="field mt-1.5 disabled:opacity-60"
             >
               {PROFESSION_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -139,19 +144,40 @@ export default async function SettingsPage({
               ))}
             </select>
           </div>
-          <PendingButton className="btn-soft" pendingLabel="Aplicando">
+          {!isAdmin && (
+            <p className="text-xs font-medium text-ink-muted">
+              Sua conta usa o plano da empresa e fica limitada a este perfil. Para trocar de
+              profissão, é preciso um plano próprio.
+            </p>
+          )}
+          <PendingButton className="btn-soft" pendingLabel="Aplicando" disabled={!isAdmin}>
             Aplicar perfil
           </PendingButton>
         </form>
       </SectionCard>
 
-      <SectionCard title="Plano" description="Gerencie sua assinatura.">
-        {access.status === "active" && (
+      <SectionCard
+        title="Plano"
+        description={
+          isAdmin
+            ? "Assinatura da empresa — cobrada por pessoa (seats)."
+            : "Assinatura gerenciada por um admin da empresa."
+        }
+      >
+        {!isAdmin && (
+          <p className="text-sm font-medium text-ink-muted">
+            {access.hasAccess
+              ? "Sua conta está com acesso ativo pela assinatura da empresa."
+              : "O acesso da empresa expirou. Peça a um admin para renovar a assinatura."}
+          </p>
+        )}
+
+        {isAdmin && access.status === "active" && (
           <div className="space-y-3">
             <p className="text-sm font-bold text-ink">
               Plano Pro ativo
-              {profile?.current_period_end &&
-                ` · renova em ${formatDate(profile.current_period_end)}`}
+              {org?.current_period_end &&
+                ` · renova em ${formatDate(org.current_period_end)}`}
             </p>
             <form action="/api/billing/portal" method="POST">
               <PendingButton className="btn-soft" pendingLabel="Abrindo">
@@ -161,7 +187,7 @@ export default async function SettingsPage({
           </div>
         )}
 
-        {access.status === "past_due" && (
+        {isAdmin && access.status === "past_due" && (
           <div className="space-y-3">
             <p className="text-sm font-bold text-danger-700">
               Pagamento pendente — atualize a forma de pagamento para não perder o acesso.
@@ -174,22 +200,22 @@ export default async function SettingsPage({
           </div>
         )}
 
-        {access.status === "trialing" && (
+        {isAdmin && access.status === "trialing" && (
           <div className="space-y-3">
             <p className="text-sm font-bold text-ink">
               Teste grátis do Pro
-              {profile?.trial_ends_at &&
-                ` · termina em ${formatDate(profile.trial_ends_at)} (${access.trialDaysLeft} ${access.trialDaysLeft === 1 ? "dia" : "dias"})`}
+              {org?.trial_ends_at &&
+                ` · termina em ${formatDate(org.trial_ends_at)} (${access.trialDaysLeft} ${access.trialDaysLeft === 1 ? "dia" : "dias"})`}
             </p>
             <form action="/api/billing/checkout" method="POST">
               <PendingButton className="btn" pendingLabel="Abrindo">
-                Assinar agora — R$ 39,90/mês
+                Assinar agora — R$ 39,90/mês por pessoa
               </PendingButton>
             </form>
           </div>
         )}
 
-        {(access.status === "free" || access.status === "expired") && (
+        {isAdmin && (access.status === "free" || access.status === "expired") && (
           <div className="space-y-3">
             <p className="text-sm font-bold text-ink">
               {access.status === "expired"
@@ -198,7 +224,7 @@ export default async function SettingsPage({
             </p>
             <form action="/api/billing/checkout" method="POST">
               <PendingButton className="btn" pendingLabel="Abrindo">
-                Assinar Pro — R$ 39,90/mês
+                Assinar Pro — R$ 39,90/mês por pessoa
               </PendingButton>
             </form>
           </div>

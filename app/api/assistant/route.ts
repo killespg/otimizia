@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { User } from "@supabase/supabase-js";
+import { getActiveOrgId } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset, type ProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
@@ -29,6 +30,7 @@ export async function POST(req: Request) {
   if (!access.hasAccess) {
     return Response.json({ error: "Seu teste gratis acabou." }, { status: 402 });
   }
+  const orgId = await getActiveOrgId(supabase, user.id);
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json(
       { error: "ANTHROPIC_API_KEY não configurada no servidor." },
@@ -108,7 +110,7 @@ export async function POST(req: Request) {
             let content: string;
             let isError = false;
             try {
-              content = await executeTool(supabase, user.id, toolUse.name, toolUse.input);
+              content = await executeTool(supabase, user.id, orgId, toolUse.name, toolUse.input);
               if (isMutatingTool(toolUse.name)) mutated = true;
             } catch (error) {
               isError = true;

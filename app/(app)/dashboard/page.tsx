@@ -10,6 +10,7 @@ import {
   type DealStage,
   type Task,
 } from "@/lib/supabase/types";
+import { dealValueOrZero, formatDealValue, getDealValueCents } from "@/lib/deals";
 import { formatBRL, formatDate } from "@/lib/format";
 import { createTask } from "../actions";
 import { ReminderModal as ReminderModalClient } from "./ReminderModal";
@@ -39,43 +40,86 @@ const METRIC_ICONS: Record<MetricKey, (props: { className?: string }) => JSX.Ele
 
 type ContactOption = Pick<Contact, "id" | "name" | "company">;
 
-export default async function DashboardPage() {
+type PeriodKey = "7d" | "14d" | "21d" | "1m" | "3m" | "6m" | "12m" | "all";
+
+const PERIOD_OPTIONS: { key: PeriodKey; label: string }[] = [
+  { key: "7d", label: "1 semana" },
+  { key: "14d", label: "2 semanas" },
+  { key: "21d", label: "3 semanas" },
+  { key: "1m", label: "1 mes" },
+  { key: "3m", label: "3 meses" },
+  { key: "6m", label: "6 meses" },
+  { key: "12m", label: "1 ano" },
+  { key: "all", label: "Tudo" },
+];
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: { periodo?: string };
+}) {
   const supabase = createClient();
   const now = new Date();
   const startOfToday = new Date(now);
   startOfToday.setHours(0, 0, 0, 0);
   const endOfToday = new Date(now);
   endOfToday.setHours(23, 59, 59, 999);
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const selectedPeriod = periodOption(searchParams?.periodo);
+  const rangeStart = periodStart(selectedPeriod.key, now);
 
   const [
     {
       data: { user },
     },
+    { data: profile },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("profiles").select("profession_type").maybeSingle(),
+  ]);
+  const preset = getProfessionPreset(
+    profile?.profession_type ?? user?.user_metadata?.profession_type
+  );
+  const workspaceKey = preset.key;
+
+  const contactCountQuery = supabase
+    .from("contacts")
+    .select("*", { count: "exact", head: true })
+    .eq("workspace_key", workspaceKey);
+  const conversationsQuery = supabase
+    .from("interactions")
+    .select("*", { count: "exact", head: true })
+    .eq("workspace_key", workspaceKey);
+
+  if (rangeStart) {
+    contactCountQuery.gte("created_at", rangeStart.toISOString());
+    conversationsQuery.gte("created_at", rangeStart.toISOString());
+  }
+
+  const [
     { data: deals },
     { data: tasks },
     { data: contactOptions },
-    { data: profile },
     { count: contactsCount },
-    { count: conversationsToday },
+    { count: conversationsInPeriod },
   ] = await Promise.all([
-    supabase.auth.getUser(),
-    supabase.from("deals").select("*").order("created_at", { ascending: false }),
+    supabase
+      .from("deals")
+      .select("*")
+      .eq("workspace_key", workspaceKey)
+      .order("created_at", { ascending: false }),
     supabase
       .from("tasks")
       .select("*")
+      .eq("workspace_key", workspaceKey)
       .eq("done", false)
       .order("due_at", { ascending: true }),
     supabase
       .from("contacts")
       .select("id,name,company")
+      .eq("workspace_key", workspaceKey)
       .order("name", { ascending: true }),
-    supabase.from("profiles").select("profession_type").maybeSingle(),
-    supabase.from("contacts").select("*", { count: "exact", head: true }),
-    supabase
-      .from("interactions")
-      .select("*", { count: "exact", head: true })
-      .gte("created_at", startOfToday.toISOString()),
+    contactCountQuery,
+    conversationsQuery,
   ]);
 
   const allDeals = (deals ?? []) as Deal[];
@@ -83,56 +127,51 @@ export default async function DashboardPage() {
   const contacts = contactsCount ?? 0;
   const contactsForForms = (contactOptions ?? []) as ContactOption[];
   const contactMap = new Map(contactsForForms.map((contact) => [contact.id, contact]));
-  const preset = getProfessionPreset(
-    profile?.profession_type ?? user?.user_metadata?.profession_type
-  );
+  const periodDeals = rangeStart
+    ? allDeals.filter((deal) => isInRange(deal.created_at, rangeStart) || isInRange(deal.closed_at, rangeStart))
+    : allDeals;
 
   const displayName =
     typeof user?.user_metadata?.name === "string" && user.user_metadata.name
       ? firstName(user.user_metadata.name)
       : firstName(user?.email?.split("@")[0] ?? "João");
 
-  const openDeals = allDeals.filter(
+  const openDeals = periodDeals.filter(
     (deal) => deal.stage !== "ganho" && deal.stage !== "perdido"
   );
-  const openValue = openDeals.reduce((sum, deal) => sum + deal.value_cents, 0);
-  const wonThisMonth = allDeals.filter(
+  const openValue = openDeals.reduce((sum, deal) => sum + dealValueOrZero(deal), 0);
+  const wonInPeriod = allDeals.filter(
     (deal) =>
       deal.stage === "ganho" &&
       deal.closed_at &&
-      new Date(deal.closed_at) >= monthStart
+      (!rangeStart || new Date(deal.closed_at) >= rangeStart)
   );
-  const wonValue = wonThisMonth.reduce((sum, deal) => sum + deal.value_cents, 0);
-  const lostThisMonth = allDeals.filter(
+  const wonValue = wonInPeriod.reduce((sum, deal) => sum + dealValueOrZero(deal), 0);
+  const lostInPeriod = allDeals.filter(
     (deal) =>
       deal.stage === "perdido" &&
       deal.closed_at &&
-      new Date(deal.closed_at) >= monthStart
+      (!rangeStart || new Date(deal.closed_at) >= rangeStart)
   );
-  const closedThisMonth = wonThisMonth.length + lostThisMonth.length;
-  const conversionRate = closedThisMonth > 0
-    ? Math.round((wonThisMonth.length / closedThisMonth) * 100)
+  const closedInPeriod = wonInPeriod.length + lostInPeriod.length;
+  const conversionRate = closedInPeriod > 0
+    ? Math.round((wonInPeriod.length / closedInPeriod) * 100)
     : null;
-  const avgTicketCents = wonThisMonth.length > 0
-    ? Math.round(wonValue / wonThisMonth.length)
+  const pricedWonInPeriod = wonInPeriod.filter((deal) => getDealValueCents(deal) !== null);
+  const avgTicketCents = pricedWonInPeriod.length > 0
+    ? Math.round(wonValue / pricedWonInPeriod.length)
     : null;
 
-  const daysElapsed = now.getDate();
-  const dailyWonCents = new Array(daysElapsed).fill(0);
-  for (const deal of wonThisMonth) {
-    const dayIndex = new Date(deal.closed_at!).getDate() - 1;
-    if (dayIndex >= 0 && dayIndex < daysElapsed) {
-      dailyWonCents[dayIndex] += deal.value_cents;
-    }
-  }
-  let runningCents = 0;
-  const wonSeries = dailyWonCents.map((cents, index) => {
-    runningCents += cents;
-    return { day: index + 1, cumulativeCents: runningCents };
-  });
+  const chartStart = rangeStart ?? earliestClosedDate(wonInPeriod) ?? startOfToday;
+  const wonSeries = buildWonSeries(wonInPeriod, chartStart, now);
 
   const overdue = openTasks
-    .filter((task) => task.due_at && new Date(task.due_at) < now)
+    .filter(
+      (task) =>
+        task.due_at &&
+        new Date(task.due_at) < now &&
+        (!rangeStart || new Date(task.due_at) >= rangeStart)
+    )
     .sort((a, b) => (a.due_at! < b.due_at! ? -1 : 1));
   const todayTasks = openTasks
     .filter(
@@ -150,10 +189,10 @@ export default async function DashboardPage() {
     open_value: formatBRL(openValue),
     open_deals: String(openDeals.length),
     won_value_month: formatBRL(wonValue),
-    won_count_month: String(wonThisMonth.length),
+    won_count_month: String(wonInPeriod.length),
     contacts: String(contacts),
     overdue_tasks: String(overdue.length),
-    conversations_today: String(conversationsToday ?? 0),
+    conversations_today: String(conversationsInPeriod ?? 0),
     conversion_rate: conversionRate === null ? "—" : `${conversionRate}%`,
     avg_ticket: avgTicketCents === null ? "—" : formatBRL(avgTicketCents),
   };
@@ -178,6 +217,33 @@ export default async function DashboardPage() {
         </div>
 
         <div className="hidden flex-col gap-3 sm:flex sm:flex-row sm:items-center">
+          <form
+            action="/dashboard"
+            className="flex h-11 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)]"
+          >
+            <label className="sr-only" htmlFor="dashboard-period">
+              Periodo das estatisticas
+            </label>
+            <select
+              id="dashboard-period"
+              name="periodo"
+              defaultValue={selectedPeriod.key}
+              className="h-8 min-w-[132px] rounded-md border border-line bg-white px-2 text-xs font-bold text-ink outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
+            >
+              {PERIOD_OPTIONS.map((option) => (
+                <option key={option.key} value={option.key}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              className="rounded-md bg-surface-2 px-2 py-1 text-[11px] font-bold text-ink-muted hover:bg-brand-50 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-600"
+            >
+              Aplicar
+            </button>
+          </form>
+
           <form
             action="/contacts"
             className="flex h-11 w-full min-w-0 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:w-[430px]"
@@ -220,6 +286,33 @@ export default async function DashboardPage() {
         </div>
       </header>
 
+      <form
+        action="/dashboard"
+        className="enter flex h-11 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:hidden"
+      >
+        <label htmlFor="dashboard-period-mobile" className="shrink-0 text-xs font-black text-ink-soft">
+          Periodo
+        </label>
+        <select
+          id="dashboard-period-mobile"
+          name="periodo"
+          defaultValue={selectedPeriod.key}
+          className="h-8 min-w-0 flex-1 rounded-md border border-line bg-white px-2 text-xs font-bold text-ink outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
+        >
+          {PERIOD_OPTIONS.map((option) => (
+            <option key={option.key} value={option.key}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <button
+          type="submit"
+          className="rounded-md bg-surface-2 px-2 py-1 text-[11px] font-bold text-ink-muted hover:bg-brand-50 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-600"
+        >
+          Aplicar
+        </button>
+      </form>
+
       <section className="enter grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         {metrics.map((metric) => (
           <MetricCard key={metric.label} {...metric} />
@@ -235,6 +328,7 @@ export default async function DashboardPage() {
             contacts={contactsForForms}
             defaultDueAt={defaultDateTimeValue(now)}
             preset={preset}
+            periodLabel={selectedPeriod.label}
           />
           <DealsTable deals={openDeals} contactMap={contactMap} preset={preset} />
         </div>
@@ -307,6 +401,7 @@ function RevenueChart({
   contacts,
   defaultDueAt,
   preset,
+  periodLabel,
 }: {
   openValue: number;
   wonValue: number;
@@ -314,6 +409,7 @@ function RevenueChart({
   contacts: ContactOption[];
   defaultDueAt: string;
   preset: ProfessionPreset;
+  periodLabel: string;
 }) {
   return (
     <section
@@ -323,10 +419,10 @@ function RevenueChart({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
-            {preset.wonLabel} no mês (R$)
+            {preset.wonLabel} no periodo (R$)
           </h2>
           <p className="mt-1 text-xs font-medium text-ink-muted sm:text-sm">
-            Total aberto: {formatBRL(openValue)} - recebido no mês:{" "}
+            {periodLabel}: aberto {formatBRL(openValue)} - recebido{" "}
             {formatBRL(wonValue)}
           </p>
         </div>
@@ -486,7 +582,7 @@ function DealsTable({
                       {contact?.company ?? contact?.name ?? "Sem contato"}
                     </span>
                     <span className="shrink-0 text-sm font-black tabular-nums text-brand-700">
-                      {formatBRL(deal.value_cents)}
+                      {formatDealValue(deal)}
                     </span>
                   </div>
                   <p className="mt-1 text-[11px] font-semibold text-ink-muted">
@@ -524,7 +620,7 @@ function DealsTable({
                           {stage.label}
                         </span>
                       </td>
-                      <td className="px-3 py-3">{formatBRL(deal.value_cents)}</td>
+                      <td className="px-3 py-3">{formatDealValue(deal)}</td>
                       <td className="px-3 py-3">{formatDate(deal.created_at)}</td>
                     </tr>
                   );
@@ -703,6 +799,81 @@ function dueLabel(iso: string, now: Date) {
   if (date.toDateString() === today) return `Hoje, ${time}`;
   if (date.toDateString() === tomorrow.toDateString()) return `Amanhã, ${time}`;
   return `${formatDate(iso)}, ${time}`;
+}
+
+function periodOption(value: string | undefined) {
+  return PERIOD_OPTIONS.find((option) => option.key === value) ?? PERIOD_OPTIONS[3];
+}
+
+function periodStart(key: PeriodKey, now: Date) {
+  if (key === "all") return null;
+
+  const start = new Date(now);
+  if (key.endsWith("d")) {
+    start.setDate(start.getDate() - (Number(key.replace("d", "")) - 1));
+  } else if (key.endsWith("m")) {
+    start.setMonth(start.getMonth() - Number(key.replace("m", "")));
+  }
+  start.setHours(0, 0, 0, 0);
+  return start;
+}
+
+function isInRange(iso: string | null, start: Date) {
+  if (!iso) return false;
+  const date = new Date(iso);
+  return !Number.isNaN(date.getTime()) && date >= start;
+}
+
+function earliestClosedDate(deals: Deal[]) {
+  const dates: Date[] = [];
+  for (const deal of deals) {
+    if (!deal.closed_at) continue;
+    const date = new Date(deal.closed_at);
+    if (!Number.isNaN(date.getTime())) {
+      dates.push(date);
+    }
+  }
+
+  if (dates.length === 0) return null;
+  return new Date(Math.min(...dates.map((date) => date.getTime())));
+}
+
+function buildWonSeries(deals: Deal[], start: Date, now: Date) {
+  const end = new Date(now);
+  end.setHours(0, 0, 0, 0);
+
+  let firstDay = new Date(start);
+  firstDay.setHours(0, 0, 0, 0);
+
+  const maxDays = 370;
+  const totalDays = Math.floor((end.getTime() - firstDay.getTime()) / 86_400_000) + 1;
+  if (totalDays > maxDays) {
+    firstDay = new Date(end);
+    firstDay.setDate(firstDay.getDate() - (maxDays - 1));
+  }
+
+  const days = Math.max(1, Math.floor((end.getTime() - firstDay.getTime()) / 86_400_000) + 1);
+  const daily = Array.from({ length: days }, () => 0);
+
+  for (const deal of deals) {
+    if (!deal.closed_at) continue;
+    const closedAt = new Date(deal.closed_at);
+    if (Number.isNaN(closedAt.getTime()) || closedAt < firstDay || closedAt > now) continue;
+    closedAt.setHours(0, 0, 0, 0);
+    const index = Math.floor((closedAt.getTime() - firstDay.getTime()) / 86_400_000);
+    if (index >= 0 && index < daily.length) {
+      daily[index] += dealValueOrZero(deal);
+    }
+  }
+
+  let cumulativeCents = 0;
+  return daily.map((value, index) => {
+    cumulativeCents += value;
+    return {
+      day: index + 1,
+      cumulativeCents,
+    };
+  });
 }
 
 function defaultDateTimeValue(now: Date) {

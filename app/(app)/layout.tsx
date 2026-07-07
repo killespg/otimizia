@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { AssistantChat } from "@/components/AssistantChat";
 import { PendingButton } from "@/components/PendingButton";
 import { AssistantChatProvider } from "@/lib/ai/AssistantChatProvider";
-import { getPlanAccess } from "@/lib/plan";
+import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset } from "@/lib/professions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/server";
@@ -56,13 +56,14 @@ export default async function AppLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("profession_type, plan, plan_status, trial_ends_at, stripe_subscription_id")
+    .select("profession_type")
     .eq("id", user.id)
     .maybeSingle();
   const preset = getProfessionPreset(
     profile?.profession_type ?? user.user_metadata?.profession_type
   );
-  const access = getPlanAccess(profile);
+  const isLivestock = preset.key === "livestock_producer";
+  const access = await getUserPlanAccess(supabase, user.id);
 
   const email = user.email ?? "Conta";
   const handle = email.split("@")[0] || "João";
@@ -83,9 +84,10 @@ export default async function AppLayout({
           <div className="flex-1 overflow-y-auto px-5 py-3">
             <SidebarNav
               labels={{
+                contacts: isLivestock ? "Sujeitos" : "Contatos",
                 pipeline: preset.pipelineLabel,
                 value: preset.valueLabel,
-                followups: "Retornos do dia",
+                followups: isLivestock ? "Sujeitos para revisar" : "Retornos do dia",
               }}
             />
           </div>
@@ -176,7 +178,12 @@ export default async function AppLayout({
           </main>
         </div>
 
-        <MobileTabBar labels={{ pipeline: preset.pipelineLabel }} />
+        <MobileTabBar
+          labels={{
+            contacts: isLivestock ? "Sujeitos" : "Contatos",
+            pipeline: preset.pipelineLabel,
+          }}
+        />
       </div>
 
       <AssistantChat />
