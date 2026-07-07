@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { AgentPanel } from "@/components/AgentPanel";
 import { PendingButton } from "@/components/PendingButton";
+import { computeDevMetrics, type DevMetrics } from "@/lib/devMetrics";
+import { getActiveOrgId } from "@/lib/org";
 import { getProfessionPreset, type MetricKey, type ProfessionPreset } from "@/lib/professions";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
   DEAL_STAGES,
@@ -10,8 +13,8 @@ import {
   type DealStage,
   type Task,
 } from "@/lib/supabase/types";
-import { dealValueOrZero, formatDealValue, getDealValueCents } from "@/lib/deals";
 import { formatBRL, formatDate } from "@/lib/format";
+import { getWorkspaceKey } from "@/lib/workspaces";
 import { createTask } from "../actions";
 import { ReminderModal as ReminderModalClient } from "./ReminderModal";
 import { RevenueLineChart } from "./RevenueLineChart";
@@ -40,32 +43,27 @@ const METRIC_ICONS: Record<MetricKey, (props: { className?: string }) => JSX.Ele
 
 type ContactOption = Pick<Contact, "id" | "name" | "company">;
 
-type PeriodKey = "7d" | "14d" | "21d" | "1m" | "3m" | "6m" | "12m" | "all";
+const DASHBOARD_GREETINGS: Record<ProfessionPreset["key"], string> = {
+  autonomous_seller: "Bora olhar os clientes quentes e destravar os próximos fechamentos.",
+  law_office: "Triagens, propostas e retornos em ordem para o escritório respirar melhor.",
+  real_estate_broker: "Vamos cuidar dos leads, visitas e propostas que podem virar negócio.",
+  service_provider: "Pedidos, orçamentos e agenda alinhados para o serviço fluir.",
+  consultant: "Hora de acompanhar propostas, diagnósticos e próximos passos com clareza.",
+  freelancer: "Projetos, prazos e aprovações no radar para nada escapar.",
+  livestock_producer: "Lotes, compradores e retornos organizados para tocar a pecuária.",
+  small_business: "Pedidos, clientes e recompra no ponto para vender com mais ritmo.",
+  other: "Seu painel está pronto para organizar contatos, oportunidades e retornos.",
+  founder: "Acompanhe sua prospecção e as métricas do OtimizIA num só lugar.",
+};
 
-const PERIOD_OPTIONS: { key: PeriodKey; label: string }[] = [
-  { key: "7d", label: "1 semana" },
-  { key: "14d", label: "2 semanas" },
-  { key: "21d", label: "3 semanas" },
-  { key: "1m", label: "1 mes" },
-  { key: "3m", label: "3 meses" },
-  { key: "6m", label: "6 meses" },
-  { key: "12m", label: "1 ano" },
-  { key: "all", label: "Tudo" },
-];
-
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams?: { periodo?: string };
-}) {
+export default async function DashboardPage() {
   const supabase = createClient();
   const now = new Date();
   const startOfToday = new Date(now);
   startOfToday.setHours(0, 0, 0, 0);
   const endOfToday = new Date(now);
   endOfToday.setHours(23, 59, 59, 999);
-  const selectedPeriod = periodOption(searchParams?.periodo);
-  const rangeStart = periodStart(selectedPeriod.key, now);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const [
     {
@@ -74,52 +72,53 @@ export default async function DashboardPage({
     { data: profile },
   ] = await Promise.all([
     supabase.auth.getUser(),
-    supabase.from("profiles").select("profession_type").maybeSingle(),
+    supabase.from("profiles").select("profession_type, is_admin").maybeSingle(),
   ]);
-  const preset = getProfessionPreset(
-    profile?.profession_type ?? user?.user_metadata?.profession_type
+  const orgId = await getActiveOrgId(supabase, user!.id);
+  const isAdmin = profile?.is_admin ?? false;
+  const founderMetrics = isAdmin ? await loadFounderMetrics() : null;
+  const workspaceKey = getWorkspaceKey(
+    profile?.profession_type,
+    user?.user_metadata?.profession_type,
+    isAdmin
   );
-  const workspaceKey = preset.key;
-
-  const contactCountQuery = supabase
-    .from("contacts")
-    .select("*", { count: "exact", head: true })
-    .eq("workspace_key", workspaceKey);
-  const conversationsQuery = supabase
-    .from("interactions")
-    .select("*", { count: "exact", head: true })
-    .eq("workspace_key", workspaceKey);
-
-  if (rangeStart) {
-    contactCountQuery.gte("created_at", rangeStart.toISOString());
-    conversationsQuery.gte("created_at", rangeStart.toISOString());
-  }
-
   const [
     { data: deals },
     { data: tasks },
     { data: contactOptions },
     { count: contactsCount },
-    { count: conversationsInPeriod },
+    { count: conversationsToday },
   ] = await Promise.all([
     supabase
       .from("deals")
       .select("*")
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("created_at", { ascending: false }),
     supabase
       .from("tasks")
       .select("*")
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .eq("done", false)
       .order("due_at", { ascending: true }),
     supabase
       .from("contacts")
       .select("id,name,company")
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("name", { ascending: true }),
-    contactCountQuery,
-    conversationsQuery,
+    supabase
+      .from("contacts")
+      .select("*", { count: "exact", head: true })
+      .eq("org_id", orgId)
+      .eq("workspace_key", workspaceKey),
+    supabase
+      .from("interactions")
+      .select("*", { count: "exact", head: true })
+      .eq("org_id", orgId)
+      .eq("workspace_key", workspaceKey)
+      .gte("created_at", startOfToday.toISOString()),
   ]);
 
   const allDeals = (deals ?? []) as Deal[];
@@ -127,51 +126,54 @@ export default async function DashboardPage({
   const contacts = contactsCount ?? 0;
   const contactsForForms = (contactOptions ?? []) as ContactOption[];
   const contactMap = new Map(contactsForForms.map((contact) => [contact.id, contact]));
-  const periodDeals = rangeStart
-    ? allDeals.filter((deal) => isInRange(deal.created_at, rangeStart) || isInRange(deal.closed_at, rangeStart))
-    : allDeals;
+  const preset = getProfessionPreset(workspaceKey);
 
   const displayName =
     typeof user?.user_metadata?.name === "string" && user.user_metadata.name
       ? firstName(user.user_metadata.name)
       : firstName(user?.email?.split("@")[0] ?? "João");
 
-  const openDeals = periodDeals.filter(
+  const openDeals = allDeals.filter(
     (deal) => deal.stage !== "ganho" && deal.stage !== "perdido"
   );
-  const openValue = openDeals.reduce((sum, deal) => sum + dealValueOrZero(deal), 0);
-  const wonInPeriod = allDeals.filter(
+  const openValue = openDeals.reduce((sum, deal) => sum + (deal.value_cents ?? 0), 0);
+  const wonThisMonth = allDeals.filter(
     (deal) =>
       deal.stage === "ganho" &&
       deal.closed_at &&
-      (!rangeStart || new Date(deal.closed_at) >= rangeStart)
+      new Date(deal.closed_at) >= monthStart
   );
-  const wonValue = wonInPeriod.reduce((sum, deal) => sum + dealValueOrZero(deal), 0);
-  const lostInPeriod = allDeals.filter(
+  const wonValue = wonThisMonth.reduce((sum, deal) => sum + (deal.value_cents ?? 0), 0);
+  const lostThisMonth = allDeals.filter(
     (deal) =>
       deal.stage === "perdido" &&
       deal.closed_at &&
-      (!rangeStart || new Date(deal.closed_at) >= rangeStart)
+      new Date(deal.closed_at) >= monthStart
   );
-  const closedInPeriod = wonInPeriod.length + lostInPeriod.length;
-  const conversionRate = closedInPeriod > 0
-    ? Math.round((wonInPeriod.length / closedInPeriod) * 100)
+  const closedThisMonth = wonThisMonth.length + lostThisMonth.length;
+  const conversionRate = closedThisMonth > 0
+    ? Math.round((wonThisMonth.length / closedThisMonth) * 100)
     : null;
-  const pricedWonInPeriod = wonInPeriod.filter((deal) => getDealValueCents(deal) !== null);
-  const avgTicketCents = pricedWonInPeriod.length > 0
-    ? Math.round(wonValue / pricedWonInPeriod.length)
+  const avgTicketCents = wonThisMonth.length > 0
+    ? Math.round(wonValue / wonThisMonth.length)
     : null;
 
-  const chartStart = rangeStart ?? earliestClosedDate(wonInPeriod) ?? startOfToday;
-  const wonSeries = buildWonSeries(wonInPeriod, chartStart, now);
+  const daysElapsed = now.getDate();
+  const dailyWonCents = new Array(daysElapsed).fill(0);
+  for (const deal of wonThisMonth) {
+    const dayIndex = new Date(deal.closed_at!).getDate() - 1;
+    if (dayIndex >= 0 && dayIndex < daysElapsed) {
+      dailyWonCents[dayIndex] += deal.value_cents ?? 0;
+    }
+  }
+  let runningCents = 0;
+  const wonSeries = dailyWonCents.map((cents, index) => {
+    runningCents += cents;
+    return { day: index + 1, cumulativeCents: runningCents };
+  });
 
   const overdue = openTasks
-    .filter(
-      (task) =>
-        task.due_at &&
-        new Date(task.due_at) < now &&
-        (!rangeStart || new Date(task.due_at) >= rangeStart)
-    )
+    .filter((task) => task.due_at && new Date(task.due_at) < now)
     .sort((a, b) => (a.due_at! < b.due_at! ? -1 : 1));
   const todayTasks = openTasks
     .filter(
@@ -189,10 +191,10 @@ export default async function DashboardPage({
     open_value: formatBRL(openValue),
     open_deals: String(openDeals.length),
     won_value_month: formatBRL(wonValue),
-    won_count_month: String(wonInPeriod.length),
+    won_count_month: String(wonThisMonth.length),
     contacts: String(contacts),
     overdue_tasks: String(overdue.length),
-    conversations_today: String(conversationsInPeriod ?? 0),
+    conversations_today: String(conversationsToday ?? 0),
     conversion_rate: conversionRate === null ? "—" : `${conversionRate}%`,
     avg_ticket: avgTicketCents === null ? "—" : formatBRL(avgTicketCents),
   };
@@ -206,44 +208,25 @@ export default async function DashboardPage({
 
   const isFirstRun =
     contacts === 0 && allDeals.length === 0 && openTasks.length === 0;
+  const greeting = dashboardGreeting(preset, {
+    overdueCount: overdue.length,
+    todayCount: todayTasks.length,
+    isFirstRun,
+  });
 
   return (
     <div className="space-y-4 sm:space-y-5">
       <header className="enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
+        <div className="max-w-2xl">
           <h1 className="text-[22px] font-black tracking-[-0.02em] text-ink sm:text-2xl">
             Olá, {displayName}!
           </h1>
+          <p className="mt-1 text-sm font-semibold leading-relaxed text-ink-soft sm:text-base">
+            {greeting}
+          </p>
         </div>
 
         <div className="hidden flex-col gap-3 sm:flex sm:flex-row sm:items-center">
-          <form
-            action="/dashboard"
-            className="flex h-11 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)]"
-          >
-            <label className="sr-only" htmlFor="dashboard-period">
-              Periodo das estatisticas
-            </label>
-            <select
-              id="dashboard-period"
-              name="periodo"
-              defaultValue={selectedPeriod.key}
-              className="h-8 min-w-[132px] rounded-md border border-line bg-white px-2 text-xs font-bold text-ink outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
-            >
-              {PERIOD_OPTIONS.map((option) => (
-                <option key={option.key} value={option.key}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              className="rounded-md bg-surface-2 px-2 py-1 text-[11px] font-bold text-ink-muted hover:bg-brand-50 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-600"
-            >
-              Aplicar
-            </button>
-          </form>
-
           <form
             action="/contacts"
             className="flex h-11 w-full min-w-0 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:w-[430px]"
@@ -286,38 +269,13 @@ export default async function DashboardPage({
         </div>
       </header>
 
-      <form
-        action="/dashboard"
-        className="enter flex h-11 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:hidden"
-      >
-        <label htmlFor="dashboard-period-mobile" className="shrink-0 text-xs font-black text-ink-soft">
-          Periodo
-        </label>
-        <select
-          id="dashboard-period-mobile"
-          name="periodo"
-          defaultValue={selectedPeriod.key}
-          className="h-8 min-w-0 flex-1 rounded-md border border-line bg-white px-2 text-xs font-bold text-ink outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
-        >
-          {PERIOD_OPTIONS.map((option) => (
-            <option key={option.key} value={option.key}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          className="rounded-md bg-surface-2 px-2 py-1 text-[11px] font-bold text-ink-muted hover:bg-brand-50 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-600"
-        >
-          Aplicar
-        </button>
-      </form>
-
       <section className="enter grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         {metrics.map((metric) => (
           <MetricCard key={metric.label} {...metric} />
         ))}
       </section>
+
+      {founderMetrics && <FounderMetricsPanel metrics={founderMetrics} />}
 
       <section className="grid gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(23rem,0.72fr)]">
         <div className="min-w-0 space-y-4 sm:space-y-5">
@@ -328,7 +286,6 @@ export default async function DashboardPage({
             contacts={contactsForForms}
             defaultDueAt={defaultDateTimeValue(now)}
             preset={preset}
-            periodLabel={selectedPeriod.label}
           />
           <DealsTable deals={openDeals} contactMap={contactMap} preset={preset} />
         </div>
@@ -394,6 +351,56 @@ function MetricCard({
   );
 }
 
+// Métricas do produto como um todo (todas as organizações) — só para a conta
+// fundadora (is_admin), por isso usa o admin client em vez de filtrar por org.
+async function loadFounderMetrics(): Promise<DevMetrics> {
+  const admin = createAdminClient();
+  const [{ data: profiles }, { data: contacts }, { data: deals }] = await Promise.all([
+    admin
+      .from("profiles")
+      .select("name,plan,plan_status,trial_ends_at,stripe_subscription_id,created_at"),
+    admin.from("contacts").select("owner_id"),
+    admin.from("deals").select("owner_id,stage,value_cents"),
+  ]);
+  return computeDevMetrics(profiles ?? [], contacts ?? [], deals ?? []);
+}
+
+function FounderMetricsPanel({ metrics }: { metrics: DevMetrics }) {
+  const activationRate =
+    metrics.totalUsers > 0 ? Math.round((metrics.activatedUsers / metrics.totalUsers) * 100) : 0;
+  const tiles = [
+    { label: "Cadastros totais", value: String(metrics.totalUsers) },
+    { label: "Ativados", value: `${metrics.activatedUsers} (${activationRate}%)` },
+    { label: "Em teste", value: String(metrics.planCounts.trialing) },
+    { label: "Pagantes", value: String(metrics.planCounts.active) },
+  ];
+
+  return (
+    <section className="enter rounded-lg border border-brand-200 bg-brand-50 p-4 sm:p-5">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-black text-brand-800">Métricas do OtimizIA</p>
+        <Link
+          href="/dev"
+          className="nav-item inline-flex items-center gap-1 text-xs font-black text-brand-700 hover:text-brand-900"
+        >
+          Ver tudo
+          <IconArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+        {tiles.map((tile) => (
+          <div key={tile.label} className="rounded-lg border border-brand-200 bg-white p-3">
+            <p className="text-xs font-semibold text-ink-soft">{tile.label}</p>
+            <p className="mt-1 text-lg font-black leading-none tracking-[-0.02em] text-ink">
+              {tile.value}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function RevenueChart({
   openValue,
   wonValue,
@@ -401,7 +408,6 @@ function RevenueChart({
   contacts,
   defaultDueAt,
   preset,
-  periodLabel,
 }: {
   openValue: number;
   wonValue: number;
@@ -409,7 +415,6 @@ function RevenueChart({
   contacts: ContactOption[];
   defaultDueAt: string;
   preset: ProfessionPreset;
-  periodLabel: string;
 }) {
   return (
     <section
@@ -419,10 +424,10 @@ function RevenueChart({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
-            {preset.wonLabel} no periodo (R$)
+            {preset.wonLabel} no mês (R$)
           </h2>
           <p className="mt-1 text-xs font-medium text-ink-muted sm:text-sm">
-            {periodLabel}: aberto {formatBRL(openValue)} - recebido{" "}
+            Total aberto: {formatBRL(openValue)} - recebido no mês:{" "}
             {formatBRL(wonValue)}
           </p>
         </div>
@@ -582,7 +587,7 @@ function DealsTable({
                       {contact?.company ?? contact?.name ?? "Sem contato"}
                     </span>
                     <span className="shrink-0 text-sm font-black tabular-nums text-brand-700">
-                      {formatDealValue(deal)}
+                      {formatBRL(deal.value_cents ?? 0)}
                     </span>
                   </div>
                   <p className="mt-1 text-[11px] font-semibold text-ink-muted">
@@ -620,7 +625,7 @@ function DealsTable({
                           {stage.label}
                         </span>
                       </td>
-                      <td className="px-3 py-3">{formatDealValue(deal)}</td>
+                      <td className="px-3 py-3">{formatBRL(deal.value_cents ?? 0)}</td>
                       <td className="px-3 py-3">{formatDate(deal.created_at)}</td>
                     </tr>
                   );
@@ -801,81 +806,6 @@ function dueLabel(iso: string, now: Date) {
   return `${formatDate(iso)}, ${time}`;
 }
 
-function periodOption(value: string | undefined) {
-  return PERIOD_OPTIONS.find((option) => option.key === value) ?? PERIOD_OPTIONS[3];
-}
-
-function periodStart(key: PeriodKey, now: Date) {
-  if (key === "all") return null;
-
-  const start = new Date(now);
-  if (key.endsWith("d")) {
-    start.setDate(start.getDate() - (Number(key.replace("d", "")) - 1));
-  } else if (key.endsWith("m")) {
-    start.setMonth(start.getMonth() - Number(key.replace("m", "")));
-  }
-  start.setHours(0, 0, 0, 0);
-  return start;
-}
-
-function isInRange(iso: string | null, start: Date) {
-  if (!iso) return false;
-  const date = new Date(iso);
-  return !Number.isNaN(date.getTime()) && date >= start;
-}
-
-function earliestClosedDate(deals: Deal[]) {
-  const dates: Date[] = [];
-  for (const deal of deals) {
-    if (!deal.closed_at) continue;
-    const date = new Date(deal.closed_at);
-    if (!Number.isNaN(date.getTime())) {
-      dates.push(date);
-    }
-  }
-
-  if (dates.length === 0) return null;
-  return new Date(Math.min(...dates.map((date) => date.getTime())));
-}
-
-function buildWonSeries(deals: Deal[], start: Date, now: Date) {
-  const end = new Date(now);
-  end.setHours(0, 0, 0, 0);
-
-  let firstDay = new Date(start);
-  firstDay.setHours(0, 0, 0, 0);
-
-  const maxDays = 370;
-  const totalDays = Math.floor((end.getTime() - firstDay.getTime()) / 86_400_000) + 1;
-  if (totalDays > maxDays) {
-    firstDay = new Date(end);
-    firstDay.setDate(firstDay.getDate() - (maxDays - 1));
-  }
-
-  const days = Math.max(1, Math.floor((end.getTime() - firstDay.getTime()) / 86_400_000) + 1);
-  const daily = Array.from({ length: days }, () => 0);
-
-  for (const deal of deals) {
-    if (!deal.closed_at) continue;
-    const closedAt = new Date(deal.closed_at);
-    if (Number.isNaN(closedAt.getTime()) || closedAt < firstDay || closedAt > now) continue;
-    closedAt.setHours(0, 0, 0, 0);
-    const index = Math.floor((closedAt.getTime() - firstDay.getTime()) / 86_400_000);
-    if (index >= 0 && index < daily.length) {
-      daily[index] += dealValueOrZero(deal);
-    }
-  }
-
-  let cumulativeCents = 0;
-  return daily.map((value, index) => {
-    cumulativeCents += value;
-    return {
-      day: index + 1,
-      cumulativeCents,
-    };
-  });
-}
-
 function defaultDateTimeValue(now: Date) {
   const value = new Date(now);
   value.setDate(value.getDate() + 1);
@@ -897,4 +827,23 @@ function initials(value: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("") || "JS";
+}
+
+function dashboardGreeting(
+  preset: ProfessionPreset,
+  state: { overdueCount: number; todayCount: number; isFirstRun: boolean }
+) {
+  if (state.isFirstRun) {
+    return `Comece pela área de ${preset.signupLabel}: cadastre um contato, crie um ${preset.dealSingular} e deixe um lembrete.`;
+  }
+
+  if (state.overdueCount > 0) {
+    return `${state.overdueCount} ${state.overdueCount === 1 ? "retorno atrasado" : "retornos atrasados"} pedindo atenção na área de ${preset.signupLabel}.`;
+  }
+
+  if (state.todayCount > 0) {
+    return `${state.todayCount} ${state.todayCount === 1 ? "lembrete" : "lembretes"} para hoje. Um bom dia para avançar ${preset.dealPlural}.`;
+  }
+
+  return DASHBOARD_GREETINGS[preset.key];
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PendingButton } from "@/components/PendingButton";
 import { createTask } from "../actions";
+import { ContactField } from "../ContactField";
 import { IconBell } from "../icons";
 
 type ContactOption = {
@@ -74,21 +75,7 @@ export function ReminderModal({ contacts, defaultDueAt }: ReminderModalProps) {
             className="mt-1 h-10 w-full rounded-md border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
           />
         </label>
-        <label className="block">
-          <span className="text-xs font-bold text-ink-soft">Relacionado a</span>
-          <select
-            name="contact_id"
-            className="mt-1 h-10 w-full rounded-md border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
-            defaultValue=""
-          >
-            <option value="">Selecione um contato ou empresa</option>
-            {contacts.map((contact) => (
-              <option key={contact.id} value={contact.id}>
-                {contact.company ? `${contact.name} - ${contact.company}` : contact.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <ContactField contacts={contacts} variant="compact" />
         <label className="block">
           <span className="text-xs font-bold text-ink-soft">Observacao opcional</span>
           <textarea

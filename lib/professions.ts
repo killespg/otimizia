@@ -7,9 +7,10 @@ export type ProfessionType =
   | "service_provider"
   | "consultant"
   | "freelancer"
-  | "small_business"
   | "livestock_producer"
-  | "other";
+  | "small_business"
+  | "other"
+  | "founder";
 
 export type FieldType = "text" | "select" | "date";
 
@@ -428,6 +429,75 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
       { label: "Retornar em 1 semana", days: 7 },
     ],
   },
+  livestock_producer: {
+    key: "livestock_producer",
+    signupLabel: "Pecuarista",
+    shortLabel: "Pecuária",
+    pipelineLabel: "Negócios",
+    pipelineTitle: "Negócios pecuários em andamento",
+    pipelineDescription: "Acompanhe lotes, compradores, fornecedores, propostas e próximos retornos.",
+    dealSingular: "negócio",
+    dealPlural: "negócios",
+    dealFieldLabel: "Negócio",
+    dealPlaceholder: "Ex: Lote de 30 bezerros",
+    valueLabel: "Valor em negociação",
+    wonLabel: "Fechados",
+    contactsTitle: "Contatos da pecuária",
+    contactsDescription: "Salve compradores, fornecedores, parceiros, fazendas e próximos retornos.",
+    newContactTitle: "Novo contato rural",
+    firstSteps: ["Cadastre um contato", "Crie um negócio", "Agende um retorno"],
+    assistantContext: "A pessoa atua como pecuarista. Priorize lotes, rebanho, compra e venda de animais, fornecedores, compradores, prazos, sanidade, reposição e retorno por WhatsApp.",
+    stages: {
+      novo: { label: "Novo contato", empty: "Novas oportunidades entram aqui." },
+      em_contato: { label: "Em avaliação", empty: "Nenhum lote em avaliação." },
+      negociacao: { label: "Negociação", empty: "Nenhuma negociação aberta." },
+      ganho: { label: "Fechado", empty: "Negócios fechados aparecem aqui." },
+      perdido: { label: "Perdido", empty: "Sem oportunidades perdidas." },
+    },
+    contactFields: [
+      {
+        key: "tipo_contato",
+        label: "Tipo de contato",
+        type: "select",
+        options: ["Comprador", "Fornecedor", "Veterinário", "Transportador", "Parceiro", "Outro"],
+      },
+      { key: "fazenda", label: "Fazenda", type: "text", placeholder: "Ex: Fazenda Boa Vista" },
+      { key: "cidade", label: "Cidade/UF", type: "text", placeholder: "Ex: Goiânia - GO" },
+    ],
+    dealFields: [
+      {
+        key: "tipo_animal",
+        label: "Tipo de animal",
+        type: "select",
+        options: ["Boi gordo", "Bezerro", "Novilha", "Vaca", "Matriz", "Touro", "Outro"],
+      },
+      { key: "quantidade", label: "Quantidade", type: "text", placeholder: "Ex: 30 cabeças" },
+      { key: "peso_medio", label: "Peso médio", type: "text", placeholder: "Ex: 12 arrobas" },
+    ],
+    metrics: [
+      { key: "open_value", label: "Valor em negociação" },
+      { key: "open_deals", label: "Negócios em andamento" },
+      { key: "won_value_month", label: "Fechado no mês" },
+      { key: "overdue_tasks", label: "Retornos atrasados" },
+    ],
+    messageTemplates: [
+      {
+        key: "retorno_lote",
+        label: "Retorno sobre lote",
+        body: "Oi {{primeiro_nome}}! Passando para saber se você avaliou o lote e se seguimos com a negociação.",
+      },
+      {
+        key: "confirmar_visita",
+        label: "Confirmar visita",
+        body: "{{primeiro_nome}}, confirmando nossa visita para olhar os animais. O horário continua bom para você?",
+      },
+    ],
+    followUpOffsets: [
+      { label: "Retornar amanhã", days: 1 },
+      { label: "Retornar em 3 dias", days: 3 },
+      { label: "Retornar em 1 semana", days: 7 },
+    ],
+  },
   small_business: {
     key: "small_business",
     signupLabel: "Loja ou pequeno comércio",
@@ -487,78 +557,64 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
       { label: "Sugerir recompra em 30 dias", days: 30 },
     ],
   },
-  livestock_producer: {
-    key: "livestock_producer",
-    signupLabel: "Pecuária",
-    shortLabel: "Pecuária",
-    pipelineLabel: "Vendas",
-    pipelineTitle: "Quadro da pecuária",
-    pipelineDescription: "Acompanhe plantel, inseminações, nascimentos, manejos, vendas, perdas e observações por lista.",
-    dealSingular: "venda",
-    dealPlural: "vendas",
-    dealFieldLabel: "Venda ou negociação",
-    dealPlaceholder: "Ex: Touro PO, lote de terneiros...",
-    valueLabel: "Valor em aberto",
-    wonLabel: "Vendidos",
-    contactsTitle: "Sujeitos",
-    contactsDescription: "Cadastre pessoas, compradores, fornecedores ou referências da pecuária.",
-    newContactTitle: "Novo sujeito",
-    firstSteps: ["Cadastre um sujeito", "Organize o quadro", "Agende um manejo"],
-    assistantContext: "A pessoa trabalha com pecuária. Use linguagem de plantel, animais, inseminações, nascimentos, manejo sanitário, vendas e perdas.",
+  founder: {
+    key: "founder",
+    signupLabel: "Fundador",
+    shortLabel: "Prospecção",
+    pipelineLabel: "Prospecção",
+    pipelineTitle: "Prospecção do OtimizIA",
+    pipelineDescription: "Acompanhe quem você abordou, quem respondeu e quem virou cliente pagante.",
+    dealSingular: "prospect",
+    dealPlural: "prospects",
+    dealFieldLabel: "Prospect",
+    dealPlaceholder: "Ex: Personal trainer abordado no Instagram",
+    valueLabel: "Potencial em conversa",
+    wonLabel: "Convertidos",
+    contactsTitle: "Pessoas abordadas",
+    contactsDescription: "Salve quem você chamou, por qual canal, e o retorno que deu.",
+    newContactTitle: "Nova pessoa abordada",
+    firstSteps: ["Cadastre quem você abordou", "Marque o estágio da conversa", "Agende um retorno"],
+    assistantContext: "A pessoa é a fundadora do OtimizIA e usa o próprio CRM para gerenciar a prospecção de clientes do produto (mensagem direta, vídeos, indicação). Priorize taxa de resposta, conversão de contato para cadastro e de cadastro para cliente pagante.",
     stages: {
-      novo: { label: "Novo", empty: "Novos cards entram aqui." },
-      em_contato: { label: "Em acompanhamento", empty: "Nenhum acompanhamento em aberto." },
-      negociacao: { label: "Negociação", empty: "Nenhuma negociação agora." },
-      ganho: { label: "Vendido", empty: "Vendas concluídas aparecem aqui." },
-      perdido: { label: "Perda", empty: "Sem perdas registradas." },
+      novo: { label: "Identificado", empty: "Pessoas que você quer abordar entram aqui." },
+      em_contato: { label: "Mensagem enviada", empty: "Nenhuma mensagem em aberto." },
+      negociacao: { label: "Conversando", empty: "Ninguém respondendo agora." },
+      ganho: { label: "Cliente pagante", empty: "Conversões aparecem aqui." },
+      perdido: { label: "Não converteu", empty: "Sem descartes registrados." },
     },
     contactFields: [
       {
-        key: "categoria",
-        label: "Categoria",
+        key: "canal_abordagem",
+        label: "Canal de abordagem",
         type: "select",
-        options: [
-          "Plantel",
-          "Plantel pai",
-          "Inseminação",
-          "Nascimento",
-          "Controle sanitário",
-          "Plantio/adubação",
-          "Observação",
-          "Investimento",
-          "Venda",
-          "Perda",
-          "Outro",
-        ],
+        options: ["Mensagem direta", "Indicação", "TikTok/Reels", "Grupo", "Outro"],
       },
-      { key: "identificacao", label: "Identificação", type: "text", placeholder: "Ex: brinco, registro, lote" },
     ],
     dealFields: [
-      { key: "categoria", label: "Categoria", type: "select", options: ["Animal", "Lote", "Serviço", "Outro"] },
-      { key: "proximo_passo", label: "Próximo passo", type: "text", placeholder: "Ex: combinar retirada" },
+      { key: "status_conversa", label: "Status da conversa", type: "text", placeholder: "Ex: Pediu mais informações" },
     ],
     metrics: [
-      { key: "contacts", label: "Sujeitos" },
-      { key: "open_deals", label: "Vendas abertas" },
-      { key: "won_value_month", label: "Vendido no período" },
-      { key: "overdue_tasks", label: "Manejos atrasados" },
+      { key: "contacts", label: "Pessoas abordadas" },
+      { key: "open_deals", label: "Em conversa" },
+      { key: "won_count_month", label: "Viraram clientes no mês" },
+      { key: "conversion_rate", label: "Taxa de conversão" },
     ],
     messageTemplates: [
       {
-        key: "retorno_interesse",
-        label: "Retorno de interesse",
-        body: "Oi {{primeiro_nome}}! Passando para retomar aquele assunto da pecuária. Posso te mandar mais detalhes?",
+        key: "abordagem_inicial",
+        label: "Abordagem inicial",
+        body: "Oi {{primeiro_nome}}, vi que você é {{profissao}}. Tô desenvolvendo um app pra ajudar quem vende pelo WhatsApp a não perder cliente e lembrete — queria muito seu feedback sincero. Topa dar uma olhada?",
       },
       {
-        key: "confirmar_manejo",
-        label: "Confirmar manejo",
-        body: "{{primeiro_nome}}, só confirmando o combinado para o manejo. Qual horário fica melhor?",
+        key: "follow_up_video",
+        label: "Follow-up pós-vídeo",
+        body: "{{primeiro_nome}}, vi que você curtiu o vídeo — se quiser eu te mostro rapidinho como funciona, sem compromisso.",
       },
     ],
     followUpOffsets: [
       { label: "Retornar amanhã", days: 1 },
+      { label: "Retornar em 3 dias", days: 3 },
       { label: "Retornar em 1 semana", days: 7 },
-      { label: "Revisar em 30 dias", days: 30 },
     ],
   },
   other: {
@@ -609,17 +665,27 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
   },
 };
 
-export const PROFESSION_OPTIONS = Object.values(PROFESSION_PRESETS).map((preset) => ({
-  value: preset.key,
-  label: preset.signupLabel,
-}));
+// "founder" nunca aparece aqui — é um preset interno, atribuído só por
+// is_admin (ver lib/workspaces.ts), nunca selecionável por conta comum.
+export const PROFESSION_OPTIONS = Object.values(PROFESSION_PRESETS)
+  .filter((preset) => preset.key !== "founder")
+  .map((preset) => ({
+    value: preset.key,
+    label: preset.signupLabel,
+  }));
 
+// Só valida contra as opções públicas — garante que nenhuma entrada vinda de
+// usuário (formulário ou chamada direta à API) resolva para "founder".
 export function normalizeProfession(value: unknown): ProfessionType {
-  return typeof value === "string" && value in PROFESSION_PRESETS
+  return typeof value === "string" &&
+    PROFESSION_OPTIONS.some((option) => option.value === value)
     ? (value as ProfessionType)
     : "autonomous_seller";
 }
 
-export function getProfessionPreset(value: unknown): ProfessionPreset {
-  return PROFESSION_PRESETS[normalizeProfession(value)];
+// Recebe uma chave já resolvida e confiável (via normalizeProfession ou o
+// bypass de is_admin em getWorkspaceKey) — não re-valida contra a lista
+// pública, então pode retornar o preset "founder".
+export function getProfessionPreset(key: ProfessionType): ProfessionPreset {
+  return PROFESSION_PRESETS[key] ?? PROFESSION_PRESETS.autonomous_seller;
 }

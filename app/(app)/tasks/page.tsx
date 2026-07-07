@@ -2,7 +2,9 @@ import { PendingButton } from "@/components/PendingButton";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Task } from "@/lib/supabase/types";
+import { getWorkspaceKey } from "@/lib/workspaces";
 import { createTask } from "../actions";
+import { ContactField } from "../ContactField";
 import { IconBell, IconCheckCircle, IconClock, IconPlus } from "../icons";
 import TaskItem from "./TaskItem";
 
@@ -10,13 +12,34 @@ type Tone = "danger" | "today" | "upcoming" | "done";
 
 export default async function TasksPage() {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [
+    {
+      data: { user },
+    },
+    { data: profile },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("profiles").select("profession_type, is_admin").maybeSingle(),
+  ]);
   const orgId = await getActiveOrgId(supabase, user!.id);
+  const workspaceKey = getWorkspaceKey(
+    profile?.profession_type,
+    user?.user_metadata?.profession_type,
+    profile?.is_admin ?? false
+  );
   const [{ data: tasks }, { data: contacts }, members, role] = await Promise.all([
-    supabase.from("tasks").select("*").order("due_at", { ascending: true }),
-    supabase.from("contacts").select("id, name").order("name"),
+    supabase
+      .from("tasks")
+      .select("*")
+      .eq("org_id", orgId)
+      .eq("workspace_key", workspaceKey)
+      .order("due_at", { ascending: true }),
+    supabase
+      .from("contacts")
+      .select("id, name")
+      .eq("org_id", orgId)
+      .eq("workspace_key", workspaceKey)
+      .order("name"),
     getOrgMembers(supabase, orgId),
     getOrgRole(supabase, orgId, user!.id),
   ]);
@@ -102,19 +125,7 @@ export default async function TasksPage() {
             </label>
             <input id="task-when" name="due_at" type="datetime-local" className="field mt-1.5" />
           </div>
-          <div>
-            <label className="label" htmlFor="task-contact">
-              Contato
-            </label>
-            <select id="task-contact" name="contact_id" className="field mt-1.5">
-              <option value="">Sem contato</option>
-              {allContacts.map((contact) => (
-                <option key={contact.id} value={contact.id}>
-                  {contact.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <ContactField contacts={allContacts} />
           <PendingButton className="btn h-[42px] w-full lg:w-auto" pendingLabel="Salvando">
             <IconPlus className="h-4 w-4" />
             Salvar

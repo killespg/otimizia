@@ -7,7 +7,8 @@ import { getPlanAccess } from "@/lib/plan";
 import { getProfessionPreset, PROFESSION_OPTIONS } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Organization, Profile } from "@/lib/supabase/types";
-import { updateProfession } from "../actions";
+import { getWorkspaceKey } from "@/lib/workspaces";
+import { updateProfessionTypes } from "../actions";
 import { IconAlert, IconCheck } from "../icons";
 import { DeleteAccountForm } from "./DeleteAccountForm";
 import { deleteAccount, updateEmail, updateName, updatePassword } from "./actions";
@@ -31,11 +32,15 @@ export default async function SettingsPage({
   ]);
   const profile = profileData as Profile | null;
   const org = orgData as Organization | null;
-  const isAdmin = role === "admin";
+  const isOrgAdmin = role === "admin";
 
-  const preset = getProfessionPreset(
-    profile?.profession_type ?? user.user_metadata?.profession_type
+  const isFounder = profile?.is_admin ?? false;
+  const workspaceKey = getWorkspaceKey(
+    profile?.profession_type,
+    user.user_metadata?.profession_type,
+    isFounder
   );
+  const preset = getProfessionPreset(workspaceKey);
   const displayName =
     typeof user.user_metadata?.name === "string" ? user.user_metadata.name : "";
   const access = getPlanAccess(org);
@@ -123,48 +128,62 @@ export default async function SettingsPage({
         </form>
       </SectionCard>
 
-      <SectionCard title="Preferências" description="Como o app se adapta ao seu jeito de trabalhar.">
-        <form action={updateProfession} className="space-y-3">
-          <input type="hidden" name="return_to" value="/settings" />
-          <div>
-            <label className="label" htmlFor="profession-type">
-              Perfil profissional
-            </label>
-            <select
-              id="profession-type"
-              name="profession_type"
-              defaultValue={preset.key}
-              disabled={!isAdmin}
-              className="field mt-1.5 disabled:opacity-60"
-            >
+      {isFounder ? (
+        <SectionCard title="Perfil" description="Sua conta usa o modo fundador do OtimizIA.">
+          <p className="text-sm font-medium text-ink-muted">
+            Sua conta é especial: em vez de escolher uma área de atuação, o painel
+            já vem pronto para acompanhar sua própria prospecção de clientes e as
+            métricas do produto.
+          </p>
+        </SectionCard>
+      ) : isOrgAdmin ? (
+        <SectionCard title="Áreas de atuação" description="Escolha qual operação quer ver e alimentar agora.">
+          <form action={updateProfessionTypes} className="space-y-3">
+            <input type="hidden" name="active_profession_type" value={preset.key} />
+            <div className="grid gap-2 sm:grid-cols-2">
               {PROFESSION_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
+                <label
+                  key={option.value}
+                  className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line bg-surface px-3 py-2 text-sm font-bold text-ink-soft"
+                >
+                  <input
+                    type="checkbox"
+                    name="profession_types"
+                    value={option.value}
+                    defaultChecked={(profile?.profession_types ?? [preset.key]).includes(option.value)}
+                    className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
+                  />
+                  <span>{option.label}</span>
+                </label>
               ))}
-            </select>
-          </div>
-          {!isAdmin && (
-            <p className="text-xs font-medium text-ink-muted">
-              Sua conta usa o plano da empresa e fica limitada a este perfil. Para trocar de
-              profissão, é preciso um plano próprio.
+            </div>
+            <p className="text-xs font-medium leading-relaxed text-ink-muted">
+              Contatos, negócios, lembretes e assistente ficam separados por área.
             </p>
-          )}
-          <PendingButton className="btn-soft" pendingLabel="Aplicando" disabled={!isAdmin}>
-            Aplicar perfil
-          </PendingButton>
-        </form>
-      </SectionCard>
+            <PendingButton className="btn-soft" pendingLabel="Aplicando">
+              Salvar áreas
+            </PendingButton>
+          </form>
+        </SectionCard>
+      ) : (
+        <SectionCard title="Perfil profissional" description="Definido pelo plano da sua empresa.">
+          <p className="text-sm font-bold text-ink">{preset.signupLabel}</p>
+          <p className="mt-2 text-xs font-medium leading-relaxed text-ink-muted">
+            Sua conta usa o plano da empresa e fica limitada a esta área. Para acessar outras, é
+            preciso um plano próprio.
+          </p>
+        </SectionCard>
+      )}
 
       <SectionCard
         title="Plano"
         description={
-          isAdmin
+          isOrgAdmin
             ? "Assinatura da empresa — cobrada por pessoa (seats)."
             : "Assinatura gerenciada por um admin da empresa."
         }
       >
-        {!isAdmin && (
+        {!isOrgAdmin && (
           <p className="text-sm font-medium text-ink-muted">
             {access.hasAccess
               ? "Sua conta está com acesso ativo pela assinatura da empresa."
@@ -172,7 +191,7 @@ export default async function SettingsPage({
           </p>
         )}
 
-        {isAdmin && access.status === "active" && (
+        {isOrgAdmin && access.status === "active" && (
           <div className="space-y-3">
             <p className="text-sm font-bold text-ink">
               Plano Pro ativo
@@ -187,7 +206,7 @@ export default async function SettingsPage({
           </div>
         )}
 
-        {isAdmin && access.status === "past_due" && (
+        {isOrgAdmin && access.status === "past_due" && (
           <div className="space-y-3">
             <p className="text-sm font-bold text-danger-700">
               Pagamento pendente — atualize a forma de pagamento para não perder o acesso.
@@ -200,7 +219,7 @@ export default async function SettingsPage({
           </div>
         )}
 
-        {isAdmin && access.status === "trialing" && (
+        {isOrgAdmin && access.status === "trialing" && (
           <div className="space-y-3">
             <p className="text-sm font-bold text-ink">
               Teste grátis do Pro
@@ -215,7 +234,7 @@ export default async function SettingsPage({
           </div>
         )}
 
-        {isAdmin && (access.status === "free" || access.status === "expired") && (
+        {isOrgAdmin && (access.status === "free" || access.status === "expired") && (
           <div className="space-y-3">
             <p className="text-sm font-bold text-ink">
               {access.status === "expired"

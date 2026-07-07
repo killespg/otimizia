@@ -1,10 +1,13 @@
 import { PendingButton } from "@/components/PendingButton";
+import { getActiveOrgId } from "@/lib/org";
 import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Deal } from "@/lib/supabase/types";
 import { dealValueOrZero } from "@/lib/deals";
 import { formatBRL } from "@/lib/format";
+import { getWorkspaceKey } from "@/lib/workspaces";
 import { createDeal } from "../actions";
+import { ContactField } from "../ContactField";
 import { IconColumns, IconPlus, IconUsers, IconWallet } from "../icons";
 import { PresetFields } from "../PresetFields";
 import Board from "./Board";
@@ -34,23 +37,26 @@ export default async function PipelinePage() {
     { data: profile },
   ] = await Promise.all([
     supabase.auth.getUser(),
-    supabase.from("profiles").select("profession_type").maybeSingle(),
+    supabase.from("profiles").select("profession_type, is_admin").maybeSingle(),
   ]);
-  const preset = getProfessionPreset(
-    profile?.profession_type ?? user?.user_metadata?.profession_type
+  const orgId = await getActiveOrgId(supabase, user!.id);
+  const workspaceKey = getWorkspaceKey(
+    profile?.profession_type,
+    user?.user_metadata?.profession_type,
+    profile?.is_admin ?? false
   );
-  const workspaceKey = preset.key;
-  const isLivestock = preset.key === "livestock_producer";
-
+  const preset = getProfessionPreset(workspaceKey);
   const [{ data: deals }, { data: contacts }] = await Promise.all([
     supabase
       .from("deals")
       .select("*")
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("created_at", { ascending: false }),
     supabase
       .from("contacts")
       .select("id, name")
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("name"),
   ]);
@@ -124,19 +130,7 @@ export default async function PipelinePage() {
               className="field mt-1.5"
             />
           </div>
-          <div>
-            <label className="label" htmlFor="deal-contact">
-              {isLivestock ? "Sujeito" : "Contato"}
-            </label>
-            <select id="deal-contact" name="contact_id" className="field mt-1.5">
-              <option value="">{isLivestock ? "Sem sujeito" : "Sem contato"}</option>
-              {allContacts.map((contact) => (
-                <option key={contact.id} value={contact.id}>
-                  {contact.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <ContactField contacts={allContacts} />
           <PendingButton className="btn h-[42px] w-full lg:w-auto" pendingLabel="Salvando">
             <IconPlus className="h-4 w-4" />
             Salvar

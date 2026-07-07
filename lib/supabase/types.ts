@@ -17,6 +17,8 @@ export type Profile = {
   id: string;
   name: string | null;
   profession_type: string;
+  profession_types: string[];
+  is_admin: boolean;
   cpf: string | null;
   terms_accepted_at: string | null;
   active_org_id: string | null;
@@ -47,11 +49,12 @@ export type OrganizationMember = {
 export type Contact = {
   id: string;
   owner_id: string;
-  org_id?: string;
-  workspace_key?: string | null;
+  org_id: string;
+  workspace_key: string;
   name: string;
   phone: string | null;
   email: string | null;
+  instagram: string | null;
   company: string | null;
   source: string | null;
   notes: string | null;
@@ -62,8 +65,8 @@ export type Contact = {
 export type Deal = {
   id: string;
   owner_id: string;
-  org_id?: string;
-  workspace_key?: string | null;
+  org_id: string;
+  workspace_key: string;
   contact_id: string | null;
   title: string;
   value_cents: number | null;
@@ -77,8 +80,8 @@ export type Deal = {
 export type Task = {
   id: string;
   owner_id: string;
-  org_id?: string;
-  workspace_key?: string | null;
+  org_id: string;
+  workspace_key: string;
   assignee_id: string | null;
   pending_assignee_id: string | null;
   contact_id: string | null;
@@ -92,8 +95,8 @@ export type Task = {
 export type Interaction = {
   id: string;
   owner_id: string;
-  org_id?: string;
-  workspace_key?: string | null;
+  org_id: string;
+  workspace_key: string;
   contact_id: string;
   body: string;
   created_at: string;
