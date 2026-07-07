@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { AssistantChat } from "@/components/AssistantChat";
 import { PendingButton } from "@/components/PendingButton";
 import { AssistantChatProvider } from "@/lib/ai/AssistantChatProvider";
+import { getRecentAssistantMessages } from "@/lib/ai/history";
+import { getActiveOrgId } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset } from "@/lib/professions";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -73,6 +75,8 @@ export default async function AppLayout({
     ? []
     : getWorkspaceOptions(profile?.profession_types, preset.key);
   const access = await getUserPlanAccess(supabase, user.id);
+  const orgId = await getActiveOrgId(supabase, user.id);
+  const initialMessages = await getRecentAssistantMessages(supabase, user.id, orgId);
 
   const email = user.email ?? "Conta";
   const handle = email.split("@")[0] || "João";
@@ -82,7 +86,7 @@ export default async function AppLayout({
       : handle;
 
   return (
-    <AssistantChatProvider>
+    <AssistantChatProvider initialMessages={initialMessages}>
     <div className="app-frame min-h-[100dvh] bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-0 sm:p-6">
       <div className="app-shell mx-auto flex min-h-[100dvh] max-w-[1580px] overflow-visible bg-white shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] sm:min-h-[calc(100dvh-3rem)] sm:overflow-hidden sm:rounded-2xl">
         <aside className="hidden w-[250px] shrink-0 flex-col border-r border-line bg-white sm:flex">

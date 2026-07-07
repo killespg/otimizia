@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { User } from "@supabase/supabase-js";
+import { saveAssistantMessage } from "@/lib/ai/history";
 import { getActiveOrgId } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset, type ProfessionPreset } from "@/lib/professions";
@@ -50,6 +51,13 @@ export async function POST(req: Request) {
     return Response.json({ error: "Envie ao menos uma mensagem." }, { status: 400 });
   }
 
+  // Só a última mensagem é nova — o cliente reenvia o histórico acumulado a
+  // cada chamada, e o resto já foi salvo em requisições anteriores.
+  const lastIncoming = history[history.length - 1];
+  if (lastIncoming.role === "user" && typeof lastIncoming.content === "string") {
+    await saveAssistantMessage(supabase, user.id, orgId, "user", lastIncoming.content);
+  }
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("profession_type, is_admin")
@@ -72,6 +80,7 @@ export async function POST(req: Request) {
 
       const messages: Anthropic.MessageParam[] = [...history];
       let mutated = false;
+      let assistantText = "";
 
       try {
         for (let turn = 0; turn < MAX_TOOL_TURNS; turn++) {
@@ -95,6 +104,7 @@ export async function POST(req: Request) {
               event.type === "content_block_delta" &&
               event.delta.type === "text_delta"
             ) {
+              assistantText += event.delta.text;
               send({ type: "text", text: event.delta.text });
             }
           }
@@ -140,8 +150,11 @@ export async function POST(req: Request) {
 
         send({ type: "done", mutated });
       } catch (error) {
-        send({ type: "error", message: friendlyError(error), mutated });
+        const message = friendlyError(error);
+        assistantText += (assistantText ? "\n" : "") + message;
+        send({ type: "error", message, mutated });
       } finally {
+        await saveAssistantMessage(supabase, user.id, orgId, "assistant", assistantText);
         controller.close();
       }
     },

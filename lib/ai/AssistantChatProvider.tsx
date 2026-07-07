@@ -44,12 +44,18 @@ const AssistantChatContext = createContext<AssistantChatValue | null>(null);
 // Estado único do chat com o assistente, compartilhado por todas as
 // superfícies do app (balão flutuante, painel do dashboard e a página
 // dedicada /assistant) para que todas mostrem a mesma conversa.
-export function AssistantChatProvider({ children }: { children: ReactNode }) {
+export function AssistantChatProvider({
+  children,
+  initialMessages = [],
+}: {
+  children: ReactNode;
+  initialMessages?: ChatMessage[];
+}) {
   const router = useRouter();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [status, setStatus] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const messagesRef = useRef<ChatMessage[]>([]);
+  const messagesRef = useRef<ChatMessage[]>(initialMessages);
   const sendingRef = useRef(false);
 
   const updateMessages = useCallback(
