@@ -237,6 +237,10 @@ export async function createDeal(formData: FormData) {
   const details = collectDetails(formData, preset.dealFields);
   const pipelineList = emptyToNull(formData.get("pipeline_list"), LIMIT.title);
   if (pipelineList) details.pipeline_list = pipelineList;
+  const labels = normalizeLabels(formData.get("labels"));
+  if (labels) details.labels = labels;
+  const externalUrl = urlOrNull(formData.get("external_url"));
+  if (externalUrl) details.external_url = externalUrl;
   const valueCents = moneyToCents(formData.get("value"));
   if (valueCents === null) details.value_unset = "true";
   const { error } = await supabase.from("deals").insert({
@@ -338,6 +342,38 @@ export async function deleteDeal(formData: FormData) {
   ensureOk(error, "Não deu para excluir a venda.");
   revalidatePath("/pipeline");
   revalidatePath("/dashboard");
+}
+
+export async function updateDealOptions(formData: FormData) {
+  const { supabase, orgId, workspaceKey } = await requireActiveUserWithWorkspace();
+  const id = requiredText(formData.get("id"), "Venda", 80);
+  const labels = normalizeLabels(formData.get("labels"));
+  const externalUrl = urlOrNull(formData.get("external_url"));
+
+  const { data: existing, error: readError } = await supabase
+    .from("deals")
+    .select("details")
+    .eq("id", id)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey)
+    .maybeSingle();
+  ensureOk(readError, "Não deu para atualizar as opções.");
+  if (!existing) throw new Error("Venda não encontrada.");
+
+  const { error } = await supabase
+    .from("deals")
+    .update({
+      details: {
+        ...(existing.details ?? {}),
+        labels,
+        external_url: externalUrl ?? "",
+      },
+    })
+    .eq("id", id)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey);
+  ensureOk(error, "Não deu para atualizar as opções.");
+  revalidatePath("/pipeline");
 }
 
 // ---------- Tasks ----------
@@ -465,6 +501,35 @@ function emailOrNull(v: FormDataEntryValue | null): string | null {
     throw new Error("E-mail inválido.");
   }
   return email;
+}
+
+function normalizeLabels(v: FormDataEntryValue | null): string {
+  const raw = text(v, 240);
+  if (!raw) return "";
+  return Array.from(
+    new Set(
+      raw
+        .split(",")
+        .map((label) => label.trim().slice(0, 32))
+        .filter(Boolean)
+    )
+  ).join(", ");
+}
+
+function urlOrNull(v: FormDataEntryValue | null): string | null {
+  const raw = emptyToNull(v, 300);
+  if (!raw) return null;
+  let url = raw;
+  if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      throw new Error("URL inválida.");
+    }
+    return parsed.toString().slice(0, 300);
+  } catch {
+    throw new Error("URL inválida.");
+  }
 }
 
 function normalizeInstagram(v: FormDataEntryValue | null): string | null {

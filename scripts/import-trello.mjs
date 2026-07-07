@@ -182,6 +182,7 @@ function buildRecords(board, options) {
           trello_card_id: card.id,
           trello_list: list?.name ?? "",
           pipeline_list: list?.name ?? "",
+          trello_labels: labels.join(", "),
           trello_url: url,
           trello_company: options.targetName,
           ...(valueCents === 0 ? { value_unset: "true" } : {}),

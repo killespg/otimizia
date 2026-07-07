@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { PendingButton } from "@/components/PendingButton";
 import type { FieldSpec } from "@/lib/professions";
 import type { Deal, DealStage } from "@/lib/supabase/types";
 import { dealValueOrZero, formatDealValue } from "@/lib/deals";
 import { formatBRL } from "@/lib/format";
-import { createPipelineList, moveDealToList, deleteDeal } from "../actions";
+import { createPipelineList, moveDealToList, updateDealOptions, deleteDeal } from "../actions";
 import { IconCheck, IconChevronRight, IconGrip, IconPlus, IconTrash } from "../icons";
 
 function firstDetail(details: Record<string, string> | undefined, fields: FieldSpec[]) {
@@ -67,13 +67,46 @@ export default function Board({
   const [savingId, setSavingId] = useState<string | null>(null);
   const [menuId, setMenuId] = useState<string | null>(null);
   const [canDrag, setCanDrag] = useState(true);
+  const [search, setSearch] = useState("");
+  const [labelFilter, setLabelFilter] = useState("");
+  const [listFilter, setListFilter] = useState("");
+  const [hideEmpty, setHideEmpty] = useState(false);
   const [isPending, startTransition] = useTransition();
   const boardBusy = isPending || savingId !== null;
   const visibleDeals = deals.filter((deal) => !isPlaceholder(deal));
-  const columns = uniqueLists([
+  const allColumns = uniqueLists([
     ...pipelineLists,
     ...deals.map((deal) => listName(deal)).filter(Boolean),
   ]);
+  const allLabels = useMemo(() => {
+    return uniqueLists(visibleDeals.flatMap((deal) => dealLabels(deal)));
+  }, [visibleDeals]);
+  const filteredDeals = useMemo(() => {
+    const needle = normalizeText(search);
+    return visibleDeals.filter((deal) => {
+      const labels = dealLabels(deal);
+      const haystack = normalizeText(
+        [
+          deal.title,
+          contactNames[deal.contact_id ?? ""],
+          formatDealValue(deal),
+          listName(deal),
+          labels.join(" "),
+          ...Object.values(deal.details ?? {}),
+        ].join(" ")
+      );
+      return (
+        (!needle || haystack.includes(needle)) &&
+        (!labelFilter || labels.includes(labelFilter)) &&
+        (!listFilter || listName(deal) === listFilter)
+      );
+    });
+  }, [contactNames, labelFilter, listFilter, search, visibleDeals]);
+  const columns = allColumns.filter((column) => {
+    if (listFilter && column !== listFilter) return false;
+    if (!hideEmpty) return true;
+    return filteredDeals.some((deal) => listName(deal) === column);
+  });
 
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
@@ -148,13 +181,66 @@ export default function Board({
         </PendingButton>
       </form>
 
+      <section className="panel grid gap-3 p-4 md:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto] md:items-end">
+        <label className="block min-w-0">
+          <span className="label">Buscar no quadro</span>
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Nome, lista, etiqueta..."
+            className="field mt-1.5"
+          />
+        </label>
+        <label className="block min-w-0">
+          <span className="label">Etiqueta</span>
+          <select
+            value={labelFilter}
+            onChange={(event) => setLabelFilter(event.target.value)}
+            className="field mt-1.5"
+          >
+            <option value="">Todas</option>
+            {allLabels.map((label) => (
+              <option key={label} value={label}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block min-w-0">
+          <span className="label">Lista</span>
+          <select
+            value={listFilter}
+            onChange={(event) => setListFilter(event.target.value)}
+            className="field mt-1.5"
+          >
+            <option value="">Todas</option>
+            {allColumns.map((column) => (
+              <option key={column} value={column}>
+                {column}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex min-h-[42px] items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-bold text-ink-soft">
+          <input
+            type="checkbox"
+            checked={hideEmpty}
+            onChange={(event) => setHideEmpty(event.target.checked)}
+            className="h-4 w-4 rounded border-line accent-brand-700"
+          />
+          Ocultar vazias
+        </label>
+      </section>
+
       <div
         aria-busy={boardBusy}
         className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0"
       >
         {columns.map((column) => {
           const meta = trelloMeta(column);
-          const columnDeals = visibleDeals.filter((deal) => listName(deal) === column);
+          const columnDeals = filteredDeals
+            .filter((deal) => listName(deal) === column)
+            .sort(compareDeals);
           const total = columnDeals.reduce((sum, deal) => sum + dealValueOrZero(deal), 0);
           const isOver = overList === column;
 
@@ -239,6 +325,22 @@ export default function Board({
                                   {firstDetail(deal.details, dealFields)}
                                 </p>
                               )}
+                              {dealLinks(deal).length > 0 && (
+                                <div className="mt-1 flex flex-wrap gap-2">
+                                  {dealLinks(deal).map((link) => (
+                                    <a
+                                      key={`${link.label}-${link.href}`}
+                                      href={link.href}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="inline-flex text-xs font-black text-brand-700 hover:text-brand-900"
+                                      onClick={(event) => event.stopPropagation()}
+                                    >
+                                      {link.label}
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </div>
                           <div className="flex shrink-0 items-center gap-1">
@@ -278,19 +380,64 @@ export default function Board({
                         </div>
 
                         {menuOpen && (
-                          <div className="mt-3 flex flex-wrap gap-1.5 border-t border-line pt-3">
-                            {otherLists.map((list) => (
-                              <button
-                                key={list}
-                                type="button"
-                                onClick={() => {
-                                  commitMove(deal.id, list);
-                                  setMenuId(null);
-                                }}
-                                className="min-h-11 rounded-md border border-line bg-white px-3 py-2 text-xs font-bold text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                          <div className="mt-3 space-y-3 border-t border-line pt-3">
+                            <div className="flex flex-wrap gap-1.5">
+                              {otherLists.map((list) => (
+                                <button
+                                  key={list}
+                                  type="button"
+                                  onClick={() => {
+                                    commitMove(deal.id, list);
+                                    setMenuId(null);
+                                  }}
+                                  className="min-h-11 rounded-md border border-line bg-white px-3 py-2 text-xs font-bold text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                                >
+                                  {list}
+                                </button>
+                              ))}
+                            </div>
+
+                            <form action={updateDealOptions} className="space-y-2 rounded-lg border border-line bg-[#f8fbff] p-3">
+                              <input type="hidden" name="id" value={deal.id} />
+                              <label className="block">
+                                <span className="text-[11px] font-black text-ink-soft">Etiquetas</span>
+                                <input
+                                  name="labels"
+                                  defaultValue={deal.details?.labels ?? ""}
+                                  placeholder="Ex: quente, urgente"
+                                  maxLength={240}
+                                  className="field mt-1 h-9 text-xs"
+                                />
+                              </label>
+                              <label className="block">
+                                <span className="text-[11px] font-black text-ink-soft">Link externo</span>
+                                <input
+                                  name="external_url"
+                                  defaultValue={deal.details?.external_url ?? ""}
+                                  placeholder="https://..."
+                                  maxLength={300}
+                                  className="field mt-1 h-9 text-xs"
+                                />
+                              </label>
+                              <PendingButton
+                                className="min-h-9 rounded-md bg-brand-700 px-3 py-1.5 text-xs font-black text-white hover:bg-brand-800"
+                                pendingLabel="Salvando"
                               >
-                                {list}
-                              </button>
+                                Salvar opções
+                              </PendingButton>
+                            </form>
+                          </div>
+                        )}
+
+                        {dealLabels(deal).length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {dealLabels(deal).map((label) => (
+                              <span
+                                key={label}
+                                className={`min-h-5 max-w-full truncate rounded px-2 py-0.5 text-[11px] font-black ${labelClass(label)}`}
+                              >
+                                {label}
+                              </span>
                             ))}
                           </div>
                         )}
@@ -320,6 +467,11 @@ export default function Board({
             </section>
           );
         })}
+        {columns.length === 0 && (
+          <div className="panel flex min-h-48 min-w-full items-center justify-center p-8 text-center">
+            <p className="text-sm font-bold text-ink-muted">Nenhum card bate com os filtros.</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -346,6 +498,50 @@ function isPlaceholder(deal: Deal) {
 
 function uniqueLists(lists: string[]) {
   return lists.filter((list, index) => Boolean(list) && lists.indexOf(list) === index);
+}
+
+function dealLabels(deal: Deal) {
+  return uniqueLists([deal.details?.trello_labels, deal.details?.labels].flatMap((raw) =>
+    (raw ?? "")
+      .split(",")
+      .map((label) => label.trim())
+      .filter(Boolean)
+  ));
+}
+
+function dealLinks(deal: Deal) {
+  const links: { label: string; href: string }[] = [];
+  if (deal.details?.trello_url) links.push({ label: "Trello", href: deal.details.trello_url });
+  if (deal.details?.external_url) links.push({ label: "Link", href: deal.details.external_url });
+  return links;
+}
+
+function compareDeals(a: Deal, b: Deal) {
+  const posA = Number.isFinite(a.position) ? a.position : Number.MAX_SAFE_INTEGER;
+  const posB = Number.isFinite(b.position) ? b.position : Number.MAX_SAFE_INTEGER;
+  if (posA !== posB) return posA - posB;
+  return a.title.localeCompare(b.title, "pt-BR");
+}
+
+function normalizeText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function labelClass(label: string) {
+  const classes = [
+    "bg-success-50 text-success-700",
+    "bg-[#fff7e6] text-[#8a6500]",
+    "bg-sky-50 text-sky-700",
+    "bg-brand-50 text-brand-700",
+    "bg-danger-50 text-danger-700",
+    "bg-surface-2 text-ink-soft",
+  ];
+  let hash = 0;
+  for (const char of label) hash = (hash + char.charCodeAt(0)) % classes.length;
+  return classes[hash];
 }
 
 function trelloMeta(list: string) {

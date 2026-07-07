@@ -142,6 +142,26 @@ export default async function PipelinePage() {
             <PresetFields fields={preset.dealFields} />
           </div>
         )}
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="label">Etiquetas</span>
+            <input
+              name="labels"
+              maxLength={240}
+              placeholder="Ex: quente, urgente"
+              className="field mt-1.5"
+            />
+          </label>
+          <label className="block">
+            <span className="label">Link externo</span>
+            <input
+              name="external_url"
+              maxLength={300}
+              placeholder="https://..."
+              className="field mt-1.5"
+            />
+          </label>
+        </div>
       </form>
 
       <Board
