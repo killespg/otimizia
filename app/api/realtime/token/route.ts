@@ -1,4 +1,6 @@
 import { createHash } from "crypto";
+import { getRecentAssistantMessages } from "@/lib/ai/history";
+import { getActiveOrgId } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { createClient } from "@/lib/supabase/server";
 import { currentYearMonth, VOICE_MONTHLY_LIMIT_SECONDS } from "@/lib/voice-limit";
@@ -6,6 +8,27 @@ import { currentYearMonth, VOICE_MONTHLY_LIMIT_SECONDS } from "@/lib/voice-limit
 export const runtime = "nodejs";
 
 const REALTIME_MODEL = "gpt-realtime-2";
+
+// Quantas trocas recentes do chat de texto entram no contexto da ligação —
+// menos que as 30 usadas no chat (a sessão de voz só recebe isso uma vez,
+// no instructions, e não pode ficar gigante).
+const VOICE_HISTORY_LIMIT = 12;
+
+const BASE_INSTRUCTIONS =
+  "Voce e socio do usuario no negocio dele. Converse em portugues do Brasil, com frases curtas, natural e direto. Ajude a pensar vendas, contatos, follow-up e rotina comercial. Nao diga que e IA ou modelo. Se precisar de dados do CRM que voce nao tem na chamada de voz, diga que vai precisar consultar pelo chat.";
+
+function buildInstructions(recentChat: { role: "user" | "assistant"; content: string }[]) {
+  if (recentChat.length === 0) return BASE_INSTRUCTIONS;
+
+  const transcript = recentChat
+    .map((m) => `${m.role === "user" ? "Usuário" : "Você"}: ${m.content}`)
+    .join("\n");
+
+  return `${BASE_INSTRUCTIONS}
+
+Antes desta ligação, vocês vinham conversando pelo chat de texto do app. Aqui está o que foi dito recentemente, pra você continuar com contexto em vez de perguntar de novo o que já foi combinado:
+${transcript}`;
+}
 
 export async function GET() {
   const supabase = createClient();
@@ -47,6 +70,9 @@ export async function GET() {
     .digest("hex")
     .slice(0, 64);
 
+  const orgId = await getActiveOrgId(supabase, user.id);
+  const recentChat = await getRecentAssistantMessages(supabase, user.id, orgId, VOICE_HISTORY_LIMIT);
+
   const response = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
     method: "POST",
     headers: {
@@ -58,8 +84,7 @@ export async function GET() {
       session: {
         type: "realtime",
         model: REALTIME_MODEL,
-        instructions:
-          "Voce e socio do usuario no negocio dele. Converse em portugues do Brasil, com frases curtas, natural e direto. Ajude a pensar vendas, contatos, follow-up e rotina comercial. Nao diga que e IA ou modelo. Se precisar de dados do CRM que voce nao tem na chamada de voz, diga que vai precisar consultar pelo chat.",
+        instructions: buildInstructions(recentChat),
         audio: {
           output: {
             voice: "marin",
