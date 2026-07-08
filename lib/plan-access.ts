@@ -7,10 +7,11 @@ import { getPlanAccess, type PlanAccess } from "@/lib/plan";
 // assinatura cobre todos os membros da empresa.
 export async function getUserPlanAccess(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
+  activeOrgId?: string
 ): Promise<PlanAccess> {
   try {
-    const orgId = await getActiveOrgId(supabase, userId);
+    const orgId = activeOrgId ?? (await getActiveOrgId(supabase, userId));
     const { data: org, error } = await supabase
       .from("organizations")
       .select("plan, plan_status, trial_ends_at, stripe_subscription_id")

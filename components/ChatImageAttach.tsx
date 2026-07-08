@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import Image from "next/image";
 import { IconImage, IconX } from "@/app/(app)/icons";
 
 export type PendingImage = { dataUrl: string; mediaType: string; base64: string };
@@ -41,7 +42,14 @@ export function ChatImageAttach({
       {value ? (
         <span className="relative inline-flex h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-line">
           {/* Prévia local (data URL) antes de enviar — não é a imagem final salva. */}
-          <img src={value.dataUrl} alt="" className="h-full w-full object-cover" />
+          <Image
+            src={value.dataUrl}
+            alt=""
+            fill
+            sizes="44px"
+            className="object-cover"
+            unoptimized
+          />
           <button
             type="button"
             onClick={() => {

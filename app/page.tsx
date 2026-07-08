@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { BrandName } from "@/components/BrandName";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
@@ -188,7 +189,7 @@ export default function Home() {
               </h1>
 
               <p className="mt-4 max-w-full text-sm font-medium leading-relaxed text-ink-soft sm:mt-6 sm:max-w-xl sm:text-xl">
-                O OtimizIA junta contatos, vendas e lembretes em uma tela simples.
+                O <BrandName /> junta contatos, vendas e lembretes em uma tela simples.
                 Você vê a prioridade e age sem cavar conversa antiga.
               </p>
 
@@ -744,7 +745,7 @@ function ProductPreview() {
               className="h-10 w-10"
             />
             <div>
-              <p className="text-sm font-black text-ink">Painel OtimizIA</p>
+              <p className="text-sm font-black text-ink">Painel <BrandName /></p>
               <p className="text-xs font-bold text-ink-muted">Hoje, tudo em ordem</p>
             </div>
           </div>
@@ -976,7 +977,7 @@ function SiteFooter() {
 
       <div className="mx-auto mt-6 flex max-w-[1500px] flex-col gap-1.5 border-t border-line pt-4 sm:mt-12 sm:flex-row sm:items-center sm:justify-between sm:gap-2 sm:pt-6">
         <p className="text-xs font-bold text-ink-muted">
-          © 2026 OtimizIA. Feito para empreendedores que fazem acontecer.
+          © 2026 <BrandName />. Feito para empreendedores que fazem acontecer.
         </p>
         <p className="text-xs font-bold text-ink-muted">CRM simplificado com o sócio-assistente</p>
       </div>

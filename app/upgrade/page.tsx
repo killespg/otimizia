@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { BrandName } from "@/components/BrandName";
 import { PendingButton } from "@/components/PendingButton";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
@@ -28,7 +29,7 @@ export default async function UpgradePage() {
     <main className="flex min-h-[100dvh] items-center justify-center bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-4">
       <div className="panel w-full max-w-md space-y-5 p-8 text-center">
         <div>
-          <p className="text-sm font-black text-brand-700">OtimizIA</p>
+          <p className="text-sm font-black text-ink"><BrandName /></p>
           <h1 className="mt-2 text-2xl font-black tracking-[-0.03em] text-ink">
             {title}
           </h1>

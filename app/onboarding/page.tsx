@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { BrandName } from "@/components/BrandName";
 import { PendingButton } from "@/components/PendingButton";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
@@ -29,7 +30,7 @@ export default async function OnboardingPage() {
       <div className="mx-auto max-w-2xl py-6 sm:py-10">
         <div className="panel space-y-5 p-6 sm:p-8">
           <div>
-            <p className="text-sm font-black text-brand-700">Bem-vindo(a) ao OtimizIA</p>
+            <p className="text-sm font-black text-ink">Bem-vindo(a) ao <BrandName /></p>
             <h1 className="mt-2 text-2xl font-black tracking-[-0.03em] text-ink sm:text-3xl">
               Conte um pouco sobre sua empresa
             </h1>

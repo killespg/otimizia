@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandName } from "@/components/BrandName";
 import { PendingButton } from "@/components/PendingButton";
 import { PROFESSION_OPTIONS } from "@/lib/professions";
 import { signup } from "../actions";
@@ -119,7 +120,7 @@ export default function SignupPage({
           <span>
             Estou ciente de que o teste gratis dura 30 dias e que, depois disso,
             sera necessario contratar um plano pago para continuar usando o
-            OtimizIA.
+            <BrandName />.
           </span>
         </label>
         <PendingButton className="btn w-full py-3 text-base" pendingLabel="Criando">

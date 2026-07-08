@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { BrandName } from "@/components/BrandName";
 import { computeDevMetrics } from "@/lib/devMetrics";
 import { formatBRL, formatDate } from "@/lib/format";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -55,7 +56,7 @@ export default async function DevMetricsPage() {
       <header className="enter">
         <p className="text-sm font-black text-brand-700">Só você vê essa página</p>
         <h1 className="mt-2 text-[clamp(1.55rem,6vw,2.6rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
-          Métricas do OtimizIA
+          Métricas do <BrandName />
         </h1>
       </header>
 

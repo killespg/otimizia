@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { BrandName } from "@/components/BrandName";
 import { PendingButton } from "@/components/PendingButton";
 import { formatCPF } from "@/lib/cpf";
 import { formatDate } from "@/lib/format";
@@ -138,7 +139,10 @@ export default async function SettingsPage({
       </SectionCard>
 
       {isFounder ? (
-        <SectionCard title="Perfil" description="Sua conta usa o modo fundador do OtimizIA.">
+        <SectionCard
+          title="Perfil"
+          description={<>Sua conta usa o modo fundador do <BrandName />.</>}
+        >
           <p className="text-sm font-medium text-ink-muted">
             Sua conta é especial: em vez de escolher uma área de atuação, o painel
             já vem pronto para acompanhar sua própria prospecção de clientes e as
@@ -273,7 +277,7 @@ function SectionCard({
   children,
 }: {
   title: string;
-  description: string;
+  description: React.ReactNode;
   danger?: boolean;
   children: React.ReactNode;
 }) {

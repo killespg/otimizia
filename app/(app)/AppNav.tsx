@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -9,6 +10,7 @@ import {
   IconColumns,
   IconGauge,
   IconPhone,
+  IconPlus,
   IconUsers,
   IconWallet,
   type IconProps,
@@ -27,6 +29,7 @@ type NavLabels = {
   pipeline: string;
   value: string;
   followups: string;
+  dealSingular: string;
 };
 
 const NAV: NavItem[] = [
@@ -42,11 +45,17 @@ const NAV: NavItem[] = [
 
 function useActive() {
   const pathname = usePathname();
-  return (href: string) =>
-    pathname === href || pathname.startsWith(href + "/");
+  return (href: string) => pathname === href || pathname.startsWith(href + "/");
 }
 
-/* Sidebar desktop. */
+function displayLabelFor(href: string, label: string, labels: NavLabels) {
+  if (href === "/pipeline") return labels.pipeline;
+  if (href === "/contacts") return labels.contacts;
+  if (label === "Valor aberto") return labels.value;
+  if (label === "Clientes para chamar") return labels.followups;
+  return label;
+}
+
 export function SidebarNav({
   labels,
   isAdmin = false,
@@ -60,24 +69,17 @@ export function SidebarNav({
     pipeline: "Vendas",
     value: "Valor aberto",
     followups: "Clientes para chamar",
+    dealSingular: "venda",
   };
   const items = isAdmin
     ? [...NAV, { href: "/dev", label: "Métricas", icon: IconChartBar }]
     : NAV;
+
   return (
     <nav className="flex flex-col gap-1" aria-label="Navegação principal">
       {items.map(({ href, label, icon: Icon, passive }) => {
-        const displayLabel =
-          href === "/pipeline"
-            ? text.pipeline
-            : href === "/contacts"
-            ? text.contacts
-            : label === "Valor aberto"
-            ? text.value
-            : label === "Clientes para chamar"
-            ? text.followups
-            : label;
         const active = !passive && isActive(href);
+        const displayLabel = displayLabelFor(href, label, text);
         return (
           <Link
             key={`${href}-${label}`}
@@ -86,14 +88,14 @@ export function SidebarNav({
             className={
               "nav-item group flex min-h-11 items-center gap-3 rounded-lg px-3 text-[15px] font-semibold focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-600 " +
               (active
-                ? "bg-brand-50 text-brand-800 shadow-[inset_0_0_0_1px_rgba(123,63,242,0.06)]"
+                ? "bg-brand-50 text-brand-800 shadow-[inset_0_0_0_1px_rgba(123,63,242,0.06)] dark:bg-brand-700 dark:text-white"
                 : "text-ink-soft hover:bg-surface-2 hover:text-ink")
             }
           >
             <Icon
               className={
-                "h-[20px] w-[20px] shrink-0 transition-colors duration-150 ease-out " +
-                (active ? "text-brand-700" : "text-ink-muted group-hover:text-brand-700")
+                "h-[20px] w-[20px] shrink-0 transition-colors duration-150 " +
+                (active ? "text-brand-700 dark:text-white" : "text-ink-muted group-hover:text-brand-700")
               }
             />
             {displayLabel}
@@ -104,47 +106,129 @@ export function SidebarNav({
   );
 }
 
-/* Mobile tab bar. */
-export function MobileTabBar({ labels }: { labels?: Pick<NavLabels, "contacts" | "pipeline"> }) {
+export function MobileTabBar({
+  labels,
+}: {
+  labels?: Pick<NavLabels, "contacts" | "pipeline" | "dealSingular">;
+}) {
   const isActive = useActive();
+  const [menuOpen, setMenuOpen] = useState(false);
   const contactsLabel = labels?.contacts ?? "Contatos";
   const pipelineLabel = labels?.pipeline ?? "Vendas";
+  const dealSingular = labels?.dealSingular ?? "venda";
+  const contactSingular = contactsLabel === "Sujeitos" ? "sujeito" : "contato";
+  const mobileItems = [
+    ...NAV.filter((item) => item.mobile && item.href !== "/tasks"),
+    { href: "/assistant", label: "IA", icon: IconBot, mobile: true },
+  ];
+  const leftItems = mobileItems.slice(0, 2);
+  const rightItems = mobileItems.slice(2);
+  const quickActions = [
+    {
+      href: "/tasks#new-task",
+      label: "Lembrete",
+      description: "Chamar alguém depois",
+      icon: IconBell,
+    },
+    {
+      href: "/contacts#new-contact",
+      label: capitalize(contactSingular),
+      description: "Salvar uma pessoa",
+      icon: IconUsers,
+    },
+    {
+      href: "/pipeline#new-deal",
+      label: capitalize(dealSingular),
+      description: `Criar ${articleFor(dealSingular)} ${dealSingular}`,
+      icon: IconColumns,
+    },
+  ];
+
+  const renderItem = ({ href, label, icon: Icon }: NavItem) => {
+    const active = isActive(href);
+    const displayLabel =
+      href === "/pipeline" ? pipelineLabel : href === "/contacts" ? contactsLabel : label;
+    return (
+      <Link
+        key={href}
+        href={href}
+        aria-current={active ? "page" : undefined}
+        className={
+          "mobile-tab nav-item relative flex min-h-[58px] flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 " +
+          (active ? "bg-brand-50 text-brand-700" : "text-ink-muted")
+        }
+      >
+        {active && (
+          <span className="mobile-tab-dot absolute top-1.5 h-1 w-1 rounded-full bg-brand-700" />
+        )}
+        <Icon className="h-[22px] w-[22px]" />
+        <span
+          className={
+            "text-[11px] font-black leading-none tracking-[-0.01em] " +
+            (active ? "font-semibold" : "font-medium")
+          }
+        >
+          {displayLabel}
+        </span>
+      </Link>
+    );
+  };
+
   return (
     <nav
-      className="mobile-tabbar fixed inset-x-3 bottom-3 z-40 rounded-2xl border border-line bg-surface/95 px-2 pb-[calc(0.35rem+env(safe-area-inset-bottom))] pt-1.5 shadow-[0_22px_50px_-30px_rgba(7,8,28,0.75)] backdrop-blur-xl sm:hidden"
+      className="mobile-tabbar fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 px-2 pb-[calc(0.45rem+env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-18px_42px_-30px_rgba(7,8,28,0.9)] backdrop-blur-xl sm:hidden"
       aria-label="Navegação principal"
     >
-      <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
-        {NAV.filter((item) => item.mobile).map(({ href, label, icon: Icon }) => {
-          const active = isActive(href);
-          const displayLabel =
-            href === "/pipeline" ? pipelineLabel : href === "/contacts" ? contactsLabel : label;
-          return (
-            <Link
-              key={href}
-              href={href}
-              aria-current={active ? "page" : undefined}
-              className={
-                "mobile-tab nav-item relative flex min-h-[58px] flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 " +
-                (active ? "bg-brand-50 text-brand-700" : "text-ink-muted")
-              }
-            >
-              {active && (
-                <span className="mobile-tab-dot absolute top-1.5 h-1 w-1 rounded-full bg-brand-700" />
-              )}
-              <Icon className="h-[22px] w-[22px]" />
-              <span
-                className={
-                  "text-[11px] font-black leading-none tracking-[-0.01em] " +
-                  (active ? "font-semibold" : "font-medium")
-                }
+      {menuOpen && (
+        <>
+          <button
+            type="button"
+            aria-label="Fechar menu de criação"
+            className="fixed inset-0 bottom-[calc(4.9rem+env(safe-area-inset-bottom))] -z-10 cursor-default bg-transparent"
+            onClick={() => setMenuOpen(false)}
+          />
+          <div className="mobile-create-menu absolute bottom-[calc(5.15rem+env(safe-area-inset-bottom))] left-1/2 z-20 w-[min(22rem,calc(100vw-1.5rem))] -translate-x-1/2 overflow-hidden rounded-2xl border border-line bg-surface p-2 shadow-[0_22px_54px_-26px_rgba(7,8,28,0.82)]">
+            {quickActions.map(({ href, label, description, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setMenuOpen(false)}
+                className="nav-item flex min-h-[58px] items-center gap-3 rounded-xl px-3 py-2 text-left hover:bg-brand-50 focus-visible:ring-2 focus-visible:ring-brand-600"
               >
-                {displayLabel}
-              </span>
-            </Link>
-          );
-        })}
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-black text-ink">{label}</span>
+                  <span className="block text-xs font-semibold text-ink-muted">{description}</span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
+
+      <div className="mx-auto grid max-w-md grid-cols-5 items-end gap-1">
+        {leftItems.map(renderItem)}
+        <button
+          type="button"
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-expanded={menuOpen}
+          aria-label="Criar novo"
+          className="mobile-create nav-item relative mx-auto mb-1 grid h-[58px] w-[64px] place-items-center rounded-2xl bg-brand-700 text-white shadow-[0_18px_36px_-18px_rgba(92,34,232,0.92)] focus-visible:ring-2 focus-visible:ring-white"
+        >
+          <IconPlus className={"h-7 w-7 transition-transform duration-200 " + (menuOpen ? "rotate-45" : "")} />
+        </button>
+        {rightItems.map(renderItem)}
       </div>
     </nav>
   );
+}
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function articleFor(value: string) {
+  return /a$|ção$|dade$|gem$/i.test(value) ? "uma" : "um";
 }

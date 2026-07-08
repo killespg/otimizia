@@ -99,7 +99,7 @@ export default async function TasksPage() {
         <MetricCard label="Feitas" value={String(done.length)} icon={IconCheckCircle} />
       </section>
 
-      <form action={createTask} className="panel p-4 sm:p-5">
+      <form id="new-task" action={createTask} className="panel scroll-mt-28 p-4 sm:p-5">
         <input type="hidden" name="return_to" value="/tasks" />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_13rem_minmax(0,1fr)_auto] lg:items-end">
           <div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { PendingButton } from "@/components/PendingButton";
 import type { FieldSpec } from "@/lib/professions";
 import type { Deal, DealStage } from "@/lib/supabase/types";
@@ -98,6 +98,7 @@ export default function Board({
   const [listFilter, setListFilter] = useState("");
   const [hideEmpty, setHideEmpty] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const boardRef = useRef<HTMLDivElement>(null);
   const boardBusy = isPending || savingId !== null;
   const visibleDeals = deals.filter((deal) => !isPlaceholder(deal));
   const allColumns = uniqueLists([
@@ -185,6 +186,13 @@ export default function Board({
     commitMove(id, targetList);
   }
 
+  function scrollBoard(direction: "previous" | "next") {
+    const board = boardRef.current;
+    if (!board) return;
+    const distance = board.clientWidth * (direction === "next" ? 1 : -1);
+    board.scrollBy({ left: distance, behavior: "smooth" });
+  }
+
   return (
     <div className="space-y-4">
       <form action={createPipelineList} className="panel flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
@@ -258,9 +266,34 @@ export default function Board({
         </label>
       </section>
 
+      {columns.length > 1 && (
+        <div className="sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 rounded-xl border border-line bg-surface/92 p-1.5 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] backdrop-blur-xl sm:hidden">
+          <button
+            type="button"
+            onClick={() => scrollBoard("previous")}
+            className="nav-item flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-surface-2 px-3 text-xs font-black text-ink-soft hover:text-brand-700"
+          >
+            <IconChevronRight className="h-4 w-4 rotate-180" />
+            Anterior
+          </button>
+          <span className="shrink-0 rounded-md bg-brand-50 px-2.5 py-1 text-[11px] font-black text-brand-700">
+            {columns.length} listas
+          </span>
+          <button
+            type="button"
+            onClick={() => scrollBoard("next")}
+            className="nav-item flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-brand-700 px-3 text-xs font-black text-white"
+          >
+            Próxima
+            <IconChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       <div
+        ref={boardRef}
         aria-busy={boardBusy}
-        className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0"
+        className="pipeline-board -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:gap-4 sm:px-0"
       >
         {columns.map((column) => {
           const meta = trelloMeta(column);
@@ -284,7 +317,7 @@ export default function Board({
               }}
               onDrop={() => onDrop(column)}
               className={
-                "panel flex min-w-[17rem] shrink-0 snap-start flex-col overflow-hidden transition-colors duration-200 sm:min-w-[18rem] " +
+                "panel flex min-w-[calc(100vw-2rem)] shrink-0 snap-start flex-col overflow-hidden transition-colors duration-200 sm:min-w-[18rem] " +
                 (isOver ? "border-brand-300 bg-brand-50" : "")
               }
             >

@@ -98,7 +98,7 @@ export default async function PipelinePage() {
         <MetricCard label={preset.wonLabel} value={formatBRL(wonValue)} icon={IconUsers} pink />
       </section>
 
-      <form action={createDeal} className="panel p-4 sm:p-5">
+      <form id="new-deal" action={createDeal} className="panel scroll-mt-28 p-4 sm:p-5">
         <input type="hidden" name="return_to" value="/pipeline" />
         <input type="hidden" name="pipeline_list" value={pipelineLists[0] ?? "Novo"} />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_9rem_minmax(0,1fr)_auto] lg:items-end">

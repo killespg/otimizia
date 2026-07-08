@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useRouter } from "next/navigation";
 
 export type ChatMessage = {
@@ -82,6 +90,7 @@ export function AssistantChatProvider({
   const [sending, setSending] = useState(false);
   const messagesRef = useRef<ChatMessage[]>(initialMessages);
   const sendingRef = useRef(false);
+  const hasLocalActivityRef = useRef(initialMessages.length > 0);
 
   const updateMessages = useCallback(
     (updater: (prev: ChatMessage[]) => ChatMessage[]) => {
@@ -94,10 +103,35 @@ export function AssistantChatProvider({
     []
   );
 
+  useEffect(() => {
+    if (initialMessages.length > 0) return;
+
+    let cancelled = false;
+    async function loadHistory() {
+      try {
+        const res = await fetch("/api/assistant/history", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        const history = Array.isArray(data?.messages) ? (data.messages as ChatMessage[]) : [];
+        if (cancelled || hasLocalActivityRef.current || history.length === 0) return;
+        setMessages(history);
+        messagesRef.current = history;
+      } catch {
+        // Historico do chat nao deve bloquear nem quebrar a navegacao.
+      }
+    }
+
+    void loadHistory();
+    return () => {
+      cancelled = true;
+    };
+  }, [initialMessages.length]);
+
   const send = useCallback(
     async (text: string, image?: PendingChatImage, file?: File | null) => {
       const trimmed = text.trim();
       if ((!trimmed && !image && !file) || sendingRef.current) return;
+      hasLocalActivityRef.current = true;
       sendingRef.current = true;
       setSending(true);
       setStatus(file ? "Lendo o PDF…" : "Pensando…");

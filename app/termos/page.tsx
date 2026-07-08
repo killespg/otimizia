@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandName } from "@/components/BrandName";
 
 export default function TermosPage() {
   return (
@@ -13,14 +14,14 @@ export default function TermosPage() {
 
         <div className="panel space-y-6 p-6 sm:p-8">
           <header>
-            <p className="text-sm font-black text-brand-700">OtimizIA</p>
+            <p className="text-sm font-black text-ink"><BrandName /></p>
             <h1 className="mt-2 text-2xl font-black tracking-[-0.03em] text-ink sm:text-3xl">
               Termos de Uso e Contrato de Prestação de Serviço
             </h1>
           </header>
 
           <Section title="1. Objeto">
-            Este contrato regula o uso da plataforma OtimizIA, um sistema de CRM
+            Este contrato regula o uso da plataforma <BrandName />, um sistema de CRM
             (gestão de contatos, negócios e lembretes) oferecido como software
             como serviço (SaaS) para profissionais autônomos e pequenos negócios.
           </Section>
@@ -55,7 +56,7 @@ export default function TermosPage() {
 
           <Section title="6. Limitação de responsabilidade">
             A plataforma é fornecida &quot;como está&quot;. Na medida permitida por lei, o
-            OtimizIA não se responsabiliza por decisões de negócio tomadas com
+            <BrandName /> não se responsabiliza por decisões de negócio tomadas com
             base nas informações ou sugestões apresentadas pelo sistema.
           </Section>
 

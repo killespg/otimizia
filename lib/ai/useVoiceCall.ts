@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type VoiceStatus = "idle" | "connecting" | "live" | "error";
 export type VoiceSpeaker = "user" | "assistant" | null;
@@ -58,7 +58,7 @@ export function useVoiceCall() {
   // O tempo cobrado é sempre calculado pelo servidor a partir do relógio do
   // banco, nunca do valor de "seconds" contado aqui no cliente (esse contador
   // só serve para exibir o cronômetro na tela).
-  function checkpointUsage(close: boolean) {
+  const checkpointUsage = useCallback((close: boolean) => {
     const sessionId = sessionIdRef.current;
     if (!sessionId) return;
     try {
@@ -72,9 +72,9 @@ export function useVoiceCall() {
       // Perder uma pulsação pontual não é crítico; a próxima chamada
       // liquida sessões abandonadas no servidor.
     }
-  }
+  }, []);
 
-  function stopVoice() {
+  const stopVoice = useCallback(() => {
     checkpointUsage(true);
     sessionIdRef.current = null;
     peerRef.current?.close();
@@ -106,6 +106,7 @@ export function useVoiceCall() {
     localAnalyserRef.current = null;
     remoteAnalyserRef.current = null;
     assistantTextRef.current = "";
+    callSecondsRef.current = 0;
 
     setVoiceStatus("idle");
     setVoiceSpeaker(null);
@@ -113,7 +114,7 @@ export function useVoiceCall() {
     setCaptions([]);
     setPartialCaption(null);
     setCallSeconds(0);
-  }
+  }, [checkpointUsage]);
 
   async function startVoice() {
     if (voiceStatus === "connecting" || voiceStatus === "live") return;
@@ -279,7 +280,7 @@ export function useVoiceCall() {
     }
   }
 
-  useEffect(() => () => stopVoice(), []);
+  useEffect(() => () => stopVoice(), [stopVoice]);
 
   return {
     voiceStatus,

@@ -74,7 +74,7 @@ export function ThemeToggle({ className = "", compact = false }: ThemeToggleProp
       >
         <span
           className={
-            "theme-thumb absolute left-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full bg-brand-700 shadow-[0_8px_16px_-8px_rgba(92,34,232,0.8)] transition-transform duration-300 ease-out " +
+            "theme-thumb absolute left-0 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full bg-brand-700 shadow-[0_8px_16px_-8px_rgba(92,34,232,0.8)] transition-transform duration-[220ms] ease-[cubic-bezier(0.23,1,0.32,1)] " +
             (isDark ? "translate-x-[18px]" : "translate-x-0.5")
           }
         />

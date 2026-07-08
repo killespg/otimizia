@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AgentPanel } from "@/components/AgentPanel";
+import { BrandName } from "@/components/BrandName";
 import { PendingButton } from "@/components/PendingButton";
 import { computeDevMetrics, type DevMetrics } from "@/lib/devMetrics";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
@@ -56,7 +57,7 @@ const DASHBOARD_GREETINGS: Record<ProfessionPreset["key"], string> = {
   livestock_producer: "Lotes, compradores e retornos organizados para tocar a pecuária.",
   small_business: "Pedidos, clientes e recompra no ponto para vender com mais ritmo.",
   other: "Seu painel está pronto para organizar contatos, oportunidades e retornos.",
-  founder: "Acompanhe sua prospecção e as métricas do OtimizIA num só lugar.",
+  founder: "Acompanhe sua prospecção e as métricas do produto num só lugar.",
 };
 
 export default async function DashboardPage() {
@@ -429,7 +430,7 @@ function FounderMetricsPanel({ metrics }: { metrics: DevMetrics }) {
   return (
     <section className="enter rounded-lg border border-brand-200 bg-brand-50 p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-black text-brand-800">Métricas do OtimizIA</p>
+        <p className="text-sm font-black text-brand-800">Métricas do <BrandName /></p>
         <Link
           href="/dev"
           className="nav-item inline-flex items-center gap-1 text-xs font-black text-brand-700 hover:text-brand-900"

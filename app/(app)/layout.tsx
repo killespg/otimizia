@@ -1,10 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { AssistantChat } from "@/components/AssistantChat";
+import { BrandName } from "@/components/BrandName";
 import { PendingButton } from "@/components/PendingButton";
 import { AssistantChatProvider } from "@/lib/ai/AssistantChatProvider";
-import { getRecentAssistantMessages } from "@/lib/ai/history";
 import { getActiveOrgId } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset } from "@/lib/professions";
@@ -58,11 +57,14 @@ export default async function AppLayout({
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("profession_type, profession_types, is_admin")
-    .eq("id", user.id)
-    .maybeSingle();
+  const [{ data: profile }, orgId] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("profession_type, profession_types, is_admin")
+      .eq("id", user.id)
+      .maybeSingle(),
+    getActiveOrgId(supabase, user.id),
+  ]);
   const isAdmin = profile?.is_admin ?? false;
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
@@ -74,9 +76,8 @@ export default async function AppLayout({
   const workspaceOptions = isAdmin
     ? []
     : getWorkspaceOptions(profile?.profession_types, preset.key);
-  const access = await getUserPlanAccess(supabase, user.id);
-  const orgId = await getActiveOrgId(supabase, user.id);
-  const initialMessages = await getRecentAssistantMessages(supabase, user.id, orgId);
+  const access = await getUserPlanAccess(supabase, user.id, orgId);
+  if (!access.hasAccess) redirect("/upgrade");
 
   const email = user.email ?? "Conta";
   const handle = email.split("@")[0] || "João";
@@ -86,10 +87,10 @@ export default async function AppLayout({
       : handle;
 
   return (
-    <AssistantChatProvider initialMessages={initialMessages}>
+    <AssistantChatProvider>
     <div className="app-frame min-h-[100dvh] bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-0 sm:p-6">
-      <div className="app-shell mx-auto flex min-h-[100dvh] max-w-[1580px] overflow-visible bg-white shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] sm:min-h-[calc(100dvh-3rem)] sm:overflow-hidden sm:rounded-2xl">
-        <aside className="hidden w-[250px] shrink-0 flex-col border-r border-line bg-white sm:flex">
+      <div className="app-shell mx-auto flex min-h-[100dvh] max-w-[1580px] overflow-visible bg-white shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] dark:bg-[#11101d] sm:min-h-[calc(100dvh-3rem)] sm:overflow-hidden sm:rounded-2xl">
+        <aside className="hidden w-[250px] shrink-0 flex-col border-r border-line bg-white dark:bg-[#151426] sm:flex">
           <div className="flex h-[92px] items-center px-6">
             <Logo />
           </div>
@@ -110,6 +111,7 @@ export default async function AppLayout({
                 pipeline: preset.pipelineLabel,
                 value: preset.valueLabel,
                 followups: isLivestock ? "Sujeitos para revisar" : "Retornos do dia",
+                dealSingular: preset.dealSingular,
               }}
               isAdmin={isAdmin}
             />
@@ -129,7 +131,7 @@ export default async function AppLayout({
                 </p>
                 <p className="mt-1 text-xs font-medium leading-relaxed text-ink-muted">
                   Depois do período, você precisa assinar o Pro pra continuar
-                  usando o OtimizIA.
+                  usando o <BrandName />.
                 </p>
               </div>
             )}
@@ -166,7 +168,7 @@ export default async function AppLayout({
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col bg-[#f8fbff]">
+        <div className="flex min-w-0 flex-1 flex-col bg-[#f8fbff] dark:bg-[#0e0e19]">
           <header className="mobile-app-header sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-white/92 px-4 backdrop-blur-xl sm:hidden">
             <Logo />
             <div className="flex items-center gap-2">
@@ -206,7 +208,7 @@ export default async function AppLayout({
             <TrialBanner trialDaysLeft={access.trialDaysLeft} />
           )}
 
-          <main className="mx-auto w-full max-w-[1500px] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 sm:px-8 sm:pb-8 sm:pt-7 lg:px-10">
+          <main className="mx-auto w-full max-w-[1500px] px-4 pb-[calc(7.5rem+env(safe-area-inset-bottom))] pt-4 sm:px-8 sm:pb-8 sm:pt-7 lg:px-10">
             {children}
           </main>
         </div>
@@ -215,11 +217,11 @@ export default async function AppLayout({
           labels={{
             contacts: isLivestock ? "Sujeitos" : "Contatos",
             pipeline: preset.pipelineLabel,
+            dealSingular: preset.dealSingular,
           }}
         />
       </div>
 
-      <AssistantChat />
     </div>
     </AssistantChatProvider>
   );

@@ -38,8 +38,9 @@ export default function AssistantPage() {
   }
 
   return (
-    <div className="flex h-[calc(100dvh-8.5rem)] flex-col sm:h-[calc(100dvh-9.5rem)]">
-      <header className="enter flex items-center justify-between gap-3 border-b border-line pb-4">
+    <div className="assistant-page-shell -mx-4 -my-4 flex min-h-0 flex-col overflow-hidden bg-canvas sm:mx-0 sm:my-0 sm:h-[calc(100dvh-9.5rem)] sm:rounded-xl sm:border sm:border-line sm:bg-surface">
+      <header className="enter shrink-0 border-b border-line bg-surface px-4 py-3 sm:px-5 sm:py-4">
+        <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Image
             src="/otimizia-mark-dark.png"
@@ -60,9 +61,10 @@ export default function AssistantPage() {
         <span className="hidden shrink-0 rounded-md bg-success-50 px-2 py-1 text-xs font-black text-success-700 sm:inline-block">
           Online
         </span>
+        </div>
       </header>
 
-      <div ref={scrollRef} className="enter min-h-0 flex-1 space-y-3 overflow-y-auto py-4">
+      <div ref={scrollRef} className="enter min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
             <span className="grid h-14 w-14 place-items-center rounded-full bg-brand-50 text-brand-700">
@@ -93,11 +95,16 @@ export default function AssistantPage() {
               <div key={index} className="flex justify-end">
                 <div className="max-w-[80%] space-y-2 rounded-2xl rounded-br-sm bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] px-4 py-2.5 text-sm text-white">
                   {message.imageUrl && (
-                    <img
-                      src={message.imageUrl}
-                      alt=""
-                      className="max-h-60 w-full rounded-lg object-cover"
-                    />
+                    <span className="relative block h-48 w-full overflow-hidden rounded-lg">
+                      <Image
+                        src={message.imageUrl}
+                        alt=""
+                        fill
+                        sizes="min(80vw, 640px)"
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </span>
                   )}
                   {message.attachmentName && (
                     <span className="flex items-center gap-1 text-xs font-semibold text-white/80">
@@ -130,7 +137,7 @@ export default function AssistantPage() {
         )}
       </div>
 
-      <div className="shrink-0 space-y-3 border-t border-line pt-3">
+      <div className="shrink-0 space-y-3 border-t border-line bg-surface px-4 pb-[calc(0.85rem+env(safe-area-inset-bottom))] pt-3 sm:px-5 sm:pb-4">
         <VoicePanel />
 
         {(attachment.file || attachment.error) && (

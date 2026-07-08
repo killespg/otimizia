@@ -35,7 +35,9 @@
   body {
     @apply bg-canvas text-ink antialiased;
     min-height: 100vh;
+    touch-action: manipulation;
     font-feature-settings: "ss01", "cv01";
+    text-rendering: optimizeLegibility;
     background-image:
       radial-gradient(circle at 12% 0%, rgba(139, 61, 255, 0.12), transparent 28rem),
       radial-gradient(circle at 88% 8%, rgba(11, 191, 232, 0.11), transparent 26rem),
@@ -77,6 +79,23 @@
   /* Rolagem suave para as ancoras da landing. */
   html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
+
+  strong,
+  b {
+    font-weight: 700;
+  }
+
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [role="button"] {
+    touch-action: manipulation;
   }
 
   /* Ancoras nao ficam coladas no topo ao navegar pelo menu. */
@@ -1049,16 +1068,20 @@
    de uma barra fixada no rodape da tela. */
 .app-shell > .mobile-tabbar {
   position: fixed;
+}
+
+.app-shell > .mobile-tabbar {
   z-index: 40;
 }
 
 @media (max-width: 639px) {
   html {
-    scroll-padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+    scroll-padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
   }
 
   body {
     min-width: 320px;
+    overflow-x: hidden;
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
   }
@@ -1072,7 +1095,17 @@
   }
 
   .app-frame {
-    background: rgb(var(--color-canvas)) !important;
+    background:
+      radial-gradient(circle at 18% -8%, rgba(181, 24, 255, 0.18), transparent 17rem),
+      radial-gradient(circle at 90% 10%, rgba(92, 34, 232, 0.14), transparent 16rem),
+      linear-gradient(180deg, rgba(245, 240, 255, 0.98), rgb(var(--color-canvas)) 32rem) !important;
+  }
+
+  .dark .app-frame {
+    background:
+      radial-gradient(circle at 18% -8%, rgba(194, 157, 255, 0.26), transparent 17rem),
+      radial-gradient(circle at 92% 8%, rgba(92, 34, 232, 0.28), transparent 16rem),
+      linear-gradient(180deg, rgba(19, 12, 42, 0.98), rgb(var(--color-canvas)) 30rem) !important;
   }
 
   .app-frame::before {
@@ -1107,13 +1140,66 @@
   .mobile-app-header {
     padding-top: env(safe-area-inset-top);
     height: calc(4rem + env(safe-area-inset-top));
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.9)),
+      radial-gradient(circle at 12% 0%, rgba(181, 24, 255, 0.14), transparent 12rem);
     box-shadow:
       0 16px 34px -32px rgba(7, 8, 28, 0.62),
       inset 0 -1px 0 rgba(139, 61, 255, 0.08);
   }
 
+  .dark .mobile-app-header {
+    background:
+      linear-gradient(180deg, rgba(20, 21, 34, 0.96), rgba(20, 21, 34, 0.9)),
+      radial-gradient(circle at 12% 0%, rgba(194, 157, 255, 0.2), transparent 12rem);
+    box-shadow:
+      0 16px 34px -30px rgba(0, 0, 0, 0.86),
+      inset 0 -1px 0 rgba(174, 132, 255, 0.16);
+  }
+
   .mobile-tabbar {
+    border-color: rgba(139, 61, 255, 0.2);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(250, 247, 255, 0.92)),
+      radial-gradient(circle at 50% 0%, rgba(139, 61, 255, 0.14), transparent 12rem);
+    box-shadow:
+      0 22px 50px -30px rgba(7, 8, 28, 0.75),
+      0 0 34px -24px rgba(139, 61, 255, 0.7),
+      inset 0 1px 0 rgba(255, 255, 255, 0.86);
     animation: mobileNavIn 420ms var(--ease-ui-out) 130ms both;
+  }
+
+  .pipeline-board {
+    scroll-padding-inline: 1rem;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+
+  .pipeline-board::-webkit-scrollbar {
+    display: none;
+  }
+
+  .assistant-page-shell {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: calc(4rem + env(safe-area-inset-top));
+    bottom: calc(4.75rem + env(safe-area-inset-bottom));
+    z-index: 20;
+    margin: 0 !important;
+    height: auto;
+    min-height: 0;
+  }
+
+  .dark .mobile-tabbar {
+    border-color: rgba(174, 132, 255, 0.22);
+    background:
+      linear-gradient(180deg, rgba(28, 25, 45, 0.96), rgba(18, 17, 31, 0.94)),
+      radial-gradient(circle at 50% 0%, rgba(174, 132, 255, 0.2), transparent 12rem);
+    box-shadow:
+      0 22px 50px -30px rgba(0, 0, 0, 0.96),
+      0 0 34px -24px rgba(155, 113, 255, 0.92),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
 
   .mobile-tab {
@@ -1128,8 +1214,22 @@
     transform: translateY(1px) scale(0.96);
   }
 
+  .mobile-tab[aria-current="page"] {
+    color: #fff;
+    background:
+      radial-gradient(circle at 24% 10%, rgba(255, 255, 255, 0.32), transparent 38%),
+      linear-gradient(135deg, #8b3dff, #5f18c4);
+    box-shadow:
+      0 14px 28px -22px rgba(92, 34, 232, 0.86),
+      inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  }
+
   .mobile-tab[aria-current="page"] svg {
-    filter: drop-shadow(0 0 9px rgba(139, 61, 255, 0.28));
+    filter: drop-shadow(0 0 9px rgba(255, 255, 255, 0.24));
+  }
+
+  .mobile-tab[aria-current="page"] .mobile-tab-dot {
+    background: rgba(255, 255, 255, 0.9);
   }
 
   .mobile-tab-dot {
@@ -1137,7 +1237,41 @@
   }
 
   .assistant-fab {
+    overflow: hidden;
+    isolation: isolate;
     animation: assistantFabIn 520ms var(--ease-ui-out) 220ms both;
+  }
+
+  .mobile-create {
+    overflow: hidden;
+    isolation: isolate;
+    animation: assistantFabIn 520ms var(--ease-ui-out) 180ms both;
+  }
+
+  .mobile-create::before,
+  .assistant-fab::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    background:
+      linear-gradient(115deg, transparent 0 24%, rgba(255, 255, 255, 0.42) 36%, transparent 48% 100%);
+    transform: translateX(-120%) skewX(-18deg);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .mobile-create > *,
+  .assistant-fab > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  .motion .mobile-create::before,
+  .motion .assistant-fab::before {
+    animation: purpleReflect 4200ms var(--ease-ui-in-out) 900ms infinite;
+    opacity: 1;
   }
 
   .assistant-sheet {
@@ -2107,6 +2241,22 @@ label[class*="border-line"]::before,
   }
 }
 
+@keyframes purpleReflect {
+  0%,
+  38% {
+    opacity: 0;
+    transform: translateX(-125%) skewX(-18deg);
+  }
+  48% {
+    opacity: 0.9;
+  }
+  62%,
+  100% {
+    opacity: 0;
+    transform: translateX(125%) skewX(-18deg);
+  }
+}
+
 @keyframes assistantSheetIn {
   from {
     opacity: 0;
@@ -2123,12 +2273,4 @@ label[class*="border-line"]::before,
 @keyframes fade {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .interactive-hero .preview-float,
-  .interactive-hero [data-preview-target],
-  .hero-interaction-button {
-    transition: none !important;
-  }
 }

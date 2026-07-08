@@ -48,7 +48,7 @@ export default async function ContactsPage({
         title={preset.contactsTitle}
         description={preset.contactsDescription}
       >
-        <section className="panel order-1 h-max p-5 xl:sticky xl:top-8 xl:order-2">
+        <section id="new-contact" className="panel order-1 h-max scroll-mt-28 p-5 xl:sticky xl:top-8 xl:order-2">
           <div className="flex items-center gap-3">
             <span className="grid h-11 w-11 place-items-center rounded-full bg-brand-50 text-brand-700">
               <IconPlus className="h-5 w-5" />

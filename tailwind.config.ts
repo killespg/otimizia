@@ -62,10 +62,10 @@ const config: Config = {
         display: ["var(--font-sans)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "monospace"],
       },
-      // font-black (900) na Outfit pesa demais para o quanto é usado no app
-      // (~160 lugares); ExtraBold (800) mantém o mesmo destaque sem ficar pesado.
+      // font-black (900) na Outfit pesa demais para o quanto é usado no app;
+      // 700 mantém hierarquia forte sem estourar no mobile.
       fontWeight: {
-        black: "800",
+        black: "700",
       },
       borderColor: {
         DEFAULT: "rgb(var(--color-line) / <alpha-value>)",
