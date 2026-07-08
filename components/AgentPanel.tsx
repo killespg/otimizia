@@ -39,7 +39,7 @@ export function AgentPanel() {
     setInput("");
     const file = attachment.file;
     attachment.clear();
-    void send(text, file);
+    void send(text, undefined, file);
   }
 
   return (
