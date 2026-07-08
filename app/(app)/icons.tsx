@@ -100,6 +100,14 @@ export function IconMessage({ className }: IconProps) {
   );
 }
 
+export function IconPaperclip({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M8 12.5V8a4 4 0 1 1 8 0v8.5a2.5 2.5 0 1 1-5 0V9" {...stroke} />
+    </svg>
+  );
+}
+
 export function IconMic({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

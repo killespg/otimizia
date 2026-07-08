@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { MIN_PASSWORD_LENGTH } from "@/lib/auth-constants";
 import { isValidCPF, onlyDigits } from "@/lib/cpf";
 import { normalizeProfession, type ProfessionType } from "@/lib/professions";
+import { resolveOrigin } from "@/lib/request-origin";
 import { createClient } from "@/lib/supabase/server";
 
 export async function login(formData: FormData) {
@@ -40,8 +42,11 @@ export async function signup(formData: FormData) {
     redirectWithError("/signup", "Preencha e-mail e senha.");
   }
 
-  if (password.length < 6) {
-    redirectWithError("/signup", "Use uma senha com pelo menos 6 caracteres.");
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    redirectWithError(
+      "/signup",
+      `Use uma senha com pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`
+    );
   }
 
   if (!isValidCPF(cpf)) {
@@ -59,9 +64,7 @@ export async function signup(formData: FormData) {
     );
   }
 
-  const headersList = headers();
-  const host = headersList.get("x-forwarded-host") ?? headersList.get("host");
-  const protocol = headersList.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
+  const origin = resolveOrigin(headers());
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -75,7 +78,7 @@ export async function signup(formData: FormData) {
         terms_accepted: "true",
         trial_notice_accepted: "true",
       },
-      emailRedirectTo: `${protocol}://${host}/login`,
+      emailRedirectTo: `${origin}/login`,
     },
   });
   if (error) {
@@ -100,12 +103,10 @@ export async function requestPasswordReset(formData: FormData) {
     redirectWithError("/forgot-password", "Informe um e-mail válido.");
   }
 
-  const headersList = headers();
-  const host = headersList.get("x-forwarded-host") ?? headersList.get("host");
-  const protocol = headersList.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
+  const origin = resolveOrigin(headers());
 
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${protocol}://${host}/reset-password`,
+    redirectTo: `${origin}/reset-password`,
   });
 
   // Sempre mostra a mesma mensagem, exista ou não conta com esse e-mail —

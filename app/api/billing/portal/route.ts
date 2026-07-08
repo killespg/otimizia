@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { resolveOrigin } from "@/lib/request-origin";
 import { getStripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
 
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(new URL("/settings", request.url));
   }
 
-  const origin = new URL(request.url).origin;
+  const origin = resolveOrigin(request.headers);
   const session = await stripe.billingPortal.sessions.create({
     customer: profile.stripe_customer_id,
     return_url: `${origin}/settings`,

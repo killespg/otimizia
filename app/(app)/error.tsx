@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { logError } from "@/lib/logger";
 import { IconAlert, IconArrowRight } from "./icons";
 
 export default function AppError({
@@ -12,7 +13,7 @@ export default function AppError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    logError("app.error-boundary", error, { digest: error.digest });
   }, [error]);
 
   return (

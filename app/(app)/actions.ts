@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { logError } from "@/lib/logger";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset, normalizeProfession, type FieldSpec, type ProfessionType } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
@@ -433,7 +434,7 @@ function collectDetails(formData: FormData, fields: FieldSpec[]): Record<string,
 
 function ensureOk(error: unknown, fallback: string) {
   if (!error) return;
-  console.error(error);
+  logError("app.action", error);
   throw new Error(fallback);
 }
 

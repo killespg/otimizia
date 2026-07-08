@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { IconArrowRight, IconBot } from "@/app/(app)/icons";
+import { IconArrowRight, IconBot, IconPaperclip, IconX } from "@/app/(app)/icons";
 import { useAssistantChat } from "@/lib/ai/AssistantChatProvider";
+import { usePdfAttachment } from "@/lib/ai/usePdfAttachment";
 import { VoicePanel } from "./VoicePanel";
 
 const SUGGESTIONS = [
@@ -15,6 +16,7 @@ export function AssistantChat() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const { messages, status, sending, send } = useAssistantChat();
+  const attachment = usePdfAttachment();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -65,8 +67,11 @@ export function AssistantChat() {
   }, [open]);
 
   function submit(text: string) {
+    if (!text.trim() && !attachment.file) return;
     setInput("");
-    void send(text);
+    const file = attachment.file;
+    attachment.clear();
+    void send(text, file);
   }
 
   return (
@@ -127,6 +132,12 @@ export function AssistantChat() {
               message.role === "user" ? (
                 <div key={index} className="flex justify-end">
                   <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] px-3.5 py-2 text-sm text-white">
+                    {message.attachmentName && (
+                      <span className="mb-1 flex items-center gap-1 text-xs font-semibold text-white/80">
+                        <IconPaperclip className="h-3.5 w-3.5 shrink-0" />
+                        {message.attachmentName}
+                      </span>
+                    )}
                     {message.content}
                   </div>
                 </div>
@@ -153,6 +164,28 @@ export function AssistantChat() {
             <VoicePanel />
           </div>
 
+          {(attachment.file || attachment.error) && (
+            <div className="px-3 pt-2">
+              {attachment.file && (
+                <div className="mb-2 flex items-center gap-2 rounded-lg bg-surface-2 px-2.5 py-1.5 text-xs font-semibold text-ink">
+                  <IconPaperclip className="h-3.5 w-3.5 shrink-0 text-ink-muted" />
+                  <span className="min-w-0 flex-1 truncate">{attachment.file.name}</span>
+                  <button
+                    type="button"
+                    onClick={attachment.clear}
+                    className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-ink-muted hover:bg-line hover:text-ink"
+                    aria-label="Remover PDF anexado"
+                  >
+                    <IconX className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
+              {attachment.error && (
+                <p className="mb-2 text-xs font-semibold text-danger-700">{attachment.error}</p>
+              )}
+            </div>
+          )}
+
           <form
             onSubmit={(event) => {
               event.preventDefault();
@@ -160,6 +193,22 @@ export function AssistantChat() {
             }}
             className="flex items-center gap-2 border-t border-line px-3 py-3"
           >
+            <input
+              ref={attachment.inputRef}
+              type="file"
+              accept="application/pdf"
+              onChange={attachment.onChange}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={attachment.pick}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2 text-ink-muted transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-brand-600"
+              aria-label="Anexar PDF"
+              title="Anexar PDF"
+            >
+              <IconPaperclip className="h-4 w-4" />
+            </button>
             <input
               ref={inputRef}
               value={input}
@@ -170,7 +219,7 @@ export function AssistantChat() {
             />
             <button
               type="submit"
-              disabled={sending || !input.trim()}
+              disabled={sending || (!input.trim() && !attachment.file)}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] text-white transition-opacity disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-brand-600"
               aria-label="Enviar mensagem"
             >

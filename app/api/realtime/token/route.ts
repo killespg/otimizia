@@ -1,4 +1,5 @@
 import { createHash } from "crypto";
+import { logError } from "@/lib/logger";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { createClient } from "@/lib/supabase/server";
 import { currentYearMonth, VOICE_MONTHLY_LIMIT_SECONDS } from "@/lib/voice-limit";
@@ -31,6 +32,15 @@ export async function GET() {
     return Response.json(
       { error: "Você atingiu o limite de 20 minutos de chamada de voz neste mês." },
       { status: 402 }
+    );
+  }
+
+  const { data: sessionId, error: sessionError } = await supabase.rpc("start_voice_session");
+  if (sessionError || !sessionId) {
+    logError("api/realtime/token.start-session", sessionError, { userId: user.id });
+    return Response.json(
+      { error: "Nao consegui iniciar a chamada de voz agora." },
+      { status: 500 }
     );
   }
 
@@ -77,17 +87,15 @@ export async function GET() {
 
   const text = await response.text();
   if (!response.ok) {
-    console.error("[api/realtime/token]", text);
+    logError("api/realtime/token", text, { userId: user.id, status: response.status });
     return Response.json(
       { error: "Nao consegui iniciar a chamada de voz agora." },
       { status: response.status }
     );
   }
 
-  return new Response(text, {
-    headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-store",
-    },
+  const payload = { ...JSON.parse(text), session_id: sessionId };
+  return Response.json(payload, {
+    headers: { "Cache-Control": "no-store" },
   });
 }

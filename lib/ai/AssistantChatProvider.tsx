@@ -3,7 +3,29 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
-export type ChatMessage = { role: "user" | "assistant"; content: string };
+export type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+  attachmentName?: string;
+};
+
+// Lê o arquivo como base64 puro (sem o prefixo "data:application/pdf;base64,").
+function readFileAsBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error ?? new Error("Falha ao ler o arquivo."));
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result !== "string") {
+        reject(new Error("Falha ao ler o arquivo."));
+        return;
+      }
+      const comma = result.indexOf(",");
+      resolve(comma >= 0 ? result.slice(comma + 1) : result);
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 // Rótulos amigáveis mostrados enquanto uma ferramenta do CRM está rodando.
 export const ASSISTANT_TOOL_LABELS: Record<string, string> = {
@@ -36,7 +58,7 @@ type AssistantChatValue = {
   messages: ChatMessage[];
   status: string | null;
   sending: boolean;
-  send: (text: string) => Promise<void>;
+  send: (text: string, file?: File | null) => Promise<void>;
 };
 
 const AssistantChatContext = createContext<AssistantChatValue | null>(null);
@@ -64,18 +86,57 @@ export function AssistantChatProvider({ children }: { children: ReactNode }) {
   );
 
   const send = useCallback(
-    async (text: string) => {
+    async (text: string, file?: File | null) => {
       const trimmed = text.trim();
-      if (!trimmed || sendingRef.current) return;
+      if ((!trimmed && !file) || sendingRef.current) return;
       sendingRef.current = true;
       setSending(true);
+      setStatus(file ? "Lendo o PDF…" : "Pensando…");
+
+      // O PDF só é anexado nesta mensagem: depois de enviado, ele não fica
+      // guardado no histórico local (só o nome, pra exibir), então turnos
+      // seguintes não reenviam o base64 inteiro de novo a cada mensagem.
+      let base64: string | null = null;
+      if (file) {
+        try {
+          base64 = await readFileAsBase64(file);
+        } catch {
+          sendingRef.current = false;
+          setSending(false);
+          setStatus(null);
+          updateMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: "Não consegui ler esse PDF. Tenta de novo." },
+          ]);
+          return;
+        }
+      }
+
+      const displayText = trimmed || (file ? `Dá uma olhada nesse PDF: ${file.name}` : "");
+      const priorHistory = messagesRef.current;
+      const userMessage: ChatMessage = {
+        role: "user",
+        content: displayText,
+        attachmentName: file?.name,
+      };
+      updateMessages(() => [...priorHistory, userMessage, { role: "assistant", content: "" }]);
       setStatus("Pensando…");
 
-      const history: ChatMessage[] = [
-        ...messagesRef.current,
-        { role: "user", content: trimmed },
+      const payloadMessages = [
+        ...priorHistory.map(({ role, content }) => ({ role, content })),
+        base64
+          ? {
+              role: "user" as const,
+              content: [
+                { type: "text", text: displayText },
+                {
+                  type: "document",
+                  source: { type: "base64", media_type: "application/pdf", data: base64 },
+                },
+              ],
+            }
+          : { role: "user" as const, content: displayText },
       ];
-      updateMessages(() => [...history, { role: "assistant", content: "" }]);
 
       const appendToAssistant = (chunk: string) => {
         updateMessages((prev) => {
@@ -93,7 +154,7 @@ export function AssistantChatProvider({ children }: { children: ReactNode }) {
         const res = await fetch("/api/assistant", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: history }),
+          body: JSON.stringify({ messages: payloadMessages }),
         });
 
         if (!res.ok || !res.body) {

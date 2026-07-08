@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { IconArrowRight, IconBot } from "../icons";
+import { IconArrowRight, IconBot, IconPaperclip, IconX } from "../icons";
 import { useAssistantChat } from "@/lib/ai/AssistantChatProvider";
+import { usePdfAttachment } from "@/lib/ai/usePdfAttachment";
 import { VoicePanel } from "@/components/VoicePanel";
 
 const SUGGESTIONS = [
@@ -16,6 +17,7 @@ const SUGGESTIONS = [
 export default function AssistantPage() {
   const [input, setInput] = useState("");
   const { messages, status, sending, send } = useAssistantChat();
+  const attachment = usePdfAttachment();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,8 +26,11 @@ export default function AssistantPage() {
   }, [messages, status]);
 
   function submit(text: string) {
+    if (!text.trim() && !attachment.file) return;
     setInput("");
-    void send(text);
+    const file = attachment.file;
+    attachment.clear();
+    void send(text, file);
   }
 
   return (
@@ -83,6 +88,12 @@ export default function AssistantPage() {
             message.role === "user" ? (
               <div key={index} className="flex justify-end">
                 <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] px-4 py-2.5 text-sm text-white">
+                  {message.attachmentName && (
+                    <span className="mb-1 flex items-center gap-1 text-xs font-semibold text-white/80">
+                      <IconPaperclip className="h-3.5 w-3.5 shrink-0" />
+                      {message.attachmentName}
+                    </span>
+                  )}
                   {message.content}
                 </div>
               </div>
@@ -109,6 +120,28 @@ export default function AssistantPage() {
       <div className="shrink-0 space-y-3 border-t border-line pt-3">
         <VoicePanel />
 
+        {(attachment.file || attachment.error) && (
+          <div>
+            {attachment.file && (
+              <div className="flex items-center gap-2 rounded-lg bg-surface-2 px-2.5 py-1.5 text-xs font-semibold text-ink">
+                <IconPaperclip className="h-3.5 w-3.5 shrink-0 text-ink-muted" />
+                <span className="min-w-0 flex-1 truncate">{attachment.file.name}</span>
+                <button
+                  type="button"
+                  onClick={attachment.clear}
+                  className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-ink-muted hover:bg-line hover:text-ink"
+                  aria-label="Remover PDF anexado"
+                >
+                  <IconX className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+            {attachment.error && (
+              <p className="mt-1 text-xs font-semibold text-danger-700">{attachment.error}</p>
+            )}
+          </div>
+        )}
+
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -116,6 +149,22 @@ export default function AssistantPage() {
           }}
           className="flex gap-2"
         >
+          <input
+            ref={attachment.inputRef}
+            type="file"
+            accept="application/pdf"
+            onChange={attachment.onChange}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={attachment.pick}
+            className="nav-item grid h-12 w-12 shrink-0 place-items-center rounded-lg border border-line bg-white text-ink-muted transition-colors hover:text-ink"
+            aria-label="Anexar PDF"
+            title="Anexar PDF"
+          >
+            <IconPaperclip className="h-4 w-4" />
+          </button>
           <input
             value={input}
             onChange={(event) => setInput(event.target.value)}
@@ -125,7 +174,7 @@ export default function AssistantPage() {
           />
           <button
             type="submit"
-            disabled={sending || !input.trim()}
+            disabled={sending || (!input.trim() && !attachment.file)}
             className="nav-item grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-brand-700 text-white shadow-[0_14px_30px_-16px_rgba(109,40,217,0.9)] transition-opacity hover:bg-brand-800 disabled:opacity-40"
             aria-label="Enviar pergunta"
           >
