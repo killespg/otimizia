@@ -18,21 +18,38 @@ export type Profile = {
   name: string | null;
   profession_type: string;
   profession_types: string[];
+  is_admin: boolean;
   cpf: string | null;
   terms_accepted_at: string | null;
+  active_org_id: string | null;
+  created_at: string;
+};
+
+export type OrgRole = "admin" | "member";
+
+export type Organization = {
+  id: string;
+  name: string;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   plan: "free" | "pro";
   plan_status: string | null;
   current_period_end: string | null;
   trial_ends_at: string | null;
-  is_admin: boolean;
+  created_at: string;
+};
+
+export type OrganizationMember = {
+  org_id: string;
+  user_id: string;
+  role: OrgRole;
   created_at: string;
 };
 
 export type Contact = {
   id: string;
   owner_id: string;
+  org_id: string;
   workspace_key: string;
   name: string;
   phone: string | null;
@@ -48,10 +65,11 @@ export type Contact = {
 export type Deal = {
   id: string;
   owner_id: string;
+  org_id: string;
   workspace_key: string;
   contact_id: string | null;
   title: string;
-  value_cents: number;
+  value_cents: number | null;
   stage: DealStage;
   position: number;
   details: Record<string, string>;
@@ -62,7 +80,10 @@ export type Deal = {
 export type Task = {
   id: string;
   owner_id: string;
+  org_id: string;
   workspace_key: string;
+  assignee_id: string | null;
+  pending_assignee_id: string | null;
   contact_id: string | null;
   deal_id: string | null;
   title: string;
@@ -74,6 +95,7 @@ export type Task = {
 export type Interaction = {
   id: string;
   owner_id: string;
+  org_id: string;
   workspace_key: string;
   contact_id: string;
   body: string;

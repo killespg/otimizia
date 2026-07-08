@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 import { AssistantChat } from "@/components/AssistantChat";
 import { PendingButton } from "@/components/PendingButton";
 import { AssistantChatProvider } from "@/lib/ai/AssistantChatProvider";
-import { getPlanAccess } from "@/lib/plan";
+import { getRecentAssistantMessages } from "@/lib/ai/history";
+import { getActiveOrgId } from "@/lib/org";
+import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset } from "@/lib/professions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/server";
@@ -58,9 +60,7 @@ export default async function AppLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select(
-      "profession_type, profession_types, plan, plan_status, trial_ends_at, stripe_subscription_id, is_admin"
-    )
+    .select("profession_type, profession_types, is_admin")
     .eq("id", user.id)
     .maybeSingle();
   const isAdmin = profile?.is_admin ?? false;
@@ -70,10 +70,13 @@ export default async function AppLayout({
     isAdmin
   );
   const preset = getProfessionPreset(workspaceKey);
+  const isLivestock = preset.key === "livestock_producer";
   const workspaceOptions = isAdmin
     ? []
     : getWorkspaceOptions(profile?.profession_types, preset.key);
-  const access = getPlanAccess(profile);
+  const access = await getUserPlanAccess(supabase, user.id);
+  const orgId = await getActiveOrgId(supabase, user.id);
+  const initialMessages = await getRecentAssistantMessages(supabase, user.id, orgId);
 
   const email = user.email ?? "Conta";
   const handle = email.split("@")[0] || "João";
@@ -83,7 +86,7 @@ export default async function AppLayout({
       : handle;
 
   return (
-    <AssistantChatProvider>
+    <AssistantChatProvider initialMessages={initialMessages}>
     <div className="app-frame min-h-[100dvh] bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-0 sm:p-6">
       <div className="app-shell mx-auto flex min-h-[100dvh] max-w-[1580px] overflow-visible bg-white shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] sm:min-h-[calc(100dvh-3rem)] sm:overflow-hidden sm:rounded-2xl">
         <aside className="hidden w-[250px] shrink-0 flex-col border-r border-line bg-white sm:flex">
@@ -103,9 +106,10 @@ export default async function AppLayout({
           <div className="flex-1 overflow-y-auto px-5 py-3">
             <SidebarNav
               labels={{
+                contacts: isLivestock ? "Sujeitos" : "Contatos",
                 pipeline: preset.pipelineLabel,
                 value: preset.valueLabel,
-                followups: "Retornos do dia",
+                followups: isLivestock ? "Sujeitos para revisar" : "Retornos do dia",
               }}
               isAdmin={isAdmin}
             />
@@ -207,7 +211,12 @@ export default async function AppLayout({
           </main>
         </div>
 
-        <MobileTabBar labels={{ pipeline: preset.pipelineLabel }} />
+        <MobileTabBar
+          labels={{
+            contacts: isLivestock ? "Sujeitos" : "Contatos",
+            pipeline: preset.pipelineLabel,
+          }}
+        />
       </div>
 
       <AssistantChat />

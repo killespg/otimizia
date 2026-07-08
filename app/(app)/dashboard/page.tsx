@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AgentPanel } from "@/components/AgentPanel";
 import { PendingButton } from "@/components/PendingButton";
 import { computeDevMetrics, type DevMetrics } from "@/lib/devMetrics";
+import { getActiveOrgId } from "@/lib/org";
 import { getProfessionPreset, type MetricKey, type ProfessionPreset } from "@/lib/professions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -73,6 +74,7 @@ export default async function DashboardPage() {
     supabase.auth.getUser(),
     supabase.from("profiles").select("profession_type, is_admin").maybeSingle(),
   ]);
+  const orgId = await getActiveOrgId(supabase, user!.id);
   const isAdmin = profile?.is_admin ?? false;
   const founderMetrics = isAdmin ? await loadFounderMetrics() : null;
   const workspaceKey = getWorkspaceKey(
@@ -90,26 +92,31 @@ export default async function DashboardPage() {
     supabase
       .from("deals")
       .select("*")
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("created_at", { ascending: false }),
     supabase
       .from("tasks")
       .select("*")
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .eq("done", false)
       .order("due_at", { ascending: true }),
     supabase
       .from("contacts")
       .select("id,name,company")
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("name", { ascending: true }),
     supabase
       .from("contacts")
       .select("*", { count: "exact", head: true })
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey),
     supabase
       .from("interactions")
       .select("*", { count: "exact", head: true })
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .gte("created_at", startOfToday.toISOString()),
   ]);
@@ -129,14 +136,14 @@ export default async function DashboardPage() {
   const openDeals = allDeals.filter(
     (deal) => deal.stage !== "ganho" && deal.stage !== "perdido"
   );
-  const openValue = openDeals.reduce((sum, deal) => sum + deal.value_cents, 0);
+  const openValue = openDeals.reduce((sum, deal) => sum + (deal.value_cents ?? 0), 0);
   const wonThisMonth = allDeals.filter(
     (deal) =>
       deal.stage === "ganho" &&
       deal.closed_at &&
       new Date(deal.closed_at) >= monthStart
   );
-  const wonValue = wonThisMonth.reduce((sum, deal) => sum + deal.value_cents, 0);
+  const wonValue = wonThisMonth.reduce((sum, deal) => sum + (deal.value_cents ?? 0), 0);
   const lostThisMonth = allDeals.filter(
     (deal) =>
       deal.stage === "perdido" &&
@@ -156,7 +163,7 @@ export default async function DashboardPage() {
   for (const deal of wonThisMonth) {
     const dayIndex = new Date(deal.closed_at!).getDate() - 1;
     if (dayIndex >= 0 && dayIndex < daysElapsed) {
-      dailyWonCents[dayIndex] += deal.value_cents;
+      dailyWonCents[dayIndex] += deal.value_cents ?? 0;
     }
   }
   let runningCents = 0;
@@ -344,6 +351,8 @@ function MetricCard({
   );
 }
 
+// Métricas do produto como um todo (todas as organizações) — só para a conta
+// fundadora (is_admin), por isso usa o admin client em vez de filtrar por org.
 async function loadFounderMetrics(): Promise<DevMetrics> {
   const admin = createAdminClient();
   const [{ data: profiles }, { data: contacts }, { data: deals }] = await Promise.all([
@@ -578,7 +587,7 @@ function DealsTable({
                       {contact?.company ?? contact?.name ?? "Sem contato"}
                     </span>
                     <span className="shrink-0 text-sm font-black tabular-nums text-brand-700">
-                      {formatBRL(deal.value_cents)}
+                      {formatBRL(deal.value_cents ?? 0)}
                     </span>
                   </div>
                   <p className="mt-1 text-[11px] font-semibold text-ink-muted">
@@ -616,7 +625,7 @@ function DealsTable({
                           {stage.label}
                         </span>
                       </td>
-                      <td className="px-3 py-3">{formatBRL(deal.value_cents)}</td>
+                      <td className="px-3 py-3">{formatBRL(deal.value_cents ?? 0)}</td>
                       <td className="px-3 py-3">{formatDate(deal.created_at)}</td>
                     </tr>
                   );

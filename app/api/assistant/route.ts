@@ -1,6 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { User } from "@supabase/supabase-js";
+import { saveAssistantMessage } from "@/lib/ai/history";
 import { logError } from "@/lib/logger";
+import { getActiveOrgId } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset, type ProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
@@ -36,6 +38,7 @@ export async function POST(req: Request) {
   if (!access.hasAccess) {
     return Response.json({ error: "Seu teste gratis acabou." }, { status: 402 });
   }
+  const orgId = await getActiveOrgId(supabase, user.id);
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json(
       { error: "ANTHROPIC_API_KEY não configurada no servidor." },
@@ -52,6 +55,13 @@ export async function POST(req: Request) {
   }
   if (history.length === 0) {
     return Response.json({ error: "Envie ao menos uma mensagem." }, { status: 400 });
+  }
+
+  // Só a última mensagem é nova — o cliente reenvia o histórico acumulado a
+  // cada chamada, e o resto já foi salvo em requisições anteriores.
+  const lastIncoming = history[history.length - 1];
+  if (lastIncoming.role === "user" && typeof lastIncoming.content === "string") {
+    await saveAssistantMessage(supabase, user.id, orgId, "user", lastIncoming.content);
   }
 
   const { data: profile } = await supabase
@@ -76,6 +86,7 @@ export async function POST(req: Request) {
 
       const messages: Anthropic.MessageParam[] = [...history];
       let mutated = false;
+      let assistantText = "";
 
       try {
         for (let turn = 0; turn < MAX_TOOL_TURNS; turn++) {
@@ -99,6 +110,7 @@ export async function POST(req: Request) {
               event.type === "content_block_delta" &&
               event.delta.type === "text_delta"
             ) {
+              assistantText += event.delta.text;
               send({ type: "text", text: event.delta.text });
             }
           }
@@ -121,6 +133,7 @@ export async function POST(req: Request) {
               content = await executeTool(
                 supabase,
                 user.id,
+                orgId,
                 workspaceKey,
                 toolUse.name,
                 toolUse.input
@@ -143,8 +156,11 @@ export async function POST(req: Request) {
 
         send({ type: "done", mutated });
       } catch (error) {
-        send({ type: "error", message: friendlyError(error), mutated });
+        const message = friendlyError(error);
+        assistantText += (assistantText ? "\n" : "") + message;
+        send({ type: "error", message, mutated });
       } finally {
+        await saveAssistantMessage(supabase, user.id, orgId, "assistant", assistantText);
         controller.close();
       }
     },
@@ -197,6 +213,7 @@ Como conversar:
 - Frases curtas. Sem introdução antes de responder, sem resumir o que a pessoa acabou de pedir, sem fechamento tipo "espero ter ajudado". Vá direto ao que importa.
 - Pode usar uma opinião ou observação sua quando fizer sentido (ex.: "esse lead tá esfriando, acho melhor ligar hoje" em vez de só listar dados frios).
 - O usuário não é técnico: nunca mostre IDs, JSON ou nomes de ferramentas — fale igual você falaria olhando pra tela junto com ele.
+- Nunca use markdown (nada de **negrito**, _itálico_, listas com "-"/"*", headings com "#" ou blocos de código). O chat exibe texto puro, então isso só aparece como asteriscos e símbolos soltos na tela. Escreva em texto corrido normal.
 
 Como agir:
 - Se o usuário anexar um PDF (contrato, proposta, nota fiscal etc.), leia o conteúdo direto do documento e responda com base nele — não peça pra ele colar o texto.

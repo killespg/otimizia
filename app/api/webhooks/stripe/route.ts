@@ -46,11 +46,11 @@ export async function POST(request: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
         const customerId = session.customer as string;
         const subscriptionId = session.subscription as string | null;
-        const userId =
-          session.client_reference_id ?? session.metadata?.supabase_user_id ?? undefined;
+        const orgId =
+          session.client_reference_id ?? session.metadata?.supabase_org_id ?? undefined;
         if (subscriptionId) {
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-          await syncSubscription(supabase, customerId, subscription, userId);
+          await syncSubscription(supabase, customerId, subscription, orgId);
         }
         break;
       }
@@ -61,29 +61,29 @@ export async function POST(request: Request) {
           supabase,
           subscription.customer as string,
           subscription,
-          subscription.metadata?.supabase_user_id
+          subscription.metadata?.supabase_org_id
         );
         break;
       }
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
         const { data } = await supabase
-          .from("profiles")
+          .from("organizations")
           .update({ plan: "free", plan_status: "canceled", stripe_subscription_id: null })
           .eq("stripe_customer_id", subscription.customer as string)
           .select("id")
           .maybeSingle();
-        const userId = subscription.metadata?.supabase_user_id;
-        if (!data && userId) {
+        const orgId = subscription.metadata?.supabase_org_id;
+        if (!data && orgId) {
           await supabase
-            .from("profiles")
+            .from("organizations")
             .update({
               plan: "free",
               plan_status: "canceled",
               stripe_subscription_id: null,
               stripe_customer_id: subscription.customer as string,
             })
-            .eq("id", userId);
+            .eq("id", orgId);
         }
         break;
       }
@@ -107,7 +107,7 @@ async function syncSubscription(
   supabase: ReturnType<typeof createAdminClient>,
   customerId: string,
   subscription: Stripe.Subscription,
-  userId?: string
+  orgId?: string
 ) {
   const activeStatuses = new Set(["active", "trialing", "past_due"]);
   const plan = activeStatuses.has(subscription.status) ? "pro" : "free";
@@ -117,7 +117,7 @@ async function syncSubscription(
     : null;
 
   const { data } = await supabase
-    .from("profiles")
+    .from("organizations")
     .update({
       plan,
       plan_status: subscription.status,
@@ -128,9 +128,9 @@ async function syncSubscription(
     .select("id")
     .maybeSingle();
 
-  if (!data && userId) {
+  if (!data && orgId) {
     await supabase
-      .from("profiles")
+      .from("organizations")
       .update({
         plan,
         plan_status: subscription.status,
@@ -138,6 +138,6 @@ async function syncSubscription(
         stripe_subscription_id: subscription.id,
         current_period_end: currentPeriodEnd,
       })
-      .eq("id", userId);
+      .eq("id", orgId);
   }
 }

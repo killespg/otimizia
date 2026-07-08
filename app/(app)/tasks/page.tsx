@@ -1,4 +1,5 @@
 import { PendingButton } from "@/components/PendingButton";
+import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Task } from "@/lib/supabase/types";
 import { getWorkspaceKey } from "@/lib/workspaces";
@@ -11,7 +12,6 @@ type Tone = "danger" | "today" | "upcoming" | "done";
 
 export default async function TasksPage() {
   const supabase = createClient();
-
   const [
     {
       data: { user },
@@ -21,26 +21,33 @@ export default async function TasksPage() {
     supabase.auth.getUser(),
     supabase.from("profiles").select("profession_type, is_admin").maybeSingle(),
   ]);
+  const orgId = await getActiveOrgId(supabase, user!.id);
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
     user?.user_metadata?.profession_type,
     profile?.is_admin ?? false
   );
-  const [{ data: tasks }, { data: contacts }] = await Promise.all([
+  const [{ data: tasks }, { data: contacts }, members, role] = await Promise.all([
     supabase
       .from("tasks")
       .select("*")
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("due_at", { ascending: true }),
     supabase
       .from("contacts")
       .select("id, name")
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("name"),
+    getOrgMembers(supabase, orgId),
+    getOrgRole(supabase, orgId, user!.id),
   ]);
 
   const allTasks = (tasks ?? []) as Task[];
   const allContacts = (contacts ?? []) as Pick<Contact, "id" | "name">[];
+  const isAdmin = role === "admin";
+  const handoffRequests = allTasks.filter((task) => task.pending_assignee_id === user!.id);
 
   const now = new Date();
   const endOfToday = new Date();
@@ -124,11 +131,52 @@ export default async function TasksPage() {
             Salvar
           </PendingButton>
         </div>
+        {members.length > 1 && (
+          <div className="mt-3 max-w-xs">
+            <label className="label" htmlFor="task-assignee">
+              Responsável
+            </label>
+            <select
+              id="task-assignee"
+              name="assignee_id"
+              className="field mt-1.5"
+              defaultValue={user!.id}
+            >
+              {members.map((member) => (
+                <option key={member.user_id} value={member.user_id}>
+                  {member.user_id === user!.id ? "Eu" : (member.name ?? "Sem nome")}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </form>
+
+      {handoffRequests.length > 0 && (
+        <section className="panel overflow-hidden">
+          <div className="border-b border-line px-5 py-4">
+            <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
+              Pedidos de transferência para você
+            </h2>
+          </div>
+          <ul className="divide-y divide-line px-5">
+            {handoffRequests.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                overdue={false}
+                members={members}
+                currentUserId={user!.id}
+                isAdmin={isAdmin}
+              />
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="grid gap-5 xl:grid-cols-2">
         {groups.map((group) => (
-          <TaskGroup key={group.title} {...group} />
+          <TaskGroup key={group.title} {...group} members={members} currentUserId={user!.id} isAdmin={isAdmin} />
         ))}
       </div>
     </div>
@@ -141,12 +189,18 @@ function TaskGroup({
   overdue,
   tone,
   empty,
+  members,
+  currentUserId,
+  isAdmin,
 }: {
   title: string;
   items: Task[];
   overdue: boolean;
   tone: Tone;
   empty: string;
+  members: { user_id: string; name: string | null }[];
+  currentUserId: string;
+  isAdmin: boolean;
 }) {
   const toneClass: Record<Tone, string> = {
     danger: "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
@@ -181,7 +235,14 @@ function TaskGroup({
       ) : (
         <ul className="divide-y divide-line px-5">
           {items.map((task) => (
-            <TaskItem key={task.id} task={task} overdue={overdue} />
+            <TaskItem
+              key={task.id}
+              task={task}
+              overdue={overdue}
+              members={members}
+              currentUserId={currentUserId}
+              isAdmin={isAdmin}
+            />
           ))}
         </ul>
       )}

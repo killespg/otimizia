@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { PendingButton } from "@/components/PendingButton";
 import type { FieldSpec } from "@/lib/professions";
-import { DEAL_STAGES, type Deal, type DealStage } from "@/lib/supabase/types";
+import type { Deal, DealStage } from "@/lib/supabase/types";
+import { dealValueOrZero, formatDealValue } from "@/lib/deals";
 import { formatBRL } from "@/lib/format";
-import { moveDeal, deleteDeal } from "../actions";
-import { IconCheck, IconChevronRight, IconGrip, IconTrash } from "../icons";
+import { createPipelineList, moveDealToList, updateDealOptions, deleteDeal } from "../actions";
+import { IconCheck, IconChevronRight, IconGrip, IconPlus, IconTrash } from "../icons";
 
 function firstDetail(details: Record<string, string> | undefined, fields: FieldSpec[]) {
   if (!details) return null;
@@ -24,49 +25,88 @@ const STAGE_META: Record<
   novo: {
     dot: "bg-sky-500",
     chip: "bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-200",
-    empty: "Novas vendas entram aqui.",
+    empty: "Novos cards entram aqui.",
   },
   em_contato: {
     dot: "bg-brand-500",
     chip: "bg-brand-50 text-brand-700",
-    empty: "Sem contato em aberto.",
+    empty: "Sem cards nesta lista.",
   },
   negociacao: {
     dot: "bg-honey",
     chip: "bg-[#fff7e6] text-[#8a6500] dark:bg-[#3b2b0a] dark:text-[#f8d278]",
-    empty: "Nenhuma proposta agora.",
+    empty: "Nenhum card agora.",
   },
   ganho: {
     dot: "bg-success-500",
     chip: "bg-success-50 text-success-700 dark:bg-[#062d1c] dark:text-[#9ff0c5]",
-    empty: "Vendas ganhas aparecem aqui.",
+    empty: "Nenhum card fechado.",
   },
   perdido: {
     dot: "bg-danger-500",
     chip: "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
-    empty: "Sem perdas registradas.",
+    empty: "Sem cards perdidos.",
   },
 };
 
 export default function Board({
   initialDeals,
   contactNames,
-  stages,
   dealFields = [],
+  pipelineLists,
 }: {
   initialDeals: Deal[];
   contactNames: Record<string, string>;
   stages?: Record<DealStage, { label: string; empty: string }>;
   dealFields?: FieldSpec[];
+  pipelineLists: string[];
 }) {
   const [deals, setDeals] = useState(initialDeals);
   const [dragId, setDragId] = useState<string | null>(null);
-  const [overStage, setOverStage] = useState<DealStage | null>(null);
+  const [overList, setOverList] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [menuId, setMenuId] = useState<string | null>(null);
   const [canDrag, setCanDrag] = useState(true);
+  const [search, setSearch] = useState("");
+  const [labelFilter, setLabelFilter] = useState("");
+  const [listFilter, setListFilter] = useState("");
+  const [hideEmpty, setHideEmpty] = useState(false);
   const [isPending, startTransition] = useTransition();
   const boardBusy = isPending || savingId !== null;
+  const visibleDeals = deals.filter((deal) => !isPlaceholder(deal));
+  const allColumns = uniqueLists([
+    ...pipelineLists,
+    ...deals.map((deal) => listName(deal)).filter(Boolean),
+  ]);
+  const allLabels = useMemo(() => {
+    return uniqueLists(visibleDeals.flatMap((deal) => dealLabels(deal)));
+  }, [visibleDeals]);
+  const filteredDeals = useMemo(() => {
+    const needle = normalizeText(search);
+    return visibleDeals.filter((deal) => {
+      const labels = dealLabels(deal);
+      const haystack = normalizeText(
+        [
+          deal.title,
+          contactNames[deal.contact_id ?? ""],
+          formatDealValue(deal),
+          listName(deal),
+          labels.join(" "),
+          ...Object.values(deal.details ?? {}),
+        ].join(" ")
+      );
+      return (
+        (!needle || haystack.includes(needle)) &&
+        (!labelFilter || labels.includes(labelFilter)) &&
+        (!listFilter || listName(deal) === listFilter)
+      );
+    });
+  }, [contactNames, labelFilter, listFilter, search, visibleDeals]);
+  const columns = allColumns.filter((column) => {
+    if (listFilter && column !== listFilter) return false;
+    if (!hideEmpty) return true;
+    return filteredDeals.some((deal) => listName(deal) === column);
+  });
 
   useEffect(() => {
     if (typeof window === "undefined" || !window.matchMedia) return;
@@ -76,22 +116,34 @@ export default function Board({
     if (isTouchOnly) setCanDrag(false);
   }, []);
 
-  function commitMove(id: string, stage: DealStage) {
+  function commitMove(id: string, targetList: string) {
     if (boardBusy) return;
-    const previousStage = deals.find((deal) => deal.id === id)?.stage;
-    if (!previousStage || previousStage === stage) return;
+    const deal = deals.find((item) => item.id === id);
+    if (!deal) return;
+    const previousDetails = deal.details ?? {};
+    const previousStage = deal.stage;
+    const previousList = listName(deal);
+    if (previousList === targetList) return;
 
     setDeals((prev) =>
-      prev.map((deal) => (deal.id === id ? { ...deal, stage } : deal))
+      prev.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              stage: stageFromList(targetList),
+              details: { ...(item.details ?? {}), pipeline_list: targetList },
+            }
+          : item
+      )
     );
     setSavingId(id);
 
     startTransition(() => {
-      void moveDeal(id, stage)
+      void moveDealToList(id, targetList)
         .catch(() => {
           setDeals((prev) =>
-            prev.map((deal) =>
-              deal.id === id ? { ...deal, stage: previousStage } : deal
+            prev.map((item) =>
+              item.id === id ? { ...item, stage: previousStage, details: previousDetails } : item
             )
           );
         })
@@ -99,196 +151,446 @@ export default function Board({
     });
   }
 
-  function onDrop(stage: DealStage) {
-    setOverStage(null);
+  function onDrop(targetList: string) {
+    setOverList(null);
     if (!dragId || boardBusy) return;
     const id = dragId;
     setDragId(null);
-    commitMove(id, stage);
+    commitMove(id, targetList);
   }
 
   return (
-    <div
-      aria-busy={boardBusy}
-      className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0 xl:grid xl:grid-cols-5 xl:overflow-visible"
-    >
-      {DEAL_STAGES.map((stage) => {
-        const meta = STAGE_META[stage.key];
-        const stageCopy = stages?.[stage.key] ?? {
-          label: stage.label,
-          empty: meta.empty,
-        };
-        const stageDeals = deals.filter((deal) => deal.stage === stage.key);
-        const total = stageDeals.reduce((sum, deal) => sum + deal.value_cents, 0);
-        const isOver = overStage === stage.key;
+    <div className="space-y-4">
+      <form action={createPipelineList} className="panel flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
+        <div className="min-w-0 flex-1">
+          <label className="label" htmlFor="pipeline-list-name">
+            Nova lista
+          </label>
+          <input
+            id="pipeline-list-name"
+            name="name"
+            required
+            maxLength={160}
+            placeholder="Ex: Documentos pendentes"
+            className="field mt-1.5"
+          />
+        </div>
+        <PendingButton className="btn h-[42px]" pendingLabel="Criando">
+          <IconPlus className="h-4 w-4" />
+          Criar lista
+        </PendingButton>
+      </form>
 
-        return (
-          <section
-            key={stage.key}
-            onDragOver={(event) => {
-              event.preventDefault();
-              if (overStage !== stage.key) setOverStage(stage.key);
-            }}
-            onDragLeave={(event) => {
-              if (!event.currentTarget.contains(event.relatedTarget as Node)) {
-                setOverStage((current) => (current === stage.key ? null : current));
-              }
-            }}
-            onDrop={() => onDrop(stage.key)}
-            className={
-              "panel flex min-w-[82%] shrink-0 snap-start flex-col overflow-hidden transition-colors duration-200 sm:min-w-[20rem] xl:min-w-0 " +
-              (isOver ? "border-brand-300 bg-brand-50" : "")
-            }
+      <section className="panel grid gap-3 p-4 md:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto] md:items-end">
+        <label className="block min-w-0">
+          <span className="label">Buscar no quadro</span>
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Nome, lista, etiqueta..."
+            className="field mt-1.5"
+          />
+        </label>
+        <label className="block min-w-0">
+          <span className="label">Etiqueta</span>
+          <select
+            value={labelFilter}
+            onChange={(event) => setLabelFilter(event.target.value)}
+            className="field mt-1.5"
           >
-            <header className="border-b border-line bg-white px-4 py-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className={`h-2.5 w-2.5 rounded-full ${meta.dot}`} />
-                  <h2 className="text-sm font-black text-ink">{stageCopy.label}</h2>
-                </div>
-                <span className={`rounded-md px-2.5 py-1 text-xs font-black ${meta.chip}`}>
-                  {String(stageDeals.length).padStart(2, "0")}
-                </span>
-              </div>
-              <p className="mt-2 text-sm font-black tabular-nums text-ink">
-                {formatBRL(total)}
-              </p>
-            </header>
+            <option value="">Todas</option>
+            {allLabels.map((label) => (
+              <option key={label} value={label}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block min-w-0">
+          <span className="label">Lista</span>
+          <select
+            value={listFilter}
+            onChange={(event) => setListFilter(event.target.value)}
+            className="field mt-1.5"
+          >
+            <option value="">Todas</option>
+            {allColumns.map((column) => (
+              <option key={column} value={column}>
+                {column}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex min-h-[42px] items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-bold text-ink-soft">
+          <input
+            type="checkbox"
+            checked={hideEmpty}
+            onChange={(event) => setHideEmpty(event.target.checked)}
+            className="h-4 w-4 rounded border-line accent-brand-700"
+          />
+          Ocultar vazias
+        </label>
+      </section>
 
-            <div className="enter flex min-h-[22rem] flex-1 flex-col gap-3 bg-[#f8fbff] p-3">
-              {stageDeals.length === 0 ? (
-                <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-line bg-white px-4 py-8 text-center">
-                  <p className="text-sm font-black text-ink">
-                    {isOver ? "Solte aqui" : "Vazio"}
-                  </p>
-                  <p className="mt-1 text-xs font-medium leading-relaxed text-ink-muted">
-                    {stageCopy.empty}
-                  </p>
-                </div>
-              ) : (
-                stageDeals.map((deal) => {
-                  const menuOpen = menuId === deal.id;
-                  const otherStages = DEAL_STAGES.filter((s) => s.key !== stage.key);
+      <div
+        aria-busy={boardBusy}
+        className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0"
+      >
+        {columns.map((column) => {
+          const meta = trelloMeta(column);
+          const columnDeals = filteredDeals
+            .filter((deal) => listName(deal) === column)
+            .sort(compareDeals);
+          const total = columnDeals.reduce((sum, deal) => sum + dealValueOrZero(deal), 0);
+          const isOver = overList === column;
 
-                  return (
-                    <article
-                      key={deal.id}
-                      draggable={canDrag && !boardBusy}
-                      onDragStart={() => setDragId(deal.id)}
-                      onDragEnd={() => {
-                        setDragId(null);
-                        setOverStage(null);
-                      }}
-                      className={
-                        "row-link group rounded-lg border border-line bg-white p-3 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] hover:border-brand-200 " +
-                        (boardBusy ? "cursor-wait opacity-70" : canDrag ? "cursor-grab active:cursor-grabbing" : "") +
-                        " " +
-                        (dragId === deal.id ? "scale-[0.985] opacity-45 ring-2 ring-brand-300" : "")
-                      }
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex min-w-0 items-start gap-2">
-                          <IconGrip
-                            className={
-                              "mt-0.5 h-4 w-4 shrink-0 text-ink-muted/45 transition-colors duration-150 group-hover:text-brand-700 " +
-                              (canDrag ? "" : "hidden sm:block")
-                            }
-                          />
-                          <div className="min-w-0">
-                            <p className="clip-2 text-safe text-sm font-black leading-snug text-ink">
-                              {deal.title}
-                            </p>
-                            {deal.contact_id && contactNames[deal.contact_id] && (
-                              <p className="mt-1 truncate text-xs font-bold text-ink-muted">
-                                {contactNames[deal.contact_id]}
+          return (
+            <section
+              key={column}
+              onDragOver={(event) => {
+                event.preventDefault();
+                if (overList !== column) setOverList(column);
+              }}
+              onDragLeave={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+                  setOverList((current) => (current === column ? null : current));
+                }
+              }}
+              onDrop={() => onDrop(column)}
+              className={
+                "panel flex min-w-[17rem] shrink-0 snap-start flex-col overflow-hidden transition-colors duration-200 sm:min-w-[18rem] " +
+                (isOver ? "border-brand-300 bg-brand-50" : "")
+              }
+            >
+              <header className="border-b border-line bg-white px-4 py-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${meta.dot}`} />
+                    <h2 className="clip-2 text-safe text-sm font-black text-ink">{column}</h2>
+                  </div>
+                  <span className={`rounded-md px-2.5 py-1 text-xs font-black ${meta.chip}`}>
+                    {String(columnDeals.length).padStart(2, "0")}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm font-black tabular-nums text-ink">
+                  {formatBRL(total)}
+                </p>
+              </header>
+
+              <div className="enter flex min-h-[22rem] flex-1 flex-col gap-3 bg-[#f8fbff] p-3">
+                {columnDeals.length === 0 ? (
+                  <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-line bg-white px-4 py-8 text-center">
+                    <p className="text-sm font-black text-ink">
+                      {isOver ? "Solte aqui" : "Vazio"}
+                    </p>
+                    <p className="mt-1 text-xs font-medium leading-relaxed text-ink-muted">
+                      {meta.empty}
+                    </p>
+                  </div>
+                ) : (
+                  columnDeals.map((deal) => {
+                    const menuOpen = menuId === deal.id;
+                    const otherLists = columns.filter((list) => list !== column);
+
+                    return (
+                      <article
+                        key={deal.id}
+                        draggable={canDrag && !boardBusy}
+                        onDragStart={() => setDragId(deal.id)}
+                        onDragEnd={() => {
+                          setDragId(null);
+                          setOverList(null);
+                        }}
+                        className={
+                          "row-link group rounded-lg border border-line bg-white p-3 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] hover:border-brand-200 " +
+                          (boardBusy ? "cursor-wait opacity-70" : canDrag ? "cursor-grab active:cursor-grabbing" : "") +
+                          " " +
+                          (dragId === deal.id ? "scale-[0.985] opacity-45 ring-2 ring-brand-300" : "")
+                        }
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex min-w-0 items-start gap-2">
+                            <IconGrip className="mt-0.5 h-4 w-4 shrink-0 text-ink-muted/45 transition-colors duration-150 group-hover:text-brand-700" />
+                            <div className="min-w-0">
+                              <p className="clip-2 text-safe text-sm font-black leading-snug text-ink">
+                                {deal.title}
                               </p>
-                            )}
-                            {firstDetail(deal.details, dealFields) && (
-                              <p className="mt-1 truncate text-xs font-medium text-ink-muted">
-                                {firstDetail(deal.details, dealFields)}
-                              </p>
-                            )}
+                              {deal.contact_id && contactNames[deal.contact_id] && (
+                                <p className="mt-1 truncate text-xs font-bold text-ink-muted">
+                                  {contactNames[deal.contact_id]}
+                                </p>
+                              )}
+                              {firstDetail(deal.details, dealFields) && (
+                                <p className="mt-1 truncate text-xs font-medium text-ink-muted">
+                                  {firstDetail(deal.details, dealFields)}
+                                </p>
+                              )}
+                              {dealLinks(deal).length > 0 && (
+                                <div className="mt-1 flex flex-wrap gap-2">
+                                  {dealLinks(deal).map((link) => (
+                                    <a
+                                      key={`${link.label}-${link.href}`}
+                                      href={link.href}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="inline-flex text-xs font-black text-brand-700 hover:text-brand-900"
+                                      onClick={(event) => event.stopPropagation()}
+                                    >
+                                      {link.label}
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setMenuId((current) => (current === deal.id ? null : deal.id))
+                              }
+                              disabled={boardBusy}
+                              aria-expanded={menuOpen}
+                              aria-label={`Mover ${deal.title} para outra lista`}
+                              className={
+                                "icon-button grid h-11 w-11 place-items-center rounded-md text-ink-muted/50 hover:bg-brand-50 hover:text-brand-700 " +
+                                (menuOpen ? "bg-brand-50 text-brand-700" : "")
+                              }
+                            >
+                              <IconChevronRight
+                                className={
+                                  "h-4 w-4 transition-transform duration-150 " +
+                                  (menuOpen ? "rotate-90" : "")
+                                }
+                              />
+                            </button>
+                            <form action={deleteDeal} className="shrink-0">
+                              <input type="hidden" name="id" value={deal.id} />
+                              <PendingButton
+                                className="icon-button grid h-11 w-11 place-items-center rounded-md text-ink-muted/50 opacity-100 hover:bg-danger-50 hover:text-danger-600 sm:opacity-0 sm:group-hover:opacity-100"
+                                title="Excluir"
+                                aria-label={`Excluir ${deal.title}`}
+                                iconOnly
+                                pendingLabel="Excluindo"
+                              >
+                                <IconTrash className="h-4 w-4" />
+                              </PendingButton>
+                            </form>
                           </div>
                         </div>
-                        <div className="flex shrink-0 items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setMenuId((current) => (current === deal.id ? null : deal.id))
-                            }
-                            disabled={boardBusy}
-                            aria-expanded={menuOpen}
-                            aria-label={`Mover ${deal.title} para outra etapa`}
+
+                        {menuOpen && (
+                          <div className="mt-3 space-y-3 border-t border-line pt-3">
+                            <div className="flex flex-wrap gap-1.5">
+                              {otherLists.map((list) => (
+                                <button
+                                  key={list}
+                                  type="button"
+                                  onClick={() => {
+                                    commitMove(deal.id, list);
+                                    setMenuId(null);
+                                  }}
+                                  className="min-h-11 rounded-md border border-line bg-white px-3 py-2 text-xs font-bold text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                                >
+                                  {list}
+                                </button>
+                              ))}
+                            </div>
+
+                            <form action={updateDealOptions} className="space-y-2 rounded-lg border border-line bg-[#f8fbff] p-3">
+                              <input type="hidden" name="id" value={deal.id} />
+                              <label className="block">
+                                <span className="text-[11px] font-black text-ink-soft">Etiquetas</span>
+                                <input
+                                  name="labels"
+                                  defaultValue={deal.details?.labels ?? ""}
+                                  placeholder="Ex: quente, urgente"
+                                  maxLength={240}
+                                  className="field mt-1 h-9 text-xs"
+                                />
+                              </label>
+                              <label className="block">
+                                <span className="text-[11px] font-black text-ink-soft">Link externo</span>
+                                <input
+                                  name="external_url"
+                                  defaultValue={deal.details?.external_url ?? ""}
+                                  placeholder="https://..."
+                                  maxLength={300}
+                                  className="field mt-1 h-9 text-xs"
+                                />
+                              </label>
+                              <PendingButton
+                                className="min-h-9 rounded-md bg-brand-700 px-3 py-1.5 text-xs font-black text-white hover:bg-brand-800"
+                                pendingLabel="Salvando"
+                              >
+                                Salvar opções
+                              </PendingButton>
+                            </form>
+                          </div>
+                        )}
+
+                        {dealLabels(deal).length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {dealLabels(deal).map((label) => (
+                              <span
+                                key={label}
+                                className={`min-h-5 max-w-full truncate rounded px-2 py-0.5 text-[11px] font-black ${labelClass(label)}`}
+                              >
+                                {label}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="mt-3 flex items-center justify-between gap-3">
+                          <p
                             className={
-                              "icon-button grid h-11 w-11 place-items-center rounded-md text-ink-muted/50 hover:bg-brand-50 hover:text-brand-700 " +
-                              (menuOpen ? "bg-brand-50 text-brand-700" : "")
+                              "text-sm font-black tabular-nums " +
+                              (deal.stage === "perdido"
+                                ? "text-ink-muted line-through"
+                                : deal.stage === "ganho"
+                                ? "text-success-700"
+                                : "text-brand-700")
                             }
                           >
-                            <IconChevronRight
-                              className={
-                                "h-4 w-4 transition-transform duration-150 " +
-                                (menuOpen ? "rotate-90" : "")
-                              }
-                            />
-                          </button>
-                          <form action={deleteDeal} className="shrink-0">
-                            <input type="hidden" name="id" value={deal.id} />
-                            <PendingButton
-                              className="icon-button grid h-11 w-11 place-items-center rounded-md text-ink-muted/50 opacity-100 hover:bg-danger-50 hover:text-danger-600 sm:opacity-0 sm:group-hover:opacity-100"
-                              title="Excluir venda"
-                              aria-label={`Excluir ${deal.title}`}
-                              iconOnly
-                              pendingLabel="Excluindo"
-                            >
-                              <IconTrash className="h-4 w-4" />
-                            </PendingButton>
-                          </form>
+                            {formatDealValue(deal)}
+                          </p>
+                          {deal.stage === "ganho" && (
+                            <IconCheck className="h-4 w-4 text-success-700" />
+                          )}
                         </div>
-                      </div>
-
-                      {menuOpen && (
-                        <div className="mt-3 flex flex-wrap gap-1.5 border-t border-line pt-3">
-                          {otherStages.map((s) => (
-                            <button
-                              key={s.key}
-                              type="button"
-                              onClick={() => {
-                                commitMove(deal.id, s.key);
-                                setMenuId(null);
-                              }}
-                              className="min-h-11 rounded-md border border-line bg-white px-3 py-2 text-xs font-bold text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
-                            >
-                          {stages?.[s.key]?.label ?? s.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="mt-3 flex items-center justify-between gap-3">
-                        <p
-                          className={
-                            "text-sm font-black tabular-nums " +
-                            (stage.key === "perdido"
-                              ? "text-ink-muted line-through"
-                              : stage.key === "ganho"
-                              ? "text-success-700"
-                              : "text-brand-700")
-                          }
-                        >
-                          {formatBRL(deal.value_cents)}
-                        </p>
-                        {stage.key === "ganho" && (
-                          <IconCheck className="h-4 w-4 text-success-700" />
-                        )}
-                      </div>
-                    </article>
-                  );
-                })
-              )}
-            </div>
-          </section>
-        );
-      })}
+                      </article>
+                    );
+                  })
+                )}
+              </div>
+            </section>
+          );
+        })}
+        {columns.length === 0 && (
+          <div className="panel flex min-h-48 min-w-full items-center justify-center p-8 text-center">
+            <p className="text-sm font-bold text-ink-muted">Nenhum card bate com os filtros.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
+}
+
+function listName(deal: Deal) {
+  return deal.details?.pipeline_list || deal.details?.trello_list || fallbackList(deal.stage);
+}
+
+function fallbackList(stage: DealStage) {
+  const labels: Record<DealStage, string> = {
+    novo: "Novo",
+    em_contato: "Em contato",
+    negociacao: "Proposta",
+    ganho: "Ganho",
+    perdido: "Perdido",
+  };
+  return labels[stage];
+}
+
+function isPlaceholder(deal: Deal) {
+  return deal.details?.pipeline_list_placeholder === "true";
+}
+
+function uniqueLists(lists: string[]) {
+  return lists.filter((list, index) => Boolean(list) && lists.indexOf(list) === index);
+}
+
+function dealLabels(deal: Deal) {
+  return uniqueLists([deal.details?.trello_labels, deal.details?.labels].flatMap((raw) =>
+    (raw ?? "")
+      .split(",")
+      .map((label) => label.trim())
+      .filter(Boolean)
+  ));
+}
+
+function dealLinks(deal: Deal) {
+  const links: { label: string; href: string }[] = [];
+  if (deal.details?.trello_url) links.push({ label: "Trello", href: deal.details.trello_url });
+  if (deal.details?.external_url) links.push({ label: "Link", href: deal.details.external_url });
+  return links;
+}
+
+function compareDeals(a: Deal, b: Deal) {
+  const posA = Number.isFinite(a.position) ? a.position : Number.MAX_SAFE_INTEGER;
+  const posB = Number.isFinite(b.position) ? b.position : Number.MAX_SAFE_INTEGER;
+  if (posA !== posB) return posA - posB;
+  return a.title.localeCompare(b.title, "pt-BR");
+}
+
+function normalizeText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function labelClass(label: string) {
+  const classes = [
+    "bg-success-50 text-success-700",
+    "bg-[#fff7e6] text-[#8a6500]",
+    "bg-sky-50 text-sky-700",
+    "bg-brand-50 text-brand-700",
+    "bg-danger-50 text-danger-700",
+    "bg-surface-2 text-ink-soft",
+  ];
+  let hash = 0;
+  for (const char of label) hash = (hash + char.charCodeAt(0)) % classes.length;
+  return classes[hash];
+}
+
+function trelloMeta(list: string) {
+  const normalized = list
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  if (normalized.includes("perdido") || normalized.includes("perda")) return STAGE_META.perdido;
+  if (
+    normalized.includes("fechado") ||
+    normalized.includes("vendidos") ||
+    normalized.includes("vendas") ||
+    normalized.includes("ganho")
+  ) {
+    return STAGE_META.ganho;
+  }
+  if (normalized.includes("visita") || normalized.includes("proposta") || normalized.includes("negociacao")) {
+    return STAGE_META.negociacao;
+  }
+  if (normalized.includes("analise") || normalized.includes("contato")) return STAGE_META.em_contato;
+  return STAGE_META.novo;
+}
+
+function stageFromList(list: string): DealStage {
+  const normalized = list
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  if (normalized.includes("perdido") || normalized.includes("perda") || normalized.includes("lost")) {
+    return "perdido";
+  }
+  if (
+    normalized.includes("fechado") ||
+    normalized.includes("vendido") ||
+    normalized.includes("vendas") ||
+    normalized.includes("ganho") ||
+    normalized.includes("won")
+  ) {
+    return "ganho";
+  }
+  if (
+    normalized.includes("proposta") ||
+    normalized.includes("negociacao") ||
+    normalized.includes("visita")
+  ) {
+    return "negociacao";
+  }
+  if (normalized.includes("analise") || normalized.includes("contato") || normalized.includes("follow")) {
+    return "em_contato";
+  }
+  return "novo";
 }

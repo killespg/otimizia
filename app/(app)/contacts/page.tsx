@@ -1,4 +1,5 @@
 import { PendingButton } from "@/components/PendingButton";
+import { getActiveOrgId } from "@/lib/org";
 import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact } from "@/lib/supabase/types";
@@ -24,6 +25,7 @@ export default async function ContactsPage({
     supabase.auth.getUser(),
     supabase.from("profiles").select("profession_type, is_admin").maybeSingle(),
   ]);
+  const orgId = await getActiveOrgId(supabase, user!.id);
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
     user?.user_metadata?.profession_type,
@@ -33,6 +35,7 @@ export default async function ContactsPage({
   const { data } = await supabase
     .from("contacts")
     .select("*")
+    .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey)
     .order("created_at", { ascending: false });
   const allContacts = (data ?? []) as Contact[];

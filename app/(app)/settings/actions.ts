@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import Stripe from "stripe";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth-constants";
 import { logError } from "@/lib/logger";
+import { getActiveOrgId } from "@/lib/org";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -67,42 +68,50 @@ export async function deleteAccount(formData: FormData) {
   }
 
   const admin = createAdminClient();
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("stripe_subscription_id")
-    .eq("id", user.id)
-    .maybeSingle();
+  const orgId = await getActiveOrgId(admin, user.id);
+  const { count: memberCount } = await admin
+    .from("organization_members")
+    .select("user_id", { count: "exact", head: true })
+    .eq("org_id", orgId);
 
-  if (profile?.stripe_subscription_id) {
-    try {
-      // Confere o status antes de cancelar: se profiles.stripe_subscription_id
-      // está desatualizado (ex.: o webhook de subscription.deleted falhou em
-      // sincronizar) e a assinatura já está cancelada ou não existe mais no
-      // Stripe, não há cobrança recorrente para órfão — não bloqueia a
-      // exclusão da conta por isso.
-      const subscription = await getStripe().subscriptions.retrieve(
-        profile.stripe_subscription_id
-      );
-      if (subscription.status !== "canceled") {
-        await getStripe().subscriptions.cancel(profile.stripe_subscription_id);
-      }
-    } catch (err) {
-      const alreadyGone = err instanceof Stripe.errors.StripeError && err.code === "resource_missing";
-      logError(
-        alreadyGone
-          ? "settings.delete-account.subscription-already-gone"
-          : "settings.delete-account.cancel-subscription",
-        err,
-        { userId: user.id }
-      );
-      if (!alreadyGone) {
-        // Não apaga a conta se não conseguirmos cancelar a assinatura: apagar
-        // o usuário remove a linha de profiles (e o stripe_subscription_id
-        // junto), e a cobrança recorrente ficaria órfã, sem ninguém para
-        // cancelá-la depois.
-        throw new Error(
-          "Não foi possível cancelar sua assinatura agora. Tente novamente em instantes ou contate o suporte."
+  // Billing é da organização, não da pessoa. Se ainda houver outros membros
+  // depois que essa conta sair (org de empresa), a assinatura continua
+  // sendo deles — só mexe nela quando essa conta é a última na organização.
+  if ((memberCount ?? 0) <= 1) {
+    const { data: org } = await admin
+      .from("organizations")
+      .select("stripe_subscription_id")
+      .eq("id", orgId)
+      .maybeSingle();
+
+    if (org?.stripe_subscription_id) {
+      try {
+        // Confere o status antes de cancelar: se a assinatura já está
+        // cancelada ou não existe mais no Stripe, não há cobrança recorrente
+        // para órfão — não bloqueia a exclusão da conta por isso.
+        const subscription = await getStripe().subscriptions.retrieve(
+          org.stripe_subscription_id
         );
+        if (subscription.status !== "canceled") {
+          await getStripe().subscriptions.cancel(org.stripe_subscription_id);
+        }
+      } catch (err) {
+        const alreadyGone = err instanceof Stripe.errors.StripeError && err.code === "resource_missing";
+        logError(
+          alreadyGone
+            ? "settings.delete-account.subscription-already-gone"
+            : "settings.delete-account.cancel-subscription",
+          err,
+          { userId: user.id, orgId }
+        );
+        if (!alreadyGone) {
+          // Não apaga a conta se não conseguirmos cancelar a assinatura:
+          // apagar o usuário deixa a organização órfã (sem membros) e a
+          // cobrança recorrente ficaria sem ninguém para cancelá-la depois.
+          throw new Error(
+            "Não foi possível cancelar sua assinatura agora. Tente novamente em instantes ou contate o suporte."
+          );
+        }
       }
     }
   }

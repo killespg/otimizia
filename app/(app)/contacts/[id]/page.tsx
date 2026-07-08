@@ -5,6 +5,7 @@ import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Interaction, Task } from "@/lib/supabase/types";
 import { formatDateTime } from "@/lib/format";
+import { getActiveOrgId } from "@/lib/org";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { Avatar } from "../../Avatar";
 import {
@@ -36,6 +37,7 @@ export default async function ContactDetailPage({
     supabase.auth.getUser(),
     supabase.from("profiles").select("profession_type, name, is_admin").maybeSingle(),
   ]);
+  const orgId = await getActiveOrgId(supabase, user!.id);
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
     user?.user_metadata?.profession_type,
@@ -46,6 +48,7 @@ export default async function ContactDetailPage({
     .from("contacts")
     .select("*")
     .eq("id", params.id)
+    .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey)
     .maybeSingle();
   const myName =
@@ -55,18 +58,21 @@ export default async function ContactDetailPage({
   const c = contact as Contact;
   const contactName = displayContactName(c);
   const now = new Date();
+  const copy = contactDetailCopy(preset.key === "livestock_producer");
 
   const [{ data: interactions }, { data: tasks }] = await Promise.all([
     supabase
       .from("interactions")
       .select("*")
       .eq("contact_id", c.id)
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("created_at", { ascending: false }),
     supabase
       .from("tasks")
       .select("*")
       .eq("contact_id", c.id)
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("due_at", { ascending: true }),
   ]);
@@ -85,14 +91,14 @@ export default async function ContactDetailPage({
         className="nav-item inline-flex items-center gap-2 text-sm font-black text-ink-muted hover:text-brand-700"
       >
         <IconArrowRight className="h-4 w-4 rotate-180" />
-        Voltar para contatos
+        {copy.backLabel}
       </Link>
 
       <header className="enter panel flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <Avatar name={contactName} className="h-16 w-16 text-lg" />
           <div className="min-w-0">
-            <p className="text-sm font-black text-brand-700">Contato</p>
+            <p className="text-sm font-black text-brand-700">{copy.sectionSingular}</p>
             <h1 className="text-safe text-[clamp(2rem,5vw,3.3rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
               {contactName}
             </h1>
@@ -128,10 +134,10 @@ export default async function ContactDetailPage({
         <section className="panel overflow-hidden">
           <div className="border-b border-line px-5 py-4">
             <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
-              Dados do cliente
+              {copy.dataTitle}
             </h2>
             <p className="mt-1 text-sm font-medium text-ink-muted">
-              Atualize os detalhes principais deste contato.
+              {copy.dataDescription}
             </p>
           </div>
 
@@ -140,7 +146,7 @@ export default async function ContactDetailPage({
             <Field name="name" label="Nome" defaultValue={contactName} required maxLength={120} autoComplete="name" />
             <Field
               name="phone"
-              label="Telefone / WhatsApp"
+              label={copy.phoneField}
               defaultValue={c.phone ?? ""}
               maxLength={40}
               autoComplete="tel"
@@ -148,7 +154,7 @@ export default async function ContactDetailPage({
             />
             <Field name="email" label="E-mail" type="email" defaultValue={c.email ?? ""} maxLength={160} autoComplete="email" />
             <Field name="instagram" label="Instagram" defaultValue={c.instagram ?? ""} maxLength={60} placeholder="@usuario" />
-            <Field name="company" label="Empresa" defaultValue={c.company ?? ""} maxLength={120} autoComplete="organization" />
+            <Field name="company" label={copy.companyField} defaultValue={c.company ?? ""} maxLength={120} autoComplete="organization" />
             <Field name="source" label="Origem" defaultValue={c.source ?? ""} maxLength={120} />
             <PresetFields fields={preset.contactFields} values={c.details} />
             <div>
@@ -175,9 +181,9 @@ export default async function ContactDetailPage({
             className="flex items-center justify-between gap-3 border-t border-line bg-[#f8fbff] px-5 py-4"
           >
             <div>
-              <p className="text-sm font-black text-ink">Excluir contato</p>
+              <p className="text-sm font-black text-ink">{copy.deleteTitle}</p>
               <p className="text-sm font-medium text-ink-muted">
-                Remove o cliente e as anotações.
+                {copy.deleteDescription}
               </p>
             </div>
             <input type="hidden" name="id" value={c.id} />
@@ -285,7 +291,7 @@ export default async function ContactDetailPage({
           <section className="panel overflow-hidden">
             <div className="border-b border-line px-5 py-4">
               <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
-                Lembretes deste cliente
+                {copy.tasksTitle}
               </h2>
             </div>
             <div className="px-5">
@@ -374,6 +380,34 @@ function displayContactName(contact: Pick<Contact, "name">) {
   return typeof contact.name === "string" && contact.name.trim()
     ? contact.name
     : "Cliente sem nome";
+}
+
+function contactDetailCopy(isLivestock: boolean) {
+  if (isLivestock) {
+    return {
+      backLabel: "Voltar para sujeitos",
+      sectionSingular: "Sujeito",
+      dataTitle: "Dados do sujeito",
+      dataDescription: "Atualize as informações principais deste sujeito.",
+      phoneField: "Telefone / WhatsApp",
+      companyField: "Origem",
+      deleteTitle: "Excluir sujeito",
+      deleteDescription: "Remove o sujeito e as anotações.",
+      tasksTitle: "Lembretes deste sujeito",
+    };
+  }
+
+  return {
+    backLabel: "Voltar para contatos",
+    sectionSingular: "Contato",
+    dataTitle: "Dados do cliente",
+    dataDescription: "Atualize os detalhes principais deste contato.",
+    phoneField: "Telefone / WhatsApp",
+    companyField: "Empresa",
+    deleteTitle: "Excluir contato",
+    deleteDescription: "Remove o cliente e as anotações.",
+    tasksTitle: "Lembretes deste cliente",
+  };
 }
 
 function Field({

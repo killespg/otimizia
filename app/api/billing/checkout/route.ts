@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { logError } from "@/lib/logger";
+import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { resolveOrigin } from "@/lib/request-origin";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -15,23 +16,31 @@ export async function POST(request: Request) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("stripe_customer_id")
-    .eq("id", user.id)
-    .maybeSingle();
+  const orgId = await getActiveOrgId(supabase, user.id);
+  const role = await getOrgRole(supabase, orgId, user.id);
+  if (role !== "admin") {
+    return NextResponse.redirect(new URL("/settings?checkout=forbidden", request.url));
+  }
 
-  let customerId = profile?.stripe_customer_id ?? null;
+  const [{ data: org }, { count: seatCount }] = await Promise.all([
+    supabase.from("organizations").select("stripe_customer_id").eq("id", orgId).maybeSingle(),
+    supabase
+      .from("organization_members")
+      .select("user_id", { count: "exact", head: true })
+      .eq("org_id", orgId),
+  ]);
+
+  let customerId = org?.stripe_customer_id ?? null;
   if (!customerId) {
     const customer = await stripe.customers.create({
       email: user.email ?? undefined,
-      metadata: { supabase_user_id: user.id },
+      metadata: { supabase_org_id: orgId },
     });
     customerId = customer.id;
     const { error } = await createAdminClient()
-      .from("profiles")
+      .from("organizations")
       .update({ stripe_customer_id: customerId })
-      .eq("id", user.id);
+      .eq("id", orgId);
     if (error) {
       logError("billing/checkout.link-customer", error, { userId: user.id });
       return NextResponse.redirect(new URL("/settings?checkout=error", request.url));
@@ -42,12 +51,12 @@ export async function POST(request: Request) {
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
-    client_reference_id: user.id,
-    metadata: { supabase_user_id: user.id },
+    client_reference_id: orgId,
+    metadata: { supabase_org_id: orgId },
     subscription_data: {
-      metadata: { supabase_user_id: user.id },
+      metadata: { supabase_org_id: orgId },
     },
-    line_items: [{ price: process.env.STRIPE_PRICE_ID_PRO!, quantity: 1 }],
+    line_items: [{ price: process.env.STRIPE_PRICE_ID_PRO!, quantity: Math.max(seatCount ?? 1, 1) }],
     success_url: `${origin}/settings?checkout=success`,
     cancel_url: `${origin}/settings?checkout=cancel`,
   });

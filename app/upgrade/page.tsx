@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { PendingButton } from "@/components/PendingButton";
-import { getPlanAccess } from "@/lib/plan";
+import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { getUserPlanAccess } from "@/lib/plan-access";
 import { createClient } from "@/lib/supabase/server";
-import type { Profile } from "@/lib/supabase/types";
 import { logout } from "../(auth)/actions";
 
 export default async function UpgradePage() {
@@ -12,13 +12,12 @@ export default async function UpgradePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .maybeSingle();
-  const profile = data as Profile | null;
-  const access = getPlanAccess(profile);
+  const orgId = await getActiveOrgId(supabase, user.id);
+  const [access, role] = await Promise.all([
+    getUserPlanAccess(supabase, user.id),
+    getOrgRole(supabase, orgId, user.id),
+  ]);
+  const isAdmin = role === "admin";
 
   if (access.hasAccess) redirect("/dashboard");
 
@@ -34,16 +33,19 @@ export default async function UpgradePage() {
             {title}
           </h1>
           <p className="mt-2 text-sm font-medium leading-relaxed text-ink-soft">
-            Assine o plano Pro para voltar a acessar seus contatos, negócios e
-            lembretes.
+            {isAdmin
+              ? "Assine o plano Pro para voltar a acessar seus contatos, negócios e lembretes."
+              : "Peça a um administrador da empresa para renovar a assinatura — assim todo mundo volta a ter acesso."}
           </p>
         </div>
 
-        <form action="/api/billing/checkout" method="POST">
-          <PendingButton className="btn w-full py-3 text-base" pendingLabel="Abrindo">
-            Assinar Pro — R$ 39,90/mês
-          </PendingButton>
-        </form>
+        {isAdmin && (
+          <form action="/api/billing/checkout" method="POST">
+            <PendingButton className="btn w-full py-3 text-base" pendingLabel="Abrindo">
+              Assinar Pro — R$ 39,90/mês por pessoa
+            </PendingButton>
+          </form>
+        )}
 
         <form action={logout}>
           <PendingButton

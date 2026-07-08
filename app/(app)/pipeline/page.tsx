@@ -1,7 +1,9 @@
 import { PendingButton } from "@/components/PendingButton";
+import { getActiveOrgId } from "@/lib/org";
 import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Deal } from "@/lib/supabase/types";
+import { dealValueOrZero } from "@/lib/deals";
 import { formatBRL } from "@/lib/format";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { createDeal } from "../actions";
@@ -9,6 +11,21 @@ import { ContactField } from "../ContactField";
 import { IconColumns, IconPlus, IconUsers, IconWallet } from "../icons";
 import { PresetFields } from "../PresetFields";
 import Board from "./Board";
+
+const LIVESTOCK_LIST_ORDER = [
+  "PLANTEL",
+  "PLANTEL PAI",
+  "INSEMINAÇÕES",
+  "NASCIMENTOS",
+  "CONTROLE SANITÁRIO - MANEJOS",
+  "OUTROS",
+  "PLANTIO - ADUBAÇÃO",
+  "OBSERVAÇÕES",
+  "INVESTIMENTOS",
+  "SUGESTÕES DE NOMES",
+  "VENDAS",
+  "PERDAS",
+];
 
 export default async function PipelinePage() {
   const supabase = createClient();
@@ -22,6 +39,7 @@ export default async function PipelinePage() {
     supabase.auth.getUser(),
     supabase.from("profiles").select("profession_type, is_admin").maybeSingle(),
   ]);
+  const orgId = await getActiveOrgId(supabase, user!.id);
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
     user?.user_metadata?.profession_type,
@@ -32,27 +50,30 @@ export default async function PipelinePage() {
     supabase
       .from("deals")
       .select("*")
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("created_at", { ascending: false }),
     supabase
       .from("contacts")
       .select("id, name")
+      .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("name"),
   ]);
 
   const allDeals = (deals ?? []) as Deal[];
   const allContacts = (contacts ?? []) as Pick<Contact, "id" | "name">[];
+  const pipelineLists = pipelineListsFor(allDeals, preset.key);
   const contactNames = Object.fromEntries(
     allContacts.map((contact) => [contact.id, contact.name])
   );
   const openDeals = allDeals.filter(
     (deal) => deal.stage !== "ganho" && deal.stage !== "perdido"
   );
-  const openValue = openDeals.reduce((sum, deal) => sum + deal.value_cents, 0);
+  const openValue = openDeals.reduce((sum, deal) => sum + dealValueOrZero(deal), 0);
   const wonValue = allDeals
     .filter((deal) => deal.stage === "ganho")
-    .reduce((sum, deal) => sum + deal.value_cents, 0);
+    .reduce((sum, deal) => sum + dealValueOrZero(deal), 0);
 
   return (
     <div className="space-y-4 sm:space-y-5">
@@ -76,6 +97,7 @@ export default async function PipelinePage() {
 
       <form action={createDeal} className="panel p-4 sm:p-5">
         <input type="hidden" name="return_to" value="/pipeline" />
+        <input type="hidden" name="pipeline_list" value={pipelineLists[0] ?? "Novo"} />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_9rem_minmax(0,1fr)_auto] lg:items-end">
           <div>
             <label className="label" htmlFor="deal-title">
@@ -120,6 +142,26 @@ export default async function PipelinePage() {
             <PresetFields fields={preset.dealFields} />
           </div>
         )}
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="label">Etiquetas</span>
+            <input
+              name="labels"
+              maxLength={240}
+              placeholder="Ex: quente, urgente"
+              className="field mt-1.5"
+            />
+          </label>
+          <label className="block">
+            <span className="label">Link externo</span>
+            <input
+              name="external_url"
+              maxLength={300}
+              placeholder="https://..."
+              className="field mt-1.5"
+            />
+          </label>
+        </div>
       </form>
 
       <Board
@@ -127,9 +169,43 @@ export default async function PipelinePage() {
         contactNames={contactNames}
         stages={preset.stages}
         dealFields={preset.dealFields}
+        pipelineLists={pipelineLists}
       />
     </div>
   );
+}
+
+function pipelineListsFor(deals: Deal[], presetKey: string) {
+  const fromDeals = Array.from(
+    new Set(
+      deals
+        .map((deal) => deal.details?.pipeline_list || deal.details?.trello_list)
+        .filter(Boolean)
+    )
+  ) as string[];
+
+  if (presetKey === "real_estate_broker") {
+    return uniqueLists([
+      "PROSPECÇÃO",
+      "ANÁLISE DE NECESSIDADE",
+      "APRESENTAÇÃO/VISITA IMÓVEIS",
+      "PROPOSTA/NEGOCIAÇÃO",
+      "NEGÓCIO FECHADO",
+      "VENDIDOS",
+      "NEGÓCIO PERDIDO",
+      ...fromDeals,
+    ]);
+  }
+
+  if (presetKey === "livestock_producer") {
+    return uniqueLists([...LIVESTOCK_LIST_ORDER, ...fromDeals]);
+  }
+
+  return uniqueLists([...fromDeals, "Novo", "Em contato", "Proposta", "Ganho", "Perdido"]);
+}
+
+function uniqueLists(lists: string[]) {
+  return lists.filter((list, index) => list && lists.indexOf(list) === index);
 }
 
 function MetricCard({
