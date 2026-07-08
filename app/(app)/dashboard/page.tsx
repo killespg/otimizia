@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AgentPanel } from "@/components/AgentPanel";
 import { PendingButton } from "@/components/PendingButton";
 import { computeDevMetrics, type DevMetrics } from "@/lib/devMetrics";
-import { getActiveOrgId } from "@/lib/org";
+import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getProfessionPreset, type MetricKey, type ProfessionPreset } from "@/lib/professions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -15,18 +15,21 @@ import {
 } from "@/lib/supabase/types";
 import { formatBRL, formatDate } from "@/lib/format";
 import { getWorkspaceKey } from "@/lib/workspaces";
-import { createTask } from "../actions";
+import { claimDeal, claimTask, createTask, dismissChecklist } from "../actions";
 import { ReminderModal as ReminderModalClient } from "./ReminderModal";
 import { RevenueLineChart } from "./RevenueLineChart";
 import {
   IconArrowRight,
   IconBell,
+  IconBot,
   IconCheckCircle,
   IconColumns,
   IconMessage,
   IconSearch,
+  IconSettings,
   IconUsers,
   IconWallet,
+  IconX,
 } from "../icons";
 
 const METRIC_ICONS: Record<MetricKey, (props: { className?: string }) => JSX.Element> = {
@@ -72,7 +75,10 @@ export default async function DashboardPage() {
     { data: profile },
   ] = await Promise.all([
     supabase.auth.getUser(),
-    supabase.from("profiles").select("profession_type, is_admin").maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("profession_type, is_admin, checklist_dismissed_at")
+      .maybeSingle(),
   ]);
   const orgId = await getActiveOrgId(supabase, user!.id);
   const isAdmin = profile?.is_admin ?? false;
@@ -82,12 +88,18 @@ export default async function DashboardPage() {
     user?.user_metadata?.profession_type,
     isAdmin
   );
+  const orgRole = await getOrgRole(supabase, orgId, user!.id);
+  const isOrgAdmin = orgRole === "admin";
   const [
     { data: deals },
     { data: tasks },
     { data: contactOptions },
     { count: contactsCount },
     { count: conversationsToday },
+    { count: totalTasksCount },
+    { data: orgContext },
+    { count: assistantMessageCount },
+    { count: teamMembersCount },
   ] = await Promise.all([
     supabase
       .from("deals")
@@ -119,6 +131,28 @@ export default async function DashboardPage() {
       .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .gte("created_at", startOfToday.toISOString()),
+    supabase
+      .from("tasks")
+      .select("*", { count: "exact", head: true })
+      .eq("org_id", orgId)
+      .eq("workspace_key", workspaceKey),
+    supabase
+      .from("organizations")
+      .select("business_context")
+      .eq("id", orgId)
+      .maybeSingle(),
+    supabase
+      .from("assistant_messages")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user!.id)
+      .eq("org_id", orgId)
+      .eq("role", "user"),
+    isOrgAdmin
+      ? supabase
+          .from("organization_members")
+          .select("user_id", { count: "exact", head: true })
+          .eq("org_id", orgId)
+      : Promise.resolve({ count: null }),
   ]);
 
   const allDeals = (deals ?? []) as Deal[];
@@ -136,6 +170,8 @@ export default async function DashboardPage() {
   const openDeals = allDeals.filter(
     (deal) => deal.stage !== "ganho" && deal.stage !== "perdido"
   );
+  const unclaimedTasks = openTasks.filter((task) => !task.assignee_id);
+  const unclaimedDeals = openDeals.filter((deal) => !deal.assignee_id);
   const openValue = openDeals.reduce((sum, deal) => sum + (deal.value_cents ?? 0), 0);
   const wonThisMonth = allDeals.filter(
     (deal) =>
@@ -277,6 +313,8 @@ export default async function DashboardPage() {
 
       {founderMetrics && <FounderMetricsPanel metrics={founderMetrics} />}
 
+      <OpenClaimsPanel tasks={unclaimedTasks} deals={unclaimedDeals} preset={preset} />
+
       <section className="grid gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(23rem,0.72fr)]">
         <div className="min-w-0 space-y-4 sm:space-y-5">
           <RevenueChart
@@ -296,7 +334,20 @@ export default async function DashboardPage() {
         </aside>
       </section>
 
-      {isFirstRun && <FirstRunPanel preset={preset} />}
+      {!profile?.checklist_dismissed_at && (
+        <OnboardingChecklist
+          preset={preset}
+          isOrgAdmin={isOrgAdmin}
+          done={{
+            contact: contacts > 0,
+            deal: allDeals.length > 0,
+            task: (totalTasksCount ?? 0) > 0,
+            businessContext: Boolean(orgContext?.business_context),
+            assistant: (assistantMessageCount ?? 0) > 0,
+            team: (teamMembersCount ?? 0) > 1,
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -399,6 +450,84 @@ function FounderMetricsPanel({ metrics }: { metrics: DevMetrics }) {
       </div>
     </section>
   );
+}
+
+function OpenClaimsPanel({
+  tasks,
+  deals,
+  preset,
+}: {
+  tasks: Task[];
+  deals: Deal[];
+  preset: ProfessionPreset;
+}) {
+  if (tasks.length === 0 && deals.length === 0) return null;
+
+  return (
+    <section className="enter rounded-lg border border-brand-200 bg-brand-50 p-4 sm:p-5">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-black text-brand-800">Disponíveis pra pegar</p>
+          <p className="mt-1 text-xs font-medium text-ink-muted">
+            Deixados em aberto pelo admin — quem pegar primeiro fica com o item.
+          </p>
+        </div>
+        <span className="rounded-md bg-white px-2.5 py-1 text-xs font-black text-brand-700">
+          {String(tasks.length + deals.length).padStart(2, "0")}
+        </span>
+      </div>
+      <ul className="mt-3 space-y-2">
+        {tasks.map((task) => (
+          <li
+            key={`task-${task.id}`}
+            className="flex items-center justify-between gap-3 rounded-lg border border-brand-200 bg-white px-3 py-2.5"
+          >
+            <div className="min-w-0">
+              <p className="clip-1 text-safe text-sm font-black text-ink">{task.title}</p>
+              <p className="mt-0.5 text-xs font-semibold text-ink-muted">
+                Tarefa{task.due_at ? ` · ${formatDate(task.due_at)}` : ""}
+              </p>
+            </div>
+            <form action={claimTask}>
+              <input type="hidden" name="task_id" value={task.id} />
+              <PendingButton
+                className="shrink-0 rounded-md bg-brand-700 px-3 py-1.5 text-xs font-black text-white hover:bg-brand-800"
+                pendingLabel="Pegando"
+              >
+                Pegar
+              </PendingButton>
+            </form>
+          </li>
+        ))}
+        {deals.map((deal) => (
+          <li
+            key={`deal-${deal.id}`}
+            className="flex items-center justify-between gap-3 rounded-lg border border-brand-200 bg-white px-3 py-2.5"
+          >
+            <div className="min-w-0">
+              <p className="clip-1 text-safe text-sm font-black text-ink">{deal.title}</p>
+              <p className="mt-0.5 text-xs font-semibold text-ink-muted">
+                {capitalize(preset.dealSingular)} · {formatBRL(deal.value_cents ?? 0)}
+              </p>
+            </div>
+            <form action={claimDeal}>
+              <input type="hidden" name="deal_id" value={deal.id} />
+              <PendingButton
+                className="shrink-0 rounded-md bg-brand-700 px-3 py-1.5 text-xs font-black text-white hover:bg-brand-800"
+                pendingLabel="Pegando"
+              >
+                Pegar
+              </PendingButton>
+            </form>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 function RevenueChart({
@@ -705,45 +834,124 @@ function TaskQueue({
   );
 }
 
-function FirstRunPanel({ preset }: { preset: ProfessionPreset }) {
+function OnboardingChecklist({
+  preset,
+  isOrgAdmin,
+  done,
+}: {
+  preset: ProfessionPreset;
+  isOrgAdmin: boolean;
+  done: {
+    contact: boolean;
+    deal: boolean;
+    task: boolean;
+    businessContext: boolean;
+    assistant: boolean;
+    team: boolean;
+  };
+}) {
   const steps = [
     {
+      key: "contact",
       title: preset.firstSteps[0],
       desc: "Comece com quem você está atendendo agora.",
       href: "/contacts",
       icon: IconUsers,
+      done: done.contact,
     },
     {
+      key: "deal",
       title: preset.firstSteps[1],
       desc: "Anote valor, etapa e próximo passo.",
       href: "/pipeline",
       icon: IconColumns,
+      done: done.deal,
     },
     {
+      key: "task",
       title: preset.firstSteps[2],
       desc: "Escolha quando chamar o cliente de novo.",
       href: "/tasks",
       icon: IconBell,
+      done: done.task,
     },
+    {
+      key: "assistant",
+      title: "Converse com o assistente",
+      desc: "Pergunte algo sobre seu negócio ou peça pra criar um contato.",
+      href: "/assistant",
+      icon: IconBot,
+      done: done.assistant,
+    },
+    ...(isOrgAdmin
+      ? [
+          {
+            key: "context",
+            title: "Configure o contexto da empresa",
+            desc: "Conte o que a empresa faz — a IA usa isso em tudo que responde.",
+            href: "/team",
+            icon: IconSettings,
+            done: done.businessContext,
+          },
+          {
+            key: "team",
+            title: "Convide um colega de equipe",
+            desc: "Traga quem também vende ou atende junto com você.",
+            href: "/team",
+            icon: IconUsers,
+            done: done.team,
+          },
+        ]
+      : []),
   ];
 
+  if (steps.every((step) => step.done)) return null;
+
   return (
-    <section className="enter rounded-lg border border-brand-200 bg-brand-50 p-5">
+    <section className="enter relative rounded-lg border border-brand-200 bg-brand-50 p-5">
+      <form action={dismissChecklist} className="absolute right-3 top-3">
+        <PendingButton
+          className="nav-item grid h-8 w-8 place-items-center rounded-md text-ink-muted hover:bg-white/60 hover:text-ink"
+          aria-label="Fechar painel de primeiros passos"
+          iconOnly
+          pendingLabel="Fechando"
+        >
+          <IconX className="h-4 w-4" />
+          <span className="sr-only">Fechar</span>
+        </PendingButton>
+      </form>
+
       <p className="text-sm font-black text-brand-800">Primeiros passos</p>
-      <h2 className="mt-2 text-2xl font-black tracking-[-0.03em] text-ink">
-        Três passos para o painel ganhar vida.
+      <h2 className="mt-2 max-w-lg text-2xl font-black tracking-[-0.03em] text-ink">
+        Deixe seu painel pronto pra valer.
       </h2>
-      <div className="mt-5 grid gap-3 md:grid-cols-3">
+
+      <div className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {steps.map((step) => {
           const Icon = step.icon;
           return (
             <Link
-              key={step.title}
+              key={step.key}
               href={step.href}
-              className="row-link rounded-lg border border-brand-200 bg-white p-4 hover:border-brand-400"
+              className={
+                "row-link relative rounded-lg border p-4 " +
+                (step.done
+                  ? "border-success-200 bg-white/70"
+                  : "border-brand-200 bg-white hover:border-brand-400")
+              }
             >
-              <Icon className="h-6 w-6 text-brand-700" />
-              <p className="mt-4 text-sm font-black text-ink">{step.title}</p>
+              <div className="flex items-center justify-between gap-2">
+                <Icon className={"h-6 w-6 " + (step.done ? "text-success-600" : "text-brand-700")} />
+                {step.done && <IconCheckCircle className="h-5 w-5 text-success-600" />}
+              </div>
+              <p
+                className={
+                  "mt-4 text-sm font-black " +
+                  (step.done ? "text-ink-muted line-through" : "text-ink")
+                }
+              >
+                {step.title}
+              </p>
               <p className="mt-1 text-sm font-medium leading-relaxed text-ink-muted">
                 {step.desc}
               </p>

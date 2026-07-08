@@ -1,9 +1,11 @@
+import { randomUUID } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
 import type { User } from "@supabase/supabase-js";
 import { saveAssistantMessage } from "@/lib/ai/history";
 import { getActiveOrgId } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset, type ProfessionPreset } from "@/lib/professions";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { CRM_TOOLS, executeTool, isMutatingTool } from "@/lib/ai/tools";
 import { getWorkspaceKey } from "@/lib/workspaces";
@@ -15,6 +17,56 @@ const MODEL = "claude-sonnet-5";
 const MAX_TOOL_TURNS = 10;
 const MAX_HISTORY = 30;
 const MAX_MESSAGE_CHARS = 4000;
+
+// Reaproveita o bucket já usado pelas fotos de negócio — mesma política de
+// tamanho/tipo, só muda o prefixo do caminho.
+const CHAT_PHOTOS_BUCKET = "deal-photos";
+const CHAT_IMAGE_MAX_BYTES = 6 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+
+type IncomingImage = { mediaType: string; data: string };
+
+function sanitizeImage(raw: unknown): IncomingImage | null {
+  if (!raw || typeof raw !== "object") return null;
+  const mediaType = (raw as { mediaType?: unknown }).mediaType;
+  const data = (raw as { data?: unknown }).data;
+  if (typeof mediaType !== "string" || !ALLOWED_IMAGE_TYPES.has(mediaType)) return null;
+  if (typeof data !== "string" || !data) return null;
+  const approxBytes = (data.length * 3) / 4;
+  if (approxBytes > CHAT_IMAGE_MAX_BYTES) return null;
+  return { mediaType, data };
+}
+
+async function uploadChatImage(
+  orgId: string,
+  userId: string,
+  image: IncomingImage
+): Promise<string> {
+  const extension = image.mediaType.split("/")[1] || "jpg";
+  const path = `${orgId}/assistant/${userId}/${randomUUID()}.${extension}`;
+  const bytes = Buffer.from(image.data, "base64");
+  const admin = createAdminClient();
+  const { error } = await admin.storage.from(CHAT_PHOTOS_BUCKET).upload(path, bytes, {
+    contentType: image.mediaType,
+    upsert: false,
+  });
+  if (error) throw error;
+  const { data } = admin.storage.from(CHAT_PHOTOS_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
+
+type OrganizationAiContext = {
+  name: string | null;
+  business_context: string | null;
+  business_priorities: string | null;
+  ai_tone: string | null;
+  ai_instructions: string | null;
+  industry: string | null;
+  region: string | null;
+  team_size: string | null;
+  website: string | null;
+  extra_notes: string | null;
+};
 
 // Evento NDJSON enviado ao cliente, um JSON por linha:
 // {type:"text", text} | {type:"thinking"} | {type:"tool", name}
@@ -41,9 +93,11 @@ export async function POST(req: Request) {
   }
 
   let history: Anthropic.MessageParam[];
+  let image: IncomingImage | null;
   try {
     const body = await req.json();
     history = sanitizeHistory(body?.messages);
+    image = sanitizeImage(body?.image);
   } catch {
     return Response.json({ error: "Requisição inválida." }, { status: 400 });
   }
@@ -54,15 +108,38 @@ export async function POST(req: Request) {
   // Só a última mensagem é nova — o cliente reenvia o histórico acumulado a
   // cada chamada, e o resto já foi salvo em requisições anteriores.
   const lastIncoming = history[history.length - 1];
+  let uploadedImageUrl: string | null = null;
   if (lastIncoming.role === "user" && typeof lastIncoming.content === "string") {
-    await saveAssistantMessage(supabase, user.id, orgId, "user", lastIncoming.content);
+    if (image) {
+      try {
+        uploadedImageUrl = await uploadChatImage(orgId, user.id, image);
+      } catch (err) {
+        console.error("[api/assistant] upload de imagem falhou", err);
+      }
+    }
+    const textForHistory = [
+      lastIncoming.content,
+      uploadedImageUrl ? `[imagem:${uploadedImageUrl}]` : "",
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+    await saveAssistantMessage(supabase, user.id, orgId, "user", textForHistory);
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("profession_type, is_admin")
-    .eq("id", user.id)
-    .maybeSingle();
+  const [{ data: profile }, { data: organization }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("profession_type, is_admin")
+      .eq("id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("organizations")
+      .select(
+        "name, business_context, business_priorities, ai_tone, ai_instructions, industry, region, team_size, website, extra_notes"
+      )
+      .eq("id", orgId)
+      .maybeSingle(),
+  ]);
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
     user.user_metadata?.profession_type,
@@ -79,6 +156,17 @@ export async function POST(req: Request) {
         controller.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
 
       const messages: Anthropic.MessageParam[] = [...history];
+      if (uploadedImageUrl) {
+        const last = messages[messages.length - 1];
+        const captionText = typeof last.content === "string" ? last.content.trim() : "";
+        messages[messages.length - 1] = {
+          role: "user",
+          content: [
+            { type: "image", source: { type: "url", url: uploadedImageUrl } },
+            ...(captionText ? [{ type: "text" as const, text: captionText }] : []),
+          ],
+        };
+      }
       let mutated = false;
       let assistantText = "";
 
@@ -88,7 +176,7 @@ export async function POST(req: Request) {
             model: MODEL,
             max_tokens: 64000,
             thinking: { type: "adaptive" },
-            system: buildSystemPrompt(user, preset),
+            system: buildSystemPrompt(user, preset, organization),
             tools: CRM_TOOLS,
             messages,
           });
@@ -168,7 +256,11 @@ export async function POST(req: Request) {
   });
 }
 
-function buildSystemPrompt(user: User, preset: ProfessionPreset): string {
+function buildSystemPrompt(
+  user: User,
+  preset: ProfessionPreset,
+  organization: OrganizationAiContext | null
+): string {
   const name =
     typeof user.user_metadata?.name === "string" && user.user_metadata.name
       ? user.user_metadata.name
@@ -191,6 +283,24 @@ function buildSystemPrompt(user: User, preset: ProfessionPreset): string {
   const templatesLine = preset.messageTemplates
     .map((template) => `- ${template.label}: "${template.body}"`)
     .join("\n");
+  const orgContextLines = [
+    organization?.name ? `Nome da empresa/operação: ${organization.name}` : "",
+    organization?.industry ? `Segmento/setor: ${organization.industry}` : "",
+    organization?.region ? `Região de atuação: ${organization.region}` : "",
+    organization?.team_size ? `Tamanho da equipe: ${organization.team_size}` : "",
+    organization?.website ? `Site/link: ${organization.website}` : "",
+    organization?.business_context
+      ? `Contexto da empresa: ${organization.business_context}`
+      : "",
+    organization?.business_priorities
+      ? `Prioridades da empresa: ${organization.business_priorities}`
+      : "",
+    organization?.ai_tone ? `Jeito de falar preferido: ${organization.ai_tone}` : "",
+    organization?.ai_instructions
+      ? `Instruções internas para a IA: ${organization.ai_instructions}`
+      : "",
+    organization?.extra_notes ? `Outras informações: ${organization.extra_notes}` : "",
+  ].filter(Boolean);
 
   return `Você é sócio(a) de ${name} no negócio dele(a). Vocês dois tocam a empresa juntos e usam o OtimizIA (o CRM) para organizar contatos, vendas, lembretes e conversas com clientes. Você tem acesso direto a esses dados através de ferramentas e cuida da parte operacional para ${name} poder focar em vender e atender.
 
@@ -198,8 +308,10 @@ Data e hora atuais (America/Sao_Paulo): ${now}.
 
 Contexto profissional: ${preset.assistantContext}
 Area ativa no CRM: ${preset.signupLabel}. Todas as consultas e acoes devem considerar apenas essa area.
+Você também é especialista experiente em ${preset.expertiseArea} — não só um assistente de CRM. Sempre que ${name} fizer uma pergunta técnica da área, pedir uma opinião sobre um caso/situação, ou mandar uma foto/documento pra ler, analisar ou transcrever, responda com o conhecimento e o vocabulário de quem atua nisso há anos, dando orientação prática e específica em vez de resposta genérica — mesmo que não tenha relação direta com contatos, vendas ou lembretes no CRM.
 ${extraFieldsLine ? `Campos extras disponíveis para contatos/vendas deste perfil (use 'detalhes' nas ferramentas quando o usuário mencionar algum): ${extraFieldsLine}.` : ""}
 ${templatesLine ? `Modelos de mensagem prontos deste perfil (use como base ao redigir uma mensagem para o cliente, adaptando ao contexto e substituindo {{primeiro_nome}}, {{empresa}} etc. pelos dados reais):\n${templatesLine}` : ""}
+${orgContextLines.length > 0 ? `\nContexto da organização salvo nas configurações. Use isso para decidir prioridades, tom e próximos passos, sem repetir essas informações se não for útil:\n${orgContextLines.join("\n")}` : ""}
 
 Como conversar:
 - Fale como uma pessoa de verdade batendo papo com o sócio, em português do Brasil — natural, direto, sem formalidade de atendimento. Nada de "Como posso ajudar?", "Estou à disposição", "Se precisar de mais alguma coisa, é só avisar" ou qualquer clichê de robô de suporte.
@@ -217,7 +329,8 @@ Como agir:
 - Ações de criação e edição pedidas explicitamente podem ser executadas direto. Exclusões: confirme antes de chamar a ferramenta de exclusão.
 - Se uma ferramenta der erro, explique em linguagem simples e sugira o próximo passo — sem citar mensagens técnicas.
 - Combine ferramentas em sequência quando o pedido implicar isso (ex.: achar o contato, criar a venda e já deixar um lembrete de follow-up).
-- Depois de agir, confirme em uma frase curta e natural, como quem avisa o sócio que já resolveu.`;
+- Depois de agir, confirme em uma frase curta e natural, como quem avisa o sócio que já resolveu.
+- Se vier uma foto junto da mensagem, olhe pra ela de verdade antes de responder (documento, print de conversa, produto, etc.) e use o que vir nela pra ajudar — não ignore a imagem nem peça pra descrever o que já está visível.`;
 }
 
 function sanitizeHistory(raw: unknown): Anthropic.MessageParam[] {

@@ -67,6 +67,7 @@ export type ProfessionPreset = {
   newContactTitle: string;
   firstSteps: [string, string, string];
   assistantContext: string;
+  expertiseArea: string;
   stages: Record<DealStage, { label: string; empty: string }>;
   contactFields: FieldSpec[];
   dealFields: FieldSpec[];
@@ -102,6 +103,7 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
     newContactTitle: "Novo cliente",
     firstSteps: ["Cadastre um contato", "Crie uma venda", "Crie um lembrete"],
     assistantContext: "A pessoa trabalha com vendas autônomas. Priorize follow-ups, propostas, clientes quentes e fechamento.",
+    expertiseArea: "vendas e negociação comercial",
     stages: DEFAULT_STAGES,
     contactFields: [
       { key: "produto_interesse", label: "Produto de interesse", type: "text", placeholder: "Ex: Plano anual" },
@@ -151,6 +153,7 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
     newContactTitle: "Novo cliente ou lead",
     firstSteps: ["Cadastre um cliente", "Crie uma contratação", "Agende um retorno"],
     assistantContext: "A pessoa atua em escritório de advocacia. Use vocabulário jurídico-comercial: triagem, consulta, documentos, proposta de honorários, contrato e retorno ao cliente. Não trate como gestão de prazos judiciais.",
+    expertiseArea: "direito e advocacia",
     stages: {
       novo: { label: "Novo contato", empty: "Novos pedidos de atendimento entram aqui." },
       em_contato: { label: "Triagem", empty: "Nenhuma triagem em aberto." },
@@ -211,6 +214,7 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
     newContactTitle: "Novo lead imobiliário",
     firstSteps: ["Cadastre um lead", "Crie um atendimento", "Marque um retorno"],
     assistantContext: "A pessoa é corretora de imóveis. Priorize perfil do comprador, bairros, orçamento, visitas, imóveis enviados e propostas.",
+    expertiseArea: "mercado imobiliário, financiamento e documentação de compra e venda de imóveis",
     stages: {
       novo: { label: "Novo lead", empty: "Novos leads entram aqui." },
       em_contato: { label: "Perfil analisado", empty: "Nenhum perfil em análise." },
@@ -277,6 +281,7 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
     newContactTitle: "Novo cliente",
     firstSteps: ["Cadastre um cliente", "Crie um serviço", "Agende um retorno"],
     assistantContext: "A pessoa presta serviços. Priorize orçamento, aprovação, agenda, retorno e recorrência.",
+    expertiseArea: "prestação de serviços do ramo em que a pessoa atua",
     stages: {
       novo: { label: "Solicitado", empty: "Novos pedidos entram aqui." },
       em_contato: { label: "Orçamento enviado", empty: "Nenhum orçamento em aberto." },
@@ -336,6 +341,7 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
     newContactTitle: "Novo contato",
     firstSteps: ["Cadastre uma empresa", "Crie um projeto", "Agende um follow-up"],
     assistantContext: "A pessoa vende consultoria. Priorize diagnóstico, proposta, decisores, follow-up e próximos passos.",
+    expertiseArea: "consultoria empresarial e estratégia de negócios",
     stages: {
       novo: { label: "Novo contato", empty: "Novos contatos entram aqui." },
       em_contato: { label: "Diagnóstico", empty: "Nenhum diagnóstico em andamento." },
@@ -392,6 +398,7 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
     newContactTitle: "Novo cliente",
     firstSteps: ["Cadastre um cliente", "Crie um projeto", "Agende um follow-up"],
     assistantContext: "A pessoa é freelancer. Priorize briefing, proposta, prazo, aprovação e follow-up.",
+    expertiseArea: "trabalho freelance e prestação de serviços criativos ou técnicos",
     stages: {
       novo: { label: "Briefing", empty: "Novos briefings entram aqui." },
       em_contato: { label: "Proposta enviada", empty: "Nenhuma proposta em aberto." },
@@ -447,6 +454,7 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
     newContactTitle: "Novo contato rural",
     firstSteps: ["Cadastre um contato", "Crie um negócio", "Agende um retorno"],
     assistantContext: "A pessoa atua como pecuarista. Priorize lotes, rebanho, compra e venda de animais, fornecedores, compradores, prazos, sanidade, reposição e retorno por WhatsApp.",
+    expertiseArea: "pecuária, manejo de rebanho e produção rural",
     stages: {
       novo: { label: "Novo contato", empty: "Novas oportunidades entram aqui." },
       em_contato: { label: "Em avaliação", empty: "Nenhum lote em avaliação." },
@@ -516,6 +524,7 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
     newContactTitle: "Novo cliente",
     firstSteps: ["Cadastre um cliente", "Crie um pedido", "Agende um retorno"],
     assistantContext: "A pessoa toca uma loja ou pequeno comércio. Priorize pedidos, recompra, retorno e clientes recorrentes.",
+    expertiseArea: "comércio e varejo",
     stages: {
       novo: { label: "Novo pedido", empty: "Novos pedidos entram aqui." },
       em_contato: { label: "Em separação", empty: "Nenhum pedido em separação." },
@@ -575,6 +584,7 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
     newContactTitle: "Nova pessoa abordada",
     firstSteps: ["Cadastre quem você abordou", "Marque o estágio da conversa", "Agende um retorno"],
     assistantContext: "A pessoa é a fundadora do OtimizIA e usa o próprio CRM para gerenciar a prospecção de clientes do produto (mensagem direta, vídeos, indicação). Priorize taxa de resposta, conversão de contato para cadastro e de cadastro para cliente pagante.",
+    expertiseArea: "gestão de produto e crescimento de SaaS",
     stages: {
       novo: { label: "Identificado", empty: "Pessoas que você quer abordar entram aqui." },
       em_contato: { label: "Mensagem enviada", empty: "Nenhuma mensagem em aberto." },
@@ -635,6 +645,7 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
     newContactTitle: "Novo contato",
     firstSteps: ["Cadastre um contato", "Crie uma oportunidade", "Agende um retorno"],
     assistantContext: "A pessoa usa o OtimizIA para relacionamento, oportunidades e follow-ups. Use linguagem genérica e simples.",
+    expertiseArea: "gestão comercial e atendimento ao cliente",
     stages: DEFAULT_STAGES,
     contactFields: [],
     dealFields: [

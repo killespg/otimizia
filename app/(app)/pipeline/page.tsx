@@ -1,5 +1,5 @@
 import { PendingButton } from "@/components/PendingButton";
-import { getActiveOrgId } from "@/lib/org";
+import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
 import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Deal } from "@/lib/supabase/types";
@@ -46,7 +46,7 @@ export default async function PipelinePage() {
     profile?.is_admin ?? false
   );
   const preset = getProfessionPreset(workspaceKey);
-  const [{ data: deals }, { data: contacts }] = await Promise.all([
+  const [{ data: deals }, { data: contacts }, members, role] = await Promise.all([
     supabase
       .from("deals")
       .select("*")
@@ -59,7 +59,10 @@ export default async function PipelinePage() {
       .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("name"),
+    getOrgMembers(supabase, orgId),
+    getOrgRole(supabase, orgId, user!.id),
   ]);
+  const isAdmin = role === "admin";
 
   const allDeals = (deals ?? []) as Deal[];
   const allContacts = (contacts ?? []) as Pick<Contact, "id" | "name">[];
@@ -137,12 +140,44 @@ export default async function PipelinePage() {
           </PendingButton>
         </div>
 
+        {members.length > 1 && (
+          <div className="mt-3 flex flex-wrap items-end gap-3">
+            <div className="max-w-xs">
+              <label className="label" htmlFor="deal-assignee">
+                Responsável
+              </label>
+              <select
+                id="deal-assignee"
+                name="assignee_id"
+                className="field mt-1.5"
+                defaultValue={user!.id}
+              >
+                {members.map((member) => (
+                  <option key={member.user_id} value={member.user_id}>
+                    {member.user_id === user!.id ? "Eu" : (member.name ?? "Sem nome")}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {isAdmin && (
+              <label className="flex min-h-11 items-center gap-2 pb-0.5 text-sm font-bold text-ink-soft">
+                <input
+                  type="checkbox"
+                  name="open_assignment"
+                  className="h-4 w-4 rounded border-line accent-brand-700"
+                />
+                Deixar em aberto (quem pegar primeiro fica com ele)
+              </label>
+            )}
+          </div>
+        )}
+
         {preset.dealFields.length > 0 && (
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <PresetFields fields={preset.dealFields} />
           </div>
         )}
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
           <label className="block">
             <span className="label">Etiquetas</span>
             <input
@@ -161,6 +196,19 @@ export default async function PipelinePage() {
               className="field mt-1.5"
             />
           </label>
+          <label className="block">
+            <span className="label">Comissão (%)</span>
+            <input
+              name="commission_percent"
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              inputMode="decimal"
+              placeholder="Ex: 6"
+              className="field mt-1.5"
+            />
+          </label>
         </div>
       </form>
 
@@ -170,6 +218,9 @@ export default async function PipelinePage() {
         stages={preset.stages}
         dealFields={preset.dealFields}
         pipelineLists={pipelineLists}
+        members={members}
+        currentUserId={user!.id}
+        isAdmin={isAdmin}
       />
     </div>
   );

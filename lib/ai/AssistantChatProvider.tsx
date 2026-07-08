@@ -3,7 +3,9 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
-export type ChatMessage = { role: "user" | "assistant"; content: string };
+export type ChatMessage = { role: "user" | "assistant"; content: string; imageUrl?: string };
+
+export type PendingChatImage = { dataUrl: string; mediaType: string; base64: string };
 
 // Rótulos amigáveis mostrados enquanto uma ferramenta do CRM está rodando.
 export const ASSISTANT_TOOL_LABELS: Record<string, string> = {
@@ -36,7 +38,7 @@ type AssistantChatValue = {
   messages: ChatMessage[];
   status: string | null;
   sending: boolean;
-  send: (text: string) => Promise<void>;
+  send: (text: string, image?: PendingChatImage) => Promise<void>;
 };
 
 const AssistantChatContext = createContext<AssistantChatValue | null>(null);
@@ -70,16 +72,16 @@ export function AssistantChatProvider({
   );
 
   const send = useCallback(
-    async (text: string) => {
+    async (text: string, image?: PendingChatImage) => {
       const trimmed = text.trim();
-      if (!trimmed || sendingRef.current) return;
+      if ((!trimmed && !image) || sendingRef.current) return;
       sendingRef.current = true;
       setSending(true);
       setStatus("Pensando…");
 
       const history: ChatMessage[] = [
         ...messagesRef.current,
-        { role: "user", content: trimmed },
+        { role: "user", content: trimmed, imageUrl: image?.dataUrl },
       ];
       updateMessages(() => [...history, { role: "assistant", content: "" }]);
 
@@ -99,7 +101,13 @@ export function AssistantChatProvider({
         const res = await fetch("/api/assistant", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: history }),
+          body: JSON.stringify({
+            messages: history.map(({ role, content }, i) => ({
+              role,
+              content: i === history.length - 1 && !content.trim() && image ? "(foto)" : content,
+            })),
+            image: image ? { mediaType: image.mediaType, data: image.base64 } : undefined,
+          }),
         });
 
         if (!res.ok || !res.body) {

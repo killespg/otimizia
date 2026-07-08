@@ -1,7 +1,9 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { createClient as createSupabaseAdminClient } from "@supabase/supabase-js";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import {
@@ -25,6 +27,8 @@ const LIMIT = {
   title: 160,
   interaction: 1200,
 };
+const DEAL_PHOTOS_BUCKET = "deal-photos";
+const DEAL_PHOTO_MAX_BYTES = 6 * 1024 * 1024;
 
 async function requireUser() {
   const supabase = createClient();
@@ -241,13 +245,17 @@ export async function createDeal(formData: FormData) {
   if (labels) details.labels = labels;
   const externalUrl = urlOrNull(formData.get("external_url"));
   if (externalUrl) details.external_url = externalUrl;
+  const commissionPercent = percentOrNull(formData.get("commission_percent"));
+  if (commissionPercent !== null) details.commission_percent = String(commissionPercent);
   const valueCents = moneyToCents(formData.get("value"));
   if (valueCents === null) details.value_unset = "true";
+  const assigneeId = await resolveAssigneeId(supabase, orgId, user.id, formData);
   const { error } = await supabase.from("deals").insert({
     owner_id: user.id,
     org_id: orgId,
     workspace_key: workspaceKey,
     contact_id: contactId,
+    assignee_id: assigneeId,
     title: requiredText(formData.get("title"), "Venda", LIMIT.title),
     value_cents: valueCents ?? 0,
     stage: "novo",
@@ -349,6 +357,7 @@ export async function updateDealOptions(formData: FormData) {
   const id = requiredText(formData.get("id"), "Venda", 80);
   const labels = normalizeLabels(formData.get("labels"));
   const externalUrl = urlOrNull(formData.get("external_url"));
+  const commissionPercent = percentOrNull(formData.get("commission_percent"));
 
   const { data: existing, error: readError } = await supabase
     .from("deals")
@@ -367,6 +376,7 @@ export async function updateDealOptions(formData: FormData) {
         ...(existing.details ?? {}),
         labels,
         external_url: externalUrl ?? "",
+        commission_percent: commissionPercent === null ? "" : String(commissionPercent),
       },
     })
     .eq("id", id)
@@ -376,16 +386,72 @@ export async function updateDealOptions(formData: FormData) {
   revalidatePath("/pipeline");
 }
 
+export async function uploadDealPhoto(formData: FormData) {
+  const { supabase, orgId, workspaceKey } = await requireActiveUserWithWorkspace();
+  const id = requiredText(formData.get("id"), "Venda", 80);
+  const file = formData.get("photo");
+
+  if (!(file instanceof File) || file.size === 0) {
+    throw new Error("Escolha uma foto.");
+  }
+  if (!file.type.startsWith("image/")) {
+    throw new Error("O anexo precisa ser uma imagem.");
+  }
+  if (file.size > DEAL_PHOTO_MAX_BYTES) {
+    throw new Error("A foto pode ter no máximo 6 MB.");
+  }
+
+  const { data: existing, error: readError } = await supabase
+    .from("deals")
+    .select("details")
+    .eq("id", id)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey)
+    .maybeSingle();
+  ensureOk(readError, "Não deu para anexar a foto.");
+  if (!existing) throw new Error("Venda não encontrada.");
+
+  const extension = imageExtension(file.type, file.name);
+  const path = `${orgId}/${workspaceKey}/${id}/${randomUUID()}.${extension}`;
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const storage = await createStorageAdminClient();
+  const { error: uploadError } = await storage.storage
+    .from(DEAL_PHOTOS_BUCKET)
+    .upload(path, bytes, {
+      contentType: file.type,
+      upsert: false,
+    });
+  ensureOk(uploadError, "Não deu para enviar a foto.");
+
+  const { data: publicUrl } = storage.storage.from(DEAL_PHOTOS_BUCKET).getPublicUrl(path);
+  const photos = [...dealPhotos(existing.details), publicUrl.publicUrl].slice(-8);
+  const photoPaths = [...dealPhotoPaths(existing.details), path].slice(-8);
+  const { error } = await supabase
+    .from("deals")
+    .update({
+      details: {
+        ...(existing.details ?? {}),
+        photo_urls: JSON.stringify(photos),
+        photo_paths: JSON.stringify(photoPaths),
+      },
+    })
+    .eq("id", id)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey);
+  ensureOk(error, "Não deu para salvar a foto no card.");
+  revalidatePath("/pipeline");
+}
+
 // ---------- Tasks ----------
 export async function createTask(formData: FormData) {
   const { supabase, user, orgId, workspaceKey } = await requireUserWithPreset();
   const contactId = await resolveOrCreateContactId(supabase, user.id, orgId, workspaceKey, formData);
-  const assigneeId = await visibleMemberIdOrNull(supabase, orgId, formData.get("assignee_id"));
+  const assigneeId = await resolveAssigneeId(supabase, orgId, user.id, formData);
   const { error } = await supabase.from("tasks").insert({
     owner_id: user.id,
     org_id: orgId,
     workspace_key: workspaceKey,
-    assignee_id: assigneeId ?? user.id,
+    assignee_id: assigneeId,
     contact_id: contactId,
     title: requiredText(formData.get("title"), "Lembrete", LIMIT.title),
     due_at: dateTimeOrNull(formData.get("due_at")),
@@ -467,11 +533,96 @@ export async function adminReassignTask(formData: FormData) {
   revalidatePath("/tasks");
 }
 
+// ---------- Distribuição de negócios/casos ----------
+// Mesmo esquema das tarefas acima: assignee_id/pending_assignee_id só mudam
+// pelas funções RPC (security definer no banco, ver 0031_deal_handoff.sql).
+export async function requestDealHandoff(formData: FormData) {
+  const { supabase } = await requireActiveUser();
+  const dealId = requiredText(formData.get("deal_id"), "Negócio", 80);
+  const targetUserId = requiredText(formData.get("target_user_id"), "Colega", 80);
+  const { error } = await supabase.rpc("request_deal_handoff", {
+    p_deal_id: dealId,
+    p_target_user: targetUserId,
+  });
+  ensureOk(error, "Não deu para solicitar a transferência.");
+  revalidatePath("/pipeline");
+}
+
+export async function acceptDealHandoff(formData: FormData) {
+  const { supabase } = await requireActiveUser();
+  const dealId = requiredText(formData.get("deal_id"), "Negócio", 80);
+  const { error } = await supabase.rpc("accept_deal_handoff", { p_deal_id: dealId });
+  ensureOk(error, "Não deu para aceitar a transferência.");
+  revalidatePath("/pipeline");
+}
+
+export async function declineDealHandoff(formData: FormData) {
+  const { supabase } = await requireActiveUser();
+  const dealId = requiredText(formData.get("deal_id"), "Negócio", 80);
+  const { error } = await supabase.rpc("decline_deal_handoff", { p_deal_id: dealId });
+  ensureOk(error, "Não deu para recusar a transferência.");
+  revalidatePath("/pipeline");
+}
+
+export async function adminReassignDeal(formData: FormData) {
+  const { supabase } = await requireActiveUser();
+  const dealId = requiredText(formData.get("deal_id"), "Negócio", 80);
+  const rawAssignee = formData.get("assignee_id");
+  const assigneeId = typeof rawAssignee === "string" && rawAssignee ? rawAssignee : null;
+  const { error } = await supabase.rpc("admin_reassign_deal", {
+    p_deal_id: dealId,
+    p_assignee_id: assigneeId,
+  });
+  ensureOk(error, "Não deu para reatribuir o negócio.");
+  revalidatePath("/pipeline");
+}
+
+// "Pegar" uma tarefa/negócio deixado em aberto — claim_task/claim_deal são
+// atômicos (update ... where assignee_id is null), então só quem clicar
+// primeiro consegue mesmo com dois cliques ao mesmo tempo.
+export async function claimTask(formData: FormData) {
+  const { supabase } = await requireActiveUser();
+  const taskId = requiredText(formData.get("task_id"), "Lembrete", 80);
+  const { error } = await supabase.rpc("claim_task", { p_task_id: taskId });
+  ensureOk(error, "Essa tarefa já foi pega por alguém.");
+  revalidatePath("/tasks");
+  revalidatePath("/dashboard");
+}
+
+export async function claimDeal(formData: FormData) {
+  const { supabase } = await requireActiveUser();
+  const dealId = requiredText(formData.get("deal_id"), "Negócio", 80);
+  const { error } = await supabase.rpc("claim_deal", { p_deal_id: dealId });
+  ensureOk(error, "Esse negócio já foi pego por alguém.");
+  revalidatePath("/pipeline");
+  revalidatePath("/dashboard");
+}
+
 // Igual a requireUserWithPreset, mas sem precisar do preset completo — usado
 // pelas ações que só mexem em deals/tasks já existentes (mover, excluir).
 async function requireActiveUserWithWorkspace() {
   const { supabase, user, orgId, workspaceKey } = await requireUserWithPreset();
   return { supabase, user, orgId, workspaceKey };
+}
+
+async function createStorageAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error("Storage não configurado.");
+  }
+  const admin = createSupabaseAdminClient(url, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const { error } = await admin.storage.createBucket(DEAL_PHOTOS_BUCKET, {
+    public: true,
+    fileSizeLimit: DEAL_PHOTO_MAX_BYTES,
+    allowedMimeTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+  });
+  if (error && !/already exists|already_exist|Duplicate/i.test(error.message)) {
+    ensureOk(error, "Não deu para preparar o armazenamento de fotos.");
+  }
+  return admin;
 }
 
 function text(v: FormDataEntryValue | null, max: number): string {
@@ -532,6 +683,42 @@ function urlOrNull(v: FormDataEntryValue | null): string | null {
   }
 }
 
+function imageExtension(contentType: string, fileName: string): string {
+  const byType: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "image/gif": "gif",
+  };
+  if (byType[contentType]) return byType[contentType];
+  const match = fileName.toLowerCase().match(/\.([a-z0-9]{2,5})$/);
+  return match?.[1] ?? "jpg";
+}
+
+function dealPhotos(details: Record<string, string> | null | undefined): string[] {
+  return parseStringArray(details?.photo_urls);
+}
+
+function dealPhotoPaths(details: Record<string, string> | null | undefined): string[] {
+  return parseStringArray(details?.photo_paths);
+}
+
+function parseStringArray(value: string | undefined): string[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) {
+      return parsed.filter((item): item is string => typeof item === "string" && item.length > 0);
+    }
+  } catch {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
 function normalizeInstagram(v: FormDataEntryValue | null): string | null {
   let handle = text(v, 200);
   if (!handle) return null;
@@ -551,6 +738,14 @@ function moneyToCents(v: FormDataEntryValue | null): number | null {
   const value = Number(normalized);
   if (!Number.isFinite(value) || value < 0) return 0;
   return Math.min(Math.round(value * 100), 999_999_999_99);
+}
+
+function percentOrNull(v: FormDataEntryValue | null): number | null {
+  const raw = text(v, 32).replace("%", "").replace(",", ".");
+  if (!raw) return null;
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value < 0) return null;
+  return Math.min(Math.round(value * 100) / 100, 100);
 }
 
 function dateTimeOrNull(v: FormDataEntryValue | null): string | null {
@@ -607,6 +802,24 @@ async function visibleMemberIdOrNull(
   ensureOk(error, "Responsável inválido.");
   if (!data) throw new Error("Responsável inválido.");
   return id;
+}
+
+// "Deixar em aberto" só funciona pra quem é admin da org de verdade — o
+// checkbox no formulário é só conveniência de UI, a checagem de papel aqui é
+// o que garante que ninguém força open_assignment via form adulterado.
+async function resolveAssigneeId(
+  supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
+  orgId: string,
+  userId: string,
+  formData: FormData
+): Promise<string | null> {
+  const openAssignment = formData.get("open_assignment") === "on";
+  if (openAssignment) {
+    const role = await getOrgRole(supabase, orgId, userId);
+    if (role === "admin") return null;
+  }
+  const assigneeId = await visibleMemberIdOrNull(supabase, orgId, formData.get("assignee_id"));
+  return assigneeId ?? userId;
 }
 
 // Permite criar o lembrete/negócio e o contato juntos, num só envio — evita
@@ -682,6 +895,16 @@ function stageFromPipelineList(listName: string): DealStage {
 
 function selectedProfessionTypes(formData: FormData): ProfessionType[] {
   return normalizeWorkspaceKeys(formData.getAll("profession_types"));
+}
+
+export async function dismissChecklist() {
+  const { supabase, user } = await requireUser();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ checklist_dismissed_at: new Date().toISOString() })
+    .eq("id", user.id);
+  ensureOk(error, "Não deu para fechar o painel.");
+  revalidatePath("/dashboard");
 }
 
 function collectDetails(formData: FormData, fields: FieldSpec[]): Record<string, string> {

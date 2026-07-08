@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PendingButton } from "@/components/PendingButton";
 import { formatCPF } from "@/lib/cpf";
@@ -66,6 +67,14 @@ export default async function SettingsPage({
           Checkout cancelado. Nenhuma cobrança foi feita.
         </div>
       )}
+
+      <Link
+        href="/team"
+        className="row-link flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3 text-sm font-bold text-ink-soft hover:border-brand-400 hover:text-brand-700"
+      >
+        Nome da empresa, contexto e preferências da IA agora ficam em Equipe
+        <span aria-hidden="true">→</span>
+      </Link>
 
       <SectionCard title="Conta" description="Dados de login e identificação.">
         <form action={updateName} className="space-y-3">
@@ -179,7 +188,7 @@ export default async function SettingsPage({
         title="Plano"
         description={
           isOrgAdmin
-            ? "Assinatura da empresa — cobrada por pessoa (seats)."
+            ? "Assinatura da empresa — R$ 39,90/mês (dono) + R$ 10/mês por pessoa extra na equipe."
             : "Assinatura gerenciada por um admin da empresa."
         }
       >
@@ -228,7 +237,7 @@ export default async function SettingsPage({
             </p>
             <form action="/api/billing/checkout" method="POST">
               <PendingButton className="btn" pendingLabel="Abrindo">
-                Assinar agora — R$ 39,90/mês por pessoa
+                Assinar agora — R$ 39,90/mês + R$ 10 por pessoa extra
               </PendingButton>
             </form>
           </div>
@@ -243,7 +252,7 @@ export default async function SettingsPage({
             </p>
             <form action="/api/billing/checkout" method="POST">
               <PendingButton className="btn" pendingLabel="Abrindo">
-                Assinar Pro — R$ 39,90/mês por pessoa
+                Assinar Pro — R$ 39,90/mês + R$ 10 por pessoa extra
               </PendingButton>
             </form>
           </div>
@@ -294,6 +303,7 @@ function Field({
   defaultValue,
   minLength,
   maxLength,
+  placeholder,
 }: {
   id?: string;
   name: string;
@@ -303,6 +313,7 @@ function Field({
   defaultValue?: string;
   minLength?: number;
   maxLength?: number;
+  placeholder?: string;
 }) {
   return (
     <div>
@@ -325,6 +336,7 @@ function Field({
         defaultValue={defaultValue}
         minLength={minLength}
         maxLength={maxLength}
+        placeholder={placeholder}
         className="field mt-1.5"
       />
     </div>

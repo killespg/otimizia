@@ -4,10 +4,28 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { PendingButton } from "@/components/PendingButton";
 import type { FieldSpec } from "@/lib/professions";
 import type { Deal, DealStage } from "@/lib/supabase/types";
-import { dealValueOrZero, formatDealValue } from "@/lib/deals";
+import {
+  dealValueOrZero,
+  formatCommission,
+  formatDealValue,
+  getCommissionPercent,
+} from "@/lib/deals";
 import { formatBRL } from "@/lib/format";
-import { createPipelineList, moveDealToList, updateDealOptions, deleteDeal } from "../actions";
+import {
+  acceptDealHandoff,
+  adminReassignDeal,
+  claimDeal,
+  createPipelineList,
+  declineDealHandoff,
+  deleteDeal,
+  moveDealToList,
+  requestDealHandoff,
+  updateDealOptions,
+  uploadDealPhoto,
+} from "../actions";
 import { IconCheck, IconChevronRight, IconGrip, IconPlus, IconTrash } from "../icons";
+
+type Member = { user_id: string; name: string | null };
 
 function firstDetail(details: Record<string, string> | undefined, fields: FieldSpec[]) {
   if (!details) return null;
@@ -54,18 +72,26 @@ export default function Board({
   contactNames,
   dealFields = [],
   pipelineLists,
+  members = [],
+  currentUserId,
+  isAdmin = false,
 }: {
   initialDeals: Deal[];
   contactNames: Record<string, string>;
   stages?: Record<DealStage, { label: string; empty: string }>;
   dealFields?: FieldSpec[];
   pipelineLists: string[];
+  members?: Member[];
+  currentUserId?: string;
+  isAdmin?: boolean;
 }) {
   const [deals, setDeals] = useState(initialDeals);
   const [dragId, setDragId] = useState<string | null>(null);
   const [overList, setOverList] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [menuId, setMenuId] = useState<string | null>(null);
+  const [handoffId, setHandoffId] = useState<string | null>(null);
+  const nameById = new Map(members.map((m) => [m.user_id, m.name]));
   const [canDrag, setCanDrag] = useState(true);
   const [search, setSearch] = useState("");
   const [labelFilter, setLabelFilter] = useState("");
@@ -419,6 +445,20 @@ export default function Board({
                                   className="field mt-1 h-9 text-xs"
                                 />
                               </label>
+                              <label className="block">
+                                <span className="text-[11px] font-black text-ink-soft">Comissão (%)</span>
+                                <input
+                                  name="commission_percent"
+                                  type="number"
+                                  min="0"
+                                  max="100"
+                                  step="0.01"
+                                  inputMode="decimal"
+                                  defaultValue={deal.details?.commission_percent ?? ""}
+                                  placeholder="Ex: 6"
+                                  className="field mt-1 h-9 text-xs"
+                                />
+                              </label>
                               <PendingButton
                                 className="min-h-9 rounded-md bg-brand-700 px-3 py-1.5 text-xs font-black text-white hover:bg-brand-800"
                                 pendingLabel="Salvando"
@@ -426,6 +466,51 @@ export default function Board({
                                 Salvar opções
                               </PendingButton>
                             </form>
+
+                            <form action={uploadDealPhoto} className="space-y-2 rounded-lg border border-line bg-white p-3">
+                              <input type="hidden" name="id" value={deal.id} />
+                              <label className="block">
+                                <span className="text-[11px] font-black text-ink-soft">Foto</span>
+                                <input
+                                  name="photo"
+                                  type="file"
+                                  accept="image/*"
+                                  className="mt-1 block w-full text-xs font-bold text-ink-soft file:mr-3 file:min-h-9 file:rounded-md file:border-0 file:bg-surface-2 file:px-3 file:text-xs file:font-black file:text-ink-soft hover:file:bg-brand-50 hover:file:text-brand-700"
+                                />
+                              </label>
+                              <PendingButton
+                                className="min-h-9 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                                pendingLabel="Anexando"
+                              >
+                                Anexar foto
+                              </PendingButton>
+                            </form>
+                          </div>
+                        )}
+
+                        {dealPhotos(deal).length > 0 && (
+                          <div className="mt-3 grid grid-cols-3 gap-1.5">
+                            {dealPhotos(deal).slice(0, 3).map((url, index) => (
+                              <a
+                                key={`${url}-${index}`}
+                                href={url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="relative block aspect-[4/3] overflow-hidden rounded-md border border-line bg-surface-2"
+                                onClick={(event) => event.stopPropagation()}
+                              >
+                                <span
+                                  aria-label={`Foto ${index + 1} de ${deal.title}`}
+                                  className="block h-full w-full bg-cover bg-center"
+                                  style={{ backgroundImage: `url(${url})` }}
+                                />
+                                {index === 2 && dealPhotos(deal).length > 3 && (
+                                  <span className="absolute inset-0 grid place-items-center bg-ink/55 text-xs font-black text-white">
+                                    +{dealPhotos(deal).length - 3}
+                                  </span>
+                                )}
+                              </a>
+                            ))}
                           </div>
                         )}
 
@@ -442,19 +527,41 @@ export default function Board({
                           </div>
                         )}
 
-                        <div className="mt-3 flex items-center justify-between gap-3">
-                          <p
-                            className={
-                              "text-sm font-black tabular-nums " +
-                              (deal.stage === "perdido"
-                                ? "text-ink-muted line-through"
-                                : deal.stage === "ganho"
-                                ? "text-success-700"
-                                : "text-brand-700")
+                        {members.length > 1 && currentUserId && (
+                          <DealAssignee
+                            deal={deal}
+                            members={members}
+                            nameById={nameById}
+                            currentUserId={currentUserId}
+                            isAdmin={isAdmin}
+                            open={handoffId === deal.id}
+                            onToggle={() =>
+                              setHandoffId((current) => (current === deal.id ? null : deal.id))
                             }
-                          >
-                            {formatDealValue(deal)}
-                          </p>
+                          />
+                        )}
+
+                        <div className="mt-3 flex items-center justify-between gap-3">
+                          <div>
+                            <p
+                              className={
+                                "text-sm font-black tabular-nums " +
+                                (deal.stage === "perdido"
+                                  ? "text-ink-muted line-through"
+                                  : deal.stage === "ganho"
+                                  ? "text-success-700"
+                                  : "text-brand-700")
+                              }
+                            >
+                              {formatDealValue(deal)}
+                            </p>
+                            {formatCommission(deal) && (
+                              <p className="mt-0.5 text-[11px] font-bold text-ink-muted">
+                                Comissão {formatPercent(getCommissionPercent(deal))}:{" "}
+                                <span className="tabular-nums text-ink">{formatCommission(deal)}</span>
+                              </p>
+                            )}
+                          </div>
                           {deal.stage === "ganho" && (
                             <IconCheck className="h-4 w-4 text-success-700" />
                           )}
@@ -473,6 +580,125 @@ export default function Board({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function DealAssignee({
+  deal,
+  members,
+  nameById,
+  currentUserId,
+  isAdmin,
+  open,
+  onToggle,
+}: {
+  deal: Deal;
+  members: Member[];
+  nameById: Map<string, string | null>;
+  currentUserId: string;
+  isAdmin: boolean;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const assigneeName = deal.assignee_id
+    ? (nameById.get(deal.assignee_id) ?? "Alguém da equipe")
+    : null;
+  const pendingTargetName = deal.pending_assignee_id
+    ? (nameById.get(deal.pending_assignee_id) ?? "alguém")
+    : null;
+  const canManage =
+    isAdmin || deal.assignee_id === currentUserId || deal.owner_id === currentUserId;
+  const iAmPendingTarget = deal.pending_assignee_id === currentUserId;
+  const otherMembers = members.filter((m) => m.user_id !== deal.assignee_id);
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-bold text-ink-muted">
+      {assigneeName && <span className="tag bg-surface-2 text-ink-muted">Com {assigneeName}</span>}
+
+      {!deal.assignee_id && (
+        <span className="flex items-center gap-1.5">
+          <span className="tag bg-[#fff7e6] text-[#8a6500]">Em aberto</span>
+          <form action={claimDeal}>
+            <input type="hidden" name="deal_id" value={deal.id} />
+            <PendingButton
+              className="rounded-md bg-brand-700 px-2 py-1 text-[11px] font-black text-white hover:bg-brand-800"
+              pendingLabel="Pegando"
+            >
+              Pegar
+            </PendingButton>
+          </form>
+        </span>
+      )}
+
+      {deal.pending_assignee_id &&
+        (iAmPendingTarget ? (
+          <span className="flex items-center gap-1.5">
+            <span className="tag bg-[#fff7e6] text-[#8a6500]">Pediram para você pegar</span>
+            <form action={acceptDealHandoff}>
+              <input type="hidden" name="deal_id" value={deal.id} />
+              <PendingButton
+                className="rounded-md bg-brand-700 px-2 py-1 text-[11px] font-black text-white hover:bg-brand-800"
+                pendingLabel="Aceitando"
+              >
+                Aceitar
+              </PendingButton>
+            </form>
+            <form action={declineDealHandoff}>
+              <input type="hidden" name="deal_id" value={deal.id} />
+              <PendingButton
+                className="rounded-md border border-line bg-white px-2 py-1 text-[11px] font-black text-ink-soft hover:bg-surface-2"
+                pendingLabel="Recusando"
+              >
+                Recusar
+              </PendingButton>
+            </form>
+          </span>
+        ) : (
+          <span className="tag bg-[#fff7e6] text-[#8a6500]">
+            Transferência pendente{pendingTargetName ? ` para ${pendingTargetName}` : ""}
+          </span>
+        ))}
+
+      {canManage && !deal.pending_assignee_id && otherMembers.length > 0 && (
+        <button
+          type="button"
+          onClick={onToggle}
+          className="nav-item text-[11px] font-black text-brand-700 hover:text-brand-900"
+        >
+          {isAdmin ? "Reatribuir" : "Passar para..."}
+        </button>
+      )}
+
+      {open && (
+        <form
+          action={isAdmin ? adminReassignDeal : requestDealHandoff}
+          className="mt-1 flex w-full flex-wrap items-center gap-2"
+        >
+          <input type="hidden" name="deal_id" value={deal.id} />
+          <select
+            name={isAdmin ? "assignee_id" : "target_user_id"}
+            required
+            className="field h-9 py-0 text-xs"
+            defaultValue=""
+          >
+            <option value="" disabled>
+              Escolha o colega
+            </option>
+            {otherMembers.map((m) => (
+              <option key={m.user_id} value={m.user_id}>
+                {m.name ?? "Sem nome"}
+              </option>
+            ))}
+          </select>
+          <PendingButton
+            className="rounded-md bg-brand-700 px-2.5 py-1.5 text-xs font-black text-white hover:bg-brand-800"
+            pendingLabel="Enviando"
+          >
+            {isAdmin ? "Confirmar" : "Solicitar"}
+          </PendingButton>
+        </form>
+      )}
     </div>
   );
 }
@@ -516,6 +742,26 @@ function dealLinks(deal: Deal) {
   return links;
 }
 
+function dealPhotos(deal: Deal) {
+  return parseStringArray(deal.details?.photo_urls);
+}
+
+function parseStringArray(value: string | undefined) {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) {
+      return parsed.filter((item): item is string => typeof item === "string" && item.length > 0);
+    }
+  } catch {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
 function compareDeals(a: Deal, b: Deal) {
   const posA = Number.isFinite(a.position) ? a.position : Number.MAX_SAFE_INTEGER;
   const posB = Number.isFinite(b.position) ? b.position : Number.MAX_SAFE_INTEGER;
@@ -542,6 +788,11 @@ function labelClass(label: string) {
   let hash = 0;
   for (const char of label) hash = (hash + char.charCodeAt(0)) % classes.length;
   return classes[hash];
+}
+
+function formatPercent(value: number | null) {
+  if (value === null) return "";
+  return `${value.toLocaleString("pt-BR", { maximumFractionDigits: 2 })}%`;
 }
 
 function trelloMeta(list: string) {

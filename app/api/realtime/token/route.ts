@@ -14,11 +14,51 @@ const REALTIME_MODEL = "gpt-realtime-2";
 // no instructions, e não pode ficar gigante).
 const VOICE_HISTORY_LIMIT = 12;
 
+type OrganizationVoiceContext = {
+  name: string | null;
+  business_context: string | null;
+  business_priorities: string | null;
+  ai_tone: string | null;
+  ai_instructions: string | null;
+  industry: string | null;
+  region: string | null;
+  team_size: string | null;
+  website: string | null;
+  extra_notes: string | null;
+};
+
 const BASE_INSTRUCTIONS =
   "Voce e socio do usuario no negocio dele. Converse em portugues do Brasil, com frases curtas, natural e direto. Ajude a pensar vendas, contatos, follow-up e rotina comercial. Nao diga que e IA ou modelo. Se precisar de dados do CRM que voce nao tem na chamada de voz, diga que vai precisar consultar pelo chat.";
 
-function buildInstructions(recentChat: { role: "user" | "assistant"; content: string }[]) {
-  if (recentChat.length === 0) return BASE_INSTRUCTIONS;
+function buildInstructions(
+  recentChat: { role: "user" | "assistant"; content: string }[],
+  organization: OrganizationVoiceContext | null
+) {
+  const orgContextLines = [
+    organization?.name ? `Nome da empresa/operacao: ${organization.name}` : "",
+    organization?.industry ? `Segmento/setor: ${organization.industry}` : "",
+    organization?.region ? `Regiao de atuacao: ${organization.region}` : "",
+    organization?.team_size ? `Tamanho da equipe: ${organization.team_size}` : "",
+    organization?.website ? `Site/link: ${organization.website}` : "",
+    organization?.business_context
+      ? `Contexto da empresa: ${organization.business_context}`
+      : "",
+    organization?.business_priorities
+      ? `Prioridades da empresa: ${organization.business_priorities}`
+      : "",
+    organization?.ai_tone ? `Jeito de falar preferido: ${organization.ai_tone}` : "",
+    organization?.ai_instructions
+      ? `Instrucoes internas para a IA: ${organization.ai_instructions}`
+      : "",
+    organization?.extra_notes ? `Outras informacoes: ${organization.extra_notes}` : "",
+  ].filter(Boolean);
+
+  const orgContext =
+    orgContextLines.length > 0
+      ? `\n\nContexto da empresa salvo nas configuracoes. Use para guiar tom, prioridades e proximos passos, sem repetir se nao for util:\n${orgContextLines.join("\n")}`
+      : "";
+
+  if (recentChat.length === 0) return `${BASE_INSTRUCTIONS}${orgContext}`;
 
   const transcript = recentChat
     .map((m) => `${m.role === "user" ? "Usuário" : "Você"}: ${m.content}`)
@@ -27,7 +67,7 @@ function buildInstructions(recentChat: { role: "user" | "assistant"; content: st
   return `${BASE_INSTRUCTIONS}
 
 Antes desta ligação, vocês vinham conversando pelo chat de texto do app. Aqui está o que foi dito recentemente, pra você continuar com contexto em vez de perguntar de novo o que já foi combinado:
-${transcript}`;
+${transcript}${orgContext}`;
 }
 
 export async function GET() {
@@ -71,7 +111,16 @@ export async function GET() {
     .slice(0, 64);
 
   const orgId = await getActiveOrgId(supabase, user.id);
-  const recentChat = await getRecentAssistantMessages(supabase, user.id, orgId, VOICE_HISTORY_LIMIT);
+  const [recentChat, { data: organization }] = await Promise.all([
+    getRecentAssistantMessages(supabase, user.id, orgId, VOICE_HISTORY_LIMIT),
+    supabase
+      .from("organizations")
+      .select(
+        "name, business_context, business_priorities, ai_tone, ai_instructions, industry, region, team_size, website, extra_notes"
+      )
+      .eq("id", orgId)
+      .maybeSingle(),
+  ]);
 
   const response = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
     method: "POST",
@@ -84,7 +133,7 @@ export async function GET() {
       session: {
         type: "realtime",
         model: REALTIME_MODEL,
-        instructions: buildInstructions(recentChat),
+        instructions: buildInstructions(recentChat, organization),
         audio: {
           output: {
             voice: "marin",

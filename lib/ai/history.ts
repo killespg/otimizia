@@ -3,6 +3,16 @@ import type { ChatMessage } from "@/lib/ai/AssistantChatProvider";
 
 const DEFAULT_LIMIT = 30;
 
+// Marca uma foto anexada no fim do texto salvo (ver route.ts do assistente) —
+// evita precisar de coluna própria pra imagem na tabela, que é append-only.
+const IMAGE_MARKER = /\n\n\[imagem:(.+?)\]$/;
+
+function parseStoredContent(raw: string): { content: string; imageUrl?: string } {
+  const match = raw.match(IMAGE_MARKER);
+  if (!match) return { content: raw };
+  return { content: raw.slice(0, match.index).trimEnd(), imageUrl: match[1] };
+}
+
 // assistant_messages é append-only (RLS só libera select/insert — ver
 // 0024_assistant_messages.sql). Nunca chamar delete/update nela.
 export async function getRecentAssistantMessages(
@@ -27,7 +37,10 @@ export async function getRecentAssistantMessages(
   return (data ?? [])
     .slice()
     .reverse()
-    .map((row) => ({ role: row.role as ChatMessage["role"], content: row.content as string }));
+    .map((row) => ({
+      role: row.role as ChatMessage["role"],
+      ...parseStoredContent(row.content as string),
+    }));
 }
 
 export async function saveAssistantMessage(

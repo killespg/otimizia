@@ -33,7 +33,7 @@ const NAV: NavItem[] = [
   { href: "/dashboard", label: "Painel", icon: IconGauge, mobile: true },
   { href: "/contacts", label: "Contatos", icon: IconUsers, mobile: true },
   { href: "/pipeline", label: "Vendas", icon: IconColumns, mobile: true },
-  { href: "/tasks", label: "Lembretes", icon: IconBell, mobile: true },
+  { href: "/tasks", label: "Tarefas", icon: IconBell, mobile: true },
   { href: "/dashboard#valor", label: "Valor aberto", icon: IconWallet, passive: true },
   { href: "/tasks", label: "Clientes para chamar", icon: IconPhone, passive: true },
   { href: "/assistant", label: "Sócio-Assistente", icon: IconBot },

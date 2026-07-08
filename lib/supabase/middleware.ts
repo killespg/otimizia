@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getPlanAccess } from "@/lib/plan";
 
 export async function updateSession(request: NextRequest) {
@@ -70,6 +71,32 @@ export async function updateSession(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = "/upgrade";
       return NextResponse.redirect(url);
+    }
+  }
+
+  const isOnboardingExempt =
+    path === "/" ||
+    isAuthPage ||
+    path.startsWith("/reset-password") ||
+    path.startsWith("/onboarding") ||
+    path.startsWith("/upgrade") ||
+    path.startsWith("/termos") ||
+    path.startsWith("/api");
+
+  if (user && !isOnboardingExempt) {
+    const orgId = await getActiveOrgId(supabase, user.id);
+    const role = await getOrgRole(supabase, orgId, user.id);
+    if (role === "admin") {
+      const { data: org } = await supabase
+        .from("organizations")
+        .select("onboarded_at")
+        .eq("id", orgId)
+        .maybeSingle();
+      if (org && !org.onboarded_at) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/onboarding";
+        return NextResponse.redirect(url);
+      }
     }
   }
 

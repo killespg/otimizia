@@ -126,7 +126,7 @@ export default async function ContactDetailPage({
 
         <div className="grid grid-cols-2 gap-2 sm:w-64">
           <MiniStat label="Conversas" value={String(logs.length)} icon={IconMessage} />
-          <MiniStat label="Lembretes" value={String(relatedTasks.length)} icon={IconBell} pink />
+          <MiniStat label="Tarefas" value={String(relatedTasks.length)} icon={IconBell} pink />
         </div>
       </header>
 
@@ -393,7 +393,7 @@ function contactDetailCopy(isLivestock: boolean) {
       companyField: "Origem",
       deleteTitle: "Excluir sujeito",
       deleteDescription: "Remove o sujeito e as anotações.",
-      tasksTitle: "Lembretes deste sujeito",
+      tasksTitle: "Tarefas deste sujeito",
     };
   }
 
@@ -406,7 +406,7 @@ function contactDetailCopy(isLivestock: boolean) {
     companyField: "Empresa",
     deleteTitle: "Excluir contato",
     deleteDescription: "Remove o cliente e as anotações.",
-    tasksTitle: "Lembretes deste cliente",
+    tasksTitle: "Tarefas deste cliente",
   };
 }
 

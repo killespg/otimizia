@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { IconArrowRight, IconBot } from "@/app/(app)/icons";
 import { useAssistantChat } from "@/lib/ai/AssistantChatProvider";
+import { ChatImageAttach, type PendingImage } from "./ChatImageAttach";
 import { VoicePanel } from "./VoicePanel";
 
 const SUGGESTIONS = [
@@ -14,6 +15,7 @@ const SUGGESTIONS = [
 export function AssistantChat() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
+  const [pendingImage, setPendingImage] = useState<PendingImage | null>(null);
   const { messages, status, sending, send } = useAssistantChat();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -66,7 +68,9 @@ export function AssistantChat() {
 
   function submit(text: string) {
     setInput("");
-    void send(text);
+    const image = pendingImage;
+    setPendingImage(null);
+    void send(text, image ?? undefined);
   }
 
   return (
@@ -126,8 +130,17 @@ export function AssistantChat() {
             {messages.map((message, index) =>
               message.role === "user" ? (
                 <div key={index} className="flex justify-end">
-                  <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] px-3.5 py-2 text-sm text-white">
-                    {message.content}
+                  <div className="max-w-[85%] space-y-2 rounded-2xl rounded-br-sm bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] px-3.5 py-2 text-sm text-white">
+                    {message.imageUrl && (
+                      <img
+                        src={message.imageUrl}
+                        alt=""
+                        className="max-h-48 w-full rounded-lg object-cover"
+                      />
+                    )}
+                    {message.content && (
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -160,6 +173,7 @@ export function AssistantChat() {
             }}
             className="flex items-center gap-2 border-t border-line px-3 py-3"
           >
+            <ChatImageAttach value={pendingImage} onChange={setPendingImage} />
             <input
               ref={inputRef}
               value={input}
@@ -170,7 +184,7 @@ export function AssistantChat() {
             />
             <button
               type="submit"
-              disabled={sending || !input.trim()}
+              disabled={sending || (!input.trim() && !pendingImage)}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] text-white transition-opacity disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-brand-600"
               aria-label="Enviar mensagem"
             >

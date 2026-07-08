@@ -42,7 +42,7 @@ export default async function UpgradePage() {
         {isAdmin && (
           <form action="/api/billing/checkout" method="POST">
             <PendingButton className="btn w-full py-3 text-base" pendingLabel="Abrindo">
-              Assinar Pro — R$ 39,90/mês por pessoa
+              Assinar Pro — R$ 39,90/mês + R$ 10 por pessoa extra
             </PendingButton>
           </form>
         )}

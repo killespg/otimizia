@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { IconArrowRight, IconBot } from "../icons";
 import { useAssistantChat } from "@/lib/ai/AssistantChatProvider";
+import { ChatImageAttach, type PendingImage } from "@/components/ChatImageAttach";
 import { VoicePanel } from "@/components/VoicePanel";
 
 const SUGGESTIONS = [
@@ -15,6 +16,7 @@ const SUGGESTIONS = [
 
 export default function AssistantPage() {
   const [input, setInput] = useState("");
+  const [pendingImage, setPendingImage] = useState<PendingImage | null>(null);
   const { messages, status, sending, send } = useAssistantChat();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -25,7 +27,9 @@ export default function AssistantPage() {
 
   function submit(text: string) {
     setInput("");
-    void send(text);
+    const image = pendingImage;
+    setPendingImage(null);
+    void send(text, image ?? undefined);
   }
 
   return (
@@ -82,8 +86,17 @@ export default function AssistantPage() {
           messages.map((message, index) =>
             message.role === "user" ? (
               <div key={index} className="flex justify-end">
-                <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] px-4 py-2.5 text-sm text-white">
-                  {message.content}
+                <div className="max-w-[80%] space-y-2 rounded-2xl rounded-br-sm bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] px-4 py-2.5 text-sm text-white">
+                  {message.imageUrl && (
+                    <img
+                      src={message.imageUrl}
+                      alt=""
+                      className="max-h-60 w-full rounded-lg object-cover"
+                    />
+                  )}
+                  {message.content && (
+                    <p className="whitespace-pre-wrap">{message.content}</p>
+                  )}
                 </div>
               </div>
             ) : (
@@ -116,6 +129,7 @@ export default function AssistantPage() {
           }}
           className="flex gap-2"
         >
+          <ChatImageAttach value={pendingImage} onChange={setPendingImage} />
           <input
             value={input}
             onChange={(event) => setInput(event.target.value)}
@@ -125,7 +139,7 @@ export default function AssistantPage() {
           />
           <button
             type="submit"
-            disabled={sending || !input.trim()}
+            disabled={sending || (!input.trim() && !pendingImage)}
             className="nav-item grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-brand-700 text-white shadow-[0_14px_30px_-16px_rgba(109,40,217,0.9)] transition-opacity hover:bg-brand-800 disabled:opacity-40"
             aria-label="Enviar pergunta"
           >

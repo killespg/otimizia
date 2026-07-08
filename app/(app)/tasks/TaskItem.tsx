@@ -7,6 +7,7 @@ import { formatDateTime } from "@/lib/format";
 import {
   acceptTaskHandoff,
   adminReassignTask,
+  claimTask,
   declineTaskHandoff,
   deleteTask,
   requestTaskHandoff,
@@ -99,6 +100,21 @@ export default function TaskItem({
         <div className="flex flex-wrap items-center gap-2 pl-1 text-[11px] font-bold text-ink-muted">
           {assigneeName && (
             <span className="tag bg-surface-2 text-ink-muted">Com {assigneeName}</span>
+          )}
+
+          {!task.assignee_id && (
+            <span className="flex items-center gap-1.5">
+              <span className="tag bg-[#fff7e6] text-[#8a6500]">Em aberto</span>
+              <form action={claimTask}>
+                <input type="hidden" name="task_id" value={task.id} />
+                <PendingButton
+                  className="rounded-md bg-brand-700 px-2 py-1 text-[11px] font-black text-white hover:bg-brand-800"
+                  pendingLabel="Pegando"
+                >
+                  Pegar
+                </PendingButton>
+              </form>
+            </span>
           )}
 
           {task.pending_assignee_id && (

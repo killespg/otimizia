@@ -239,3 +239,13 @@ export function IconGrip({ className }: IconProps) {
     </svg>
   );
 }
+
+export function IconImage({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2" {...stroke} />
+      <circle cx="8.5" cy="9.5" r="1.6" {...stroke} />
+      <path d="m5 17 4.5-4.5a2 2 0 0 1 2.8 0L15 15.2m0 0 1.7-1.7a2 2 0 0 1 2.8 0L21 15" {...stroke} />
+    </svg>
+  );
+}

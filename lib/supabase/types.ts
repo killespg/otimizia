@@ -16,12 +16,14 @@ export const DEAL_STAGES: { key: DealStage; label: string }[] = [
 export type Profile = {
   id: string;
   name: string | null;
+  email: string | null;
   profession_type: string;
   profession_types: string[];
   is_admin: boolean;
   cpf: string | null;
   terms_accepted_at: string | null;
   active_org_id: string | null;
+  checklist_dismissed_at: string | null;
   created_at: string;
 };
 
@@ -30,6 +32,16 @@ export type OrgRole = "admin" | "member";
 export type Organization = {
   id: string;
   name: string;
+  business_context: string | null;
+  business_priorities: string | null;
+  ai_tone: string | null;
+  ai_instructions: string | null;
+  industry: string | null;
+  region: string | null;
+  team_size: string | null;
+  website: string | null;
+  extra_notes: string | null;
+  onboarded_at: string | null;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   plan: "free" | "pro";
@@ -68,6 +80,8 @@ export type Deal = {
   org_id: string;
   workspace_key: string;
   contact_id: string | null;
+  assignee_id: string | null;
+  pending_assignee_id: string | null;
   title: string;
   value_cents: number | null;
   stage: DealStage;

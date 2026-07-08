@@ -2,8 +2,9 @@ import { redirect } from "next/navigation";
 import { PendingButton } from "@/components/PendingButton";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
+import type { Organization } from "@/lib/supabase/types";
 import { IconPlus, IconTrash, IconUsers } from "../icons";
-import { inviteMember, removeMember, updateMemberRole } from "./actions";
+import { inviteMember, removeMember, updateMemberRole, updateOrganizationContext } from "./actions";
 
 export default async function TeamPage({
   searchParams,
@@ -17,13 +18,15 @@ export default async function TeamPage({
   if (!user) redirect("/login");
 
   const orgId = await getActiveOrgId(supabase, user.id);
-  const [members, role, { data: org }] = await Promise.all([
+  const [members, role, { data: orgData }] = await Promise.all([
     getOrgMembers(supabase, orgId),
     getOrgRole(supabase, orgId, user.id),
-    supabase.from("organizations").select("name").eq("id", orgId).maybeSingle(),
+    supabase.from("organizations").select("*").eq("id", orgId).maybeSingle(),
   ]);
+  const org = orgData as Organization | null;
   const isAdmin = role === "admin";
   const adminCount = members.filter((m) => m.role === "admin").length;
+  const isSolo = members.length <= 1;
 
   return (
     <div className="max-w-2xl space-y-4 sm:space-y-5">
@@ -33,7 +36,9 @@ export default async function TeamPage({
           {org?.name ?? "Sua empresa"}
         </h1>
         <p className="mt-2 text-sm font-medium leading-relaxed text-ink-soft">
-          Todo mundo aqui compartilha os mesmos contatos, vendas e lembretes.
+          {isSolo
+            ? "Você tá sozinho(a) por enquanto — dá pra usar assim numa boa, e convidar alguém quando quiser."
+            : "Todo mundo aqui compartilha os mesmos contatos, vendas e lembretes."}
         </p>
       </header>
 
@@ -42,6 +47,107 @@ export default async function TeamPage({
           {searchParams.error}
         </div>
       )}
+
+      <SectionCard
+        title="Empresa e IA"
+        description="Nome, contexto e preferências que a IA usa pra te ajudar — vale mesmo se for só você."
+      >
+        {isAdmin ? (
+          <form action={updateOrganizationContext} className="space-y-3">
+            <Field
+              name="organization_name"
+              label="Nome da empresa/operação"
+              defaultValue={org?.name ?? ""}
+              required
+              maxLength={120}
+            />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field
+                name="industry"
+                label="Segmento/setor"
+                defaultValue={org?.industry ?? ""}
+                maxLength={120}
+                placeholder="Ex.: imóveis, seguros, consultoria..."
+              />
+              <Field
+                name="region"
+                label="Região de atuação"
+                defaultValue={org?.region ?? ""}
+                maxLength={120}
+                placeholder="Ex.: Ribeirão Preto e região"
+              />
+              <Field
+                name="team_size"
+                label="Tamanho da equipe"
+                defaultValue={org?.team_size ?? ""}
+                maxLength={60}
+                placeholder="Ex.: só eu, 3 pessoas..."
+              />
+              <Field
+                name="website"
+                label="Site ou link útil"
+                defaultValue={org?.website ?? ""}
+                maxLength={200}
+                placeholder="Ex.: instagram.com/suaempresa"
+              />
+            </div>
+            <TextAreaField
+              name="business_context"
+              label="Contexto da empresa"
+              defaultValue={org?.business_context ?? ""}
+              maxLength={1200}
+              rows={4}
+              placeholder="O que vende, para quem, região, diferenciais, perfil dos clientes..."
+            />
+            <TextAreaField
+              name="business_priorities"
+              label="Prioridades"
+              defaultValue={org?.business_priorities ?? ""}
+              maxLength={1200}
+              rows={3}
+              placeholder="Ex.: priorizar leads quentes, recuperar perdidos, acompanhar comissões, vender mais fazendas..."
+            />
+            <TextAreaField
+              name="ai_tone"
+              label="Jeito de falar"
+              defaultValue={org?.ai_tone ?? ""}
+              maxLength={600}
+              rows={2}
+              placeholder="Ex.: direto, informal, sem enrolar, com opinião comercial quando fizer sentido."
+            />
+            <TextAreaField
+              name="ai_instructions"
+              label="Instruções para a IA"
+              defaultValue={org?.ai_instructions ?? ""}
+              maxLength={1200}
+              rows={4}
+              placeholder="Regras internas, cuidados ao falar com clientes, informações importantes que não podem ser esquecidas..."
+            />
+            <TextAreaField
+              name="extra_notes"
+              label="Outras informações"
+              defaultValue={org?.extra_notes ?? ""}
+              maxLength={1200}
+              rows={4}
+              placeholder="Qualquer outra coisa que a IA deveria saber e não se encaixa nos campos acima..."
+            />
+            <PendingButton className="btn-soft" pendingLabel="Salvando">
+              Salvar
+            </PendingButton>
+          </form>
+        ) : (
+          <div className="space-y-3 text-sm font-medium text-ink-muted">
+            <p>
+              O contexto da empresa é definido por um admin e usado pela IA para
+              ajudar todo mundo com a mesma direção.
+            </p>
+            <div className="rounded-md border border-line bg-surface px-3 py-2">
+              <span className="label">Empresa/operação</span>
+              <p className="mt-1 font-bold text-ink">{org?.name ?? "Empresa"}</p>
+            </div>
+          </div>
+        )}
+      </SectionCard>
 
       {isAdmin && (
         <section className="panel space-y-3 p-5 sm:p-6">
@@ -150,4 +256,101 @@ async function safeInvite(formData: FormData) {
     const message = error instanceof Error ? error.message : "Não deu para enviar o convite.";
     redirect(`/team?error=${encodeURIComponent(message)}`);
   }
+}
+
+function SectionCard({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="panel space-y-4 p-5 sm:p-6">
+      <div>
+        <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
+          {title}
+        </h2>
+        <p className="mt-1 text-sm font-medium text-ink-muted">{description}</p>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function TextAreaField({
+  name,
+  label,
+  defaultValue,
+  maxLength,
+  rows = 3,
+  placeholder,
+}: {
+  name: string;
+  label: string;
+  defaultValue?: string;
+  maxLength?: number;
+  rows?: number;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <label className="label" htmlFor={name}>
+        {label}
+      </label>
+      <textarea
+        id={name}
+        name={name}
+        defaultValue={defaultValue}
+        maxLength={maxLength}
+        rows={rows}
+        placeholder={placeholder}
+        className="field mt-1.5 min-h-24 resize-y"
+      />
+    </div>
+  );
+}
+
+function Field({
+  name,
+  label,
+  required = false,
+  defaultValue,
+  maxLength,
+  placeholder,
+}: {
+  name: string;
+  label: string;
+  required?: boolean;
+  defaultValue?: string;
+  maxLength?: number;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <label className="label" htmlFor={name}>
+        {label}
+        {required && (
+          <>
+            <span className="ml-1 text-brand-700" aria-hidden="true">
+              *
+            </span>
+            <span className="sr-only"> obrigatório</span>
+          </>
+        )}
+      </label>
+      <input
+        id={name}
+        name={name}
+        type="text"
+        required={required}
+        defaultValue={defaultValue}
+        maxLength={maxLength}
+        placeholder={placeholder}
+        className="field mt-1.5"
+      />
+    </div>
+  );
 }

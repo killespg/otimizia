@@ -83,7 +83,7 @@ export default async function TasksPage() {
     <div className="space-y-4 sm:space-y-5">
       <header className="enter flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm font-black text-brand-700">Lembretes</p>
+          <p className="text-sm font-black text-brand-700">Tarefas</p>
           <h1 className="mt-2 text-[clamp(1.55rem,6vw,3.2rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
             Clientes para chamar
           </h1>
@@ -132,22 +132,34 @@ export default async function TasksPage() {
           </PendingButton>
         </div>
         {members.length > 1 && (
-          <div className="mt-3 max-w-xs">
-            <label className="label" htmlFor="task-assignee">
-              Responsável
-            </label>
-            <select
-              id="task-assignee"
-              name="assignee_id"
-              className="field mt-1.5"
-              defaultValue={user!.id}
-            >
-              {members.map((member) => (
-                <option key={member.user_id} value={member.user_id}>
-                  {member.user_id === user!.id ? "Eu" : (member.name ?? "Sem nome")}
-                </option>
-              ))}
-            </select>
+          <div className="mt-3 flex flex-wrap items-end gap-3">
+            <div className="max-w-xs">
+              <label className="label" htmlFor="task-assignee">
+                Responsável
+              </label>
+              <select
+                id="task-assignee"
+                name="assignee_id"
+                className="field mt-1.5"
+                defaultValue={user!.id}
+              >
+                {members.map((member) => (
+                  <option key={member.user_id} value={member.user_id}>
+                    {member.user_id === user!.id ? "Eu" : (member.name ?? "Sem nome")}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {isAdmin && (
+              <label className="flex min-h-11 items-center gap-2 pb-0.5 text-sm font-bold text-ink-soft">
+                <input
+                  type="checkbox"
+                  name="open_assignment"
+                  className="h-4 w-4 rounded border-line accent-brand-700"
+                />
+                Deixar em aberto (quem pegar primeiro fica com ela)
+              </label>
+            )}
           </div>
         )}
       </form>
