@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
 import type { User } from "@supabase/supabase-js";
 import { saveAssistantMessage } from "@/lib/ai/history";
+import { logError } from "@/lib/logger";
 import { getActiveOrgId } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset, type ProfessionPreset } from "@/lib/professions";
@@ -17,6 +18,11 @@ const MODEL = "claude-sonnet-5";
 const MAX_TOOL_TURNS = 10;
 const MAX_HISTORY = 30;
 const MAX_MESSAGE_CHARS = 4000;
+// Um pouco acima do limite de arquivo do cliente (MAX_PDF_BYTES em
+// lib/ai/usePdfAttachment.ts) já convertido pra base64 (~33% maior),
+// pra sobrar folga sem abrir espaço pra payloads muito maiores que o
+// cliente jamais enviaria de propósito.
+const MAX_PDF_BASE64_CHARS = 4_500_000;
 
 // Reaproveita o bucket já usado pelas fotos de negócio — mesma política de
 // tamanho/tipo, só muda o prefixo do caminho.
@@ -322,6 +328,7 @@ Como conversar:
 - Nunca use markdown (nada de **negrito**, _itálico_, listas com "-"/"*", headings com "#" ou blocos de código). O chat exibe texto puro, então isso só aparece como asteriscos e símbolos soltos na tela. Escreva em texto corrido normal.
 
 Como agir:
+- Se o usuário anexar um PDF (contrato, proposta, nota fiscal etc.), leia o conteúdo direto do documento e responda com base nele — não peça pra ele colar o texto.
 - Use as ferramentas para tudo que envolver dados reais. Nunca invente contatos, valores ou datas — consulte antes de afirmar.
 - Quando o usuário citar uma pessoa pelo nome, localize-a com list_contacts antes de agir. Se houver mais de um resultado possível, pergunte qual é.
 - Etapas do funil: ${stageLine}.
@@ -339,21 +346,78 @@ function sanitizeHistory(raw: unknown): Anthropic.MessageParam[] {
   for (const item of raw.slice(-MAX_HISTORY)) {
     if (!item || typeof item !== "object") continue;
     const role = (item as { role?: unknown }).role;
-    const content = (item as { content?: unknown }).content;
-    if ((role !== "user" && role !== "assistant") || typeof content !== "string") {
+    if (role !== "user" && role !== "assistant") continue;
+    const rawContent = (item as { content?: unknown }).content;
+
+    if (typeof rawContent === "string") {
+      const text = rawContent.trim().slice(0, MAX_MESSAGE_CHARS);
+      if (!text) continue;
+      messages.push({ role, content: text });
       continue;
     }
-    const text = content.trim().slice(0, MAX_MESSAGE_CHARS);
-    if (!text) continue;
-    messages.push({ role, content: text });
+
+    // Só a mensagem do usuário pode carregar um PDF anexado (bloco
+    // "document"); a resposta do assistente sempre é texto puro.
+    if (role === "user" && Array.isArray(rawContent)) {
+      const blocks = sanitizeContentBlocks(rawContent);
+      if (blocks.length > 0) messages.push({ role: "user", content: blocks });
+    }
   }
   // A primeira mensagem precisa ser do usuário.
   while (messages.length > 0 && messages[0].role !== "user") messages.shift();
   return messages;
 }
 
+const BASE64_RE = /^[A-Za-z0-9+/]+={0,2}$/;
+
+function sanitizeContentBlocks(
+  raw: unknown[]
+): Array<Anthropic.TextBlockParam | Anthropic.DocumentBlockParam> {
+  const blocks: Array<Anthropic.TextBlockParam | Anthropic.DocumentBlockParam> = [];
+  let documentCount = 0;
+
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const type = (item as { type?: unknown }).type;
+
+    if (type === "text") {
+      const text = (item as { text?: unknown }).text;
+      if (typeof text === "string" && text.trim()) {
+        blocks.push({ type: "text", text: text.trim().slice(0, MAX_MESSAGE_CHARS) });
+      }
+      continue;
+    }
+
+    // Só um PDF por mensagem — evita que um cliente adulterado empilhe
+    // vários documentos grandes num único turno.
+    if (type === "document" && documentCount === 0) {
+      const source = (item as { source?: unknown }).source;
+      if (!source || typeof source !== "object") continue;
+      const sourceType = (source as { type?: unknown }).type;
+      const mediaType = (source as { media_type?: unknown }).media_type;
+      const data = (source as { data?: unknown }).data;
+      if (
+        sourceType === "base64" &&
+        mediaType === "application/pdf" &&
+        typeof data === "string" &&
+        data.length > 0 &&
+        data.length <= MAX_PDF_BASE64_CHARS &&
+        BASE64_RE.test(data)
+      ) {
+        documentCount++;
+        blocks.push({
+          type: "document",
+          source: { type: "base64", media_type: "application/pdf", data },
+        });
+      }
+    }
+  }
+
+  return blocks;
+}
+
 function friendlyError(error: unknown): string {
-  console.error("[api/assistant]", error);
+  logError("api/assistant", error);
   if (error instanceof Anthropic.RateLimitError) {
     return "Muitas solicitações agora. Espere alguns segundos e tente de novo.";
   }

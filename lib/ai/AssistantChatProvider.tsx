@@ -3,9 +3,32 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
-export type ChatMessage = { role: "user" | "assistant"; content: string; imageUrl?: string };
+export type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+  imageUrl?: string;
+  attachmentName?: string;
+};
 
 export type PendingChatImage = { dataUrl: string; mediaType: string; base64: string };
+
+// Lê o arquivo como base64 puro (sem o prefixo "data:application/pdf;base64,").
+function readFileAsBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error ?? new Error("Falha ao ler o arquivo."));
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result !== "string") {
+        reject(new Error("Falha ao ler o arquivo."));
+        return;
+      }
+      const comma = result.indexOf(",");
+      resolve(comma >= 0 ? result.slice(comma + 1) : result);
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 // Rótulos amigáveis mostrados enquanto uma ferramenta do CRM está rodando.
 export const ASSISTANT_TOOL_LABELS: Record<string, string> = {
@@ -38,7 +61,7 @@ type AssistantChatValue = {
   messages: ChatMessage[];
   status: string | null;
   sending: boolean;
-  send: (text: string, image?: PendingChatImage) => Promise<void>;
+  send: (text: string, image?: PendingChatImage, file?: File | null) => Promise<void>;
 };
 
 const AssistantChatContext = createContext<AssistantChatValue | null>(null);
@@ -72,18 +95,42 @@ export function AssistantChatProvider({
   );
 
   const send = useCallback(
-    async (text: string, image?: PendingChatImage) => {
+    async (text: string, image?: PendingChatImage, file?: File | null) => {
       const trimmed = text.trim();
-      if ((!trimmed && !image) || sendingRef.current) return;
+      if ((!trimmed && !image && !file) || sendingRef.current) return;
       sendingRef.current = true;
       setSending(true);
-      setStatus("Pensando…");
+      setStatus(file ? "Lendo o PDF…" : "Pensando…");
 
-      const history: ChatMessage[] = [
-        ...messagesRef.current,
-        { role: "user", content: trimmed, imageUrl: image?.dataUrl },
-      ];
-      updateMessages(() => [...history, { role: "assistant", content: "" }]);
+      // O PDF só é anexado nesta mensagem: depois de enviado, ele não fica
+      // guardado no histórico local (só o nome, pra exibir), então turnos
+      // seguintes não reenviam o base64 inteiro de novo a cada mensagem.
+      let base64: string | null = null;
+      if (file) {
+        try {
+          base64 = await readFileAsBase64(file);
+        } catch {
+          sendingRef.current = false;
+          setSending(false);
+          setStatus(null);
+          updateMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: "Não consegui ler esse PDF. Tenta de novo." },
+          ]);
+          return;
+        }
+      }
+
+      const displayText = trimmed || (file ? `Dá uma olhada nesse PDF: ${file.name}` : "");
+      const priorHistory = messagesRef.current;
+      const userMessage: ChatMessage = {
+        role: "user",
+        content: file ? displayText : trimmed,
+        imageUrl: !file ? image?.dataUrl : undefined,
+        attachmentName: file?.name,
+      };
+      updateMessages(() => [...priorHistory, userMessage, { role: "assistant", content: "" }]);
+      setStatus("Pensando…");
 
       const appendToAssistant = (chunk: string) => {
         updateMessages((prev) => {
@@ -96,18 +143,37 @@ export function AssistantChatProvider({
         });
       };
 
+      const priorPayload = priorHistory.map(({ role, content }) => ({ role, content }));
+      const requestBody = base64
+        ? {
+            messages: [
+              ...priorPayload,
+              {
+                role: "user" as const,
+                content: [
+                  { type: "text", text: displayText },
+                  {
+                    type: "document",
+                    source: { type: "base64", media_type: "application/pdf", data: base64 },
+                  },
+                ],
+              },
+            ],
+          }
+        : {
+            messages: [
+              ...priorPayload,
+              { role: "user" as const, content: !trimmed && image ? "(foto)" : trimmed },
+            ],
+            image: image ? { mediaType: image.mediaType, data: image.base64 } : undefined,
+          };
+
       let mutated = false;
       try {
         const res = await fetch("/api/assistant", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: history.map(({ role, content }, i) => ({
-              role,
-              content: i === history.length - 1 && !content.trim() && image ? "(foto)" : content,
-            })),
-            image: image ? { mediaType: image.mediaType, data: image.base64 } : undefined,
-          }),
+          body: JSON.stringify(requestBody),
         });
 
         if (!res.ok || !res.body) {

@@ -1,3 +1,4 @@
+import { logError } from "@/lib/logger";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -13,16 +14,20 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => null);
-  const seconds = Math.round(Number(body?.seconds));
-  if (!Number.isFinite(seconds) || seconds <= 0) {
-    return Response.json({ ok: true });
+  const sessionId = typeof body?.session_id === "string" ? body.session_id : null;
+  if (!sessionId) {
+    return Response.json({ error: "session_id ausente." }, { status: 400 });
   }
+  const close = body?.close === true;
 
-  const { error } = await supabase.rpc("increment_voice_usage", {
-    p_seconds: Math.min(seconds, 3600),
+  // O tempo cobrado vem do relógio do banco (agora - last_heartbeat_at),
+  // nunca de um valor enviado pelo cliente — veja checkpoint_voice_session.
+  const { error } = await supabase.rpc("checkpoint_voice_session", {
+    p_session_id: sessionId,
+    p_close: close,
   });
   if (error) {
-    console.error("[api/realtime/usage]", error);
+    logError("api/realtime/usage", error, { userId: user.id, sessionId });
     return Response.json({ error: "Nao consegui registrar o uso." }, { status: 500 });
   }
 

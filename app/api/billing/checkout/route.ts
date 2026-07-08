@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { logError } from "@/lib/logger";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { resolveOrigin } from "@/lib/request-origin";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -40,12 +42,12 @@ export async function POST(request: Request) {
       .update({ stripe_customer_id: customerId })
       .eq("id", orgId);
     if (error) {
-      console.error("[billing/checkout] falha ao vincular customer", error);
+      logError("billing/checkout.link-customer", error, { userId: user.id });
       return NextResponse.redirect(new URL("/settings?checkout=error", request.url));
     }
   }
 
-  const origin = new URL(request.url).origin;
+  const origin = resolveOrigin(request.headers);
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,

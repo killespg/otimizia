@@ -2,6 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import Stripe from "stripe";
+import { MIN_PASSWORD_LENGTH } from "@/lib/auth-constants";
+import { logError } from "@/lib/logger";
+import { getActiveOrgId } from "@/lib/org";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -46,8 +50,8 @@ export async function updatePassword(formData: FormData) {
   const { supabase, user } = await requireUser();
   await verifyCurrentPassword(supabase, user, formData);
   const password = text(formData.get("password"), 200);
-  if (password.length < 6) {
-    throw new Error("Use uma senha com pelo menos 6 caracteres.");
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(`Use uma senha com pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`);
   }
 
   const { error } = await supabase.auth.updateUser({ password });
@@ -64,17 +68,51 @@ export async function deleteAccount(formData: FormData) {
   }
 
   const admin = createAdminClient();
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("stripe_subscription_id")
-    .eq("id", user.id)
-    .maybeSingle();
+  const orgId = await getActiveOrgId(admin, user.id);
+  const { count: memberCount } = await admin
+    .from("organization_members")
+    .select("user_id", { count: "exact", head: true })
+    .eq("org_id", orgId);
 
-  if (profile?.stripe_subscription_id) {
-    try {
-      await getStripe().subscriptions.cancel(profile.stripe_subscription_id);
-    } catch (err) {
-      console.error("[deleteAccount] falha ao cancelar assinatura", err);
+  // Billing é da organização, não da pessoa. Se ainda houver outros membros
+  // depois que essa conta sair (org de empresa), a assinatura continua
+  // sendo deles — só mexe nela quando essa conta é a última na organização.
+  if ((memberCount ?? 0) <= 1) {
+    const { data: org } = await admin
+      .from("organizations")
+      .select("stripe_subscription_id")
+      .eq("id", orgId)
+      .maybeSingle();
+
+    if (org?.stripe_subscription_id) {
+      try {
+        // Confere o status antes de cancelar: se a assinatura já está
+        // cancelada ou não existe mais no Stripe, não há cobrança recorrente
+        // para órfão — não bloqueia a exclusão da conta por isso.
+        const subscription = await getStripe().subscriptions.retrieve(
+          org.stripe_subscription_id
+        );
+        if (subscription.status !== "canceled") {
+          await getStripe().subscriptions.cancel(org.stripe_subscription_id);
+        }
+      } catch (err) {
+        const alreadyGone = err instanceof Stripe.errors.StripeError && err.code === "resource_missing";
+        logError(
+          alreadyGone
+            ? "settings.delete-account.subscription-already-gone"
+            : "settings.delete-account.cancel-subscription",
+          err,
+          { userId: user.id, orgId }
+        );
+        if (!alreadyGone) {
+          // Não apaga a conta se não conseguirmos cancelar a assinatura:
+          // apagar o usuário deixa a organização órfã (sem membros) e a
+          // cobrança recorrente ficaria sem ninguém para cancelá-la depois.
+          throw new Error(
+            "Não foi possível cancelar sua assinatura agora. Tente novamente em instantes ou contate o suporte."
+          );
+        }
+      }
     }
   }
 
@@ -100,7 +138,7 @@ async function verifyCurrentPassword(
   formData: FormData
 ) {
   const currentPassword = text(formData.get("current_password"), 200);
-  if (!user.email || currentPassword.length < 6) {
+  if (!user.email || !currentPassword) {
     throw new Error("Confirme sua senha atual.");
   }
 
@@ -113,6 +151,6 @@ async function verifyCurrentPassword(
 
 function ensureOk(error: unknown, fallback: string) {
   if (!error) return;
-  console.error(error);
+  logError("settings.action", error);
   throw new Error(fallback);
 }

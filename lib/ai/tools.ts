@@ -1,5 +1,6 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { logError } from "@/lib/logger";
 import { DEAL_STAGES, type DealStage } from "@/lib/supabase/types";
 
 // Ferramentas que espelham tudo que o usuário pode fazer no OtimizIA.
@@ -774,6 +775,6 @@ function isStage(v: string): v is DealStage {
 
 function ensureOk(error: unknown) {
   if (!error) return;
-  console.error("[ai/tools]", error);
+  logError("ai/tools", error);
   throw new Error("Erro ao acessar o banco de dados.");
 }

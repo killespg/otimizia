@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { IconArrowRight, IconBot } from "@/app/(app)/icons";
+import { IconArrowRight, IconBot, IconPaperclip, IconX } from "@/app/(app)/icons";
 import { useAssistantChat } from "@/lib/ai/AssistantChatProvider";
+import { usePdfAttachment } from "@/lib/ai/usePdfAttachment";
 import { ChatImageAttach, type PendingImage } from "./ChatImageAttach";
 import { VoicePanel } from "./VoicePanel";
 
@@ -17,6 +18,7 @@ export function AssistantChat() {
   const [input, setInput] = useState("");
   const [pendingImage, setPendingImage] = useState<PendingImage | null>(null);
   const { messages, status, sending, send } = useAssistantChat();
+  const attachment = usePdfAttachment();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -67,10 +69,13 @@ export function AssistantChat() {
   }, [open]);
 
   function submit(text: string) {
+    if (!text.trim() && !attachment.file && !pendingImage) return;
     setInput("");
     const image = pendingImage;
     setPendingImage(null);
-    void send(text, image ?? undefined);
+    const file = attachment.file;
+    attachment.clear();
+    void send(text, image ?? undefined, file);
   }
 
   return (
@@ -138,6 +143,12 @@ export function AssistantChat() {
                         className="max-h-48 w-full rounded-lg object-cover"
                       />
                     )}
+                    {message.attachmentName && (
+                      <span className="flex items-center gap-1 text-xs font-semibold text-white/80">
+                        <IconPaperclip className="h-3.5 w-3.5 shrink-0" />
+                        {message.attachmentName}
+                      </span>
+                    )}
                     {message.content && (
                       <p className="whitespace-pre-wrap">{message.content}</p>
                     )}
@@ -166,6 +177,28 @@ export function AssistantChat() {
             <VoicePanel />
           </div>
 
+          {(attachment.file || attachment.error) && (
+            <div className="px-3 pt-2">
+              {attachment.file && (
+                <div className="mb-2 flex items-center gap-2 rounded-lg bg-surface-2 px-2.5 py-1.5 text-xs font-semibold text-ink">
+                  <IconPaperclip className="h-3.5 w-3.5 shrink-0 text-ink-muted" />
+                  <span className="min-w-0 flex-1 truncate">{attachment.file.name}</span>
+                  <button
+                    type="button"
+                    onClick={attachment.clear}
+                    className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-ink-muted hover:bg-line hover:text-ink"
+                    aria-label="Remover PDF anexado"
+                  >
+                    <IconX className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
+              {attachment.error && (
+                <p className="mb-2 text-xs font-semibold text-danger-700">{attachment.error}</p>
+              )}
+            </div>
+          )}
+
           <form
             onSubmit={(event) => {
               event.preventDefault();
@@ -174,6 +207,22 @@ export function AssistantChat() {
             className="flex items-center gap-2 border-t border-line px-3 py-3"
           >
             <ChatImageAttach value={pendingImage} onChange={setPendingImage} />
+            <input
+              ref={attachment.inputRef}
+              type="file"
+              accept="application/pdf"
+              onChange={attachment.onChange}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={attachment.pick}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2 text-ink-muted transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-brand-600"
+              aria-label="Anexar PDF"
+              title="Anexar PDF"
+            >
+              <IconPaperclip className="h-4 w-4" />
+            </button>
             <input
               ref={inputRef}
               value={input}
@@ -184,7 +233,7 @@ export function AssistantChat() {
             />
             <button
               type="submit"
-              disabled={sending || (!input.trim() && !pendingImage)}
+              disabled={sending || (!input.trim() && !pendingImage && !attachment.file)}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] text-white transition-opacity disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-brand-600"
               aria-label="Enviar mensagem"
             >

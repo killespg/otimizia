@@ -6,6 +6,8 @@ export type VoiceStatus = "idle" | "connecting" | "live" | "error";
 export type VoiceSpeaker = "user" | "assistant" | null;
 export type VoiceLine = { role: "user" | "assistant"; text: string };
 
+const HEARTBEAT_INTERVAL_MS = 20_000;
+
 function readLevel(analyser: AnalyserNode | null): number {
   if (!analyser) return 0;
   const data = new Uint8Array(analyser.fftSize);
@@ -38,8 +40,10 @@ export function useVoiceCall() {
   const remoteAnalyserRef = useRef<AnalyserNode | null>(null);
   const levelFrameRef = useRef<number | null>(null);
   const callTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const assistantTextRef = useRef("");
   const callSecondsRef = useRef(0);
+  const sessionIdRef = useRef<string | null>(null);
 
   function startLevelLoop() {
     function tick() {
@@ -51,24 +55,28 @@ export function useVoiceCall() {
     levelFrameRef.current = requestAnimationFrame(tick);
   }
 
-  function reportUsage() {
-    const seconds = callSecondsRef.current;
-    callSecondsRef.current = 0;
-    if (seconds <= 0) return;
+  // O tempo cobrado é sempre calculado pelo servidor a partir do relógio do
+  // banco, nunca do valor de "seconds" contado aqui no cliente (esse contador
+  // só serve para exibir o cronômetro na tela).
+  function checkpointUsage(close: boolean) {
+    const sessionId = sessionIdRef.current;
+    if (!sessionId) return;
     try {
       void fetch("/api/realtime/usage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ seconds }),
+        body: JSON.stringify({ session_id: sessionId, close }),
         keepalive: true,
       });
     } catch {
-      // Perder um registro de uso pontual não é crítico.
+      // Perder uma pulsação pontual não é crítico; a próxima chamada
+      // liquida sessões abandonadas no servidor.
     }
   }
 
   function stopVoice() {
-    reportUsage();
+    checkpointUsage(true);
+    sessionIdRef.current = null;
     peerRef.current?.close();
     peerRef.current = null;
 
@@ -88,6 +96,10 @@ export function useVoiceCall() {
     if (callTimerRef.current !== null) {
       clearInterval(callTimerRef.current);
       callTimerRef.current = null;
+    }
+    if (heartbeatTimerRef.current !== null) {
+      clearInterval(heartbeatTimerRef.current);
+      heartbeatTimerRef.current = null;
     }
     void audioCtxRef.current?.close().catch(() => undefined);
     audioCtxRef.current = null;
@@ -123,6 +135,7 @@ export function useVoiceCall() {
       if (!tokenResponse.ok || !ephemeralKey) {
         throw new Error(tokenData?.error ?? "Nao consegui iniciar a chamada.");
       }
+      sessionIdRef.current = typeof tokenData?.session_id === "string" ? tokenData.session_id : null;
 
       const peer = new RTCPeerConnection();
       peerRef.current = peer;
@@ -252,6 +265,9 @@ export function useVoiceCall() {
         callSecondsRef.current += 1;
         setCallSeconds(callSecondsRef.current);
       }, 1000);
+      heartbeatTimerRef.current = setInterval(() => {
+        checkpointUsage(false);
+      }, HEARTBEAT_INTERVAL_MS);
     } catch (error) {
       stopVoice();
       setVoiceStatus("error");

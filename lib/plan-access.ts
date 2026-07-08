@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { logError } from "@/lib/logger";
 import { getActiveOrgId } from "@/lib/org";
 import { getPlanAccess, type PlanAccess } from "@/lib/plan";
 
@@ -17,13 +18,13 @@ export async function getUserPlanAccess(
       .maybeSingle();
 
     if (error) {
-      console.error("[plan-access]", error);
+      logError("plan-access", error, { userId });
       return { hasAccess: false, status: "free", trialDaysLeft: null };
     }
 
     return getPlanAccess(org);
   } catch (error) {
-    console.error("[plan-access]", error);
+    logError("plan-access", error, { userId });
     return { hasAccess: false, status: "free", trialDaysLeft: null };
   }
 }

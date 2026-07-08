@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient as createSupabaseAdminClient } from "@supabase/supabase-js";
+import { logError } from "@/lib/logger";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import {
@@ -920,7 +921,7 @@ function collectDetails(formData: FormData, fields: FieldSpec[]): Record<string,
 
 function ensureOk(error: unknown, fallback: string) {
   if (!error) return;
-  console.error(error);
+  logError("app.action", error);
   throw new Error(fallback);
 }
 
