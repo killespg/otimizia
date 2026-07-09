@@ -1,7 +1,9 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { AgentPanel } from "@/components/AgentPanel";
 import { BrandName } from "@/components/BrandName";
 import { PendingButton } from "@/components/PendingButton";
+import { parseDashboardLayout, type WidgetType } from "@/lib/dashboardWidgets";
 import { computeDevMetrics, type DevMetrics } from "@/lib/devMetrics";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getProfessionPreset, type MetricKey, type ProfessionPreset } from "@/lib/professions";
@@ -17,6 +19,7 @@ import {
 import { formatBRL, formatDate } from "@/lib/format";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { claimDeal, claimTask, createTask, dismissChecklist } from "../actions";
+import { DashboardGrid } from "./DashboardGrid";
 import { ReminderModal as ReminderModalClient } from "./ReminderModal";
 import { RevenueLineChart } from "./RevenueLineChart";
 import {
@@ -78,7 +81,7 @@ export default async function DashboardPage() {
     supabase.auth.getUser(),
     supabase
       .from("profiles")
-      .select("profession_type, is_admin, checklist_dismissed_at")
+      .select("profession_type, is_admin, checklist_dismissed_at, dashboard_layout")
       .maybeSingle(),
   ]);
   const orgId = await getActiveOrgId(supabase, user!.id);
@@ -251,6 +254,51 @@ export default async function DashboardPage() {
     isFirstRun,
   });
 
+  const nodesByType: Partial<Record<WidgetType, ReactNode>> = {
+    metrics: (
+      <section className="enter grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+        {metrics.map((metric) => (
+          <MetricCard key={metric.label} {...metric} />
+        ))}
+      </section>
+    ),
+    revenue_chart: (
+      <RevenueChart
+        openValue={openValue}
+        wonValue={wonValue}
+        series={wonSeries}
+        contacts={contactsForForms}
+        defaultDueAt={defaultDateTimeValue(now)}
+        preset={preset}
+      />
+    ),
+    deals_table: <DealsTable deals={openDeals} contactMap={contactMap} preset={preset} />,
+    task_queue: <TaskQueue tasks={taskQueue} overdue={overdue} now={now} />,
+    agent_panel: <AgentPanel />,
+    onboarding_checklist: !profile?.checklist_dismissed_at ? (
+      <OnboardingChecklist
+        preset={preset}
+        isOrgAdmin={isOrgAdmin}
+        done={{
+          contact: contacts > 0,
+          deal: allDeals.length > 0,
+          task: (totalTasksCount ?? 0) > 0,
+          businessContext: Boolean(orgContext?.business_context),
+          assistant: (assistantMessageCount ?? 0) > 0,
+          team: (teamMembersCount ?? 0) > 1,
+        }}
+      />
+    ) : undefined,
+    contacts_summary: <ContactsSummaryWidget count={contacts} />,
+    activity_summary: (
+      <ActivitySummaryWidget
+        conversationsToday={conversationsToday ?? 0}
+        assistantMessages={assistantMessageCount ?? 0}
+        teamMembers={isOrgAdmin ? teamMembersCount ?? null : null}
+      />
+    ),
+  };
+
   return (
     <div className="space-y-4 sm:space-y-5">
       <header className="enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -306,50 +354,72 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <section className="enter grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        {metrics.map((metric) => (
-          <MetricCard key={metric.label} {...metric} />
-        ))}
-      </section>
-
       {founderMetrics && <FounderMetricsPanel metrics={founderMetrics} />}
 
       <OpenClaimsPanel tasks={unclaimedTasks} deals={unclaimedDeals} preset={preset} />
 
-      <section className="grid gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(23rem,0.72fr)]">
-        <div className="min-w-0 space-y-4 sm:space-y-5">
-          <RevenueChart
-            openValue={openValue}
-            wonValue={wonValue}
-            series={wonSeries}
-            contacts={contactsForForms}
-            defaultDueAt={defaultDateTimeValue(now)}
-            preset={preset}
-          />
-          <DealsTable deals={openDeals} contactMap={contactMap} preset={preset} />
-        </div>
-
-        <aside className="min-w-0 space-y-4 sm:space-y-5">
-          <TaskQueue tasks={taskQueue} overdue={overdue} now={now} />
-          <AgentPanel />
-        </aside>
-      </section>
-
-      {!profile?.checklist_dismissed_at && (
-        <OnboardingChecklist
-          preset={preset}
-          isOrgAdmin={isOrgAdmin}
-          done={{
-            contact: contacts > 0,
-            deal: allDeals.length > 0,
-            task: (totalTasksCount ?? 0) > 0,
-            businessContext: Boolean(orgContext?.business_context),
-            assistant: (assistantMessageCount ?? 0) > 0,
-            team: (teamMembersCount ?? 0) > 1,
-          }}
-        />
-      )}
+      <DashboardGrid
+        initialLayout={parseDashboardLayout(profile?.dashboard_layout)}
+        nodes={nodesByType}
+      />
     </div>
+  );
+}
+
+function ContactsSummaryWidget({ count }: { count: number }) {
+  return (
+    <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold text-ink-soft sm:text-sm">Contatos</p>
+          <p className="text-safe mt-2 text-2xl font-black leading-none tracking-[-0.03em] text-ink">
+            {count}
+          </p>
+        </div>
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-100 text-brand-700">
+          <IconUsers className="h-5 w-5" />
+        </span>
+      </div>
+      <Link
+        href="/contacts"
+        className="nav-item mt-4 inline-flex items-center gap-1.5 text-sm font-black text-brand-700 hover:text-brand-900"
+      >
+        Ver contatos
+        <IconArrowRight className="h-4 w-4" />
+      </Link>
+    </section>
+  );
+}
+
+function ActivitySummaryWidget({
+  conversationsToday,
+  assistantMessages,
+  teamMembers,
+}: {
+  conversationsToday: number;
+  assistantMessages: number;
+  teamMembers: number | null;
+}) {
+  const tiles = [
+    { label: "Conversas hoje", value: String(conversationsToday) },
+    { label: "Mensagens com a IA", value: String(assistantMessages) },
+    ...(teamMembers !== null ? [{ label: "Pessoas na equipe", value: String(teamMembers) }] : []),
+  ];
+
+  return (
+    <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
+      <p className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">Atividade</p>
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+        {tiles.map((tile) => (
+          <div key={tile.label} className="rounded-lg border border-line bg-[#f8faff] p-3">
+            <p className="text-xs font-semibold text-ink-soft">{tile.label}</p>
+            <p className="mt-1 text-lg font-black leading-none tracking-[-0.02em] text-ink">
+              {tile.value}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 

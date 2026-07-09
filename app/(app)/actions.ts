@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient as createSupabaseAdminClient } from "@supabase/supabase-js";
+import { parseDashboardLayout, type WidgetInstance } from "@/lib/dashboardWidgets";
 import { logError } from "@/lib/logger";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
@@ -905,6 +906,17 @@ export async function dismissChecklist() {
     .update({ checklist_dismissed_at: new Date().toISOString() })
     .eq("id", user.id);
   ensureOk(error, "Não deu para fechar o painel.");
+  revalidatePath("/dashboard");
+}
+
+export async function saveDashboardLayout(layout: WidgetInstance[]) {
+  const { supabase, user } = await requireUser();
+  const clean = parseDashboardLayout(layout);
+  const { error } = await supabase
+    .from("profiles")
+    .update({ dashboard_layout: clean })
+    .eq("id", user.id);
+  ensureOk(error, "Não deu para salvar o painel.");
   revalidatePath("/dashboard");
 }
 
