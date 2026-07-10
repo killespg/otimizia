@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { DashboardPreferencesForm } from "@/components/DashboardPreferencesForm";
 import type { DashboardPreferences } from "@/lib/dashboard-preferences";
 import type { ProfessionPreset } from "@/lib/professions";
-import { IconSettings } from "@/app/(app)/icons";
+import { IconCheck, IconSettings } from "@/app/(app)/icons";
 
 type DashboardCustomizePanelProps = {
   preferences: DashboardPreferences;
@@ -40,10 +40,18 @@ export function DashboardCustomizePanel({
         onToggle={(event) => setOpen(event.currentTarget.open)}
       >
         <summary className="dashboard-customize-trigger">
-          <IconSettings className="h-4 w-4" />
-          <span>{open ? "Concluir" : "Personalizar"}</span>
-        </summary>
-        <div className="dashboard-customize-panel">
+        {open ? <IconCheck className="h-4 w-4" /> : <IconSettings className="h-4 w-4" />}
+        <span>{open ? "Fechar editor" : "Personalizar painel"}</span>
+      </summary>
+      <div className="dashboard-customize-panel">
+        <div className="dashboard-customize-header">
+          <div>
+            <p className="dashboard-customize-eyebrow">Modo de edição</p>
+            <h2 className="dashboard-customize-title">Deixe o painel do seu jeito</h2>
+            <p className="dashboard-customize-description">Escolha a aparência e as métricas. Para reorganizar os blocos, use as alças no painel abaixo.</p>
+          </div>
+          <span className="dashboard-customize-live"><span />Prévia ao vivo</span>
+        </div>
           <DashboardPreferencesForm
             preferences={preferences}
             preset={preset}

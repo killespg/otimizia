@@ -53,6 +53,7 @@ export function DashboardPreferencesForm({
   const [draggingMetric, setDraggingMetric] = useState<MetricKey | null>(null);
   const [isSaving, startSaving] = useTransition();
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
+  const [section, setSection] = useState<"appearance" | "metrics">("appearance");
 
   const availableMetrics = useMemo(
     () =>
@@ -118,7 +119,7 @@ export function DashboardPreferencesForm({
   }
 
   return (
-    <form ref={formRef} action={submitPreferences} className="space-y-5">
+    <form ref={formRef} action={submitPreferences} className="space-y-4">
       <input type="hidden" name="dashboard_style" value={style} />
       <input type="hidden" name="dashboard_accent" value={accent} />
       <input type="hidden" name="return_to" value={returnTo} />
@@ -126,7 +127,12 @@ export function DashboardPreferencesForm({
         <input key={metric} type="hidden" name="dashboard_metrics" value={metric} />
       ))}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="dashboard-preferences-tabs" role="tablist" aria-label="Seções da personalização">
+        <button type="button" role="tab" aria-selected={section === "appearance"} onClick={() => setSection("appearance")} className={section === "appearance" ? "is-active" : ""}>Aparência</button>
+        <button type="button" role="tab" aria-selected={section === "metrics"} onClick={() => setSection("metrics")} className={section === "metrics" ? "is-active" : ""}>Estatísticas <span>{metrics.length}/8</span></button>
+      </div>
+
+      {section === "appearance" && <div className="grid gap-4 lg:grid-cols-2" role="tabpanel">
         <Panel title="Estilo" description="A cara do painel, sem mexer nos dados.">
           <div className="grid gap-2 sm:grid-cols-2">
             {DASHBOARD_STYLES.map((item) => (
@@ -153,14 +159,14 @@ export function DashboardPreferencesForm({
             ))}
           </div>
         </Panel>
-      </div>
+      </div>}
 
 
-      <Panel
+      {section === "metrics" && <div role="tabpanel"><Panel
         title="Estatísticas"
         description="Escolha até 8 métricas, arraste a ordem e personalize os nomes."
       >
-        <div className="grid gap-2 lg:grid-cols-3">
+        <div className="grid gap-2 md:grid-cols-2 2xl:grid-cols-4">
           {availableMetrics.map(({ key, fallbackLabel, label }) => {
             const active = metrics.includes(key);
             return (
@@ -228,7 +234,7 @@ export function DashboardPreferencesForm({
             );
           })}
         </div>
-      </Panel>
+      </Panel></div>}
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs font-semibold text-ink-muted">
@@ -236,7 +242,7 @@ export function DashboardPreferencesForm({
             ? "Personalização salva."
             : saveStatus === "error"
               ? "Não deu para salvar. Tente novamente."
-              : "Arraste os widgets direto no painel. Aqui ficam só estilo e estatísticas."}
+              : "As mudanças aparecem no painel antes de você salvar."}
         </p>
         <PendingButton
           className={compact ? "btn-soft" : "btn"}
@@ -285,8 +291,9 @@ function OptionButton({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={
-        "flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm font-black transition " +
+        "flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm font-black transition-colors focus-visible:ring-2 focus-visible:ring-brand-600 " +
         (active
           ? "border-brand-400 bg-brand-50 text-brand-800 dark:border-brand-700 dark:bg-brand-950/70 dark:text-brand-100"
           : "border-line bg-white text-ink-soft hover:border-brand-300 hover:text-ink dark:bg-[#151426]")
@@ -307,10 +314,10 @@ function MobileOrderButtons({
 }) {
   return (
     <div className="mt-2 grid grid-cols-2 gap-2 sm:hidden">
-      <button type="button" onClick={onMoveUp} className="rounded-md border border-line bg-white px-2 py-1.5 text-xs font-black text-ink-soft">
+      <button type="button" onClick={onMoveUp} className="rounded-md border border-line bg-surface px-2 py-1.5 text-xs font-black text-ink-soft">
         Subir
       </button>
-      <button type="button" onClick={onMoveDown} className="rounded-md border border-line bg-white px-2 py-1.5 text-xs font-black text-ink-soft">
+      <button type="button" onClick={onMoveDown} className="rounded-md border border-line bg-surface px-2 py-1.5 text-xs font-black text-ink-soft">
         Descer
       </button>
     </div>
