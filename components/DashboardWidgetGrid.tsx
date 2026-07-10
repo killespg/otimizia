@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import {
+  DASHBOARD_WIDGET_LABELS,
   type DashboardPreferences,
   type DashboardWidgetKey,
 } from "@/lib/dashboard-preferences";
@@ -164,22 +165,25 @@ export function DashboardWidgetGrid({
         <div
           key={item.id}
           data-dashboard-widget={item.id}
-          className={`${item.className} widget-item dashboard-widget-shell relative ${
+          className={`${item.className} widget-item dashboard-widget-shell ${
             draggingId === item.id ? "widget-dragging dashboard-widget-dragging" : ""
           }`}
         >
           {editMode && (
-            <button
-              type="button"
-              onPointerDown={(event) => handlePointerDown(event, item.id)}
-              onPointerMove={handlePointerMove}
-              onPointerUp={endDrag}
-              onPointerCancel={endDrag}
-              className="widget-grip dashboard-widget-grip absolute right-2 top-2 z-10 grid h-9 w-9 place-items-center rounded-full border border-line bg-white text-ink-muted shadow-[0_10px_24px_-16px_rgba(15,23,42,0.6)] hover:text-ink"
-              aria-label="Arrastar para reordenar"
-            >
-              <IconGrip className="h-4 w-4" />
-            </button>
+            <div className="dashboard-widget-drag-bar">
+              <button
+                type="button"
+                onPointerDown={(event) => handlePointerDown(event, item.id)}
+                onPointerMove={handlePointerMove}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
+                className="dashboard-widget-grip"
+                aria-label={`Arrastar para reordenar ${DASHBOARD_WIDGET_LABELS[item.id]}`}
+              >
+                <IconGrip className="h-4 w-4" />
+              </button>
+              <span className="dashboard-widget-drag-label">{DASHBOARD_WIDGET_LABELS[item.id]}</span>
+            </div>
           )}
           <div className={editMode ? "pointer-events-none" : undefined}>{item.node}</div>
         </div>

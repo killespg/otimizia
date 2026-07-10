@@ -12,6 +12,16 @@ export const DASHBOARD_WIDGETS = [
 
 export type DashboardWidgetKey = (typeof DASHBOARD_WIDGETS)[number];
 
+export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetKey, string> = {
+  metrics: "Métricas",
+  chart: "Gráfico de receita",
+  deals: "Negócios recentes",
+  tasks: "Fila de tarefas",
+  assistant: "Assistente de IA",
+  open_claims: "Disponíveis pra pegar",
+  onboarding: "Primeiros passos",
+};
+
 export const DASHBOARD_STYLES = ["glow", "clean", "compact", "executive"] as const;
 
 export type DashboardStyle = (typeof DASHBOARD_STYLES)[number];

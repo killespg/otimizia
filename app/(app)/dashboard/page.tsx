@@ -269,12 +269,14 @@ export default async function DashboardPage() {
   });
   const widgetNodes: Partial<Record<DashboardWidgetKey, JSX.Element>> = {
     metrics: (
-      <section className="enter grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-6 sm:gap-4">
-        {metrics.map((metric) => (
-          <MetricCard key={metric.metricKey} {...metric} />
-        ))}
+      <div className="space-y-4 sm:space-y-5">
         {founderMetrics && <FounderMetricsPanel metrics={founderMetrics} />}
-      </section>
+        <section className="enter grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-6 sm:gap-4">
+          {metrics.map((metric) => (
+            <MetricCard key={metric.metricKey} {...metric} />
+          ))}
+        </section>
+      </div>
     ),
     open_claims: <OpenClaimsPanel tasks={unclaimedTasks} deals={unclaimedDeals} preset={preset} />,
     chart: (
@@ -427,7 +429,7 @@ function MetricCard({
   return (
     <article
       data-dashboard-metric={metricKey}
-      className="enter dashboard-card relative min-h-[96px] overflow-hidden rounded-lg border border-line bg-white p-3 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.75)] sm:min-h-[150px] sm:p-5"
+      className="enter dashboard-card relative min-h-[96px] overflow-hidden rounded-lg border border-line bg-white p-3 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:min-h-[150px] sm:p-5"
       style={{ display: visible ? undefined : "none", order }}
     >
       <div className="flex items-start justify-between gap-2 sm:gap-3">
