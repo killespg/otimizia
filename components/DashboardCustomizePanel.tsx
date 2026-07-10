@@ -33,7 +33,10 @@ export function DashboardCustomizePanel({
 
   return (
     <div className="dashboard-customize-header">
-      <h2 className="dashboard-customize-title">Seu painel</h2>
+      <div>
+        <p className="dashboard-section-eyebrow">Área de trabalho</p>
+        <h2 className="dashboard-customize-title">Visão geral do escritório</h2>
+      </div>
       <details
         ref={detailsRef}
         className="dashboard-customize"

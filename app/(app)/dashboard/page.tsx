@@ -271,7 +271,7 @@ export default async function DashboardPage() {
     metrics: (
       <div className="space-y-4 sm:space-y-5">
         {founderMetrics && <FounderMetricsPanel metrics={founderMetrics} />}
-        <section className="dashboard-metrics-grid enter grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-6 sm:gap-4">
+        <section className="dashboard-metrics-grid enter grid grid-cols-2 gap-3 lg:grid-cols-4 sm:gap-4">
           {metrics.map((metric) => (
             <MetricCard key={metric.metricKey} {...metric} />
           ))}
@@ -312,7 +312,12 @@ export default async function DashboardPage() {
     <div className={`dashboard-board dashboard-board-${dashboardPreferences.style} dashboard-accent-${dashboardPreferences.accent} space-y-4 sm:space-y-5`}>
       <header className="dashboard-header enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="max-w-2xl">
-          <h1 className="text-[28px] font-black tracking-[-0.025em] text-ink sm:text-4xl">
+          <div className="dashboard-context-line">
+            <span>Visão operacional</span>
+            <span aria-hidden="true">•</span>
+            <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long" }).format(now)}</time>
+          </div>
+          <h1 className="mt-2 text-[28px] font-black tracking-[-0.035em] text-ink sm:text-[2.15rem]">
             Olá, {displayName}!
           </h1>
           <p className="mt-1 text-sm font-semibold leading-relaxed text-ink-soft sm:text-base">
@@ -440,7 +445,7 @@ function MetricCard({
           >
             {label}
           </p>
-          <p className="text-safe mt-2 font-display text-2xl font-bold leading-none tracking-[-0.03em] tabular-nums text-ink sm:mt-3 sm:text-[2rem]">
+          <p className="dashboard-metric-value text-safe mt-2 text-2xl font-black leading-none tracking-[-0.035em] tabular-nums text-ink sm:mt-3 sm:text-[2rem]">
             {value}
           </p>
         </div>
