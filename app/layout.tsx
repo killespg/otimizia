@@ -1,23 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans, Source_Serif_4 } from "next/font/google";
+import { IBM_Plex_Mono, Outfit } from "next/font/google";
 import { InstallAppPrompt } from "@/components/InstallAppPrompt";
 import "./globals.css";
 
 // Geométrica e arredondada como a Vegur (que ela substitui). font-black
 // aponta pra 800 (ver tailwind.config.ts) em vez do 900 nativo da Outfit,
 // que ficava pesado demais nos ~160 usos de font-black pelo app.
-const sans = IBM_Plex_Sans({
+const sans = Outfit({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
   variable: "--font-sans",
-});
-
-const display = Source_Serif_4({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  display: "swap",
-  variable: "--font-display",
 });
 
 const mono = IBM_Plex_Mono({
@@ -73,7 +66,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${sans.variable} ${display.variable} ${mono.variable}`}
+      className={`${sans.variable} ${mono.variable}`}
       suppressHydrationWarning
     >
       <body>
