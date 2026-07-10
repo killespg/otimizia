@@ -115,7 +115,7 @@ export default async function AppLayout({
 
   return (
     <AssistantChatProvider>
-    <div className="app-frame min-h-[100dvh] bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-0 sm:p-6">
+    <div className={`app-frame workspace-${preset.key} min-h-[100dvh] bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-0 sm:p-6`}>
       <div className="app-shell mx-auto flex min-h-[100dvh] max-w-[1580px] overflow-visible bg-surface shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] sm:min-h-[calc(100dvh-3rem)] sm:overflow-hidden sm:rounded-2xl">
         <aside className="hidden w-[250px] shrink-0 flex-col border-r border-line bg-surface sm:flex">
           <div className="flex h-[92px] items-center px-6">

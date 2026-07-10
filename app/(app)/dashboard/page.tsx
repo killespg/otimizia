@@ -368,6 +368,25 @@ export default async function DashboardPage() {
         </div>
       </header>
 
+      {workspaceKey === "law_office" && (
+        <section className="law-docket-strip" aria-label="Expediente do escritório">
+          <div className="law-docket-heading">
+            <span>Expediente</span>
+            <strong>{new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" }).format(now)}</strong>
+          </div>
+          <Link href="/tasks" className="law-docket-item">
+            <span>Vencidos</span><strong>{overdue.length}</strong><small>{overdue.length === 1 ? "pendência" : "pendências"}</small>
+          </Link>
+          <Link href="/tasks" className="law-docket-item">
+            <span>Para hoje</span><strong>{todayTasks.length}</strong><small>{todayTasks.length === 1 ? "compromisso" : "compromissos"}</small>
+          </Link>
+          <Link href="/pipeline" className="law-docket-item">
+            <span>Em andamento</span><strong>{openDeals.length}</strong><small>atendimentos</small>
+          </Link>
+          <Link href="/law/deadlines" className="law-docket-action">Abrir pauta <IconArrowRight className="h-4 w-4" /></Link>
+        </section>
+      )}
+
       <DashboardCustomizePanel
         preferences={dashboardPreferences}
         preset={preset}
