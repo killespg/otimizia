@@ -2344,27 +2344,25 @@ label[class*="border-line"]::before,
   border-color: var(--dashboard-line);
 }
 
-/* Ícones dos cards de métrica: um traço fino na cor de destaque sobre um
-   fundo quase neutro — o número é o herói, não o ícone. Nada de gradiente
-   nem glow; isso é o que dava aquela cara de "template genérico". */
 .dashboard-metric-icon,
 .dashboard-metric-icon-secondary {
-  background: var(--dashboard-accent-faint);
-  color: var(--dashboard-accent);
-  border: 1px solid color-mix(in srgb, var(--dashboard-accent) 24%, transparent);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.36), transparent 38%),
+    linear-gradient(135deg, var(--dashboard-accent), var(--dashboard-accent-strong));
+  color: #fff;
+  box-shadow: 0 14px 30px -18px var(--dashboard-accent);
 }
 
 .dashboard-metric-icon-secondary {
-  background: transparent;
-  color: var(--dashboard-muted);
-  border-color: var(--dashboard-line);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.28), transparent 38%),
+    linear-gradient(135deg, color-mix(in srgb, var(--dashboard-accent) 76%, #ffffff), #5f43ff);
 }
 
 .dashboard-metric-badge,
 .dashboard-metric-badge-secondary {
-  background: transparent;
-  color: var(--dashboard-muted);
-  border: 1px solid var(--dashboard-line);
+  background: var(--dashboard-accent-faint);
+  color: var(--dashboard-accent);
 }
 
 .dashboard-board-glow {
@@ -2376,26 +2374,21 @@ label[class*="border-line"]::before,
 .dashboard-board-glow .panel {
   position: relative;
   overflow: hidden;
-  border-color: var(--dashboard-line);
-  box-shadow: 0 18px 44px -34px rgba(21, 19, 46, 0.72);
+  border-color: color-mix(in srgb, var(--dashboard-accent) 28%, rgb(var(--color-line)));
+  box-shadow:
+    0 18px 44px -34px rgba(21, 19, 46, 0.72),
+    0 0 0 1px var(--dashboard-accent-faint);
 }
 
-/* Assinatura visual do estilo "glow": um traço de 2px na cor de destaque no
-   topo de cada card, esmaecendo pra fora — discreto, não um halo por cima
-   de tudo. */
 .dashboard-board-glow .enter::before,
 .dashboard-board-glow .panel::before {
   content: "";
   pointer-events: none;
   position: absolute;
-  inset: 0 0 auto 0;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    var(--dashboard-accent) 0%,
-    color-mix(in srgb, var(--dashboard-accent) 40%, transparent) 60%,
-    transparent 100%
-  );
+  inset: 0;
+  border-radius: inherit;
+  background: transparent;
+  opacity: 0;
 }
 
 .dashboard-board-glow .enter > *,
@@ -2499,40 +2492,40 @@ label[class*="border-line"]::before,
 }
 
 .dashboard-accent-violet {
-  --dashboard-accent: #6d28d9;
-  --dashboard-accent-strong: #4c1d95;
-  --dashboard-accent-soft: rgba(109, 40, 217, 0.18);
-  --dashboard-accent-faint: rgba(109, 40, 217, 0.09);
+  --dashboard-accent: #9d5cff;
+  --dashboard-accent-strong: #7138d8;
+  --dashboard-accent-soft: rgba(157, 92, 255, 0.18);
+  --dashboard-accent-faint: rgba(157, 92, 255, 0.09);
 }
 
 .dashboard-accent-cyan {
-  --dashboard-accent: #0e7490;
-  --dashboard-accent-strong: #155e75;
-  --dashboard-accent-soft: rgba(14, 116, 144, 0.18);
-  --dashboard-accent-faint: rgba(14, 116, 144, 0.09);
+  --dashboard-accent: #58d5ff;
+  --dashboard-accent-strong: #3d7dff;
+  --dashboard-accent-soft: rgba(88, 213, 255, 0.16);
+  --dashboard-accent-faint: rgba(88, 213, 255, 0.08);
 }
 
 .dashboard-accent-pink {
-  --dashboard-accent: #a21caf;
-  --dashboard-accent-strong: #701a75;
-  --dashboard-accent-soft: rgba(162, 28, 175, 0.18);
-  --dashboard-accent-faint: rgba(162, 28, 175, 0.09);
+  --dashboard-accent: #ff5cc8;
+  --dashboard-accent-strong: #a83dff;
+  --dashboard-accent-soft: rgba(255, 92, 200, 0.16);
+  --dashboard-accent-faint: rgba(255, 92, 200, 0.08);
 }
 
 .dashboard-swatch-purple {
-  background: linear-gradient(135deg, #8b3dff, #4c1d95);
+  background: linear-gradient(135deg, #7b1fff, #4c1d95);
 }
 
 .dashboard-swatch-violet {
-  background: linear-gradient(135deg, #6d28d9, #2e1065);
+  background: linear-gradient(135deg, #a855f7, #6d28d9);
 }
 
 .dashboard-swatch-cyan {
-  background: linear-gradient(135deg, #0e7490, #164e63);
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
 }
 
 .dashboard-swatch-pink {
-  background: linear-gradient(135deg, #a21caf, #4a044e);
+  background: linear-gradient(135deg, #e11d8f, #7b1fff);
 }
 
 .dashboard-board .rounded-full.bg-\[linear-gradient\(135deg\2c \#6d28d9\2c \#3b16c6\)\] {
