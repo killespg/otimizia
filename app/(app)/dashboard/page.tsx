@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { AgentPanel } from "@/components/AgentPanel";
 import { BrandName } from "@/components/BrandName";
 import { DashboardCustomizePanel } from "@/components/DashboardCustomizePanel";

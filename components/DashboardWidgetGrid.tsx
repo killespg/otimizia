@@ -1,11 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition, type DragEvent, type ReactNode } from "react";
 import {
-  DASHBOARD_WIDGETS,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+  type PointerEvent,
+  type ReactNode,
+} from "react";
+import {
   type DashboardPreferences,
   type DashboardWidgetKey,
 } from "@/lib/dashboard-preferences";
+import { IconGrip } from "@/app/(app)/icons";
 
 type DashboardWidgetGridProps = {
   preferences: DashboardPreferences;
@@ -24,13 +32,31 @@ export function DashboardWidgetGrid({
 }: DashboardWidgetGridProps) {
   const itemIds = useMemo(() => items.map((item) => item.id), [items]);
   const [widgets, setWidgets] = useState(() => normalizeWidgets(preferences.widgets, itemIds));
-  const [dragging, setDragging] = useState<DashboardWidgetKey | null>(null);
+  const [draggingId, setDraggingId] = useState<DashboardWidgetKey | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [isSaving, startSaving] = useTransition();
+
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const drag = useRef<{ id: DashboardWidgetKey; pointerStartY: number } | null>(null);
 
   const sortedItems = [...items].sort(
     (a, b) => widgets.indexOf(a.id) - widgets.indexOf(b.id)
   );
+
+  useEffect(() => {
+    function handleEditMode(event: Event) {
+      const customEvent = event as CustomEvent<{ enabled?: boolean }>;
+      setEditMode(Boolean(customEvent.detail?.enabled));
+      if (!customEvent.detail?.enabled) setDraggingId(null);
+    }
+
+    window.addEventListener("dashboard-edit-mode", handleEditMode);
+    return () => window.removeEventListener("dashboard-edit-mode", handleEditMode);
+  }, []);
+
+  function getItemEl(id: DashboardWidgetKey) {
+    return listRef.current?.querySelector<HTMLElement>(`[data-dashboard-widget="${id}"]`) ?? null;
+  }
 
   function persist(nextWidgets: DashboardWidgetKey[]) {
     const formData = new FormData();
@@ -47,42 +73,89 @@ export function DashboardWidgetGrid({
     });
   }
 
-  function moveWidget(from: DashboardWidgetKey, to: DashboardWidgetKey) {
-    setWidgets((current) => {
-      const next = reorder(current, from, to);
-      if (next === current) return current;
-      persist(next);
+  function swap(i: number, j: number) {
+    setWidgets((prev) => {
+      const next = [...prev];
+      [next[i], next[j]] = [next[j], next[i]];
       return next;
     });
   }
 
-  function onDragStart(event: DragEvent<HTMLDivElement>, widget: DashboardWidgetKey) {
-    if (!editMode) {
-      event.preventDefault();
-      return;
-    }
-    if (isInteractive(event.target)) {
-      event.preventDefault();
-      return;
-    }
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", widget);
-    setDragging(widget);
+  // Arraste por pointer events (não HTML5 drag-and-drop) porque HTML5 DnD
+  // não funciona em telas de toque — e este é um app mobile-first (inclui o
+  // wrapper Android via Capacitor).
+  function handlePointerDown(event: PointerEvent<HTMLButtonElement>, id: DashboardWidgetKey) {
+    if (!editMode) return;
+    const handle = event.currentTarget;
+    handle.setPointerCapture(event.pointerId);
+    drag.current = { id, pointerStartY: event.clientY };
+    setDraggingId(id);
+    const item = getItemEl(id);
+    if (item) item.style.setProperty("--drag-y", "0px");
   }
 
-  useEffect(() => {
-    function handleEditMode(event: Event) {
-      const customEvent = event as CustomEvent<{ enabled?: boolean }>;
-      setEditMode(Boolean(customEvent.detail?.enabled));
-      if (!customEvent.detail?.enabled) setDragging(null);
+  function handlePointerMove(event: PointerEvent<HTMLButtonElement>) {
+    const state = drag.current;
+    if (!state) return;
+    const draggedEl = getItemEl(state.id);
+    if (!draggedEl) return;
+
+    let deltaY = event.clientY - state.pointerStartY;
+    draggedEl.style.setProperty("--drag-y", `${deltaY}px`);
+
+    const index = widgets.indexOf(state.id);
+    if (index === -1) return;
+
+    if (index < widgets.length - 1) {
+      const nextEl = getItemEl(widgets[index + 1]);
+      if (nextEl) {
+        const draggedRect = draggedEl.getBoundingClientRect();
+        const nextRect = nextEl.getBoundingClientRect();
+        const draggedCenter = draggedRect.top + draggedRect.height / 2;
+        const nextCenter = nextRect.top + nextRect.height / 2;
+        if (draggedCenter > nextCenter) {
+          state.pointerStartY += nextRect.height;
+          deltaY = event.clientY - state.pointerStartY;
+          draggedEl.style.setProperty("--drag-y", `${deltaY}px`);
+          swap(index, index + 1);
+          return;
+        }
+      }
     }
 
-    window.addEventListener("dashboard-edit-mode", handleEditMode);
-    return () => window.removeEventListener("dashboard-edit-mode", handleEditMode);
-  }, []);
+    if (index > 0) {
+      const prevEl = getItemEl(widgets[index - 1]);
+      if (prevEl) {
+        const draggedRect = draggedEl.getBoundingClientRect();
+        const prevRect = prevEl.getBoundingClientRect();
+        const draggedCenter = draggedRect.top + draggedRect.height / 2;
+        const prevCenter = prevRect.top + prevRect.height / 2;
+        if (draggedCenter < prevCenter) {
+          state.pointerStartY -= prevRect.height;
+          deltaY = event.clientY - state.pointerStartY;
+          draggedEl.style.setProperty("--drag-y", `${deltaY}px`);
+          swap(index, index - 1);
+        }
+      }
+    }
+  }
+
+  function endDrag(event: PointerEvent<HTMLButtonElement>) {
+    const state = drag.current;
+    if (!state) return;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    const item = getItemEl(state.id);
+    if (item) item.style.removeProperty("--drag-y");
+    drag.current = null;
+    setDraggingId(null);
+    persist(widgets);
+  }
 
   return (
     <section
+      ref={listRef}
       className="dashboard-widget-grid grid gap-4 sm:gap-5 xl:grid-cols-12"
       data-editing={editMode ? "true" : undefined}
       data-saving={isSaving ? "true" : undefined}
@@ -91,26 +164,24 @@ export function DashboardWidgetGrid({
         <div
           key={item.id}
           data-dashboard-widget={item.id}
-          draggable={editMode}
-          onDragStart={(event) => onDragStart(event, item.id)}
-          onDragOver={(event) => {
-            if (!editMode) return;
-            event.preventDefault();
-            event.dataTransfer.dropEffect = "move";
-          }}
-          onDrop={(event) => {
-            if (!editMode) return;
-            event.preventDefault();
-            const from = dragging ?? event.dataTransfer.getData("text/plain");
-            if (isDashboardWidget(from) && from !== item.id) moveWidget(from, item.id);
-            setDragging(null);
-          }}
-          onDragEnd={() => setDragging(null)}
-          className={`${item.className} dashboard-widget-shell ${
-            dragging === item.id ? "dashboard-widget-dragging" : ""
+          className={`${item.className} widget-item dashboard-widget-shell relative ${
+            draggingId === item.id ? "widget-dragging dashboard-widget-dragging" : ""
           }`}
         >
-          {item.node}
+          {editMode && (
+            <button
+              type="button"
+              onPointerDown={(event) => handlePointerDown(event, item.id)}
+              onPointerMove={handlePointerMove}
+              onPointerUp={endDrag}
+              onPointerCancel={endDrag}
+              className="widget-grip dashboard-widget-grip absolute right-2 top-2 z-10 grid h-9 w-9 place-items-center rounded-full border border-line bg-white text-ink-muted shadow-[0_10px_24px_-16px_rgba(15,23,42,0.6)] hover:text-ink"
+              aria-label="Arrastar para reordenar"
+            >
+              <IconGrip className="h-4 w-4" />
+            </button>
+          )}
+          <div className={editMode ? "pointer-events-none" : undefined}>{item.node}</div>
         </div>
       ))}
     </section>
@@ -124,24 +195,4 @@ function normalizeWidgets(
   const ordered = value.filter((widget) => available.includes(widget));
   const missing = available.filter((widget) => !ordered.includes(widget));
   return [...ordered, ...missing];
-}
-
-function reorder<T extends string>(items: T[], from: T, to: T) {
-  const next = [...items];
-  const fromIndex = next.indexOf(from);
-  const toIndex = next.indexOf(to);
-  if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return items;
-  next.splice(fromIndex, 1);
-  next.splice(toIndex, 0, from);
-  return next;
-}
-
-function isDashboardWidget(value: string): value is DashboardWidgetKey {
-  return DASHBOARD_WIDGETS.some((widget) => widget === value);
-}
-
-function isInteractive(target: EventTarget | null) {
-  return target instanceof Element
-    ? Boolean(target.closest("a, button, input, select, textarea, form, details, summary, [role='button']"))
-    : false;
 }
