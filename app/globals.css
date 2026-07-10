@@ -20,16 +20,20 @@
     --motion-reveal: 560ms;
   }
 
+  /* Escala escura "meia-noite ameixa": nada de preto quase-puro (OLED
+     smear, sem profundidade). Cada camada precisa se destacar visivelmente
+     da anterior — fundo < superfície (sidebar) < superfície elevada
+     (hover/cards fora do painel) < cards do painel (ver .dashboard-board). */
   .dark {
     color-scheme: dark;
     --color-ink: 250 248 255;
     --color-ink-soft: 218 211 235;
-    --color-ink-muted: 160 151 182;
-    --color-canvas: 10 11 20;
-    --color-surface: 20 21 34;
-    --color-surface-2: 31 32 48;
-    --color-line: 58 56 78;
-    --color-line-strong: 112 100 148;
+    --color-ink-muted: 170 161 194;
+    --color-canvas: 23 19 37;
+    --color-surface: 36 31 56;
+    --color-surface-2: 47 41 71;
+    --color-line: 74 68 104;
+    --color-line-strong: 138 126 176;
   }
 
   body {
@@ -2455,14 +2459,13 @@ label[class*="border-line"]::before,
   background-color: var(--dashboard-panel);
 }
 
-/* Modo escuro do painel: rgb(var(--color-surface)) era clara demais perto
-   do fundo (10,11,20 vs 20,21,34 — 10 pontos de diferença, imperceptível).
-   Usa um tom bem mais claro e com um leve viés roxo, pra cada card realmente
-   se destacar do fundo em vez de virar tudo uma mancha preta só. */
+/* Os cards do painel ficam um degrau acima da superfície geral do app
+   (sidebar/.card usam --color-surface-2) — são o conteúdo principal da
+   tela, então merecem ser a camada mais clara da hierarquia. */
 .dark .dashboard-board {
-  --dashboard-panel: #262440;
-  --dashboard-panel-strong: #2f2c52;
-  --dashboard-line: #4a4570;
+  --dashboard-panel: #3a3358;
+  --dashboard-panel-strong: #463e68;
+  --dashboard-line: #5a5282;
 }
 
 .dark .dashboard-board-glow .enter,
