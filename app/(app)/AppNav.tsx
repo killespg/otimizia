@@ -32,6 +32,12 @@ type NavLabels = {
   dealSingular: string;
 };
 
+type LawOfficeAccess = {
+  enabled: boolean;
+  canViewLegal: boolean;
+  canViewFinance: boolean;
+};
+
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "Painel", icon: IconGauge, mobile: true },
   { href: "/contacts", label: "Contatos", icon: IconUsers, mobile: true },
@@ -40,6 +46,17 @@ const NAV: NavItem[] = [
   { href: "/dashboard#valor", label: "Valor aberto", icon: IconWallet, passive: true },
   { href: "/tasks", label: "Clientes para chamar", icon: IconPhone, passive: true },
   { href: "/assistant", label: "Sócio-Assistente", icon: IconBot },
+  { href: "/team", label: "Equipe", icon: IconUsers },
+];
+
+const LAW_NAV: NavItem[] = [
+  { href: "/dashboard", label: "Painel", icon: IconGauge, mobile: true },
+  { href: "/contacts", label: "Clientes", icon: IconUsers, mobile: true },
+  { href: "/pipeline", label: "Atendimentos", icon: IconPhone, mobile: true },
+  { href: "/law", label: "Casos", icon: IconColumns, mobile: true },
+  { href: "/law/deadlines", label: "Prazos", icon: IconBell },
+  { href: "/tasks", label: "Tarefas", icon: IconBell },
+  { href: "/assistant", label: "Assistente IA", icon: IconBot },
   { href: "/team", label: "Equipe", icon: IconUsers },
 ];
 
@@ -59,9 +76,11 @@ function displayLabelFor(href: string, label: string, labels: NavLabels) {
 export function SidebarNav({
   labels,
   isAdmin = false,
+  lawOfficeAccess,
 }: {
   labels?: NavLabels;
   isAdmin?: boolean;
+  lawOfficeAccess?: LawOfficeAccess;
 }) {
   const isActive = useActive();
   const text = labels ?? {
@@ -71,9 +90,23 @@ export function SidebarNav({
     followups: "Clientes para chamar",
     dealSingular: "venda",
   };
-  const items = isAdmin
+  let items = isAdmin
     ? [...NAV, { href: "/dev", label: "Métricas", icon: IconChartBar }]
     : NAV;
+  if (lawOfficeAccess?.enabled) {
+    items = LAW_NAV.filter((item) => {
+      if ((item.href === "/law" || item.href === "/law/deadlines") && !lawOfficeAccess.canViewLegal) return false;
+      return true;
+    });
+    if (lawOfficeAccess.canViewFinance) {
+      items = [
+        ...items.slice(0, 5),
+        { href: "/finance", label: "Financeiro", icon: IconWallet },
+        ...items.slice(5),
+      ];
+    }
+    if (isAdmin) items = [...items, { href: "/dev", label: "MÃ©tricas", icon: IconChartBar }];
+  }
 
   return (
     <nav className="flex flex-col gap-1" aria-label="Navegação principal">
@@ -108,8 +141,10 @@ export function SidebarNav({
 
 export function MobileTabBar({
   labels,
+  lawOfficeAccess,
 }: {
   labels?: Pick<NavLabels, "contacts" | "pipeline" | "dealSingular">;
+  lawOfficeAccess?: LawOfficeAccess;
 }) {
   const isActive = useActive();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -117,10 +152,12 @@ export function MobileTabBar({
   const pipelineLabel = labels?.pipeline ?? "Vendas";
   const dealSingular = labels?.dealSingular ?? "venda";
   const contactSingular = contactsLabel === "Sujeitos" ? "sujeito" : "contato";
-  const mobileItems = [
-    ...NAV.filter((item) => item.mobile && item.href !== "/tasks"),
-    { href: "/assistant", label: "IA", icon: IconBot, mobile: true },
-  ];
+  const mobileItems = lawOfficeAccess?.enabled
+    ? LAW_NAV.filter((item) => item.mobile).filter((item) => item.href !== "/law" || lawOfficeAccess.canViewLegal)
+    : [
+        ...NAV.filter((item) => item.mobile && item.href !== "/tasks"),
+        { href: "/assistant", label: "IA", icon: IconBot, mobile: true },
+      ];
   const leftItems = mobileItems.slice(0, 2);
   const rightItems = mobileItems.slice(2);
   const quickActions = [
@@ -138,10 +175,33 @@ export function MobileTabBar({
     },
     {
       href: "/pipeline#new-deal",
-      label: capitalize(dealSingular),
-      description: `Criar ${articleFor(dealSingular)} ${dealSingular}`,
-      icon: IconColumns,
+      label: lawOfficeAccess?.enabled ? "Atendimento" : capitalize(dealSingular),
+      description: lawOfficeAccess?.enabled
+        ? "Triagem, consulta ou proposta"
+        : `Criar ${articleFor(dealSingular)} ${dealSingular}`,
+      icon: lawOfficeAccess?.enabled ? IconPhone : IconColumns,
     },
+    ...(lawOfficeAccess?.enabled && lawOfficeAccess.canViewLegal
+      ? [{
+          href: "/law#new-case",
+          label: "Caso",
+          description: "Abrir caso jurídico",
+          icon: IconColumns,
+        }, {
+          href: "/law/deadlines",
+          label: "Prazo",
+          description: "Ver proximos prazos",
+          icon: IconBell,
+        }]
+      : []),
+    ...(lawOfficeAccess?.enabled && lawOfficeAccess.canViewFinance
+      ? [{
+          href: "/finance",
+          label: "Financeiro",
+          description: "Honorários e recebimentos",
+          icon: IconWallet,
+        }]
+      : []),
   ];
 
   const renderItem = ({ href, label, icon: Icon }: NavItem) => {
@@ -184,7 +244,7 @@ export function MobileTabBar({
           <button
             type="button"
             aria-label="Fechar menu de criação"
-            className="fixed inset-0 bottom-[calc(4.9rem+env(safe-area-inset-bottom))] -z-10 cursor-default bg-transparent"
+            className="mobile-create-backdrop fixed inset-0 bottom-[calc(4.9rem+env(safe-area-inset-bottom))] -z-10 cursor-default bg-ink/5"
             onClick={() => setMenuOpen(false)}
           />
           <div className="mobile-create-menu absolute bottom-[calc(5.15rem+env(safe-area-inset-bottom))] left-1/2 z-20 w-[min(22rem,calc(100vw-1.5rem))] -translate-x-1/2 overflow-hidden rounded-2xl border border-line bg-surface p-2 shadow-[0_22px_54px_-26px_rgba(7,8,28,0.82)]">

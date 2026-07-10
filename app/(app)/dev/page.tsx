@@ -11,7 +11,7 @@ const STATUS_META: Record<PlanStatus, { label: string; className: string }> = {
   trialing: { label: "Em teste", className: "bg-brand-50 text-brand-700" },
   active: { label: "Pagante", className: "bg-success-50 text-success-700" },
   past_due: { label: "Pagamento pendente", className: "bg-danger-50 text-danger-700" },
-  expired: { label: "Teste expirado", className: "bg-[#fff7e6] text-[#8a6500]" },
+  expired: { label: "Teste expirado", className: "bg-warning-50 text-warning-700" },
   free: { label: "Grátis", className: "bg-surface-2 text-ink-soft" },
 };
 
@@ -74,14 +74,14 @@ export default async function DevMetricsPage() {
         ))}
       </section>
 
-      <section className="rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-6">
+      <section data-reveal className="rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-6">
         <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
           Novos cadastros — últimos 30 dias
         </h2>
         <SignupsBarChart series={metrics.signupsByDay} />
       </section>
 
-      <section className="rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
+      <section data-reveal className="rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
             Cadastros recentes
@@ -97,7 +97,7 @@ export default async function DevMetricsPage() {
             Nenhum cadastro ainda.
           </p>
         ) : (
-          <ul className="mt-4 space-y-2">
+          <ul className="enter mt-4 space-y-2">
             {metrics.recentSignups.map((signup, index) => {
               const status = STATUS_META[signup.status];
               return (

@@ -8,6 +8,7 @@ export function TrialBanner({ trialDaysLeft }: { trialDaysLeft: number }) {
   const mandatory = trialDaysLeft <= 7;
   const dismissKey = `otimizia-trial-banner-dismissed-${trialDaysLeft}`;
   const [visible, setVisible] = useState(false);
+  const [closing, setClosing] = useState(false);
 
   useEffect(() => {
     if (mandatory) {
@@ -23,6 +24,8 @@ export function TrialBanner({ trialDaysLeft }: { trialDaysLeft: number }) {
     <div
       className={
         "flex items-center justify-center gap-3 px-4 py-2 text-center text-xs font-bold sm:hidden " +
+        (closing ? "banner-out" : "banner-in") +
+        " " +
         (mandatory ? "bg-brand-700 text-white" : "border-b border-line bg-surface-2 text-ink")
       }
     >
@@ -36,9 +39,10 @@ export function TrialBanner({ trialDaysLeft }: { trialDaysLeft: number }) {
           aria-label="Fechar aviso"
           onClick={() => {
             window.localStorage.setItem(dismissKey, "1");
-            setVisible(false);
+            setClosing(true);
+            setTimeout(() => setVisible(false), 170);
           }}
-          className="shrink-0 opacity-70 hover:opacity-100"
+          className="press-sm shrink-0 opacity-70 transition-opacity duration-150 ease-out hover:opacity-100"
         >
           <IconX className="h-3.5 w-3.5" />
         </button>

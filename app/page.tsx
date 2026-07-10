@@ -21,9 +21,9 @@ import {
 } from "./(app)/icons";
 
 const previewTasks = [
-  ["Ligar para João da Silva", "Hoje, 10:00", "Alta", "bg-pink-100 text-pink-700"],
-  ["Enviar proposta para Tech Sul", "Hoje, 14:30", "Média", "bg-orange-100 text-orange-700"],
-  ["Atualizar cadastro", "Amanhã, 09:00", "Baixa", "bg-blue-50 text-blue-700"],
+  ["Ligar para João da Silva", "Hoje, 10:00", "Alta", "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]"],
+  ["Enviar proposta para Tech Sul", "Hoje, 14:30", "Média", "bg-warning-50 text-warning-700"],
+  ["Atualizar cadastro", "Amanhã, 09:00", "Baixa", "bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-200"],
 ];
 
 const proofItems = [
@@ -658,7 +658,7 @@ function BentoIcon({ icon: Icon, pink = false }: { icon: (p: IconProps) => JSX.E
 
 function KanbanMini() {
   const columns = [
-    { label: "Novo", tone: "bg-blue-400", cards: 2 },
+    { label: "Novo", tone: "bg-sky-500", cards: 2 },
     { label: "Proposta", tone: "bg-brand-500", cards: 3 },
     { label: "Ganho", tone: "bg-success-500", cards: 1 },
   ];

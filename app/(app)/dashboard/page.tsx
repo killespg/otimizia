@@ -1,7 +1,15 @@
 import Link from "next/link";
 import { AgentPanel } from "@/components/AgentPanel";
 import { BrandName } from "@/components/BrandName";
+import { DashboardCustomizePanel } from "@/components/DashboardCustomizePanel";
+import { DashboardWidgetGrid } from "@/components/DashboardWidgetGrid";
 import { PendingButton } from "@/components/PendingButton";
+import {
+  ALL_DASHBOARD_METRICS,
+  type DashboardWidgetKey,
+  getDashboardPreferences,
+  metricLabel,
+} from "@/lib/dashboard-preferences";
 import { computeDevMetrics, type DevMetrics } from "@/lib/devMetrics";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getProfessionPreset, type MetricKey, type ProfessionPreset } from "@/lib/professions";
@@ -17,6 +25,7 @@ import {
 import { formatBRL, formatDate } from "@/lib/format";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { claimDeal, claimTask, createTask, dismissChecklist } from "../actions";
+import { updateDashboardPreferences } from "./actions";
 import { ReminderModal as ReminderModalClient } from "./ReminderModal";
 import { RevenueLineChart } from "./RevenueLineChart";
 import {
@@ -78,7 +87,7 @@ export default async function DashboardPage() {
     supabase.auth.getUser(),
     supabase
       .from("profiles")
-      .select("profession_type, is_admin, checklist_dismissed_at")
+      .select("profession_type, is_admin, checklist_dismissed_at, dashboard_preferences")
       .maybeSingle(),
   ]);
   const orgId = await getActiveOrgId(supabase, user!.id);
@@ -162,6 +171,10 @@ export default async function DashboardPage() {
   const contactsForForms = (contactOptions ?? []) as ContactOption[];
   const contactMap = new Map(contactsForForms.map((contact) => [contact.id, contact]));
   const preset = getProfessionPreset(workspaceKey);
+  const dashboardPreferences = getDashboardPreferences(
+    profile?.dashboard_preferences,
+    preset
+  );
 
   const displayName =
     typeof user?.user_metadata?.name === "string" && user.user_metadata.name
@@ -236,11 +249,14 @@ export default async function DashboardPage() {
     avg_ticket: avgTicketCents === null ? "—" : formatBRL(avgTicketCents),
   };
 
-  const metrics = preset.metrics.map((metric, index) => ({
-    label: metric.label,
-    value: metricValues[metric.key],
+  const metrics = ALL_DASHBOARD_METRICS.map(({ key }, index) => ({
+    metricKey: key,
+    label: metricLabel(key, preset, dashboardPreferences),
+    value: metricValues[key],
     tone: index % 2 === 0 ? ("purple" as const) : ("pink" as const),
-    icon: METRIC_ICONS[metric.key],
+    icon: METRIC_ICONS[key],
+    visible: dashboardPreferences.metrics.includes(key),
+    order: Math.max(0, dashboardPreferences.metrics.indexOf(key)),
   }));
 
   const isFirstRun =
@@ -250,9 +266,47 @@ export default async function DashboardPage() {
     todayCount: todayTasks.length,
     isFirstRun,
   });
+  const widgetNodes: Partial<Record<DashboardWidgetKey, JSX.Element>> = {
+    metrics: (
+      <section className="enter grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-6 sm:gap-4">
+        {metrics.map((metric) => (
+          <MetricCard key={metric.metricKey} {...metric} />
+        ))}
+        {founderMetrics && <FounderMetricsPanel metrics={founderMetrics} />}
+      </section>
+    ),
+    open_claims: <OpenClaimsPanel tasks={unclaimedTasks} deals={unclaimedDeals} preset={preset} />,
+    chart: (
+      <RevenueChart
+        openValue={openValue}
+        wonValue={wonValue}
+        series={wonSeries}
+        contacts={contactsForForms}
+        defaultDueAt={defaultDateTimeValue(now)}
+        preset={preset}
+      />
+    ),
+    deals: <DealsTable deals={openDeals} contactMap={contactMap} preset={preset} />,
+    tasks: <TaskQueue tasks={taskQueue} overdue={overdue} now={now} />,
+    assistant: <AgentPanel />,
+    onboarding: !profile?.checklist_dismissed_at ? (
+      <OnboardingChecklist
+        preset={preset}
+        isOrgAdmin={isOrgAdmin}
+        done={{
+          contact: contacts > 0,
+          deal: allDeals.length > 0,
+          task: (totalTasksCount ?? 0) > 0,
+          businessContext: Boolean(orgContext?.business_context),
+          assistant: (assistantMessageCount ?? 0) > 0,
+          team: (teamMembersCount ?? 0) > 1,
+        }}
+      />
+    ) : undefined,
+  };
 
   return (
-    <div className="space-y-4 sm:space-y-5">
+    <div className={`dashboard-board dashboard-board-${dashboardPreferences.style} dashboard-accent-${dashboardPreferences.accent} space-y-4 sm:space-y-5`}>
       <header className="enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="max-w-2xl">
           <h1 className="text-[22px] font-black tracking-[-0.02em] text-ink sm:text-2xl">
@@ -306,84 +360,78 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <section className="enter grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        {metrics.map((metric) => (
-          <MetricCard key={metric.label} {...metric} />
-        ))}
-      </section>
+      <DashboardCustomizePanel
+        preferences={dashboardPreferences}
+        preset={preset}
+        action={updateDashboardPreferences}
+      />
 
-      {founderMetrics && <FounderMetricsPanel metrics={founderMetrics} />}
-
-      <OpenClaimsPanel tasks={unclaimedTasks} deals={unclaimedDeals} preset={preset} />
-
-      <section className="grid gap-4 sm:gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(23rem,0.72fr)]">
-        <div className="min-w-0 space-y-4 sm:space-y-5">
-          <RevenueChart
-            openValue={openValue}
-            wonValue={wonValue}
-            series={wonSeries}
-            contacts={contactsForForms}
-            defaultDueAt={defaultDateTimeValue(now)}
-            preset={preset}
-          />
-          <DealsTable deals={openDeals} contactMap={contactMap} preset={preset} />
-        </div>
-
-        <aside className="min-w-0 space-y-4 sm:space-y-5">
-          <TaskQueue tasks={taskQueue} overdue={overdue} now={now} />
-          <AgentPanel />
-        </aside>
-      </section>
-
-      {!profile?.checklist_dismissed_at && (
-        <OnboardingChecklist
-          preset={preset}
-          isOrgAdmin={isOrgAdmin}
-          done={{
-            contact: contacts > 0,
-            deal: allDeals.length > 0,
-            task: (totalTasksCount ?? 0) > 0,
-            businessContext: Boolean(orgContext?.business_context),
-            assistant: (assistantMessageCount ?? 0) > 0,
-            team: (teamMembersCount ?? 0) > 1,
-          }}
-        />
-      )}
+      <DashboardWidgetGrid
+        preferences={dashboardPreferences}
+        action={updateDashboardPreferences}
+        items={Object.entries(widgetNodes)
+          .map(([widgetKey, node]) => ({
+            id: widgetKey as DashboardWidgetKey,
+            className: widgetShellClass(widgetKey as DashboardWidgetKey),
+            node,
+          }))
+          .filter((item): item is { id: DashboardWidgetKey; className: string; node: JSX.Element } =>
+            Boolean(item.node)
+          )}
+      />
     </div>
   );
 }
 
+function widgetShellClass(widget: DashboardWidgetKey) {
+  if (widget === "metrics" || widget === "onboarding" || widget === "open_claims") {
+    return "min-w-0 xl:col-span-12";
+  }
+  if (widget === "chart" || widget === "deals") return "min-w-0 xl:col-span-8";
+  return "min-w-0 xl:col-span-4";
+}
+
 function MetricCard({
+  metricKey,
   label,
   value,
   compare,
   delta,
   tone,
   icon: Icon,
+  visible,
+  order,
 }: {
+  metricKey: MetricKey;
   label: string;
   value: string;
   compare?: string;
   delta?: string;
   tone: "purple" | "pink";
   icon: (props: { className?: string }) => JSX.Element;
+  visible: boolean;
+  order: number;
 }) {
   const toneClass =
     tone === "pink"
       ? {
-          icon: "bg-[#fff7e6] text-[#8a6500]",
-          badge: "bg-[#fff7e6] text-[#8a6500]",
+          icon: "dashboard-metric-icon-secondary",
+          badge: "dashboard-metric-badge-secondary",
         }
       : {
-          icon: "bg-brand-100 text-brand-700",
-          badge: "bg-brand-100 text-brand-800",
+          icon: "dashboard-metric-icon",
+          badge: "dashboard-metric-badge",
         };
 
   return (
-    <article className="enter relative min-h-[96px] overflow-hidden rounded-lg border border-line bg-white p-3 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.75)] sm:min-h-[150px] sm:p-5">
+    <article
+      data-dashboard-metric={metricKey}
+      className="enter dashboard-card relative min-h-[96px] overflow-hidden rounded-lg border border-line bg-white p-3 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.75)] sm:min-h-[150px] sm:p-5"
+      style={{ display: visible ? undefined : "none", order }}
+    >
       <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-semibold text-ink-soft sm:text-sm">{label}</p>
+          <p data-dashboard-metric-label={metricKey} className="text-xs font-semibold text-ink-soft sm:text-sm">{label}</p>
           <p className="text-safe mt-2 text-xl font-black leading-none tracking-[-0.03em] text-ink sm:mt-3 sm:text-2xl">
             {value}
           </p>
@@ -491,6 +539,7 @@ function OpenClaimsPanel({
             </div>
             <form action={claimTask}>
               <input type="hidden" name="task_id" value={task.id} />
+              <input type="hidden" name="return_to" value="/dashboard" />
               <PendingButton
                 className="shrink-0 rounded-md bg-brand-700 px-3 py-1.5 text-xs font-black text-white hover:bg-brand-800"
                 pendingLabel="Pegando"
@@ -513,6 +562,7 @@ function OpenClaimsPanel({
             </div>
             <form action={claimDeal}>
               <input type="hidden" name="deal_id" value={deal.id} />
+              <input type="hidden" name="return_to" value="/dashboard" />
               <PendingButton
                 className="shrink-0 rounded-md bg-brand-700 px-3 py-1.5 text-xs font-black text-white hover:bg-brand-800"
                 pendingLabel="Pegando"
@@ -969,7 +1019,7 @@ function stageMeta(stage: DealStage, preset: ProfessionPreset) {
   const map: Record<DealStage, string> = {
     novo: "bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-200",
     em_contato: "bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-brand-200",
-    negociacao: "bg-[#fff7e6] text-[#8a6500] dark:bg-[#3b2b0a] dark:text-[#f8d278]",
+    negociacao: "bg-warning-50 text-warning-700",
     ganho: "bg-success-50 text-success-700 dark:bg-[#062d1c] dark:text-[#9ff0c5]",
     perdido: "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
   };
@@ -990,7 +1040,7 @@ function taskPriority(task: Task, overdue: Task[], index: number) {
   if (index === 1) {
     return {
       label: "Média",
-      className: "bg-[#fff7e6] text-[#8a6500] dark:bg-[#3b2b0a] dark:text-[#f8d278]",
+      className: "bg-warning-50 text-warning-700",
     };
   }
   return {

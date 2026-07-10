@@ -45,7 +45,13 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/contacts") ||
     path.startsWith("/pipeline") ||
     path.startsWith("/tasks") ||
-    path.startsWith("/assistant");
+    path.startsWith("/assistant") ||
+    path.startsWith("/settings") ||
+    path.startsWith("/team") ||
+    path.startsWith("/finance") ||
+    path.startsWith("/law") ||
+    path.startsWith("/onboarding") ||
+    path.startsWith("/upgrade");
 
   if (!user && isProtected) {
     const url = request.nextUrl.clone();

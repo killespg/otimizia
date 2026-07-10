@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { PendingButton } from "@/components/PendingButton";
 import type { FieldSpec } from "@/lib/professions";
 import type { Deal, DealStage } from "@/lib/supabase/types";
@@ -51,8 +52,8 @@ const STAGE_META: Record<
     empty: "Sem cards nesta lista.",
   },
   negociacao: {
-    dot: "bg-honey",
-    chip: "bg-[#fff7e6] text-[#8a6500] dark:bg-[#3b2b0a] dark:text-[#f8d278]",
+    dot: "bg-warning-500",
+    chip: "bg-warning-50 text-warning-700",
     empty: "Nenhum card agora.",
   },
   ganho: {
@@ -98,6 +99,7 @@ export default function Board({
   const [listFilter, setListFilter] = useState("");
   const [hideEmpty, setHideEmpty] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   const boardRef = useRef<HTMLDivElement>(null);
   const boardBusy = isPending || savingId !== null;
   const visibleDeals = deals.filter((deal) => !isPlaceholder(deal));
@@ -174,7 +176,10 @@ export default function Board({
             )
           );
         })
-        .finally(() => setSavingId(null));
+        .finally(() => {
+          setSavingId(null);
+          router.refresh();
+        });
     });
   }
 
@@ -196,6 +201,7 @@ export default function Board({
   return (
     <div className="space-y-4">
       <form action={createPipelineList} className="panel flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
+        <input type="hidden" name="return_to" value="/pipeline" />
         <div className="min-w-0 flex-1">
           <label className="label" htmlFor="pipeline-list-name">
             Nova lista
@@ -425,6 +431,7 @@ export default function Board({
                             </button>
                             <form action={deleteDeal} className="shrink-0">
                               <input type="hidden" name="id" value={deal.id} />
+                              <input type="hidden" name="return_to" value="/pipeline" />
                               <PendingButton
                                 className="icon-button grid h-11 w-11 place-items-center rounded-md text-ink-muted/50 opacity-100 hover:bg-danger-50 hover:text-danger-600 sm:opacity-0 sm:group-hover:opacity-100"
                                 title="Excluir"
@@ -458,6 +465,7 @@ export default function Board({
 
                             <form action={updateDealOptions} className="space-y-2 rounded-lg border border-line bg-[#f8fbff] p-3">
                               <input type="hidden" name="id" value={deal.id} />
+                              <input type="hidden" name="return_to" value="/pipeline" />
                               <label className="block">
                                 <span className="text-[11px] font-black text-ink-soft">Etiquetas</span>
                                 <input
@@ -502,6 +510,7 @@ export default function Board({
 
                             <form action={uploadDealPhoto} className="space-y-2 rounded-lg border border-line bg-white p-3">
                               <input type="hidden" name="id" value={deal.id} />
+                              <input type="hidden" name="return_to" value="/pipeline" />
                               <label className="block">
                                 <span className="text-[11px] font-black text-ink-soft">Foto</span>
                                 <input
@@ -651,9 +660,10 @@ function DealAssignee({
 
       {!deal.assignee_id && (
         <span className="flex items-center gap-1.5">
-          <span className="tag bg-[#fff7e6] text-[#8a6500]">Em aberto</span>
+          <span className="tag bg-warning-50 text-warning-700">Em aberto</span>
           <form action={claimDeal}>
             <input type="hidden" name="deal_id" value={deal.id} />
+            <input type="hidden" name="return_to" value="/pipeline" />
             <PendingButton
               className="rounded-md bg-brand-700 px-2 py-1 text-[11px] font-black text-white hover:bg-brand-800"
               pendingLabel="Pegando"
@@ -667,9 +677,10 @@ function DealAssignee({
       {deal.pending_assignee_id &&
         (iAmPendingTarget ? (
           <span className="flex items-center gap-1.5">
-            <span className="tag bg-[#fff7e6] text-[#8a6500]">Pediram para você pegar</span>
+            <span className="tag bg-warning-50 text-warning-700">Pediram para você pegar</span>
             <form action={acceptDealHandoff}>
               <input type="hidden" name="deal_id" value={deal.id} />
+              <input type="hidden" name="return_to" value="/pipeline" />
               <PendingButton
                 className="rounded-md bg-brand-700 px-2 py-1 text-[11px] font-black text-white hover:bg-brand-800"
                 pendingLabel="Aceitando"
@@ -679,6 +690,7 @@ function DealAssignee({
             </form>
             <form action={declineDealHandoff}>
               <input type="hidden" name="deal_id" value={deal.id} />
+              <input type="hidden" name="return_to" value="/pipeline" />
               <PendingButton
                 className="rounded-md border border-line bg-white px-2 py-1 text-[11px] font-black text-ink-soft hover:bg-surface-2"
                 pendingLabel="Recusando"
@@ -688,7 +700,7 @@ function DealAssignee({
             </form>
           </span>
         ) : (
-          <span className="tag bg-[#fff7e6] text-[#8a6500]">
+          <span className="tag bg-warning-50 text-warning-700">
             Transferência pendente{pendingTargetName ? ` para ${pendingTargetName}` : ""}
           </span>
         ))}
@@ -709,6 +721,7 @@ function DealAssignee({
           className="mt-1 flex w-full flex-wrap items-center gap-2"
         >
           <input type="hidden" name="deal_id" value={deal.id} />
+          <input type="hidden" name="return_to" value="/pipeline" />
           <select
             name={isAdmin ? "assignee_id" : "target_user_id"}
             required
@@ -811,11 +824,11 @@ function normalizeText(value: string) {
 
 function labelClass(label: string) {
   const classes = [
-    "bg-success-50 text-success-700",
-    "bg-[#fff7e6] text-[#8a6500]",
-    "bg-sky-50 text-sky-700",
-    "bg-brand-50 text-brand-700",
-    "bg-danger-50 text-danger-700",
+    "bg-success-50 text-success-700 dark:bg-[#062d1c] dark:text-[#9ff0c5]",
+    "bg-warning-50 text-warning-700",
+    "bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-200",
+    "bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-brand-200",
+    "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
     "bg-surface-2 text-ink-soft",
   ];
   let hash = 0;

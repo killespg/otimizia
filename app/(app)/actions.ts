@@ -287,6 +287,8 @@ export async function createPipelineList(formData: FormData) {
   });
   ensureOk(error, "Não deu para criar a lista.");
   revalidatePath("/pipeline");
+  revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/pipeline"));
 }
 
 export async function moveDealToList(id: string, listName: string) {
@@ -351,6 +353,7 @@ export async function deleteDeal(formData: FormData) {
   ensureOk(error, "Não deu para excluir a venda.");
   revalidatePath("/pipeline");
   revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/pipeline"));
 }
 
 export async function updateDealOptions(formData: FormData) {
@@ -385,6 +388,8 @@ export async function updateDealOptions(formData: FormData) {
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para atualizar as opções.");
   revalidatePath("/pipeline");
+  revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/pipeline"));
 }
 
 export async function uploadDealPhoto(formData: FormData) {
@@ -441,6 +446,8 @@ export async function uploadDealPhoto(formData: FormData) {
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para salvar a foto no card.");
   revalidatePath("/pipeline");
+  revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/pipeline"));
 }
 
 // ---------- Tasks ----------
@@ -453,6 +460,8 @@ export async function createTask(formData: FormData) {
     org_id: orgId,
     workspace_key: workspaceKey,
     assignee_id: assigneeId,
+    reviewer_id: assigneeId && assigneeId !== user.id ? user.id : null,
+    review_status: assigneeId && assigneeId !== user.id ? "in_progress" : "not_required",
     contact_id: contactId,
     title: requiredText(formData.get("title"), "Lembrete", LIMIT.title),
     due_at: dateTimeOrNull(formData.get("due_at")),
@@ -465,7 +474,11 @@ export async function createTask(formData: FormData) {
 }
 
 export async function toggleTask(id: string, done: boolean) {
-  const { supabase, orgId, workspaceKey } = await requireActiveUserWithWorkspace();
+  const { supabase, user, orgId, workspaceKey } = await requireActiveUserWithWorkspace();
+  const { data: task } = await supabase.from("tasks").select("reviewer_id,review_status,assignee_id").eq("id",id).eq("org_id",orgId).maybeSingle();
+  if (done && task?.reviewer_id && task.assignee_id === user.id) {
+    throw new Error("Entregue a tarefa para aprovação em vez de concluí-la diretamente.");
+  }
   const { error } = await supabase
     .from("tasks")
     .update({ done })
@@ -488,6 +501,28 @@ export async function deleteTask(formData: FormData) {
   ensureOk(error, "Não deu para excluir o lembrete.");
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
+}
+
+export async function submitTaskForReview(formData: FormData) {
+  const { supabase } = await requireActiveUser();
+  const taskId = requiredText(formData.get("task_id"), "Tarefa", 80);
+  const { error } = await supabase.rpc("submit_task_for_review", { p_task_id: taskId });
+  ensureOk(error, "Não deu para enviar a tarefa para aprovação.");
+  revalidatePath("/tasks"); revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
+}
+
+export async function reviewTaskCompletion(formData: FormData) {
+  const { supabase } = await requireActiveUser();
+  const taskId = requiredText(formData.get("task_id"), "Tarefa", 80);
+  const decision = requiredText(formData.get("decision"), "Decisão", 20);
+  const { error } = await supabase.rpc("review_task_completion", {
+    p_task_id: taskId, p_approved: decision === "approve", p_note: text(formData.get("review_note"), 800) || null,
+  });
+  ensureOk(error, decision === "approve" ? "Não deu para aprovar a tarefa." : "Não deu para devolver a tarefa.");
+  revalidatePath("/tasks"); revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }
 
 // ---------- Distribuição de tarefas ----------
@@ -503,6 +538,8 @@ export async function requestTaskHandoff(formData: FormData) {
   });
   ensureOk(error, "Não deu para solicitar a transferência.");
   revalidatePath("/tasks");
+  revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }
 
 export async function acceptTaskHandoff(formData: FormData) {
@@ -511,6 +548,8 @@ export async function acceptTaskHandoff(formData: FormData) {
   const { error } = await supabase.rpc("accept_task_handoff", { p_task_id: taskId });
   ensureOk(error, "Não deu para aceitar a transferência.");
   revalidatePath("/tasks");
+  revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }
 
 export async function declineTaskHandoff(formData: FormData) {
@@ -519,6 +558,8 @@ export async function declineTaskHandoff(formData: FormData) {
   const { error } = await supabase.rpc("decline_task_handoff", { p_task_id: taskId });
   ensureOk(error, "Não deu para recusar a transferência.");
   revalidatePath("/tasks");
+  revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }
 
 export async function adminReassignTask(formData: FormData) {
@@ -532,6 +573,8 @@ export async function adminReassignTask(formData: FormData) {
   });
   ensureOk(error, "Não deu para reatribuir o lembrete.");
   revalidatePath("/tasks");
+  revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }
 
 // ---------- Distribuição de negócios/casos ----------
@@ -547,6 +590,8 @@ export async function requestDealHandoff(formData: FormData) {
   });
   ensureOk(error, "Não deu para solicitar a transferência.");
   revalidatePath("/pipeline");
+  revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/pipeline"));
 }
 
 export async function acceptDealHandoff(formData: FormData) {
@@ -555,6 +600,8 @@ export async function acceptDealHandoff(formData: FormData) {
   const { error } = await supabase.rpc("accept_deal_handoff", { p_deal_id: dealId });
   ensureOk(error, "Não deu para aceitar a transferência.");
   revalidatePath("/pipeline");
+  revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/pipeline"));
 }
 
 export async function declineDealHandoff(formData: FormData) {
@@ -563,6 +610,8 @@ export async function declineDealHandoff(formData: FormData) {
   const { error } = await supabase.rpc("decline_deal_handoff", { p_deal_id: dealId });
   ensureOk(error, "Não deu para recusar a transferência.");
   revalidatePath("/pipeline");
+  revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/pipeline"));
 }
 
 export async function adminReassignDeal(formData: FormData) {
@@ -576,6 +625,8 @@ export async function adminReassignDeal(formData: FormData) {
   });
   ensureOk(error, "Não deu para reatribuir o negócio.");
   revalidatePath("/pipeline");
+  revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/pipeline"));
 }
 
 // "Pegar" uma tarefa/negócio deixado em aberto — claim_task/claim_deal são
@@ -588,6 +639,7 @@ export async function claimTask(formData: FormData) {
   ensureOk(error, "Essa tarefa já foi pega por alguém.");
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }
 
 export async function claimDeal(formData: FormData) {
@@ -597,6 +649,7 @@ export async function claimDeal(formData: FormData) {
   ensureOk(error, "Esse negócio já foi pego por alguém.");
   revalidatePath("/pipeline");
   revalidatePath("/dashboard");
+  redirect(safeReturnPath(formData.get("return_to"), "/pipeline"));
 }
 
 // Igual a requireUserWithPreset, mas sem precisar do preset completo — usado

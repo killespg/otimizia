@@ -24,14 +24,25 @@ export type Profile = {
   terms_accepted_at: string | null;
   active_org_id: string | null;
   checklist_dismissed_at: string | null;
+  dashboard_preferences: Record<string, unknown>;
   created_at: string;
 };
 
 export type OrgRole = "admin" | "member";
+export type JobRole =
+  | "owner"
+  | "managing_partner"
+  | "lawyer"
+  | "paralegal"
+  | "finance"
+  | "receptionist"
+  | "intern"
+  | "staff";
 
 export type Organization = {
   id: string;
   name: string;
+  workspace_preferences: Record<string, unknown>;
   business_context: string | null;
   business_priorities: string | null;
   ai_tone: string | null;
@@ -55,7 +66,87 @@ export type OrganizationMember = {
   org_id: string;
   user_id: string;
   role: OrgRole;
+  job_role: JobRole;
   created_at: string;
+};
+
+export type LegalCaseStatus = "intake" | "active" | "waiting" | "suspended" | "closed" | "archived";
+export type LegalCase = {
+  id: string;
+  org_id: string;
+  workspace_key: "law_office";
+  contact_id: string | null;
+  deal_id: string | null;
+  responsible_id: string | null;
+  created_by: string;
+  title: string;
+  case_number: string | null;
+  area: string | null;
+  court: string | null;
+  jurisdiction: string | null;
+  opposing_party: string | null;
+  status: LegalCaseStatus;
+  risk_level: "low" | "standard" | "high" | "critical";
+  confidentiality: "team" | "restricted";
+  next_deadline_at: string | null;
+  summary: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type FeeAgreement = {
+  id: string;
+  org_id: string;
+  contact_id: string | null;
+  case_id: string | null;
+  deal_id: string | null;
+  title: string;
+  fee_type: "fixed" | "recurring" | "stage" | "hourly" | "success" | "consultation";
+  total_cents: number;
+  success_percent: number | null;
+  success_basis: string | null;
+  status: "draft" | "active" | "completed" | "cancelled";
+  signed_at: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+export type Receivable = {
+  id: string;
+  org_id: string;
+  agreement_id: string | null;
+  contact_id: string | null;
+  case_id: string | null;
+  description: string;
+  category: "office_fee" | "success_fee" | "consultation" | "reimbursement" | "client_funds";
+  installment_number: number | null;
+  installment_total: number | null;
+  original_cents: number;
+  paid_cents: number;
+  due_date: string;
+  status: "pending" | "partial" | "paid" | "cancelled";
+  notes: string | null;
+  created_at: string;
+};
+
+export type LegalDeadline = {
+  id: string; org_id: string; case_id: string; assigned_to: string | null; created_by: string;
+  title: string; deadline_type: "procedural" | "hearing" | "internal" | "client" | "administrative";
+  due_at: string; status: "pending" | "completed" | "cancelled"; priority: "low" | "normal" | "high" | "critical";
+  completed_at: string | null; notes: string | null; created_at: string; updated_at: string;
+};
+
+export type LegalCaseEvent = {
+  id: string; org_id: string; case_id: string; created_by: string;
+  event_type: "update" | "filing" | "decision" | "hearing" | "communication" | "note";
+  title: string; description: string | null; occurred_at: string; created_at: string;
+};
+
+export type LegalDocument = {
+  id: string; org_id: string; case_id: string; uploaded_by: string; name: string;
+  document_type: "petition" | "contract" | "evidence" | "decision" | "power_of_attorney" | "client_document" | "other";
+  storage_path: string | null; external_url: string | null; version: number;
+  status: "draft" | "review" | "approved" | "filed" | "archived"; notes: string | null; created_at: string; updated_at: string;
 };
 
 export type Contact = {
@@ -98,6 +189,11 @@ export type Task = {
   workspace_key: string;
   assignee_id: string | null;
   pending_assignee_id: string | null;
+  reviewer_id: string | null;
+  review_status: "not_required" | "in_progress" | "submitted" | "changes_requested" | "approved";
+  submitted_at: string | null;
+  reviewed_at: string | null;
+  review_note: string | null;
   contact_id: string | null;
   deal_id: string | null;
   title: string;

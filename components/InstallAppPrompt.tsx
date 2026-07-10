@@ -90,7 +90,7 @@ export function InstallAppPrompt() {
       <button
         type="button"
         onClick={close}
-        className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-lg text-ink-muted hover:bg-surface-2 hover:text-ink"
+        className="icon-button absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-lg text-ink-muted transition-colors duration-150 ease-out hover:bg-surface-2 hover:text-ink"
         aria-label="Fechar convite de instalação"
       >
         <IconX className="h-4 w-4" />
@@ -115,7 +115,7 @@ export function InstallAppPrompt() {
       </div>
 
       {showInstructions ? (
-        <div className="mt-3 rounded-xl bg-surface-2 p-3 text-xs font-semibold leading-relaxed text-ink-soft">
+        <div className="pop-in origin-top mt-3 rounded-xl bg-surface-2 p-3 text-xs font-semibold leading-relaxed text-ink-soft">
           {ios ? (
             <>
               No iPhone: toque em <span className="font-black text-ink">Compartilhar</span> e depois em{" "}

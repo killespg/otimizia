@@ -25,8 +25,12 @@ export function SignupsBarChart({ series }: { series: Point[] }) {
   const barHeight = (count: number) => (count / maxCount) * (BOTTOM - TOP);
   const barY = (count: number) => BOTTOM - barHeight(count);
 
-  const hovered = hoverIndex !== null ? series[hoverIndex] : null;
-  const hoverXPercent = hovered ? ((barX(hoverIndex!) + barWidth / 2) / VIEW_WIDTH) * 100 : null;
+  const isHovering = hoverIndex !== null;
+  const displayIndex = hoverIndex ?? Math.max(0, n - 1);
+  const displayed = n > 0 ? series[displayIndex] : null;
+  const hoverXPercent = displayed
+    ? ((barX(displayIndex) + barWidth / 2) / VIEW_WIDTH) * 100
+    : null;
   const dayTickEvery = Math.max(1, Math.ceil(n / 6));
 
   return (
@@ -43,6 +47,8 @@ export function SignupsBarChart({ series }: { series: Point[] }) {
         {series.map((point, index) => (
           <rect
             key={point.date}
+            className="chart-bar transition-colors duration-150 ease-out"
+            style={{ "--i": index } as React.CSSProperties}
             x={barX(index)}
             y={barY(point.count)}
             width={barWidth}
@@ -76,13 +82,16 @@ export function SignupsBarChart({ series }: { series: Point[] }) {
         </g>
       </svg>
 
-      {hovered && hoverXPercent !== null && (
+      {displayed && hoverXPercent !== null && (
         <div
-          className="pointer-events-none absolute top-2 -translate-x-1/2 rounded-md border border-line bg-white px-2.5 py-1.5 text-xs font-bold text-ink shadow-[0_10px_28px_-16px_rgba(15,23,42,0.55)]"
+          className={
+            "pointer-events-none absolute top-2 -translate-x-1/2 rounded-md border border-line bg-white px-2.5 py-1.5 text-xs font-bold text-ink shadow-[0_10px_28px_-16px_rgba(15,23,42,0.55)] transition-[left,opacity,transform] duration-100 ease-out " +
+            (isHovering ? "opacity-100 scale-100" : "scale-95 opacity-0")
+          }
           style={{ left: `${Math.min(92, Math.max(8, hoverXPercent))}%` }}
         >
-          <p className="text-ink-muted">{formatDate(hovered.date)}</p>
-          <p>{hovered.count} {hovered.count === 1 ? "cadastro" : "cadastros"}</p>
+          <p className="text-ink-muted">{formatDate(displayed.date)}</p>
+          <p>{displayed.count} {displayed.count === 1 ? "cadastro" : "cadastros"}</p>
         </div>
       )}
 

@@ -105,14 +105,14 @@ export function AssistantChat() {
                 setOpen(false);
                 fabRef.current?.focus();
               }}
-              className="grid min-h-11 min-w-11 place-items-center rounded-md text-lg leading-none text-white/80 hover:bg-white/15 hover:text-white focus-visible:ring-2 focus-visible:ring-white"
+              className="press-sm grid min-h-11 min-w-11 place-items-center rounded-md text-lg leading-none text-white/80 transition-colors duration-150 ease-out hover:bg-white/15 hover:text-white focus-visible:ring-2 focus-visible:ring-white"
               aria-label="Fechar Sócio-Assistente"
             >
               ×
             </button>
           </div>
 
-          <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+          <div ref={scrollRef} className="enter flex-1 space-y-3 overflow-y-auto px-4 py-4">
             {messages.length === 0 && (
               <div className="space-y-3">
                 <p className="text-sm text-ink-muted">
@@ -124,7 +124,7 @@ export function AssistantChat() {
                       key={suggestion}
                       type="button"
                       onClick={() => submit(suggestion)}
-                      className="rounded-full border border-line bg-surface-2 px-3 py-1.5 text-left text-[13px] font-semibold text-ink hover:border-brand-600/40 hover:text-brand-600 focus-visible:ring-2 focus-visible:ring-brand-600"
+                      className="press-sm rounded-full border border-line bg-surface-2 px-3 py-1.5 text-left text-[13px] font-semibold text-ink transition-colors duration-150 ease-out hover:border-brand-600/40 hover:text-brand-600 focus-visible:ring-2 focus-visible:ring-brand-600"
                     >
                       {suggestion}
                     </button>
@@ -184,7 +184,7 @@ export function AssistantChat() {
           </div>
 
           {(attachment.file || attachment.error) && (
-            <div className="px-3 pt-2">
+            <div className="pop-in origin-bottom px-3 pt-2">
               {attachment.file && (
                 <div className="mb-2 flex items-center gap-2 rounded-lg bg-surface-2 px-2.5 py-1.5 text-xs font-semibold text-ink">
                   <IconPaperclip className="h-3.5 w-3.5 shrink-0 text-ink-muted" />
@@ -192,7 +192,7 @@ export function AssistantChat() {
                   <button
                     type="button"
                     onClick={attachment.clear}
-                    className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-ink-muted hover:bg-line hover:text-ink"
+                    className="icon-button grid h-6 w-6 shrink-0 place-items-center rounded-md text-ink-muted transition-colors duration-150 ease-out hover:bg-line hover:text-ink"
                     aria-label="Remover PDF anexado"
                   >
                     <IconX className="h-3.5 w-3.5" />
@@ -223,7 +223,7 @@ export function AssistantChat() {
             <button
               type="button"
               onClick={attachment.pick}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2 text-ink-muted transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-brand-600"
+              className="press-sm flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2 text-ink-muted transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-brand-600"
               aria-label="Anexar PDF"
               title="Anexar PDF"
             >
@@ -240,7 +240,7 @@ export function AssistantChat() {
             <button
               type="submit"
               disabled={sending || (!input.trim() && !pendingImage && !attachment.file)}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] text-white transition-opacity disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-brand-600"
+              className="press-sm flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] text-white transition-opacity disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-brand-600"
               aria-label="Enviar mensagem"
             >
               <IconArrowRight className="h-4 w-4" />

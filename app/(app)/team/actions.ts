@@ -3,10 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { LAW_JOB_ROLES } from "@/lib/law-office";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import type { JobRole } from "@/lib/supabase/types";
 
 async function requireOrgAdmin() {
   const supabase = createClient();
@@ -28,6 +30,11 @@ function emailField(v: FormDataEntryValue | null): string {
 function text(v: FormDataEntryValue | null, max: number): string {
   const s = typeof v === "string" ? v.trim() : "";
   return s.length > max ? s.slice(0, max) : s;
+}
+
+function jobRoleField(v: FormDataEntryValue | null): JobRole {
+  const role = typeof v === "string" ? v : "";
+  return LAW_JOB_ROLES.some((item) => item.value === role) ? (role as JobRole) : "staff";
 }
 
 function requiredText(v: FormDataEntryValue | null, label: string, max: number): string {
@@ -79,6 +86,7 @@ export async function updateOrganizationContext(formData: FormData) {
 export async function inviteMember(formData: FormData) {
   const { orgId } = await requireOrgAdmin();
   const email = emailField(formData.get("email"));
+  const jobRole = jobRoleField(formData.get("job_role"));
   if (!email) throw new Error("Informe um e-mail válido.");
 
   const admin = createAdminClient();
@@ -88,13 +96,13 @@ export async function inviteMember(formData: FormData) {
 
   const { error } = await admin.auth.admin.inviteUserByEmail(email, {
     redirectTo: `${protocol}://${host}/reset-password`,
-    data: { invited_org_id: orgId },
+    data: { invited_org_id: orgId, invited_job_role: jobRole },
   });
 
   if (error) {
     const message = (error.message ?? "").toLowerCase();
     if (message.includes("already") || message.includes("registered")) {
-      await addExistingUserToOrg(admin, orgId, email);
+      await addExistingUserToOrg(admin, orgId, email, jobRole);
     } else {
       console.error("[team/invite]", error);
       throw new Error("Não deu para enviar o convite.");
@@ -111,7 +119,8 @@ export async function inviteMember(formData: FormData) {
 async function addExistingUserToOrg(
   admin: ReturnType<typeof createAdminClient>,
   orgId: string,
-  email: string
+  email: string,
+  jobRole: JobRole
 ) {
   const { data: existing } = await admin
     .from("profiles")
@@ -134,7 +143,7 @@ async function addExistingUserToOrg(
 
   const { error: memberError } = await admin
     .from("organization_members")
-    .insert({ org_id: orgId, user_id: existing.id, role: "member" });
+    .insert({ org_id: orgId, user_id: existing.id, role: "member", job_role: jobRole });
   if (memberError) {
     console.error("[team/invite-existing]", memberError);
     throw new Error("Não deu para adicionar essa pessoa à equipe.");
@@ -163,6 +172,26 @@ export async function updateMemberRole(formData: FormData) {
     console.error("[team/update-role]", error);
     throw new Error("Não deu para atualizar o papel.");
   }
+  revalidatePath("/team");
+}
+
+export async function updateMemberJobRole(formData: FormData) {
+  const { supabase, orgId } = await requireOrgAdmin();
+  const targetUserId = String(formData.get("user_id") ?? "");
+  const jobRole = jobRoleField(formData.get("job_role"));
+  if (!targetUserId) throw new Error("Membro invÃ¡lido.");
+
+  const { error } = await supabase
+    .from("organization_members")
+    .update({ job_role: jobRole })
+    .eq("org_id", orgId)
+    .eq("user_id", targetUserId);
+  if (error) {
+    console.error("[team/update-job-role]", error);
+    throw new Error("NÃ£o deu para atualizar o cargo.");
+  }
+
+  revalidatePath("/", "layout");
   revalidatePath("/team");
 }
 

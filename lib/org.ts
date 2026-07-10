@@ -1,10 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { JobRole } from "@/lib/supabase/types";
 
 export type OrgRole = "admin" | "member";
 
 export type OrgMember = {
   user_id: string;
   role: OrgRole;
+  job_role: JobRole;
   name: string | null;
 };
 
@@ -71,7 +73,7 @@ export async function getOrgMembers(
 ): Promise<OrgMember[]> {
   const { data: members } = await supabase
     .from("organization_members")
-    .select("user_id, role, created_at")
+    .select("user_id, role, job_role, created_at")
     .eq("org_id", orgId)
     .order("created_at", { ascending: true });
 
@@ -89,6 +91,7 @@ export async function getOrgMembers(
   return rows.map((m) => ({
     user_id: m.user_id as string,
     role: m.role as OrgRole,
+    job_role: (m.job_role as JobRole | null) ?? "staff",
     name: nameById.get(m.user_id as string) ?? null,
   }));
 }

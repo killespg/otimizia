@@ -83,13 +83,13 @@ export default function ResetPasswordPage() {
       }
     >
       {status === "checking" && (
-        <p className="mt-6 text-sm font-medium text-ink-soft">
+        <p className="pop-in mt-6 text-sm font-medium text-ink-soft">
           Verificando o link...
         </p>
       )}
 
       {status === "invalid" && (
-        <div className="mt-6 space-y-3">
+        <div className="pop-in mt-6 space-y-3">
           <p className="text-sm font-medium text-ink-soft">
             Esse link é inválido ou expirou.
           </p>
@@ -103,7 +103,7 @@ export default function ResetPasswordPage() {
       )}
 
       {status === "ready" && (
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="pop-in mt-6 space-y-4">
           <div>
             <label className="label" htmlFor="password">
               Nova senha
@@ -126,11 +126,36 @@ export default function ResetPasswordPage() {
           </div>
 
           {error && (
-            <p className="text-sm font-bold text-danger-700">{error}</p>
+            <p className="pop-in text-sm font-bold text-danger-700">{error}</p>
           )}
 
-          <button type="submit" disabled={pending} className="btn w-full py-3 text-base">
-            {pending ? "Salvando..." : "Salvar nova senha"}
+          <button
+            type="submit"
+            disabled={pending}
+            aria-busy={pending || undefined}
+            className="btn relative w-full py-3 text-base"
+          >
+            <span
+              className={
+                "inline-flex items-center justify-center gap-2 transition-opacity duration-150 ease-out " +
+                (pending ? "opacity-0" : "opacity-100")
+              }
+            >
+              Salvar nova senha
+            </span>
+            <span
+              className={
+                "absolute inset-0 flex items-center justify-center gap-2 transition-opacity duration-150 ease-out " +
+                (pending ? "opacity-100" : "pointer-events-none opacity-0")
+              }
+              aria-live="polite"
+            >
+              <span
+                className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent"
+                aria-hidden="true"
+              />
+              Salvando
+            </span>
           </button>
         </form>
       )}

@@ -45,8 +45,10 @@ export function RevenueLineChart({ series }: { series: Point[] }) {
     setHoverIndex(index);
   }
 
-  const hovered = hoverIndex !== null ? series[hoverIndex] : null;
-  const hoverXPercent = hovered ? (x(hoverIndex!) / VIEW_WIDTH) * 100 : null;
+  const isHovering = hoverIndex !== null && n > 0;
+  const displayIndex = hoverIndex ?? Math.max(0, n - 1);
+  const displayed = n > 0 ? series[displayIndex] : null;
+  const hoverXPercent = displayed ? (x(displayIndex) / VIEW_WIDTH) * 100 : null;
 
   return (
     <div
@@ -98,9 +100,20 @@ export function RevenueLineChart({ series }: { series: Point[] }) {
           ))}
         </g>
 
-        {areaPath && <path d={areaPath} fill={`url(#${gradientId})`} />}
+        {areaPath && (
+          <path className="preview-chart-area" d={areaPath} fill={`url(#${gradientId})`} />
+        )}
         {linePath && (
-          <path d={linePath} fill="none" stroke="#6d28d9" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+          <path
+            className="preview-chart-line"
+            pathLength={1}
+            d={linePath}
+            fill="none"
+            stroke="#6d28d9"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          />
         )}
         {n > 0 && (
           <circle
@@ -131,36 +144,43 @@ export function RevenueLineChart({ series }: { series: Point[] }) {
             ))}
         </g>
 
-        {hovered && hoverXPercent !== null && (
+        {displayed && (
           <line
-            x1={x(hoverIndex!)}
-            x2={x(hoverIndex!)}
+            className="transition-[x1,x2,opacity] duration-100 ease-out"
+            x1={x(displayIndex)}
+            x2={x(displayIndex)}
             y1={TOP}
             y2={BOTTOM}
             stroke="#7b3ff2"
             strokeWidth="1"
             strokeDasharray="4 4"
+            opacity={isHovering ? 1 : 0}
           />
         )}
-        {hovered && (
+        {displayed && (
           <circle
-            cx={x(hoverIndex!)}
-            cy={y(hovered.cumulativeCents)}
+            className="transition-[cx,cy,opacity] duration-100 ease-out"
+            cx={x(displayIndex)}
+            cy={y(displayed.cumulativeCents)}
             r="5"
             fill="#6d28d9"
             stroke="#fff"
             strokeWidth="2"
+            opacity={isHovering ? 1 : 0}
           />
         )}
       </svg>
 
-      {hovered && hoverXPercent !== null && (
+      {displayed && hoverXPercent !== null && (
         <div
-          className="pointer-events-none absolute top-2 -translate-x-1/2 rounded-md border border-line bg-white px-2.5 py-1.5 text-xs font-bold text-ink shadow-[0_10px_28px_-16px_rgba(15,23,42,0.55)]"
+          className={
+            "pointer-events-none absolute top-2 -translate-x-1/2 rounded-md border border-line bg-white px-2.5 py-1.5 text-xs font-bold text-ink shadow-[0_10px_28px_-16px_rgba(15,23,42,0.55)] transition-[left,opacity,transform] duration-100 ease-out " +
+            (isHovering ? "opacity-100 scale-100" : "pointer-events-none scale-95 opacity-0")
+          }
           style={{ left: `${Math.min(92, Math.max(8, hoverXPercent))}%` }}
         >
-          <p className="text-ink-muted">Dia {String(hovered.day).padStart(2, "0")}</p>
-          <p>{formatBRL(hovered.cumulativeCents)}</p>
+          <p className="text-ink-muted">Dia {String(displayed.day).padStart(2, "0")}</p>
+          <p>{formatBRL(displayed.cumulativeCents)}</p>
         </div>
       )}
 

@@ -5,10 +5,12 @@ import { redirect } from "next/navigation";
 import Stripe from "stripe";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth-constants";
 import { logError } from "@/lib/logger";
-import { getActiveOrgId } from "@/lib/org";
+import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { cleanWorkspaceLabel, parseWorkspacePreferences } from "@/lib/workspace-preferences";
+import { getWorkspaceKey, type WorkspaceKey } from "@/lib/workspaces";
 
 async function requireUser() {
   const supabase = createClient();
@@ -57,6 +59,65 @@ export async function updatePassword(formData: FormData) {
   const { error } = await supabase.auth.updateUser({ password });
   ensureOk(error, "Não deu para atualizar a senha.");
   revalidatePath("/settings");
+}
+
+export async function updateWorkspaceLabels(formData: FormData) {
+  const { supabase, user } = await requireUser();
+  const orgId = await getActiveOrgId(supabase, user.id);
+  const role = await getOrgRole(supabase, orgId, user.id);
+  if (role !== "admin") {
+    throw new Error("Apenas admins podem personalizar o workspace.");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("profession_type, is_admin")
+    .eq("id", user.id)
+    .maybeSingle();
+  const workspaceKey = getWorkspaceKey(
+    profile?.profession_type,
+    user.user_metadata?.profession_type,
+    profile?.is_admin
+  );
+  const requestedWorkspace = text(formData.get("workspace_key"), 80) as WorkspaceKey;
+  if (requestedWorkspace !== workspaceKey) {
+    throw new Error("Workspace invÃ¡lido.");
+  }
+
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("workspace_preferences")
+    .eq("id", orgId)
+    .maybeSingle();
+
+  const labels = {
+    contacts: cleanWorkspaceLabel(formData.get("contacts_label")),
+    pipeline: cleanWorkspaceLabel(formData.get("pipeline_label")),
+    value: cleanWorkspaceLabel(formData.get("value_label")),
+    followups: cleanWorkspaceLabel(formData.get("followups_label")),
+    dealSingular: cleanWorkspaceLabel(formData.get("deal_singular_label")),
+  };
+
+  const nextPreferences = {
+    ...parseWorkspacePreferences(org?.workspace_preferences),
+    [workspaceKey]: {
+      labels: Object.fromEntries(
+        Object.entries(labels).filter(([, value]) => Boolean(value))
+      ),
+    },
+  };
+
+  const { error } = await supabase
+    .from("organizations")
+    .update({ workspace_preferences: nextPreferences })
+    .eq("id", orgId);
+  ensureOk(error, "NÃ£o deu para salvar a personalizaÃ§Ã£o.");
+
+  revalidatePath("/", "layout");
+  revalidatePath("/settings");
+  revalidatePath("/contacts");
+  revalidatePath("/pipeline");
+  revalidatePath("/tasks");
 }
 
 export async function deleteAccount(formData: FormData) {

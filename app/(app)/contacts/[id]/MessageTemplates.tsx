@@ -71,7 +71,7 @@ export function MessageTemplates({
               type="button"
               onClick={() => selectTemplate(template)}
               className={
-                "min-h-9 rounded-md border px-3 py-1.5 text-xs font-bold transition " +
+                "press-sm min-h-9 rounded-md border px-3 py-1.5 text-xs font-bold transition " +
                 (activeKey === template.key
                   ? "border-brand-400 bg-brand-50 text-brand-800"
                   : "border-line bg-white text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800")

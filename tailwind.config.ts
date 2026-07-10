@@ -38,8 +38,6 @@ const config: Config = {
           DEFAULT: "rgb(var(--color-line) / <alpha-value>)",
           strong: "rgb(var(--color-line-strong) / <alpha-value>)",
         },
-        // Accent quente, usado com parcimonia.
-        honey: "#f59e0b",
         // Vermelho calibrado para atraso/perdido: claro, nunca alarmante.
         danger: {
           50: "#fef3f2",
@@ -55,6 +53,15 @@ const config: Config = {
           500: "#17b26a",
           600: "#079455",
           700: "#067647",
+        },
+        // Ambar quente, para negociacao/media prioridade/pendencias.
+        warning: {
+          50: "#fff7e6",
+          100: "#ffe8b3",
+          200: "#ffd980",
+          500: "#f59e0b",
+          600: "#b45309",
+          700: "#8a6500",
         },
       },
       fontFamily: {

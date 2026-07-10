@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { PendingButton } from "@/components/PendingButton";
 import type { Task } from "@/lib/supabase/types";
 import { formatDateTime } from "@/lib/format";
@@ -11,6 +12,8 @@ import {
   declineTaskHandoff,
   deleteTask,
   requestTaskHandoff,
+  reviewTaskCompletion,
+  submitTaskForReview,
   toggleTask,
 } from "../actions";
 import { IconTrash } from "../icons";
@@ -23,14 +26,17 @@ export default function TaskItem({
   members,
   currentUserId,
   isAdmin,
+  canReviewAll = false,
 }: {
   task: Task;
   overdue: boolean;
   members: Member[];
   currentUserId: string;
   isAdmin: boolean;
+  canReviewAll?: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   const [showHandoff, setShowHandoff] = useState(false);
   const isOverdue = overdue && !task.done;
 
@@ -46,17 +52,23 @@ export default function TaskItem({
     isAdmin || task.assignee_id === currentUserId || task.owner_id === currentUserId;
   const iAmPendingTarget = task.pending_assignee_id === currentUserId;
   const otherMembers = members.filter((m) => m.user_id !== task.assignee_id);
+  const requiresReview = Boolean(task.reviewer_id);
+  const isAssignee = task.assignee_id === currentUserId;
+  const awaitingReview = task.review_status === "submitted";
+  const canReview = awaitingReview && (canReviewAll || task.reviewer_id === currentUserId);
 
   return (
     <li className="flex flex-col gap-2 py-3">
       <div className="group flex items-center gap-3">
-        <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg px-1 py-1">
+        <label className={"flex min-w-0 flex-1 items-center gap-3 rounded-lg px-1 py-1 "+(requiresReview?"cursor-default":"cursor-pointer")}>
           <input
             type="checkbox"
             defaultChecked={task.done}
-            disabled={isPending}
+            disabled={isPending || requiresReview}
             onChange={(event) =>
-              startTransition(() => toggleTask(task.id, event.target.checked))
+              startTransition(() => {
+                void toggleTask(task.id, event.target.checked).finally(() => router.refresh());
+              })
             }
             className="h-[18px] w-[18px] shrink-0 rounded-full accent-brand-700"
           />
@@ -83,6 +95,7 @@ export default function TaskItem({
             ))}
           <form action={deleteTask}>
             <input type="hidden" name="id" value={task.id} />
+            <input type="hidden" name="return_to" value="/tasks" />
             <PendingButton
               className="icon-button grid h-11 w-11 place-items-center rounded-md text-ink-muted/50 opacity-100 hover:bg-danger-50 hover:text-danger-600 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
               title="Excluir tarefa"
@@ -96,6 +109,34 @@ export default function TaskItem({
         </div>
       </div>
 
+      {task.review_status === "changes_requested" && (
+        <div className="ml-1 rounded-lg border border-warning-200 bg-warning-50 p-3 text-xs font-bold text-warning-800">
+          <p>Devolvida para ajustes</p>{task.review_note&&<p className="mt-1 font-medium">{task.review_note}</p>}
+        </div>
+      )}
+
+      {requiresReview && isAssignee && !awaitingReview && !task.done && (
+        <form action={submitTaskForReview} className="ml-1">
+          <input type="hidden" name="task_id" value={task.id}/><input type="hidden" name="return_to" value="/tasks"/>
+          <PendingButton className="rounded-md bg-brand-700 px-3 py-2 text-xs font-black text-white hover:bg-brand-800" pendingLabel="Enviando">
+            Entregar para aprovação
+          </PendingButton>
+        </form>
+      )}
+
+      {awaitingReview && !canReview && (
+        <span className="ml-1 w-fit tag bg-brand-50 text-brand-700">Aguardando aprovação</span>
+      )}
+
+      {canReview && (
+        <form action={reviewTaskCompletion} className="ml-1 grid gap-2 rounded-lg border border-line bg-surface-2 p-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
+          <input type="hidden" name="task_id" value={task.id}/><input type="hidden" name="return_to" value="/tasks"/>
+          <div><label className="label" htmlFor={`review-${task.id}`}>Orientação se devolver</label><input id={`review-${task.id}`} name="review_note" className="field mt-1.5 h-10" placeholder="Ex.: corrigir os documentos anexados"/></div>
+          <PendingButton name="decision" value="changes" className="min-h-10 rounded-md border border-line bg-white px-3 text-xs font-black text-ink-soft hover:bg-warning-50" pendingLabel="Devolvendo">Devolver</PendingButton>
+          <PendingButton name="decision" value="approve" className="min-h-10 rounded-md bg-brand-700 px-3 text-xs font-black text-white hover:bg-brand-800" pendingLabel="Aprovando">Aprovar</PendingButton>
+        </form>
+      )}
+
       {members.length > 1 && (
         <div className="flex flex-wrap items-center gap-2 pl-1 text-[11px] font-bold text-ink-muted">
           {assigneeName && (
@@ -104,9 +145,10 @@ export default function TaskItem({
 
           {!task.assignee_id && (
             <span className="flex items-center gap-1.5">
-              <span className="tag bg-[#fff7e6] text-[#8a6500]">Em aberto</span>
+              <span className="tag bg-warning-50 text-warning-700">Em aberto</span>
               <form action={claimTask}>
                 <input type="hidden" name="task_id" value={task.id} />
+                <input type="hidden" name="return_to" value="/tasks" />
                 <PendingButton
                   className="rounded-md bg-brand-700 px-2 py-1 text-[11px] font-black text-white hover:bg-brand-800"
                   pendingLabel="Pegando"
@@ -120,22 +162,24 @@ export default function TaskItem({
           {task.pending_assignee_id && (
             iAmPendingTarget ? (
               <span className="flex items-center gap-1.5">
-                <span className="tag bg-[#fff7e6] text-[#8a6500]">Pediram para você pegar</span>
+                <span className="tag bg-warning-50 text-warning-700">Pediram para você pegar</span>
                 <form action={acceptTaskHandoff}>
                   <input type="hidden" name="task_id" value={task.id} />
+                  <input type="hidden" name="return_to" value="/tasks" />
                   <PendingButton className="rounded-md bg-brand-700 px-2 py-1 text-[11px] font-black text-white hover:bg-brand-800" pendingLabel="Aceitando">
                     Aceitar
                   </PendingButton>
                 </form>
                 <form action={declineTaskHandoff}>
                   <input type="hidden" name="task_id" value={task.id} />
+                  <input type="hidden" name="return_to" value="/tasks" />
                   <PendingButton className="rounded-md border border-line bg-white px-2 py-1 text-[11px] font-black text-ink-soft hover:bg-surface-2" pendingLabel="Recusando">
                     Recusar
                   </PendingButton>
                 </form>
               </span>
             ) : (
-              <span className="tag bg-[#fff7e6] text-[#8a6500]">
+              <span className="tag bg-warning-50 text-warning-700">
                 Transferência pendente{pendingTargetName ? ` para ${pendingTargetName}` : ""}
               </span>
             )
@@ -159,6 +203,7 @@ export default function TaskItem({
           className="ml-1 flex flex-wrap items-center gap-2"
         >
           <input type="hidden" name="task_id" value={task.id} />
+          <input type="hidden" name="return_to" value="/tasks" />
           <select
             name={isAdmin ? "assignee_id" : "target_user_id"}
             required

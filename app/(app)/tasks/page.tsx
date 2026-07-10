@@ -1,7 +1,9 @@
 import { PendingButton } from "@/components/PendingButton";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
+import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Task } from "@/lib/supabase/types";
+import { getWorkspaceLabels } from "@/lib/workspace-preferences";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { createTask } from "../actions";
 import { ContactField } from "../ContactField";
@@ -27,7 +29,8 @@ export default async function TasksPage() {
     user?.user_metadata?.profession_type,
     profile?.is_admin ?? false
   );
-  const [{ data: tasks }, { data: contacts }, members, role] = await Promise.all([
+  const preset = getProfessionPreset(workspaceKey);
+  const [{ data: tasks }, { data: contacts }, { data: org }, members, role] = await Promise.all([
     supabase
       .from("tasks")
       .select("*")
@@ -40,20 +43,34 @@ export default async function TasksPage() {
       .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("name"),
+    supabase
+      .from("organizations")
+      .select("workspace_preferences")
+      .eq("id", orgId)
+      .maybeSingle(),
     getOrgMembers(supabase, orgId),
     getOrgRole(supabase, orgId, user!.id),
   ]);
 
   const allTasks = (tasks ?? []) as Task[];
   const allContacts = (contacts ?? []) as Pick<Contact, "id" | "name">[];
+  const workspaceLabels = getWorkspaceLabels(
+    preset,
+    org?.workspace_preferences,
+    workspaceKey
+  );
   const isAdmin = role === "admin";
+  const currentMember = members.find((member) => member.user_id === user!.id);
+  const canReviewAll = isAdmin || ["owner", "managing_partner"].includes(currentMember?.job_role ?? "");
   const handoffRequests = allTasks.filter((task) => task.pending_assignee_id === user!.id);
+  const reviewQueue = allTasks.filter((task) => task.review_status === "submitted" && (canReviewAll || task.reviewer_id === user!.id));
+  const submittedByMe = allTasks.filter((task) => task.review_status === "submitted" && task.assignee_id === user!.id && !reviewQueue.some((item)=>item.id===task.id));
 
   const now = new Date();
   const endOfToday = new Date();
   endOfToday.setHours(23, 59, 59, 999);
 
-  const pending = allTasks.filter((task) => !task.done);
+  const pending = allTasks.filter((task) => !task.done && task.review_status !== "submitted");
   const overdue = pending.filter((task) => task.due_at && new Date(task.due_at) < now);
   const todayTasks = pending.filter(
     (task) =>
@@ -83,9 +100,9 @@ export default async function TasksPage() {
     <div className="space-y-4 sm:space-y-5">
       <header className="enter flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm font-black text-brand-700">Tarefas</p>
+          <p className="text-sm font-black text-brand-700">{workspaceLabels.followups}</p>
           <h1 className="mt-2 text-[clamp(1.55rem,6vw,3.2rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
-            Clientes para chamar
+            {workspaceLabels.followups}
           </h1>
           <p className="mt-2 hidden max-w-xl text-sm font-medium leading-relaxed text-ink-soft sm:block">
             Escolha dia e hora. O que atrasar sobe para o topo da fila.
@@ -186,9 +203,23 @@ export default async function TasksPage() {
         </section>
       )}
 
+      {reviewQueue.length > 0 && (
+        <section className="panel overflow-hidden border-brand-200">
+          <div className="flex items-center justify-between border-b border-line bg-brand-50 px-5 py-4">
+            <div><h2 className="text-lg font-black text-ink">Entregas para aprovar</h2><p className="mt-1 text-sm font-medium text-ink-muted">Revise o trabalho, aprove ou devolva com uma orientação.</p></div>
+            <span className="tag bg-white text-brand-700">{reviewQueue.length}</span>
+          </div>
+          <ul className="divide-y divide-line px-5">{reviewQueue.map((task)=><TaskItem key={task.id} task={task} overdue={false} members={members} currentUserId={user!.id} isAdmin={isAdmin} canReviewAll={canReviewAll}/>)}</ul>
+        </section>
+      )}
+
+      {submittedByMe.length > 0 && (
+        <section className="panel overflow-hidden"><div className="border-b border-line px-5 py-4"><h2 className="text-lg font-black text-ink">Aguardando aprovação</h2><p className="mt-1 text-sm font-medium text-ink-muted">Tarefas que você já entregou ao responsável.</p></div><ul className="divide-y divide-line px-5">{submittedByMe.map((task)=><TaskItem key={task.id} task={task} overdue={false} members={members} currentUserId={user!.id} isAdmin={isAdmin} canReviewAll={canReviewAll}/>)}</ul></section>
+      )}
+
       <div className="grid gap-5 xl:grid-cols-2">
         {groups.map((group) => (
-          <TaskGroup key={group.title} {...group} members={members} currentUserId={user!.id} isAdmin={isAdmin} />
+          <TaskGroup key={group.title} {...group} members={members} currentUserId={user!.id} isAdmin={isAdmin} canReviewAll={canReviewAll} />
         ))}
       </div>
     </div>
@@ -204,6 +235,7 @@ function TaskGroup({
   members,
   currentUserId,
   isAdmin,
+  canReviewAll,
 }: {
   title: string;
   items: Task[];
@@ -213,6 +245,7 @@ function TaskGroup({
   members: { user_id: string; name: string | null }[];
   currentUserId: string;
   isAdmin: boolean;
+  canReviewAll: boolean;
 }) {
   const toneClass: Record<Tone, string> = {
     danger: "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
@@ -254,6 +287,7 @@ function TaskGroup({
               members={members}
               currentUserId={currentUserId}
               isAdmin={isAdmin}
+              canReviewAll={canReviewAll}
             />
           ))}
         </ul>
@@ -285,7 +319,7 @@ function MetricCard({
         <span
           className={
             "hidden h-11 w-11 place-items-center rounded-full sm:grid " +
-            (pink ? "bg-[#fff7e6] text-[#8a6500]" : "bg-brand-50 text-brand-700")
+            (pink ? "bg-warning-50 text-warning-700" : "bg-brand-50 text-brand-700")
           }
         >
           <Icon className="h-5 w-5" />

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Contact, Deal } from "@/lib/supabase/types";
 import { dealValueOrZero } from "@/lib/deals";
 import { formatBRL } from "@/lib/format";
+import { getWorkspaceLabels } from "@/lib/workspace-preferences";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { createDeal } from "../actions";
 import { ContactField } from "../ContactField";
@@ -46,7 +47,7 @@ export default async function PipelinePage() {
     profile?.is_admin ?? false
   );
   const preset = getProfessionPreset(workspaceKey);
-  const [{ data: deals }, { data: contacts }, members, role] = await Promise.all([
+  const [{ data: deals }, { data: contacts }, { data: org }, members, role] = await Promise.all([
     supabase
       .from("deals")
       .select("*")
@@ -59,6 +60,11 @@ export default async function PipelinePage() {
       .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("name"),
+    supabase
+      .from("organizations")
+      .select("workspace_preferences")
+      .eq("id", orgId)
+      .maybeSingle(),
     getOrgMembers(supabase, orgId),
     getOrgRole(supabase, orgId, user!.id),
   ]);
@@ -66,6 +72,11 @@ export default async function PipelinePage() {
 
   const allDeals = (deals ?? []) as Deal[];
   const allContacts = (contacts ?? []) as Pick<Contact, "id" | "name">[];
+  const workspaceLabels = getWorkspaceLabels(
+    preset,
+    org?.workspace_preferences,
+    workspaceKey
+  );
   const pipelineLists = pipelineListsFor(allDeals, preset.key);
   const contactNames = Object.fromEntries(
     allContacts.map((contact) => [contact.id, contact.name])
@@ -82,7 +93,7 @@ export default async function PipelinePage() {
     <div className="space-y-4 sm:space-y-5">
       <header className="enter flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-sm font-black text-brand-700">{preset.pipelineLabel}</p>
+          <p className="text-sm font-black text-brand-700">{workspaceLabels.pipeline}</p>
           <h1 className="mt-2 text-[clamp(1.55rem,6vw,3.2rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
             {preset.pipelineTitle}
           </h1>
@@ -94,7 +105,7 @@ export default async function PipelinePage() {
 
       <section className="grid gap-3 sm:grid-cols-3 sm:gap-4">
         <MetricCard label="Abertas" value={String(openDeals.length)} icon={IconColumns} />
-        <MetricCard label={preset.valueLabel} value={formatBRL(openValue)} icon={IconWallet} />
+        <MetricCard label={workspaceLabels.value} value={formatBRL(openValue)} icon={IconWallet} />
         <MetricCard label={preset.wonLabel} value={formatBRL(wonValue)} icon={IconUsers} pink />
       </section>
 
@@ -282,7 +293,7 @@ function MetricCard({
         <span
           className={
             "hidden h-9 w-9 shrink-0 place-items-center rounded-full sm:grid sm:h-11 sm:w-11 " +
-            (pink ? "bg-[#fff7e6] text-[#8a6500]" : "bg-brand-50 text-brand-700")
+            (pink ? "bg-warning-50 text-warning-700" : "bg-brand-50 text-brand-700")
           }
         >
           <Icon className="h-4 w-4 sm:h-5 sm:w-5" />

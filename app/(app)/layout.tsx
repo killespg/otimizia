@@ -4,11 +4,13 @@ import { redirect } from "next/navigation";
 import { BrandName } from "@/components/BrandName";
 import { PendingButton } from "@/components/PendingButton";
 import { AssistantChatProvider } from "@/lib/ai/AssistantChatProvider";
+import { canViewFinance, canViewLegal } from "@/lib/law-office";
 import { getActiveOrgId } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset } from "@/lib/professions";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/server";
+import { getWorkspaceLabels } from "@/lib/workspace-preferences";
 import { getWorkspaceKey, getWorkspaceOptions } from "@/lib/workspaces";
 import { logout } from "../(auth)/actions";
 import { SidebarNav, MobileTabBar } from "./AppNav";
@@ -76,8 +78,33 @@ export default async function AppLayout({
   const workspaceOptions = isAdmin
     ? []
     : getWorkspaceOptions(profile?.profession_types, preset.key);
-  const access = await getUserPlanAccess(supabase, user.id, orgId);
+  const [{ data: org }, access, { data: membership }] = await Promise.all([
+    supabase
+      .from("organizations")
+      .select("workspace_preferences")
+      .eq("id", orgId)
+      .maybeSingle(),
+    getUserPlanAccess(supabase, user.id, orgId),
+    supabase
+      .from("organization_members")
+      .select("role, job_role")
+      .eq("org_id", orgId)
+      .eq("user_id", user.id)
+      .maybeSingle(),
+  ]);
   if (!access.hasAccess) redirect("/upgrade");
+  const isOrgAdmin = membership?.role === "admin";
+  const lawOfficeAccess = {
+    enabled: preset.key === "law_office",
+    canViewLegal: canViewLegal(membership?.job_role, isOrgAdmin),
+    canViewFinance: canViewFinance(membership?.job_role, isOrgAdmin),
+  };
+  const workspaceLabels = getWorkspaceLabels(
+    preset,
+    org?.workspace_preferences,
+    workspaceKey,
+    isLivestock
+  );
 
   const email = user.email ?? "Conta";
   const handle = email.split("@")[0] || "João";
@@ -89,8 +116,8 @@ export default async function AppLayout({
   return (
     <AssistantChatProvider>
     <div className="app-frame min-h-[100dvh] bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-0 sm:p-6">
-      <div className="app-shell mx-auto flex min-h-[100dvh] max-w-[1580px] overflow-visible bg-white shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] dark:bg-[#11101d] sm:min-h-[calc(100dvh-3rem)] sm:overflow-hidden sm:rounded-2xl">
-        <aside className="hidden w-[250px] shrink-0 flex-col border-r border-line bg-white dark:bg-[#151426] sm:flex">
+      <div className="app-shell mx-auto flex min-h-[100dvh] max-w-[1580px] overflow-visible bg-surface shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] sm:min-h-[calc(100dvh-3rem)] sm:overflow-hidden sm:rounded-2xl">
+        <aside className="hidden w-[250px] shrink-0 flex-col border-r border-line bg-surface sm:flex">
           <div className="flex h-[92px] items-center px-6">
             <Logo />
           </div>
@@ -106,14 +133,9 @@ export default async function AppLayout({
 
           <div className="flex-1 overflow-y-auto px-5 py-3">
             <SidebarNav
-              labels={{
-                contacts: isLivestock ? "Sujeitos" : "Contatos",
-                pipeline: preset.pipelineLabel,
-                value: preset.valueLabel,
-                followups: isLivestock ? "Sujeitos para revisar" : "Retornos do dia",
-                dealSingular: preset.dealSingular,
-              }}
+              labels={workspaceLabels}
               isAdmin={isAdmin}
+              lawOfficeAccess={lawOfficeAccess}
             />
           </div>
 
@@ -168,8 +190,8 @@ export default async function AppLayout({
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col bg-[#f8fbff] dark:bg-[#0e0e19]">
-          <header className="mobile-app-header sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-white/92 px-4 backdrop-blur-xl sm:hidden">
+        <div className="flex min-w-0 flex-1 flex-col bg-canvas">
+          <header className="mobile-app-header sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-surface/92 px-4 backdrop-blur-xl sm:hidden">
             <Logo />
             <div className="flex items-center gap-2">
               <Link
@@ -195,7 +217,7 @@ export default async function AppLayout({
           </header>
 
           {workspaceOptions.length > 1 && (
-            <div className="border-b border-line bg-white/92 px-4 py-2 backdrop-blur-xl sm:hidden">
+            <div className="border-b border-line bg-surface/92 px-4 py-2 backdrop-blur-xl sm:hidden">
               <WorkspaceSwitcher
                 options={workspaceOptions}
                 value={preset.key}
@@ -214,10 +236,11 @@ export default async function AppLayout({
         </div>
 
         <MobileTabBar
+          lawOfficeAccess={lawOfficeAccess}
           labels={{
-            contacts: isLivestock ? "Sujeitos" : "Contatos",
-            pipeline: preset.pipelineLabel,
-            dealSingular: preset.dealSingular,
+            contacts: workspaceLabels.contacts,
+            pipeline: workspaceLabels.pipeline,
+            dealSingular: workspaceLabels.dealSingular,
           }}
         />
       </div>

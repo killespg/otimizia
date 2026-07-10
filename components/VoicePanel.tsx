@@ -31,7 +31,7 @@ export function VoicePanel() {
       }
     >
       {voiceStatus === "live" ? (
-        <div className="flex flex-col items-center gap-3 py-1">
+        <div className="pop-in flex flex-col items-center gap-3 py-1">
           <div className="flex w-full items-center justify-between">
             <span className="voice-live-badge inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-success-700">
               <span className="h-1.5 w-1.5 rounded-full bg-success-600" />
@@ -69,7 +69,7 @@ export function VoicePanel() {
           </p>
 
           {(captions.length > 0 || partialCaption) && (
-            <div className="voice-captions mt-1 max-h-24 w-full space-y-1.5 overflow-y-auto">
+            <div className="voice-captions enter mt-1 max-h-24 w-full space-y-1.5 overflow-y-auto">
               {captions.map((line, index) => (
                 <p
                   key={index}
@@ -99,7 +99,7 @@ export function VoicePanel() {
           )}
         </div>
       ) : (
-        <div className="flex items-center justify-between gap-3">
+        <div className="pop-in flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <span
               className={

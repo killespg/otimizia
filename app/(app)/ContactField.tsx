@@ -12,14 +12,14 @@ const styles = {
   default: {
     label: "label",
     control: "field mt-1.5",
-    toggle: "text-xs font-black text-brand-700 hover:text-brand-900",
+    toggle: "press-sm text-xs font-black text-brand-700 transition-colors duration-150 ease-out hover:text-brand-900",
     row: "flex items-center justify-between gap-2",
   },
   compact: {
     label: "text-xs font-bold text-ink-soft",
     control:
       "mt-1 h-10 w-full rounded-md border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100",
-    toggle: "text-xs font-black text-brand-700 hover:text-brand-900",
+    toggle: "press-sm text-xs font-black text-brand-700 transition-colors duration-150 ease-out hover:text-brand-900",
     row: "flex items-center justify-between gap-2",
   },
 };
@@ -37,7 +37,7 @@ export function ContactField({
 
   if (creating) {
     return (
-      <div className="space-y-2">
+      <div className="pop-in origin-top space-y-2">
         <div className={s.row}>
           <span className={s.label}>Novo contato</span>
           <button type="button" onClick={() => setCreating(false)} className={s.toggle}>
@@ -71,7 +71,7 @@ export function ContactField({
   }
 
   return (
-    <div>
+    <div className="pop-in origin-top">
       <div className={s.row}>
         <label className={s.label} htmlFor={selectId}>
           Contato

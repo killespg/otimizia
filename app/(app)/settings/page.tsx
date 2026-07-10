@@ -1,19 +1,29 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BrandName } from "@/components/BrandName";
+import { DashboardPreferencesForm } from "@/components/DashboardPreferencesForm";
 import { PendingButton } from "@/components/PendingButton";
 import { formatCPF } from "@/lib/cpf";
+import { getDashboardPreferences } from "@/lib/dashboard-preferences";
 import { formatDate } from "@/lib/format";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getPlanAccess } from "@/lib/plan";
 import { getProfessionPreset, PROFESSION_OPTIONS } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Organization, Profile } from "@/lib/supabase/types";
+import { getWorkspaceLabels } from "@/lib/workspace-preferences";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { updateProfessionTypes } from "../actions";
+import { updateDashboardPreferences } from "../dashboard/actions";
 import { IconAlert, IconCheck } from "../icons";
 import { DeleteAccountForm } from "./DeleteAccountForm";
-import { deleteAccount, updateEmail, updateName, updatePassword } from "./actions";
+import {
+  deleteAccount,
+  updateEmail,
+  updateName,
+  updatePassword,
+  updateWorkspaceLabels,
+} from "./actions";
 
 export default async function SettingsPage({
   searchParams,
@@ -43,17 +53,29 @@ export default async function SettingsPage({
     isFounder
   );
   const preset = getProfessionPreset(workspaceKey);
+  const workspaceLabels = getWorkspaceLabels(
+    preset,
+    org?.workspace_preferences,
+    workspaceKey
+  );
+  const dashboardPreferences = getDashboardPreferences(
+    profile?.dashboard_preferences,
+    preset
+  );
   const displayName =
     typeof user.user_metadata?.name === "string" ? user.user_metadata.name : "";
   const access = getPlanAccess(org);
 
   return (
-    <div className="max-w-2xl space-y-4 sm:space-y-5">
-      <header className="enter">
+    <div className="settings-hub max-w-6xl space-y-4 sm:space-y-5">
+      <header className="enter rounded-lg border border-line bg-surface p-5 sm:p-6">
         <p className="text-sm font-black text-brand-700">Configurações</p>
         <h1 className="mt-2 text-[clamp(1.55rem,6vw,2.6rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
-          Sua conta
+          Seu espaço de trabalho
         </h1>
+        <p className="mt-2 max-w-2xl text-sm font-semibold leading-relaxed text-ink-muted">
+          Ajuste o CRM para ficar com a sua cara: painel, métricas, widgets, nomes do workspace, conta e plano.
+        </p>
       </header>
 
       {searchParams.checkout === "success" && (
@@ -69,14 +91,54 @@ export default async function SettingsPage({
         </div>
       )}
 
-      <Link
-        href="/team"
-        className="row-link flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3 text-sm font-bold text-ink-soft hover:border-brand-400 hover:text-brand-700"
-      >
-        Nome da empresa, contexto e preferências da IA agora ficam em Equipe
-        <span aria-hidden="true">→</span>
-      </Link>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.75fr)]">
+        <div className="space-y-4">
+          <SectionCard
+            title="Painel e widgets"
+            description="Monte o dashboard com drag and drop, métricas próprias e estilo visual."
+          >
+            <DashboardPreferencesForm
+              preferences={dashboardPreferences}
+              preset={preset}
+              action={updateDashboardPreferences}
+              compact
+              returnTo="/settings"
+            />
+          </SectionCard>
 
+          {isOrgAdmin && (
+            <SectionCard
+              title="Vocabulário do CRM"
+              description="Renomeie o workspace atual para combinar com a rotina da sua equipe."
+            >
+              <form action={updateWorkspaceLabels} className="space-y-3">
+                <input type="hidden" name="workspace_key" value={workspaceKey} />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field name="contacts_label" label="Pessoas ou base" defaultValue={workspaceLabels.contacts} maxLength={40} />
+                  <Field name="pipeline_label" label="Quadro principal" defaultValue={workspaceLabels.pipeline} maxLength={40} />
+                  <Field name="deal_singular_label" label="Item do quadro" defaultValue={workspaceLabels.dealSingular} maxLength={40} />
+                  <Field name="value_label" label="Valor acompanhado" defaultValue={workspaceLabels.value} maxLength={40} />
+                  <div className="sm:col-span-2">
+                    <Field name="followups_label" label="Retornos e revisões" defaultValue={workspaceLabels.followups} maxLength={40} />
+                  </div>
+                </div>
+                <PendingButton className="btn-soft" pendingLabel="Salvando">
+                  Salvar nomes
+                </PendingButton>
+              </form>
+            </SectionCard>
+          )}
+
+          <Link
+            href="/team"
+            className="row-link flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3 text-sm font-bold text-ink-soft hover:border-brand-400 hover:text-brand-700"
+          >
+            Nome da empresa, contexto e preferências da IA ficam em Equipe
+            <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+
+        <div className="space-y-4">
       <SectionCard title="Conta" description="Dados de login e identificação.">
         <form action={updateName} className="space-y-3">
           <Field name="name" label="Nome" defaultValue={displayName} required maxLength={120} />
@@ -266,6 +328,8 @@ export default async function SettingsPage({
       <SectionCard title="Zona de risco" description="Ações permanentes, sem volta." danger>
         <DeleteAccountForm action={deleteAccount} />
       </SectionCard>
+        </div>
+      </div>
     </div>
   );
 }

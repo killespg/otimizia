@@ -102,7 +102,7 @@ export function AgentPanel() {
       ) : (
         <div
           ref={scrollRef}
-          className="mt-4 max-h-72 space-y-3 overflow-y-auto pr-1"
+          className="enter mt-4 max-h-72 space-y-3 overflow-y-auto pr-1"
         >
           {messages.map((message, index) =>
             message.role === "user" ? (
@@ -142,7 +142,7 @@ export function AgentPanel() {
       </div>
 
       {(attachment.file || attachment.error) && (
-        <div className="mt-3">
+        <div className="pop-in origin-top mt-3">
           {attachment.file && (
             <div className="flex items-center gap-2 rounded-lg bg-surface-2 px-2.5 py-1.5 text-xs font-semibold text-ink">
               <IconPaperclip className="h-3.5 w-3.5 shrink-0 text-ink-muted" />
@@ -150,7 +150,7 @@ export function AgentPanel() {
               <button
                 type="button"
                 onClick={attachment.clear}
-                className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-ink-muted hover:bg-line hover:text-ink"
+                className="icon-button grid h-6 w-6 shrink-0 place-items-center rounded-md text-ink-muted transition-colors duration-150 ease-out hover:bg-line hover:text-ink"
                 aria-label="Remover PDF anexado"
               >
                 <IconX className="h-3.5 w-3.5" />

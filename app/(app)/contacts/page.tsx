@@ -3,6 +3,7 @@ import { getActiveOrgId } from "@/lib/org";
 import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact } from "@/lib/supabase/types";
+import { getWorkspaceLabels } from "@/lib/workspace-preferences";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { createContact } from "../actions";
 import { PresetFields } from "../PresetFields";
@@ -32,12 +33,24 @@ export default async function ContactsPage({
     profile?.is_admin ?? false
   );
   const preset = getProfessionPreset(workspaceKey);
-  const { data } = await supabase
-    .from("contacts")
-    .select("*")
-    .eq("org_id", orgId)
-    .eq("workspace_key", workspaceKey)
-    .order("created_at", { ascending: false });
+  const [{ data }, { data: org }] = await Promise.all([
+    supabase
+      .from("contacts")
+      .select("*")
+      .eq("org_id", orgId)
+      .eq("workspace_key", workspaceKey)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("organizations")
+      .select("workspace_preferences")
+      .eq("id", orgId)
+      .maybeSingle(),
+  ]);
+  const workspaceLabels = getWorkspaceLabels(
+    preset,
+    org?.workspace_preferences,
+    workspaceKey
+  );
   const allContacts = (data ?? []) as Contact[];
 
   return (
@@ -45,7 +58,7 @@ export default async function ContactsPage({
       <ContactsExplorer
         contacts={allContacts}
         initialQuery={initialQuery}
-        title={preset.contactsTitle}
+        title={workspaceLabels.contacts}
         description={preset.contactsDescription}
       >
         <section id="new-contact" className="panel order-1 h-max scroll-mt-28 p-5 xl:sticky xl:top-8 xl:order-2">

@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
 import { PendingButton } from "@/components/PendingButton";
+import { LAW_JOB_ROLES, jobRoleLabel } from "@/lib/law-office";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Organization } from "@/lib/supabase/types";
 import { IconPlus, IconTrash, IconUsers } from "../icons";
-import { inviteMember, removeMember, updateMemberRole, updateOrganizationContext } from "./actions";
+import { inviteMember, removeMember, updateMemberJobRole, updateMemberRole, updateOrganizationContext } from "./actions";
 
 export default async function TeamPage({
   searchParams,
@@ -159,15 +160,22 @@ export default async function TeamPage({
               A pessoa recebe um e-mail para criar a senha e entra direto na empresa.
             </p>
           </div>
-          <form action={safeInvite} className="flex flex-col gap-2 sm:flex-row">
+          <form action={safeInvite} className="grid gap-2 sm:grid-cols-[1fr_13rem_auto]">
             <input
               name="email"
               type="email"
               required
               maxLength={160}
               placeholder="email@escritorio.com"
-              className="field flex-1"
+              className="field"
             />
+            <select name="job_role" defaultValue="lawyer" className="field">
+              {LAW_JOB_ROLES.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
             <PendingButton className="btn shrink-0" pendingLabel="Enviando">
               <IconPlus className="h-4 w-4" />
               Convidar
@@ -186,7 +194,7 @@ export default async function TeamPage({
           </span>
         </div>
 
-        <ul className="divide-y divide-line px-5">
+        <ul className="enter divide-y divide-line px-5">
           {members.map((member) => {
             const isSelf = member.user_id === user.id;
             const isLastAdmin = member.role === "admin" && adminCount <= 1;
@@ -201,12 +209,34 @@ export default async function TeamPage({
                     {isSelf && <span className="ml-1.5 font-medium text-ink-muted">(você)</span>}
                   </p>
                   <p className="text-xs font-bold text-ink-muted">
-                    {member.role === "admin" ? "Administrador" : "Membro"}
+                    {jobRoleLabel(member.job_role)}
+                    {member.role === "admin" ? " - Admin da organização" : ""}
                   </p>
                 </div>
 
                 {isAdmin && (
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center">
+                    <form action={updateMemberJobRole} className="flex items-center gap-2">
+                      <input type="hidden" name="user_id" value={member.user_id} />
+                      <select
+                        name="job_role"
+                        defaultValue={member.job_role}
+                        className="field h-9 min-w-[12rem] py-1.5 text-xs font-bold"
+                        aria-label={`Cargo de ${member.name ?? "membro"}`}
+                      >
+                        {LAW_JOB_ROLES.map((item) => (
+                          <option key={item.value} value={item.value}>
+                            {item.label}
+                          </option>
+                        ))}
+                      </select>
+                      <PendingButton
+                        className="press-sm rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:bg-surface-2"
+                        pendingLabel="Salvando"
+                      >
+                        Salvar
+                      </PendingButton>
+                    </form>
                     {(member.role !== "admin" || !isLastAdmin) && (
                       <form action={updateMemberRole}>
                         <input type="hidden" name="user_id" value={member.user_id} />
@@ -216,7 +246,7 @@ export default async function TeamPage({
                           value={member.role === "admin" ? "member" : "admin"}
                         />
                         <PendingButton
-                          className="rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-ink-soft hover:bg-surface-2"
+                          className="press-sm rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:bg-surface-2"
                           pendingLabel="Salvando"
                         >
                           {member.role === "admin" ? "Rebaixar" : "Promover a admin"}

@@ -87,7 +87,7 @@ export function ContactsExplorer({
         </div>
       </header>
 
-      <section className="grid grid-cols-3 gap-3 sm:gap-4">
+      <section className="enter grid grid-cols-3 gap-3 sm:gap-4">
         <MetricCard label="Total" value={String(contacts.length)} icon={IconUsers} />
         <MetricCard label="Com WhatsApp" value={String(withPhone)} icon={IconPhone} pink />
         <MetricCard label="Com empresa" value={String(withCompany)} icon={IconMessage} />
@@ -199,7 +199,7 @@ function MetricCard({
         <span
           className={
             "hidden h-11 w-11 place-items-center rounded-full sm:grid " +
-            (pink ? "bg-[#fff7e6] text-[#8a6500]" : "bg-brand-50 text-brand-700")
+            (pink ? "bg-warning-50 text-warning-700" : "bg-brand-50 text-brand-700")
           }
         >
           <Icon className="h-5 w-5" />

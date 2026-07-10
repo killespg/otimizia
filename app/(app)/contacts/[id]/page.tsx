@@ -124,7 +124,7 @@ export default async function ContactDetailPage({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 sm:w-64">
+        <div className="enter grid grid-cols-2 gap-2 sm:w-64">
           <MiniStat label="Conversas" value={String(logs.length)} icon={IconMessage} />
           <MiniStat label="Tarefas" value={String(relatedTasks.length)} icon={IconBell} pink />
         </div>
@@ -228,7 +228,7 @@ export default async function ContactDetailPage({
                       value={new Date(now.getTime() + offset.days * 86_400_000).toISOString()}
                     />
                     <PendingButton
-                      className="min-h-9 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                      className="press-sm min-h-9 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
                       pendingLabel="Agendando"
                     >
                       {offset.label}
@@ -272,7 +272,7 @@ export default async function ContactDetailPage({
                   </p>
                 </div>
               ) : (
-                <ol className="mt-5 space-y-3">
+                <ol className="enter mt-5 space-y-3">
                   {logs.map((log) => (
                     <li key={log.id} className="rounded-lg border border-line bg-white p-4">
                       <p className="text-safe text-sm font-medium leading-relaxed text-ink">
@@ -303,7 +303,7 @@ export default async function ContactDetailPage({
                   </Link>
                 </p>
               ) : (
-                <ul className="divide-y divide-line">
+                <ul className="enter divide-y divide-line">
                   {relatedTasks.map((task) => (
                     <li key={task.id} className="flex items-center gap-3 py-3">
                       <span
@@ -355,7 +355,7 @@ function MiniStat({
       <span
         className={
           "grid h-9 w-9 place-items-center rounded-full " +
-          (pink ? "bg-[#fff7e6] text-[#8a6500]" : "bg-brand-50 text-brand-700")
+          (pink ? "bg-warning-50 text-warning-700" : "bg-brand-50 text-brand-700")
         }
       >
         <Icon className="h-4 w-4" />

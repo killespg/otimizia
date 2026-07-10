@@ -56,7 +56,7 @@ export function AuthShell({
             </p>
           </div>
 
-          <div className="mt-12 grid max-w-xl gap-3">
+          <div className="enter mt-12 grid max-w-xl gap-3">
             <PreviewItem icon={IconBell} title="Fila do dia" body="Quem precisa de resposta aparece primeiro." />
             <PreviewItem icon={IconColumns} title="Vendas abertas" body="Etapas claras para cada negócio." />
             <PreviewItem icon={IconBot} title="Sócio-Assistente" body="Ajuda para resumir e decidir o próximo passo." />
@@ -99,13 +99,13 @@ export function AuthShell({
 
               <div className="px-6 py-6 sm:px-8">
                 {error && (
-                  <div className="mb-5 flex items-start gap-2 rounded-md border border-danger-200 bg-danger-50 px-3.5 py-3 text-sm font-bold text-danger-700">
+                  <div className="banner-in mb-5 flex items-start gap-2 rounded-md border border-danger-200 bg-danger-50 px-3.5 py-3 text-sm font-bold text-danger-700">
                     <IconAlert className="mt-0.5 h-4 w-4 shrink-0" />
                     <span className="min-w-0 text-safe">{error}</span>
                   </div>
                 )}
                 {notice && (
-                  <div className="mb-5 flex items-start gap-2 rounded-md border border-success-200 bg-success-50 px-3.5 py-3 text-sm font-bold text-success-700">
+                  <div className="banner-in mb-5 flex items-start gap-2 rounded-md border border-success-200 bg-success-50 px-3.5 py-3 text-sm font-bold text-success-700">
                     <IconCheck className="mt-0.5 h-4 w-4 shrink-0" />
                     <span className="min-w-0 text-safe">{notice}</span>
                   </div>
