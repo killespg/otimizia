@@ -158,6 +158,19 @@
       background-color var(--motion-fast) var(--ease-ui-out),
       box-shadow var(--motion-fast) var(--ease-ui-out);
   }
+
+  /* `color-scheme: dark` (definido em .dark) faz o navegador aplicar o
+     próprio estilo nativo escuro em <select> — em vários navegadores isso
+     ganha do nosso background-color e a caixa fica preta mesmo com
+     bg-surface aplicado. appearance:none tira esse controle do navegador. */
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23a08fc4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 7.5l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 1.1rem;
+    padding-right: 2.4rem;
+  }
   .field:disabled {
     cursor: not-allowed;
     background-color: rgba(240, 235, 251, 0.72);
