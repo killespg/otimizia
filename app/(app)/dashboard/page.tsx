@@ -434,13 +434,18 @@ function MetricCard({
     >
       <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div className="min-w-0">
-          <p data-dashboard-metric-label={metricKey} className="text-xs font-semibold text-ink-soft sm:text-sm">{label}</p>
-          <p className="text-safe mt-2 text-xl font-black leading-none tracking-[-0.03em] text-ink sm:mt-3 sm:text-2xl">
+          <p
+            data-dashboard-metric-label={metricKey}
+            className="truncate text-[11px] font-bold uppercase tracking-[0.06em] text-ink-muted sm:text-xs"
+          >
+            {label}
+          </p>
+          <p className="text-safe mt-2 font-display text-2xl font-bold leading-none tracking-[-0.03em] tabular-nums text-ink sm:mt-3 sm:text-[2rem]">
             {value}
           </p>
         </div>
-        <span className={`hidden h-9 w-9 shrink-0 place-items-center rounded-full sm:grid sm:h-11 sm:w-11 ${toneClass.icon}`}>
-          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+        <span className={`hidden h-8 w-8 shrink-0 place-items-center rounded-full sm:grid sm:h-9 sm:w-9 ${toneClass.icon}`}>
+          <Icon className="h-4 w-4" />
         </span>
       </div>
 
@@ -606,7 +611,8 @@ function RevenueChart({
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Receita</p>
+          <h2 className="mt-0.5 text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
             {preset.wonLabel} no mês (R$)
           </h2>
           <p className="mt-1 text-xs font-medium text-ink-muted sm:text-sm">
@@ -728,9 +734,12 @@ function DealsTable({
   return (
     <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
-          Negócios recentes
-        </h2>
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Pipeline</p>
+          <h2 className="mt-0.5 text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
+            Negócios recentes
+          </h2>
+        </div>
         <Link
           href="/pipeline"
           className="nav-item inline-flex items-center gap-1 text-sm font-black text-brand-700 hover:text-brand-900"
@@ -834,9 +843,12 @@ function TaskQueue({
   return (
     <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
-          Fila de tarefas
-        </h2>
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Agenda</p>
+          <h2 className="mt-0.5 text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
+            Fila de tarefas
+          </h2>
+        </div>
         <span className="rounded-md bg-surface-2 px-2.5 py-1 text-xs font-black text-ink-muted">
           {tasks.length} pendentes
         </span>
