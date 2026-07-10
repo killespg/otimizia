@@ -312,7 +312,7 @@ export default async function DashboardPage() {
     <div className={`dashboard-board dashboard-board-${dashboardPreferences.style} dashboard-accent-${dashboardPreferences.accent} space-y-4 sm:space-y-5`}>
       <header className="enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="max-w-2xl">
-          <h1 className="text-[22px] font-black tracking-[-0.02em] text-ink sm:text-2xl">
+          <h1 className="text-[28px] font-black tracking-[-0.025em] text-ink sm:text-4xl">
             Olá, {displayName}!
           </h1>
           <p className="mt-1 text-sm font-semibold leading-relaxed text-ink-soft sm:text-base">

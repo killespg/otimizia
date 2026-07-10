@@ -2455,10 +2455,23 @@ label[class*="border-line"]::before,
   background-color: var(--dashboard-panel);
 }
 
+/* Modo escuro do painel: usa a mesma superfície elevada do resto do app
+   (rgb(var(--color-surface))) em vez de um preto quase-puro à parte — senão
+   os cards ficam indistinguíveis do fundo e o painel parece uma mancha
+   preta só com linhas finas. */
 .dark .dashboard-board {
-  --dashboard-panel: #0e0e19;
-  --dashboard-panel-strong: #0e0e19;
-  --dashboard-line: #39334f;
+  --dashboard-panel: rgb(var(--color-surface));
+  --dashboard-panel-strong: rgb(var(--color-surface-2));
+  --dashboard-line: #3d3a56;
+}
+
+.dark .dashboard-board-glow .enter,
+.dark .dashboard-board-glow .panel,
+.dark .dashboard-board-clean .enter,
+.dark .dashboard-board-clean .panel {
+  box-shadow:
+    0 20px 50px -28px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .dashboard-board .bg-white,
