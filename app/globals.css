@@ -2455,23 +2455,43 @@ label[class*="border-line"]::before,
   background-color: var(--dashboard-panel);
 }
 
-/* Modo escuro do painel: usa a mesma superfície elevada do resto do app
-   (rgb(var(--color-surface))) em vez de um preto quase-puro à parte — senão
-   os cards ficam indistinguíveis do fundo e o painel parece uma mancha
-   preta só com linhas finas. */
+/* Modo escuro do painel: rgb(var(--color-surface)) era clara demais perto
+   do fundo (10,11,20 vs 20,21,34 — 10 pontos de diferença, imperceptível).
+   Usa um tom bem mais claro e com um leve viés roxo, pra cada card realmente
+   se destacar do fundo em vez de virar tudo uma mancha preta só. */
 .dark .dashboard-board {
-  --dashboard-panel: rgb(var(--color-surface));
-  --dashboard-panel-strong: rgb(var(--color-surface-2));
-  --dashboard-line: #3d3a56;
+  --dashboard-panel: #262440;
+  --dashboard-panel-strong: #2f2c52;
+  --dashboard-line: #4a4570;
 }
 
 .dark .dashboard-board-glow .enter,
 .dark .dashboard-board-glow .panel,
 .dark .dashboard-board-clean .enter,
 .dark .dashboard-board-clean .panel {
+  position: relative;
+  overflow: hidden;
   box-shadow:
-    0 20px 50px -28px rgba(0, 0, 0, 0.65),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+    0 24px 60px -24px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* Reflexo de vidro sutil no canto superior — é o que dava a sensação
+   "premium" que sumiu quando o fundo virou tudo preto chapado. */
+.dark .dashboard-board-glow .enter::after,
+.dark .dashboard-board-glow .panel::after,
+.dark .dashboard-board-clean .enter::after,
+.dark .dashboard-board-clean .panel::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse 120% 60% at 20% -10%,
+    rgba(255, 255, 255, 0.09),
+    transparent 60%
+  );
 }
 
 .dashboard-board .bg-white,
