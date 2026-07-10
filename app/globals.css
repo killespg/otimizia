@@ -29,11 +29,11 @@
     --color-ink: 250 248 255;
     --color-ink-soft: 218 211 235;
     --color-ink-muted: 170 161 194;
-    --color-canvas: 23 19 37;
-    --color-surface: 36 31 56;
-    --color-surface-2: 47 41 71;
-    --color-line: 74 68 104;
-    --color-line-strong: 138 126 176;
+    --color-canvas: 34 30 55;
+    --color-surface: 42 37 67;
+    --color-surface-2: 52 46 80;
+    --color-line: 82 74 116;
+    --color-line-strong: 145 132 184;
   }
 
   body {
@@ -823,7 +823,7 @@
 
 .dark .field,
 .dark .glass-input {
-  background-color: rgb(15 16 27);
+  background-color: rgb(var(--color-surface-2));
   border-color: rgba(110, 103, 143, 0.62);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.045),
@@ -847,7 +847,7 @@
 }
 
 .dark .field:disabled {
-  background-color: rgb(25 26 38);
+  background-color: rgb(var(--color-surface));
   color: rgba(204, 198, 220, 0.58);
 }
 
@@ -874,7 +874,7 @@
 
 .dark [class*="linear-gradient(180deg,#ffffff"],
 .dark [class*="linear-gradient(160deg,#f5f0ff"] {
-  background-image: linear-gradient(180deg, rgb(27 28 41), rgb(18 19 29)) !important;
+  background-image: linear-gradient(180deg, rgb(57 51 86), rgb(48 43 75)) !important;
 }
 
 /* Moldura roxo->azul (shell do app, telas de auth, hero da landing):
@@ -885,7 +885,7 @@
     radial-gradient(circle at 9% 8%, rgba(174, 122, 255, 0.48), transparent 28rem),
     radial-gradient(circle at 88% 12%, rgba(40, 170, 205, 0.26), transparent 27rem),
     radial-gradient(circle at 54% 100%, rgba(122, 31, 255, 0.24), transparent 34rem),
-    linear-gradient(135deg, #090a13 0%, #15162a 48%, #0b1825 100%) !important;
+    linear-gradient(135deg, #2b2348 0%, #242744 48%, #1f354a 100%) !important;
 }
 
 .dark .shadow-\[0_32px_90px_-42px_rgba\(7\2c 8\2c 28\2c 0\.85\)\] {
@@ -2316,6 +2316,7 @@ label[class*="border-line"]::before,
   --dashboard-line: rgb(var(--color-line));
   --dashboard-text: rgb(var(--color-ink));
   --dashboard-muted: rgb(var(--color-ink-muted));
+  --dashboard-bg: rgb(var(--color-canvas));
   border-radius: 10px;
   transition:
     background-color var(--motion-med) var(--ease-ui-out),
@@ -2450,9 +2451,9 @@ label[class*="border-line"]::before,
 }
 
 .dashboard-board-executive {
-  --dashboard-panel: #0e0e19;
-  --dashboard-panel-strong: #0e0e19;
-  --dashboard-line: #39334f;
+  --dashboard-panel: #34304f;
+  --dashboard-panel-strong: #3d375b;
+  --dashboard-line: #575073;
   padding: 0;
   background: transparent;
 }
@@ -2476,9 +2477,55 @@ label[class*="border-line"]::before,
    (sidebar/.card usam --color-surface-2) — são o conteúdo principal da
    tela, então merecem ser a camada mais clara da hierarquia. */
 .dark .dashboard-board {
-  --dashboard-panel: #3a3358;
-  --dashboard-panel-strong: #463e68;
-  --dashboard-line: #5a5282;
+  --dashboard-bg: #292541;
+  --dashboard-panel: #373252;
+  --dashboard-panel-strong: #40395e;
+  --dashboard-line: #554d75;
+  padding: 1rem;
+  border: 1px solid rgba(153, 133, 207, 0.16);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--dashboard-accent) 12%, transparent), transparent 28rem),
+    linear-gradient(145deg, #2c2847, var(--dashboard-bg));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.dashboard-board .dashboard-header,
+.dashboard-board .dashboard-metrics-grid {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.dashboard-board .dashboard-header::before,
+.dashboard-board .dashboard-header::after,
+.dashboard-board .dashboard-metrics-grid::before,
+.dashboard-board .dashboard-metrics-grid::after {
+  display: none;
+}
+
+.dark .dashboard-board .dashboard-card,
+.dark .dashboard-board section.enter:not(.dashboard-metrics-grid),
+.dark .dashboard-board .panel {
+  border-color: rgba(145, 132, 184, 0.28);
+  background: linear-gradient(145deg, var(--dashboard-panel-strong), var(--dashboard-panel));
+  box-shadow:
+    0 14px 38px -32px rgba(7, 5, 20, 0.72),
+    inset 0 1px 0 rgba(255,255,255,.045);
+}
+
+.dark .dashboard-board .dashboard-metrics-grid .dashboard-card {
+  min-height: 138px;
+}
+
+.dark .dashboard-board .dashboard-metrics-grid .dashboard-card:hover {
+  border-color: color-mix(in srgb, var(--dashboard-accent) 42%, var(--dashboard-line));
+  background: linear-gradient(145deg, #453d65, #3a3457);
+}
+
+@media (max-width: 639px) {
+  .dark .dashboard-board { padding: .75rem; border-radius: 12px; }
 }
 
 .dark .dashboard-board-glow .enter,
@@ -2800,4 +2847,24 @@ label[class*="border-line"]::before,
 .dashboard-widget-dragging {
   opacity: 0.58;
   transform: scale(0.985);
+}
+
+/* Estrutura do dashboard não é card: mantém cabeçalho e grade integrados ao fundo. */
+.dark .dashboard-board .dashboard-header,
+.dark .dashboard-board .dashboard-metrics-grid,
+.dark .dashboard-board-glow .dashboard-header,
+.dark .dashboard-board-glow .dashboard-metrics-grid,
+.dark .dashboard-board-clean .dashboard-header,
+.dark .dashboard-board-clean .dashboard-metrics-grid {
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.dark .dashboard-board .dashboard-header::before,
+.dark .dashboard-board .dashboard-header::after,
+.dark .dashboard-board .dashboard-metrics-grid::before,
+.dark .dashboard-board .dashboard-metrics-grid::after {
+  content: none;
 }

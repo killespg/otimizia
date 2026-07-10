@@ -271,7 +271,7 @@ export default async function DashboardPage() {
     metrics: (
       <div className="space-y-4 sm:space-y-5">
         {founderMetrics && <FounderMetricsPanel metrics={founderMetrics} />}
-        <section className="enter grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-6 sm:gap-4">
+        <section className="dashboard-metrics-grid enter grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-6 sm:gap-4">
           {metrics.map((metric) => (
             <MetricCard key={metric.metricKey} {...metric} />
           ))}
@@ -310,7 +310,7 @@ export default async function DashboardPage() {
 
   return (
     <div className={`dashboard-board dashboard-board-${dashboardPreferences.style} dashboard-accent-${dashboardPreferences.accent} space-y-4 sm:space-y-5`}>
-      <header className="enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <header className="dashboard-header enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="max-w-2xl">
           <h1 className="text-[28px] font-black tracking-[-0.025em] text-ink sm:text-4xl">
             Olá, {displayName}!
