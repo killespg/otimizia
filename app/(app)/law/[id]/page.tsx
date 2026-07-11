@@ -56,7 +56,7 @@ export default async function LegalCasePage({ params }: { params: { id: string }
               </form>
             )}
             <p className="mt-4 text-xs font-medium leading-relaxed text-ink-muted">
-              Movimentações novas entram na linha do tempo abaixo automaticamente (1x/dia, ou quando você sincronizar manualmente). Quando uma movimentação parece exigir atenção, um lembrete de revisão é criado em "Prazos e audiências" — é um alerta pra revisar, não o cálculo oficial do prazo. Sempre confirme o prazo real no processo.
+              Movimentações novas entram na linha do tempo abaixo automaticamente (1x/dia, ou quando você sincronizar manualmente). Quando uma movimentação parece exigir atenção, um lembrete de revisão é criado em &ldquo;Prazos e audiências&rdquo; — é um alerta pra revisar, não o cálculo oficial do prazo. Sempre confirme o prazo real no processo.
             </p>
           </>
         ) : canManage ? (
