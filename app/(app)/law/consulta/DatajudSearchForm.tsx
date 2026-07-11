@@ -75,7 +75,13 @@ export function DatajudSearchForm({
         body: JSON.stringify({ tribunalAlias }),
       });
       const data = await response.json();
-      if (response.ok) setFavorites(data.favoriteTribunals);
+      if (response.ok) {
+        setFavorites(data.favoriteTribunals);
+        // Sem isso, o cache de navegação do Next pode servir uma versão da
+        // página anterior ao favorito numa navegação por link (não um
+        // reload completo), fazendo parecer que o favorito "sumiu".
+        router.refresh();
+      }
     } finally {
       setTogglingFavorite(false);
     }
