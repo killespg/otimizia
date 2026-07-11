@@ -24,6 +24,7 @@ import {
   type Contact,
   type Deal,
   type DealStage,
+  type LegalDeadline,
   type LegalWatchedProcess,
   type Task,
 } from "@/lib/supabase/types";
@@ -60,6 +61,7 @@ const METRIC_ICONS: Record<MetricKey, (props: { className?: string }) => JSX.Ele
 };
 
 type ContactOption = Pick<Contact, "id" | "name" | "company">;
+type CalendarItem = { date: Date; title: string; href: string; tone: "danger" | "warning" | "brand" };
 
 const DASHBOARD_GREETINGS: Record<ProfessionPreset["key"], string> = {
   autonomous_seller: "Bora olhar os clientes quentes e destravar os próximos fechamentos.",
@@ -130,6 +132,19 @@ export default async function DashboardPage() {
     .filter((item) => !item.seen_at || new Date(item.last_movement_at as string) > new Date(item.seen_at))
     .sort((a, b) => new Date(b.last_movement_at as string).getTime() - new Date(a.last_movement_at as string).getTime())
     .slice(0, 8);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const legalDeadlines: LegalDeadline[] =
+    workspaceKey === "law_office"
+      ? (
+          await supabase
+            .from("legal_deadlines")
+            .select("*")
+            .eq("org_id", orgId)
+            .eq("status", "pending")
+            .gte("due_at", monthStart.toISOString())
+            .lt("due_at", monthEnd.toISOString())
+        ).data ?? []
+      : [];
   const [
     { data: deals },
     { data: tasks },
@@ -267,6 +282,23 @@ export default async function DashboardPage() {
     .filter((task, index, arr) => arr.findIndex((item) => item.id === task.id) === index)
     .slice(0, 5);
 
+  const calendarItems: CalendarItem[] = [
+    ...openTasks
+      .filter((task) => task.due_at)
+      .map((task) => ({
+        date: new Date(task.due_at as string),
+        title: task.title,
+        href: "/tasks",
+        tone: (new Date(task.due_at as string) < now ? "danger" : "brand") as CalendarItem["tone"],
+      })),
+    ...legalDeadlines.map((deadline) => ({
+      date: new Date(deadline.due_at),
+      title: deadline.title,
+      href: `/law/${deadline.case_id}`,
+      tone: (deadline.priority === "critical" || deadline.priority === "high" ? "warning" : "brand") as CalendarItem["tone"],
+    })),
+  ];
+
   const metricValues: Record<MetricKey, string> = {
     open_value: formatBRL(openValue),
     open_deals: String(openDeals.length),
@@ -308,6 +340,13 @@ export default async function DashboardPage() {
       </div>
     ),
     open_claims: <OpenClaimsPanel tasks={unclaimedTasks} deals={unclaimedDeals} preset={preset} />,
+    calendar: (
+      <CalendarWidget
+        now={now}
+        items={calendarItems}
+        viewAllHref={workspaceKey === "law_office" ? "/law/deadlines/calendar" : "/tasks"}
+      />
+    ),
     chart: (
       <RevenueChart
         openValue={openValue}
@@ -1000,6 +1039,120 @@ function TaskQueue({
       </Link>
     </section>
   );
+}
+
+const CALENDAR_WEEKDAY_LABELS = ["D", "S", "T", "Q", "Q", "S", "S"];
+
+function CalendarWidget({
+  now,
+  items,
+  viewAllHref,
+}: {
+  now: Date;
+  items: CalendarItem[];
+  viewAllHref: string;
+}) {
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const monthStart = new Date(year, month, 1);
+  const firstWeekday = monthStart.getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells: (number | null)[] = [
+    ...Array.from({ length: firstWeekday }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, index) => index + 1),
+  ];
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const byDay = new Map<number, CalendarItem[]>();
+  for (const item of items) {
+    if (item.date.getFullYear() === year && item.date.getMonth() === month) {
+      const day = item.date.getDate();
+      byDay.set(day, [...(byDay.get(day) ?? []), item]);
+    }
+  }
+
+  const monthLabel = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(now);
+  const upcoming = items
+    .filter((item) => item.date >= now)
+    .sort((a, b) => a.date.getTime() - b.date.getTime())
+    .slice(0, 4);
+
+  return (
+    <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Agenda</p>
+          <h2 className="mt-0.5 text-base font-black capitalize tracking-[-0.02em] text-ink sm:text-lg">
+            {monthLabel}
+          </h2>
+        </div>
+        <Link
+          href={viewAllHref}
+          className="nav-item inline-flex items-center gap-1 text-xs font-black text-brand-700 hover:text-brand-900"
+        >
+          Ver agenda
+          <IconArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+
+      <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-[0.04em] text-ink-muted">
+        {CALENDAR_WEEKDAY_LABELS.map((label, index) => (
+          <div key={index}>{label}</div>
+        ))}
+      </div>
+      <div className="mt-1 grid grid-cols-7 gap-1">
+        {cells.map((day, index) => {
+          const dayItems = day ? byDay.get(day) ?? [] : [];
+          const isToday = day === now.getDate();
+          return (
+            <div
+              key={index}
+              className={
+                "aspect-square rounded-md text-[11px] font-bold " +
+                (day === null
+                  ? ""
+                  : isToday
+                    ? "bg-brand-700 text-white"
+                    : dayItems.length > 0
+                      ? "bg-brand-50 text-brand-700"
+                      : "text-ink-soft")
+              }
+            >
+              {day && <span className="grid h-full place-items-center">{day}</span>}
+            </div>
+          );
+        })}
+      </div>
+
+      {upcoming.length === 0 ? (
+        <p className="mt-4 rounded-lg border border-dashed border-line bg-[#f8faff] px-3 py-6 text-center text-xs font-medium text-ink-muted">
+          Nada agendado por enquanto.
+        </p>
+      ) : (
+        <ul className="mt-4 space-y-2">
+          {upcoming.map((item, index) => (
+            <li key={index}>
+              <Link
+                href={item.href}
+                className="row-link flex items-center justify-between gap-2 rounded-lg border border-line px-3 py-2 hover:border-brand-300 hover:bg-brand-50"
+              >
+                <span className="clip-1 text-safe min-w-0 text-xs font-bold text-ink">{item.title}</span>
+                <span className={"shrink-0 text-[11px] font-black " + calendarToneClass(item.tone)}>
+                  {formatDate(item.date.toISOString())}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function calendarToneClass(tone: CalendarItem["tone"]) {
+  if (tone === "danger") return "text-danger-600";
+  if (tone === "warning") return "text-warning-700";
+  return "text-brand-700";
 }
 
 function OnboardingChecklist({

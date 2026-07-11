@@ -2,6 +2,7 @@ import type { MetricKey, ProfessionPreset } from "@/lib/professions";
 
 export const DASHBOARD_WIDGETS = [
   "metrics",
+  "calendar",
   "chart",
   "deals",
   "tasks",
@@ -14,6 +15,7 @@ export type DashboardWidgetKey = (typeof DASHBOARD_WIDGETS)[number];
 
 export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetKey, string> = {
   metrics: "Métricas",
+  calendar: "Calendário",
   chart: "Gráfico de receita",
   deals: "Negócios recentes",
   tasks: "Fila de tarefas",
