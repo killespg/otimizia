@@ -146,6 +146,21 @@ export type LegalCaseEvent = {
   external_ref: string | null;
 };
 
+export type LegalWatchedProcess = {
+  id: string;
+  org_id: string;
+  tribunal_alias: string;
+  case_number: string;
+  case_id: string | null;
+  label: string | null;
+  last_movement_nome: string | null;
+  last_movement_at: string | null;
+  last_synced_at: string | null;
+  seen_at: string | null;
+  created_by: string;
+  created_at: string;
+};
+
 export type LegalDocument = {
   id: string; org_id: string; case_id: string; uploaded_by: string; name: string;
   document_type: "petition" | "contract" | "evidence" | "decision" | "power_of_attorney" | "client_document" | "other";

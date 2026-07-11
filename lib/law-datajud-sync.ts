@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { classifyDatajudMovement } from "@/lib/ai/datajud-movement";
-import { DatajudApiError, normalizeProcessNumber, searchDatajudProcess } from "@/lib/datajud";
+import { DatajudApiError, isValidDate, normalizeProcessNumber, searchDatajudProcess } from "@/lib/datajud";
 import { logError } from "@/lib/logger";
 
 export type DatajudSyncResult = {
@@ -8,10 +8,6 @@ export type DatajudSyncResult = {
   newDeadlines: number;
   error?: string;
 };
-
-function isValidDate(value: string | null | undefined): value is string {
-  return Boolean(value) && !Number.isNaN(new Date(value as string).getTime());
-}
 
 type SyncableCase = {
   id: string;

@@ -1,6 +1,7 @@
 import { logError } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { syncCaseWithDatajud } from "@/lib/law-datajud-sync";
+import { syncWatchedProcesses } from "@/lib/law-watched-processes";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -42,5 +43,14 @@ export async function GET(request: Request) {
     if (result.error) errors.push({ caseId: legalCase.id, error: result.error });
   }
 
-  return Response.json({ casesChecked: synced, newEvents, newDeadlines, errors });
+  const watchedResult = await syncWatchedProcesses(admin);
+
+  return Response.json({
+    casesChecked: synced,
+    newEvents,
+    newDeadlines,
+    errors,
+    watchedProcessesChecked: watchedResult.checked,
+    watchedProcessesUpdated: watchedResult.updated,
+  });
 }

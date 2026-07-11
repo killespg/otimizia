@@ -36,6 +36,20 @@ export function normalizeProcessNumber(raw: string): string {
   return raw.replace(/\D/g, "");
 }
 
+// Datas do DataJud nem sempre são um ISO 8601 válido — usado em todo lugar
+// que precisa comparar/formatar dataHora antes de confiar nela.
+export function isValidDate(value: string | null | undefined): value is string {
+  return Boolean(value) && !Number.isNaN(new Date(value as string).getTime());
+}
+
+export function latestMovimento(movimentos: DatajudMovimento[]): DatajudMovimento | null {
+  const withValidDate = movimentos.filter((m) => isValidDate(m.dataHora));
+  if (withValidDate.length === 0) return null;
+  return withValidDate.reduce((latest, current) =>
+    new Date(current.dataHora).getTime() > new Date(latest.dataHora).getTime() ? current : latest
+  );
+}
+
 const MAX_ATTEMPTS = 4;
 // Status que valem retry: 429 (fila cheia, o "es_rejected_execution_exception"
 // que motivou isso) e 5xx (instabilidade momentânea do serviço do CNJ).

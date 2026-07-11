@@ -75,5 +75,14 @@ export async function POST(request: Request) {
     return Response.json({ error: "Não foi possível criar o caso." }, { status: 500 });
   }
 
+  // Se esse processo já estava na lista de acompanhamento (foi pesquisado
+  // antes), vincula ao caso recém-criado em vez de deixar órfão.
+  await supabase
+    .from("legal_watched_processes")
+    .update({ case_id: created.id })
+    .eq("org_id", orgId)
+    .eq("tribunal_alias", tribunalAlias)
+    .eq("case_number", numeroProcesso);
+
   return Response.json({ caseId: created.id });
 }

@@ -5,6 +5,7 @@ import { BrandName } from "@/components/BrandName";
 import { DashboardCustomizePanel } from "@/components/DashboardCustomizePanel";
 import { DashboardWidgetGrid } from "@/components/DashboardWidgetGrid";
 import { PendingButton } from "@/components/PendingButton";
+import { RecentProcessChanges } from "@/components/RecentProcessChanges";
 import {
   ALL_DASHBOARD_METRICS,
   type DashboardWidgetKey,
@@ -23,6 +24,7 @@ import {
   type Contact,
   type Deal,
   type DealStage,
+  type LegalWatchedProcess,
   type Task,
 } from "@/lib/supabase/types";
 import { formatBRL, formatDate } from "@/lib/format";
@@ -114,6 +116,20 @@ export default async function DashboardPage() {
             .maybeSingle()
         ).data?.job_role
       : undefined;
+  const watchedProcesses: LegalWatchedProcess[] =
+    workspaceKey === "law_office"
+      ? (
+          await supabase
+            .from("legal_watched_processes")
+            .select("*")
+            .eq("org_id", orgId)
+            .not("last_movement_at", "is", null)
+        ).data ?? []
+      : [];
+  const recentProcessChanges = watchedProcesses
+    .filter((item) => !item.seen_at || new Date(item.last_movement_at as string) > new Date(item.seen_at))
+    .sort((a, b) => new Date(b.last_movement_at as string).getTime() - new Date(a.last_movement_at as string).getTime())
+    .slice(0, 8);
   const [
     { data: deals },
     { data: tasks },
@@ -416,6 +432,20 @@ export default async function DashboardPage() {
             <span>Em andamento</span><strong>{openDeals.length}</strong><small>atendimentos</small>
           </Link>
           <Link href="/law/deadlines" className="law-docket-action">Abrir pauta <IconArrowRight className="h-4 w-4" /></Link>
+        </section>
+      )}
+
+      {workspaceKey === "law_office" && recentProcessChanges.length > 0 && (
+        <RecentProcessChanges initialItems={recentProcessChanges} />
+      )}
+      {workspaceKey === "law_office" && recentProcessChanges.length === 0 && watchedProcesses.length > 0 && (
+        <section className="panel flex items-center gap-3 p-4 sm:p-5">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-success-50 text-success-700">
+            <IconCheckCircle className="h-5 w-5" />
+          </span>
+          <p className="text-sm font-bold text-ink-soft">
+            Nenhum processo consultado recentemente teve alteração.
+          </p>
         </section>
       )}
 

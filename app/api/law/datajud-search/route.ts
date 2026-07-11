@@ -4,11 +4,14 @@ import { createClient } from "@/lib/supabase/server";
 import { DatajudApiError, searchDatajudProcess } from "@/lib/datajud";
 import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/datajud-tribunals";
 import { getWorkspaceKey } from "@/lib/workspaces";
+import { logError } from "@/lib/logger";
+import { trackWatchedProcess } from "@/lib/law-watched-processes";
 
 export const runtime = "nodejs";
 
-// Consulta avulsa (não vincula a nenhum caso, não grava nada) — usada pela
-// aba "Consultar processo" pra olhar um processo antes de decidir abrir caso.
+// Consulta avulsa — não vincula a nenhum caso, mas registra o processo na
+// lista de acompanhamento (legal_watched_processes) na primeira vez que é
+// pesquisado, pra alimentar o cartão "Mudanças recentes" no painel.
 export async function POST(request: Request) {
   const supabase = createClient();
   const {
@@ -51,6 +54,12 @@ export async function POST(request: Request) {
     const process = await searchDatajudProcess(tribunalAlias, numeroProcesso);
     if (!process) {
       return Response.json({ error: "Processo não encontrado nesse tribunal." }, { status: 404 });
+    }
+    try {
+      await trackWatchedProcess(supabase, orgId, user.id, tribunalAlias, numeroProcesso, process);
+    } catch (trackError) {
+      // Nunca deixa o rastreamento (extra) derrubar a resposta da busca em si.
+      logError("api/law/datajud-search.track-failed", trackError, { orgId, tribunalAlias });
     }
     return Response.json({ process });
   } catch (error) {
