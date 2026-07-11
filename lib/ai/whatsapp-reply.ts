@@ -5,12 +5,38 @@ const MODEL = "claude-sonnet-5";
 const HISTORY_LIMIT = 10;
 const MAX_MESSAGE_CHARS = 4000;
 
+export type WhatsappHistoryMessage = { role: "user" | "assistant"; content: string };
+
 type OrganizationAiContext = {
   name: string | null;
   business_context: string | null;
   ai_tone: string | null;
   ai_instructions: string | null;
 };
+
+// Histórico recente formatado pra Claude — usado tanto pela resposta
+// automática quanto pela detecção de intenção de compra, pra não repetir a
+// consulta nem a lógica de montagem em cada lugar que precisa dele.
+export async function fetchWhatsappHistory(
+  supabase: SupabaseClient,
+  conversationId: string
+): Promise<WhatsappHistoryMessage[]> {
+  const { data: recentMessages } = await supabase
+    .from("whatsapp_messages")
+    .select("direction, content, sent_by")
+    .eq("conversation_id", conversationId)
+    .order("created_at", { ascending: false })
+    .limit(HISTORY_LIMIT);
+
+  return (recentMessages ?? [])
+    .slice()
+    .reverse()
+    .filter((message) => message.content)
+    .map((message) => ({
+      role: message.direction === "inbound" ? ("user" as const) : ("assistant" as const),
+      content: String(message.content).slice(0, MAX_MESSAGE_CHARS),
+    }));
+}
 
 // Resposta automática de uma conversa de WhatsApp: histórico recente (mesma
 // janela do que app/api/assistant/route.ts usa pro chat interno) + contexto
@@ -19,41 +45,24 @@ type OrganizationAiContext = {
 export async function generateWhatsappReply(
   supabase: SupabaseClient,
   orgId: string,
-  conversationId: string,
+  history: WhatsappHistoryMessage[],
   contactName: string | null
 ): Promise<string | null> {
   if (!process.env.ANTHROPIC_API_KEY) {
     return null;
   }
 
-  const [{ data: recentMessages }, { data: organization }] = await Promise.all([
-    supabase
-      .from("whatsapp_messages")
-      .select("direction, content, sent_by")
-      .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: false })
-      .limit(HISTORY_LIMIT),
-    supabase
-      .from("organizations")
-      .select("name, business_context, ai_tone, ai_instructions")
-      .eq("id", orgId)
-      .maybeSingle(),
-  ]);
-
-  const history = (recentMessages ?? [])
-    .slice()
-    .reverse()
-    .filter((message) => message.content)
-    .map((message) => ({
-      role: message.direction === "inbound" ? ("user" as const) : ("assistant" as const),
-      content: String(message.content).slice(0, MAX_MESSAGE_CHARS),
-    }));
-
   if (history.length === 0 || history[history.length - 1].role !== "user") {
     // Não há mensagem nova do contato pra responder (segurança extra —
     // o chamador já garante isso, mas evita gastar uma chamada à toa).
     return null;
   }
+
+  const { data: organization } = await supabase
+    .from("organizations")
+    .select("name, business_context, ai_tone, ai_instructions")
+    .eq("id", orgId)
+    .maybeSingle();
 
   const client = new Anthropic();
   const message = await client.messages.create({

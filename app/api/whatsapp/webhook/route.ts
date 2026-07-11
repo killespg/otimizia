@@ -1,8 +1,9 @@
 import { EvolutionApiError, sendEvolutionText } from "@/lib/evolution";
-import { generateWhatsappReply } from "@/lib/ai/whatsapp-reply";
+import { fetchWhatsappHistory, generateWhatsappReply } from "@/lib/ai/whatsapp-reply";
+import { detectPurchaseIntent } from "@/lib/ai/whatsapp-intent";
 import { logError } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { findOrCreateContact } from "@/lib/whatsapp-contacts";
+import { createDealIfNeeded, findOrCreateContact } from "@/lib/whatsapp-contacts";
 import { extractMessageText, resolveWhatsappPhone } from "@/lib/whatsapp-jid";
 
 export const runtime = "nodejs";
@@ -82,17 +83,19 @@ export async function POST(request: Request) {
 
     const { data: existingConversation } = await admin
       .from("whatsapp_conversations")
-      .select("id, ia_active, contact_name")
+      .select("id, ia_active, contact_name, contact_id")
       .eq("org_id", orgId)
       .eq("phone_number", phoneNumber)
       .maybeSingle();
 
     let conversationId: string;
     let iaActive: boolean;
+    let contactId: string | null;
 
     if (existingConversation) {
       conversationId = existingConversation.id as string;
       iaActive = existingConversation.ia_active as boolean;
+      contactId = existingConversation.contact_id as string | null;
       await admin
         .from("whatsapp_conversations")
         .update({
@@ -101,7 +104,8 @@ export async function POST(request: Request) {
         })
         .eq("id", conversationId);
     } else {
-      const { contactId, isNew } = await findOrCreateContact(admin, orgId, phoneNumber, pushName);
+      const created2 = await findOrCreateContact(admin, orgId, phoneNumber, pushName);
+      contactId = created2.contactId;
       const { data: created, error: createError } = await admin
         .from("whatsapp_conversations")
         .insert({
@@ -114,7 +118,7 @@ export async function POST(request: Request) {
           // automaticamente amigo/família quando o número é compartilhado
           // entre uso pessoal e o WhatsApp do negócio. Contato já conhecido
           // (isNew=false) mantém o padrão da coluna (IA ativa).
-          ...(isNew ? { ia_active: false } : {}),
+          ...(created2.isNew ? { ia_active: false } : {}),
         })
         .select("id, ia_active")
         .single();
@@ -134,14 +138,25 @@ export async function POST(request: Request) {
       sent_by: "contact",
     });
 
+    const contactName = existingConversation?.contact_name ?? pushName;
+    const history = messageType === "text" ? await fetchWhatsappHistory(admin, conversationId) : [];
+
+    if (messageType === "text" && contactId) {
+      try {
+        const intent = await detectPurchaseIntent(history, contactName);
+        if (intent?.hasIntent) {
+          await createDealIfNeeded(admin, orgId, contactId, intent.dealTitle);
+        }
+      } catch (error) {
+        // Detecção de intenção é um "extra" — nunca deve impedir o resto do
+        // fluxo (mensagem já foi salva, resposta automática segue normal).
+        logError("api/whatsapp/webhook.intent-detection-failed", error, { orgId, conversationId });
+      }
+    }
+
     if (iaActive && messageType === "text") {
       try {
-        const reply = await generateWhatsappReply(
-          admin,
-          orgId,
-          conversationId,
-          existingConversation?.contact_name ?? pushName
-        );
+        const reply = await generateWhatsappReply(admin, orgId, history, contactName);
         if (reply) {
           await sendEvolutionText(instanceName, phoneNumber, reply);
           await admin.from("whatsapp_messages").insert({

@@ -59,3 +59,49 @@ export async function findOrCreateContact(
   }
   return { contactId: created.id as string, isNew: true };
 }
+
+// Cria a venda no funil (etapa "novo") quando a IA detecta intenção real de
+// compra/contratação numa conversa de WhatsApp — só se o contato ainda não
+// tiver nenhuma venda (evita duplicar a cada mensagem com intenção na mesma
+// conversa). Herda owner_id/workspace_key do próprio contato, não de um
+// membro qualquer da org, pra ficar consistente com o resto do CRM dele.
+export async function createDealIfNeeded(
+  admin: ReturnType<typeof createAdminClient>,
+  orgId: string,
+  contactId: string,
+  title: string
+): Promise<{ created: boolean; dealId: string | null }> {
+  const { data: existingDeal } = await admin
+    .from("deals")
+    .select("id")
+    .eq("org_id", orgId)
+    .eq("contact_id", contactId)
+    .limit(1)
+    .maybeSingle();
+  if (existingDeal) return { created: false, dealId: existingDeal.id as string };
+
+  const { data: contact } = await admin
+    .from("contacts")
+    .select("owner_id, workspace_key")
+    .eq("id", contactId)
+    .maybeSingle();
+  if (!contact) return { created: false, dealId: null };
+
+  const { data: created, error } = await admin
+    .from("deals")
+    .insert({
+      owner_id: contact.owner_id,
+      org_id: orgId,
+      workspace_key: contact.workspace_key,
+      contact_id: contactId,
+      title,
+      stage: "novo",
+    })
+    .select("id")
+    .single();
+  if (error) {
+    logError("whatsapp-contacts.deal-create-failed", error, { orgId, contactId });
+    return { created: false, dealId: null };
+  }
+  return { created: true, dealId: created.id as string };
+}
