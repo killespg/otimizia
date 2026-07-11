@@ -211,3 +211,40 @@ export type Interaction = {
   body: string;
   created_at: string;
 };
+
+export type WhatsappInstanceStatus = "pendente" | "conectado" | "desconectado";
+export type WhatsappInstance = {
+  id: string;
+  org_id: string;
+  instance_name: string;
+  status: WhatsappInstanceStatus;
+  phone_number: string | null;
+  created_at: string;
+};
+
+export type WhatsappConversation = {
+  id: string;
+  org_id: string;
+  contact_id: string | null;
+  phone_number: string;
+  contact_name: string | null;
+  ia_active: boolean;
+  last_message_at: string;
+  created_at: string;
+};
+
+export type WhatsappMessageDirection = "inbound" | "outbound";
+export type WhatsappMessageType = "text" | "image" | "audio" | "document" | "unsupported";
+export type WhatsappSentBy = "ai" | "human" | "contact";
+export type WhatsappMessage = {
+  id: string;
+  conversation_id: string;
+  org_id: string;
+  direction: WhatsappMessageDirection;
+  message_type: WhatsappMessageType;
+  content: string | null;
+  media_url: string | null;
+  sent_by: WhatsappSentBy;
+  read_at: string | null;
+  created_at: string;
+};

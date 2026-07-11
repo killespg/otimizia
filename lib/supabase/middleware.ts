@@ -46,6 +46,7 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/pipeline") ||
     path.startsWith("/tasks") ||
     path.startsWith("/assistant") ||
+    path.startsWith("/whatsapp") ||
     path.startsWith("/settings") ||
     path.startsWith("/team") ||
     path.startsWith("/finance") ||

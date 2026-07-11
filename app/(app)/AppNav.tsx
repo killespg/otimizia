@@ -9,6 +9,7 @@ import {
   IconChartBar,
   IconColumns,
   IconGauge,
+  IconMessage,
   IconPhone,
   IconPlus,
   IconUsers,
@@ -42,6 +43,7 @@ const NAV: NavItem[] = [
   { href: "/dashboard", label: "Painel", icon: IconGauge, mobile: true },
   { href: "/contacts", label: "Contatos", icon: IconUsers, mobile: true },
   { href: "/pipeline", label: "Vendas", icon: IconColumns, mobile: true },
+  { href: "/whatsapp", label: "WhatsApp", icon: IconMessage },
   { href: "/tasks", label: "Tarefas", icon: IconBell, mobile: true },
   { href: "/dashboard#valor", label: "Valor aberto", icon: IconWallet, passive: true },
   { href: "/tasks", label: "Clientes para chamar", icon: IconPhone, passive: true },
@@ -55,6 +57,7 @@ const LAW_NAV: NavItem[] = [
   { href: "/pipeline", label: "Atendimentos", icon: IconPhone, mobile: true },
   { href: "/law", label: "Casos", icon: IconColumns, mobile: true },
   { href: "/law/deadlines", label: "Prazos", icon: IconBell },
+  { href: "/whatsapp", label: "WhatsApp", icon: IconMessage },
   { href: "/tasks", label: "Tarefas", icon: IconBell },
   { href: "/assistant", label: "Assistente IA", icon: IconBot },
   { href: "/team", label: "Equipe", icon: IconUsers },
@@ -161,6 +164,12 @@ export function MobileTabBar({
   const leftItems = mobileItems.slice(0, 2);
   const rightItems = mobileItems.slice(2);
   const quickActions = [
+    {
+      href: "/whatsapp",
+      label: "WhatsApp",
+      description: "Ver conversas e responder clientes",
+      icon: IconMessage,
+    },
     {
       href: "/tasks#new-task",
       label: "Lembrete",
