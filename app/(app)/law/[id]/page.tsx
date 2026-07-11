@@ -7,8 +7,9 @@ import { createClient } from "@/lib/supabase/server";
 import type { LegalCase, LegalCaseEvent, LegalDeadline, LegalDocument, Receivable } from "@/lib/supabase/types";
 import { formatBRL } from "@/lib/format";
 import { getWorkspaceKey } from "@/lib/workspaces";
+import { DATAJUD_TRIBUNALS } from "@/lib/datajud-tribunals";
 import { IconAlert, IconArrowRight, IconCheckCircle, IconClock, IconPaperclip, IconPlus, IconWallet } from "../../icons";
-import { completeLegalDeadline, createLegalDeadline, createLegalDocumentLink, createLegalEvent, updateLegalCaseStatus } from "../actions";
+import { completeLegalDeadline, createLegalDeadline, createLegalDocumentLink, createLegalEvent, linkDatajudProcess, syncDatajudProcessNow, updateLegalCaseStatus } from "../actions";
 
 const dateTime = (value: string) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
 const EVENT_LABEL: Record<string,string> = { update:"Andamento", filing:"Protocolo", decision:"Decisão", hearing:"Audiência", communication:"Comunicação", note:"Nota interna" };
@@ -40,6 +41,37 @@ export default async function LegalCasePage({ params }: { params: { id: string }
     <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><Metric label="Prazos pendentes" value={String(pending.length)} icon={IconClock}/><Metric label="Movimentações" value={String(events.length)} icon={IconArrowRight}/><Metric label="Documentos" value={String(documents.length)} icon={IconPaperclip}/>{canViewFinance(jobRole,isAdmin)&&<Metric label="Honorários em aberto" value={formatBRL(open)} icon={IconWallet}/>}</section>
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,.65fr)]"><main className="space-y-5">
       <section className="panel p-5"><h2 className="text-lg font-black text-ink">Visão geral</h2><dl className="mt-5 grid gap-4 sm:grid-cols-2"><Info label="Cliente" value={legalCase.contacts?.name??"Não informado"}/><Info label="Parte contrária" value={legalCase.opposing_party??"Não informada"}/><Info label="Comarca" value={legalCase.jurisdiction??"Não informada"}/><Info label="Responsável" value={legalCase.responsible_id?memberNames.get(legalCase.responsible_id)??"Sem nome":"Não definido"}/></dl><div className="mt-5 border-t border-line pt-5"><p className="label">Estratégia e resumo</p><p className="mt-2 whitespace-pre-wrap text-sm font-medium leading-relaxed text-ink-soft">{legalCase.summary??"Ainda não há resumo registrado."}</p></div></section>
+      <section className="panel p-5">
+        <h2 className="text-lg font-black text-ink">Monitoramento processual (DataJud)</h2>
+        {legalCase.datajud_tribunal_alias ? (
+          <>
+            <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+              <Info label="Tribunal" value={DATAJUD_TRIBUNALS.find((t) => t.alias === legalCase.datajud_tribunal_alias)?.label ?? legalCase.datajud_tribunal_alias} />
+              <Info label="Última sincronização" value={legalCase.datajud_last_synced_at ? dateTime(legalCase.datajud_last_synced_at) : "Ainda não sincronizado"} />
+            </dl>
+            {canManage && (
+              <form action={syncDatajudProcessNow} className="mt-4">
+                <input type="hidden" name="case_id" value={legalCase.id} />
+                <PendingButton className="btn-soft" pendingLabel="Sincronizando">Sincronizar agora</PendingButton>
+              </form>
+            )}
+            <p className="mt-4 text-xs font-medium leading-relaxed text-ink-muted">
+              Movimentações novas entram na linha do tempo abaixo automaticamente (1x/dia, ou quando você sincronizar manualmente). Quando uma movimentação parece exigir atenção, um lembrete de revisão é criado em "Prazos e audiências" — é um alerta pra revisar, não o cálculo oficial do prazo. Sempre confirme o prazo real no processo.
+            </p>
+          </>
+        ) : canManage ? (
+          <form action={linkDatajudProcess} className="mt-4 grid gap-3 sm:grid-cols-2">
+            <input type="hidden" name="case_id" value={legalCase.id} />
+            <Select name="datajud_tribunal_alias" label="Tribunal" options={DATAJUD_TRIBUNALS.map((t) => [t.alias, t.label])} />
+            <Field name="case_number" label="Número do processo (CNJ)" placeholder="0000832-35.2018.4.01.3202" required />
+            <div className="sm:col-span-2">
+              <PendingButton className="btn" pendingLabel="Vinculando"><IconPlus className="h-4 w-4" />Vincular processo</PendingButton>
+            </div>
+          </form>
+        ) : (
+          <p className="mt-3 text-sm font-medium text-ink-muted">Nenhum processo vinculado ainda.</p>
+        )}
+      </section>
       <section className="panel overflow-hidden"><SectionTitle title="Linha do tempo" count={events.length}/>{canManage&&<form action={createLegalEvent} className="grid gap-3 border-b border-line bg-surface-2 p-4 md:grid-cols-3"><input type="hidden" name="case_id" value={legalCase.id}/><Field name="title" label="Movimentação" placeholder="Ex.: Contestação protocolada" required/><Select name="event_type" label="Tipo" options={Object.entries(EVENT_LABEL)}/><Field name="occurred_at" label="Data" type="datetime-local"/><div className="md:col-span-3"><label className="label" htmlFor="event-description">Detalhes</label><textarea id="event-description" name="description" className="field mt-1.5 min-h-20"/><PendingButton className="btn mt-3" pendingLabel="Registrando"><IconPlus className="h-4 w-4"/>Registrar</PendingButton></div></form>}{events.length===0?<Empty text="Nenhuma movimentação registrada."/>:<div className="divide-y divide-line">{events.map(e=><article key={e.id} className="px-5 py-4"><div className="flex items-center justify-between gap-3"><span className="tag bg-brand-50 text-brand-700">{EVENT_LABEL[e.event_type]}</span><time className="text-xs font-bold text-ink-muted">{dateTime(e.occurred_at)}</time></div><h3 className="mt-2 text-sm font-black text-ink">{e.title}</h3>{e.description&&<p className="mt-1 whitespace-pre-wrap text-sm font-medium text-ink-soft">{e.description}</p>}</article>)}</div>}</section>
       <section className="panel overflow-hidden"><SectionTitle title="Documentos do caso" count={documents.length}/>{canManage&&<form action={createLegalDocumentLink} className="grid gap-3 border-b border-line bg-surface-2 p-4 md:grid-cols-2"><input type="hidden" name="case_id" value={legalCase.id}/><Field name="name" label="Nome do documento" required/><Field name="external_url" label="Link seguro" type="url" placeholder="https://..." required/><Select name="document_type" label="Tipo" options={Object.entries(DOCUMENT_LABEL)}/><div className="flex items-end"><PendingButton className="btn min-h-11" pendingLabel="Adicionando"><IconPaperclip className="h-4 w-4"/>Adicionar documento</PendingButton></div></form>}{documents.length===0?<Empty text="Nenhum documento vinculado."/>:<div className="divide-y divide-line">{documents.map(d=><a key={d.id} href={d.external_url??"#"} target="_blank" rel="noreferrer" className="nav-item flex items-center justify-between gap-3 px-5 py-4 hover:bg-brand-50"><div><p className="text-sm font-black text-ink">{d.name}</p><p className="mt-1 text-xs font-bold text-ink-muted">{DOCUMENT_LABEL[d.document_type]} · versão {d.version}</p></div><IconArrowRight className="h-4 w-4 text-brand-700"/></a>)}</div>}</section>
     </main><aside className="space-y-5">

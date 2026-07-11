@@ -7,6 +7,9 @@ import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import type { JobRole, LegalCaseStatus } from "@/lib/supabase/types";
+import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/datajud-tribunals";
+import { normalizeProcessNumber } from "@/lib/datajud";
+import { syncCaseWithDatajud } from "@/lib/law-datajud-sync";
 
 const MAX = { title: 180, text: 1600, short: 160, reference: 180 };
 
@@ -232,6 +235,40 @@ export async function recordReceivablePayment(formData: FormData) {
   });
   if (error) throw new Error("Não foi possível registrar o pagamento.");
   revalidateLaw();
+}
+
+export async function linkDatajudProcess(formData: FormData) {
+  const { supabase, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode vincular processo.");
+  const caseId = requiredText(formData.get("case_id"), "Caso", 80);
+  const tribunalAlias = text(formData.get("datajud_tribunal_alias"), 16);
+  if (!DATAJUD_TRIBUNAL_ALIASES.has(tribunalAlias)) throw new Error("Tribunal inválido.");
+  const numero = normalizeProcessNumber(requiredText(formData.get("case_number"), "Número do processo", 40));
+  if (numero.length !== 20) throw new Error("Número de processo inválido — o formato CNJ tem 20 dígitos.");
+
+  const { error } = await supabase
+    .from("legal_cases")
+    .update({ case_number: numero, datajud_tribunal_alias: tribunalAlias })
+    .eq("id", caseId)
+    .eq("org_id", orgId);
+  if (error) throw new Error("Não foi possível vincular o processo.");
+  revalidatePath(`/law/${caseId}`);
+}
+
+export async function syncDatajudProcessNow(formData: FormData) {
+  const { supabase, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode sincronizar processo.");
+  const caseId = requiredText(formData.get("case_id"), "Caso", 80);
+  const { data: legalCase } = await supabase
+    .from("legal_cases")
+    .select("id, org_id, title, case_number, datajud_tribunal_alias, responsible_id, created_by")
+    .eq("id", caseId)
+    .eq("org_id", orgId)
+    .maybeSingle();
+  if (!legalCase) throw new Error("Caso não encontrado.");
+  const result = await syncCaseWithDatajud(supabase, legalCase);
+  if (result.error) throw new Error(result.error);
+  revalidatePath(`/law/${caseId}`);
 }
 
 function revalidateLaw() {

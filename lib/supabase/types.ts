@@ -90,6 +90,8 @@ export type LegalCase = {
   confidentiality: "team" | "restricted";
   next_deadline_at: string | null;
   summary: string | null;
+  datajud_tribunal_alias: string | null;
+  datajud_last_synced_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -140,6 +142,7 @@ export type LegalCaseEvent = {
   id: string; org_id: string; case_id: string; created_by: string;
   event_type: "update" | "filing" | "decision" | "hearing" | "communication" | "note";
   title: string; description: string | null; occurred_at: string; created_at: string;
+  external_ref: string | null;
 };
 
 export type LegalDocument = {
