@@ -134,6 +134,18 @@ export function IconCheckCircle({ className }: IconProps) {
   );
 }
 
+export function IconStar({ className, filled = false }: IconProps & { filled?: boolean }) {
+  return (
+    <svg {...base} className={className} fill={filled ? "currentColor" : "none"}>
+      <path
+        d="m12 4.5 2.36 4.78 5.27.77-3.82 3.72.9 5.25L12 16.6l-4.71 2.42.9-5.25-3.82-3.72 5.27-.77Z"
+        {...stroke}
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function IconClock({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

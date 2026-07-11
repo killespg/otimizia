@@ -25,6 +25,7 @@ export type Profile = {
   active_org_id: string | null;
   checklist_dismissed_at: string | null;
   dashboard_preferences: Record<string, unknown>;
+  favorite_tribunals: string[];
   created_at: string;
 };
 

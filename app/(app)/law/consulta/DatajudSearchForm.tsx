@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { DATAJUD_TRIBUNALS } from "@/lib/datajud-tribunals";
+import { useRouter } from "next/navigation";
+import { DATAJUD_TRIBUNALS, sortTribunalsByFavorites } from "@/lib/datajud-tribunals";
 import type { DatajudProcess } from "@/lib/datajud";
-import { IconAlert, IconClock, IconSearch } from "../../icons";
+import { IconAlert, IconClock, IconPlus, IconSearch, IconStar } from "../../icons";
 
 // Datas vindas do DataJud nem sempre são um ISO 8601 válido (já vimos
 // movimentação sem dataHora) — Intl.DateTimeFormat lança RangeError pra uma
@@ -18,12 +19,27 @@ function safeFormat(value: string | null | undefined, format: Intl.DateTimeForma
 const dateTime = (value: string | null | undefined) => safeFormat(value, { dateStyle: "short", timeStyle: "short" });
 const dateOnly = (value: string | null | undefined) => safeFormat(value, { dateStyle: "long" });
 
-export function DatajudSearchForm() {
-  const [tribunalAlias, setTribunalAlias] = useState(DATAJUD_TRIBUNALS[0]?.alias ?? "");
+export function DatajudSearchForm({
+  initialFavorites = [],
+  canManage = false,
+  compact = false,
+}: {
+  initialFavorites?: string[];
+  canManage?: boolean;
+  compact?: boolean;
+}) {
+  const router = useRouter();
+  const [favorites, setFavorites] = useState(initialFavorites);
+  const tribunals = sortTribunalsByFavorites(favorites);
+  const [tribunalAlias, setTribunalAlias] = useState(tribunals[0]?.alias ?? DATAJUD_TRIBUNALS[0]?.alias ?? "");
   const [numeroProcesso, setNumeroProcesso] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [process, setProcess] = useState<DatajudProcess | null>(null);
+  const [togglingFavorite, setTogglingFavorite] = useState(false);
+  const [addingCase, setAddingCase] = useState(false);
+
+  const isFavorite = favorites.includes(tribunalAlias);
 
   async function search(event: React.FormEvent) {
     event.preventDefault();
@@ -49,10 +65,49 @@ export function DatajudSearchForm() {
     }
   }
 
+  async function toggleFavorite() {
+    if (togglingFavorite || !tribunalAlias) return;
+    setTogglingFavorite(true);
+    try {
+      const response = await fetch("/api/law/favorite-tribunal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tribunalAlias }),
+      });
+      const data = await response.json();
+      if (response.ok) setFavorites(data.favoriteTribunals);
+    } finally {
+      setTogglingFavorite(false);
+    }
+  }
+
+  async function addToCases() {
+    if (!process || addingCase) return;
+    setAddingCase(true);
+    try {
+      const title = process.classe?.nome ? `${process.classe.nome} — ${formatNumero(process.numeroProcesso)}` : undefined;
+      const response = await fetch("/api/law/quick-case", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tribunalAlias, numeroProcesso: process.numeroProcesso, title }),
+      });
+      const data = await response.json();
+      if (response.ok && data.caseId) {
+        router.push(`/law/${data.caseId}`);
+      } else {
+        setError(data.error ?? "Não consegui criar o caso.");
+      }
+    } catch {
+      setError("Não consegui criar o caso. Tente de novo.");
+    } finally {
+      setAddingCase(false);
+    }
+  }
+
   return (
     <>
-      <section className="panel p-5">
-        <form onSubmit={search} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
+      <section className={compact ? "" : "panel p-5"}>
+        <form onSubmit={search} className="grid gap-3 sm:grid-cols-[1fr_auto_1fr_auto]">
           <label className="block">
             <span className="label">Tribunal</span>
             <select
@@ -60,13 +115,28 @@ export function DatajudSearchForm() {
               onChange={(event) => setTribunalAlias(event.target.value)}
               className="field mt-1.5"
             >
-              {DATAJUD_TRIBUNALS.map((t) => (
+              {tribunals.map((t) => (
                 <option key={t.alias} value={t.alias}>
-                  {t.label}
+                  {favorites.includes(t.alias) ? `★ ${t.label}` : t.label}
                 </option>
               ))}
             </select>
           </label>
+          <div className="flex items-end">
+            <button
+              type="button"
+              onClick={toggleFavorite}
+              disabled={togglingFavorite}
+              aria-label={isFavorite ? "Remover dos favoritos" : "Favoritar este tribunal"}
+              title={isFavorite ? "Remover dos favoritos" : "Favoritar este tribunal"}
+              className={
+                "nav-item grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-line " +
+                (isFavorite ? "bg-brand-50 text-brand-700" : "bg-white text-ink-muted")
+              }
+            >
+              <IconStar className="h-5 w-5" filled={isFavorite} />
+            </button>
+          </div>
           <label className="block">
             <span className="label">Número do processo (CNJ)</span>
             <input
@@ -90,17 +160,29 @@ export function DatajudSearchForm() {
             {error}
           </p>
         )}
-        <p className="mt-4 text-xs font-medium text-ink-muted">
-          Dados públicos do DataJud (CNJ) — cobre praticamente todos os tribunais do país. Essa consulta não vincula o
-          processo a nenhum caso; pra acompanhar automaticamente, vincule pelo caso jurídico.
-        </p>
+        {!compact && (
+          <p className="mt-4 text-xs font-medium text-ink-muted">
+            Dados públicos do DataJud (CNJ) — cobre praticamente todos os tribunais do país. Clique na estrela pra
+            fixar um tribunal no topo da lista.
+          </p>
+        )}
       </section>
 
       {process && (
         <section className="panel overflow-hidden">
           <div className="border-b border-line p-5">
-            <p className="text-sm font-black text-brand-700">{process.classe?.nome ?? "Classe não informada"}</p>
-            <p className="mt-1 text-lg font-black tracking-[-0.02em] text-ink">{formatNumero(process.numeroProcesso)}</p>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-black text-brand-700">{process.classe?.nome ?? "Classe não informada"}</p>
+                <p className="mt-1 text-lg font-black tracking-[-0.02em] text-ink">{formatNumero(process.numeroProcesso)}</p>
+              </div>
+              {canManage && (
+                <button type="button" onClick={addToCases} disabled={addingCase} className="btn shrink-0">
+                  <IconPlus className="h-4 w-4" />
+                  {addingCase ? "Adicionando..." : "Adicionar aos casos"}
+                </button>
+              )}
+            </div>
             <dl className="mt-4 grid gap-3 sm:grid-cols-2">
               <div>
                 <dt className="label">Órgão julgador</dt>

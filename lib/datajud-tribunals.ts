@@ -53,3 +53,15 @@ export const DATAJUD_TRIBUNALS: { alias: string; label: string }[] = [
 ];
 
 export const DATAJUD_TRIBUNAL_ALIASES = new Set(DATAJUD_TRIBUNALS.map((t) => t.alias));
+
+// Favoritos primeiro (na ordem em que foram favoritados), resto na ordem
+// padrão da lista — usado nos seletores de tribunal pra quem sempre atua
+// nos mesmos 1-2 estados não ficar rolando a lista toda vez.
+export function sortTribunalsByFavorites(favorites: string[]) {
+  const favoriteSet = new Set(favorites);
+  const favored = favorites
+    .map((alias) => DATAJUD_TRIBUNALS.find((t) => t.alias === alias))
+    .filter((t): t is { alias: string; label: string } => Boolean(t));
+  const rest = DATAJUD_TRIBUNALS.filter((t) => !favoriteSet.has(t.alias));
+  return [...favored, ...rest];
+}

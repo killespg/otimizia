@@ -12,7 +12,9 @@ import {
   metricLabel,
 } from "@/lib/dashboard-preferences";
 import { computeDevMetrics, type DevMetrics } from "@/lib/devMetrics";
+import { canManageLegal } from "@/lib/law-office";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { DatajudSearchForm } from "../law/consulta/DatajudSearchForm";
 import { getProfessionPreset, type MetricKey, type ProfessionPreset } from "@/lib/professions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -88,7 +90,7 @@ export default async function DashboardPage() {
     supabase.auth.getUser(),
     supabase
       .from("profiles")
-      .select("profession_type, is_admin, checklist_dismissed_at, dashboard_preferences")
+      .select("profession_type, is_admin, checklist_dismissed_at, dashboard_preferences, favorite_tribunals")
       .maybeSingle(),
   ]);
   const orgId = await getActiveOrgId(supabase, user!.id);
@@ -101,6 +103,17 @@ export default async function DashboardPage() {
   );
   const orgRole = await getOrgRole(supabase, orgId, user!.id);
   const isOrgAdmin = orgRole === "admin";
+  const lawJobRole =
+    workspaceKey === "law_office"
+      ? (
+          await supabase
+            .from("organization_members")
+            .select("job_role")
+            .eq("org_id", orgId)
+            .eq("user_id", user!.id)
+            .maybeSingle()
+        ).data?.job_role
+      : undefined;
   const [
     { data: deals },
     { data: tasks },
@@ -403,6 +416,22 @@ export default async function DashboardPage() {
             <span>Em andamento</span><strong>{openDeals.length}</strong><small>atendimentos</small>
           </Link>
           <Link href="/law/deadlines" className="law-docket-action">Abrir pauta <IconArrowRight className="h-4 w-4" /></Link>
+        </section>
+      )}
+
+      {workspaceKey === "law_office" && (
+        <section className="panel p-4 sm:p-5">
+          <h2 className="text-sm font-black text-ink">Consultar processo</h2>
+          <p className="mt-1 text-xs font-medium text-ink-muted">
+            Busque um processo no DataJud (CNJ) sem sair do painel.
+          </p>
+          <div className="mt-3">
+            <DatajudSearchForm
+              initialFavorites={profile?.favorite_tribunals ?? []}
+              canManage={canManageLegal(lawJobRole, isOrgAdmin)}
+              compact
+            />
+          </div>
         </section>
       )}
 

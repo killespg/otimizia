@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { canViewLegal } from "@/lib/law-office";
+import { canManageLegal, canViewLegal } from "@/lib/law-office";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import { getWorkspaceKey } from "@/lib/workspaces";
@@ -12,7 +12,7 @@ export default async function DatajudSearchPage() {
     data: { user },
   } = await supabase.auth.getUser();
   const [{ data: profile }, orgId] = await Promise.all([
-    supabase.from("profiles").select("profession_type, is_admin").maybeSingle(),
+    supabase.from("profiles").select("profession_type, is_admin, favorite_tribunals").maybeSingle(),
     getActiveOrgId(supabase, user!.id),
   ]);
   const workspaceKey = getWorkspaceKey(
@@ -65,7 +65,10 @@ export default async function DatajudSearchPage() {
         </div>
       </header>
 
-      <DatajudSearchForm />
+      <DatajudSearchForm
+        initialFavorites={profile?.favorite_tribunals ?? []}
+        canManage={canManageLegal(membership?.job_role, orgRole === "admin")}
+      />
     </div>
   );
 }

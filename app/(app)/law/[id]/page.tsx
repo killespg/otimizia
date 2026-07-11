@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { LegalCase, LegalCaseEvent, LegalDeadline, LegalDocument, Receivable } from "@/lib/supabase/types";
 import { formatBRL } from "@/lib/format";
 import { getWorkspaceKey } from "@/lib/workspaces";
-import { DATAJUD_TRIBUNALS } from "@/lib/datajud-tribunals";
+import { DATAJUD_TRIBUNALS, sortTribunalsByFavorites } from "@/lib/datajud-tribunals";
 import { IconAlert, IconArrowRight, IconCheckCircle, IconClock, IconPaperclip, IconPlus, IconWallet } from "../../icons";
 import { completeLegalDeadline, createLegalDeadline, createLegalDocumentLink, createLegalEvent, linkDatajudProcess, syncDatajudProcessNow, updateLegalCaseStatus } from "../actions";
 
@@ -18,7 +18,7 @@ const DOCUMENT_LABEL: Record<string,string> = { petition:"Petição", contract:"
 export default async function LegalCasePage({ params }: { params: { id: string } }) {
   const supabase = createClient(); const { data: { user } } = await supabase.auth.getUser();
   if (!user) notFound();
-  const [{ data: profile }, orgId] = await Promise.all([supabase.from("profiles").select("profession_type,is_admin").maybeSingle(), getActiveOrgId(supabase, user.id)]);
+  const [{ data: profile }, orgId] = await Promise.all([supabase.from("profiles").select("profession_type,is_admin,favorite_tribunals").maybeSingle(), getActiveOrgId(supabase, user.id)]);
   if (getWorkspaceKey(profile?.profession_type, user.user_metadata?.profession_type, profile?.is_admin) !== "law_office") notFound();
   const [orgRole, { data: membership }, members] = await Promise.all([getOrgRole(supabase, orgId, user.id), supabase.from("organization_members").select("job_role").eq("org_id", orgId).eq("user_id", user.id).maybeSingle(), getOrgMembers(supabase, orgId)]);
   const isAdmin = orgRole === "admin"; const jobRole = membership?.job_role;
@@ -62,7 +62,14 @@ export default async function LegalCasePage({ params }: { params: { id: string }
         ) : canManage ? (
           <form action={linkDatajudProcess} className="mt-4 grid gap-3 sm:grid-cols-2">
             <input type="hidden" name="case_id" value={legalCase.id} />
-            <Select name="datajud_tribunal_alias" label="Tribunal" options={DATAJUD_TRIBUNALS.map((t) => [t.alias, t.label])} />
+            <Select
+              name="datajud_tribunal_alias"
+              label="Tribunal"
+              options={sortTribunalsByFavorites(profile?.favorite_tribunals ?? []).map((t) => [
+                t.alias,
+                (profile?.favorite_tribunals ?? []).includes(t.alias) ? `★ ${t.label}` : t.label,
+              ])}
+            />
             <Field name="case_number" label="Número do processo (CNJ)" placeholder="0000832-35.2018.4.01.3202" required />
             <div className="sm:col-span-2">
               <PendingButton className="btn" pendingLabel="Vinculando"><IconPlus className="h-4 w-4" />Vincular processo</PendingButton>
