@@ -35,6 +35,10 @@ export function ConnectWhatsappPanel({
         if (data.status === "conectado") {
           if (pollRef.current) clearInterval(pollRef.current);
           setStatus("conectado");
+          // Melhor esforço: importa o histórico que o número já tinha antes
+          // de conectar. Se falhar, o usuário ainda pode disparar de novo
+          // pelo botão "Importar histórico" dentro do inbox.
+          fetch("/api/whatsapp/import-history", { method: "POST" }).catch(() => {});
           router.refresh();
         }
       } catch {

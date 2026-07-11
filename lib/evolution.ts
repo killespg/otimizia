@@ -86,4 +86,37 @@ export async function sendEvolutionText(
   });
 }
 
+export type EvolutionMessageRecord = {
+  id: string;
+  key: {
+    id: string;
+    fromMe: boolean;
+    remoteJid: string;
+    remoteJidAlt?: string;
+  };
+  pushName: string | null;
+  message: unknown;
+  messageTimestamp: number;
+};
+
+// Histórico já sincronizado internamente pela Evolution (Baileys guarda uma
+// cópia local do WhatsApp conectado) — usado pra importar as conversas de um
+// número que já tinha uso antes de conectar no OtimizIA. page/offset é o
+// contrato real da instância (não bate com o "take/skip" documentado).
+export async function findEvolutionMessages(
+  instanceName: string,
+  page: number,
+  offset: number
+): Promise<{ records: EvolutionMessageRecord[]; total: number; pages: number }> {
+  const data = await evolutionFetch(`/chat/findMessages/${instanceName}`, {
+    method: "POST",
+    body: JSON.stringify({ page, offset }),
+  });
+  return {
+    records: data?.messages?.records ?? [],
+    total: data?.messages?.total ?? 0,
+    pages: data?.messages?.pages ?? 0,
+  };
+}
+
 export { EvolutionApiError };

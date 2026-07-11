@@ -2,7 +2,8 @@ import { EvolutionApiError, sendEvolutionText } from "@/lib/evolution";
 import { generateWhatsappReply } from "@/lib/ai/whatsapp-reply";
 import { logError } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { findOrCreateContact } from "@/lib/whatsapp-contacts";
+import { extractMessageText, resolveWhatsappPhone } from "@/lib/whatsapp-jid";
 
 export const runtime = "nodejs";
 
@@ -51,20 +52,14 @@ export async function POST(request: Request) {
     return Response.json({ received: true });
   }
 
-  const remoteJid = data?.key?.remoteJid;
-  if (typeof remoteJid !== "string" || remoteJid.endsWith("@g.us")) {
-    // Ignora mensagens de grupo — fora de escopo do MVP.
+  const phoneNumber = resolveWhatsappPhone(data?.key?.remoteJid, data?.key?.remoteJidAlt);
+  if (!phoneNumber) {
+    // Grupo, ou @lid sem remoteJidAlt resolvível — fora de escopo do MVP.
     return Response.json({ received: true });
   }
-  const phoneNumber = remoteJid.split("@")[0];
   const pushName = typeof data?.pushName === "string" ? data.pushName : null;
 
-  const conversationText: string | null =
-    typeof data?.message?.conversation === "string"
-      ? data.message.conversation
-      : typeof data?.message?.extendedTextMessage?.text === "string"
-        ? data.message.extendedTextMessage.text
-        : null;
+  const conversationText = extractMessageText(data?.message);
   // TODO: mídia (imagem/áudio/documento) não é tratada nesta primeira
   // versão — fica registrada como "unsupported" pra aparecer no chat, mas
   // não dispara resposta automática.
@@ -176,53 +171,4 @@ export async function POST(request: Request) {
   }
 
   return Response.json({ received: true });
-}
-
-async function findOrCreateContact(
-  admin: ReturnType<typeof createAdminClient>,
-  orgId: string,
-  phoneNumber: string,
-  pushName: string | null
-): Promise<string | null> {
-  const { data: existing } = await admin
-    .from("contacts")
-    .select("id")
-    .eq("org_id", orgId)
-    .eq("phone", phoneNumber)
-    .maybeSingle();
-  if (existing) return existing.id as string;
-
-  const { data: firstMember } = await admin
-    .from("organization_members")
-    .select("user_id")
-    .eq("org_id", orgId)
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-  if (!firstMember) return null;
-
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("profession_type, is_admin")
-    .eq("id", firstMember.user_id)
-    .maybeSingle();
-  const workspaceKey = getWorkspaceKey(profile?.profession_type, undefined, profile?.is_admin ?? false);
-
-  const { data: created, error } = await admin
-    .from("contacts")
-    .insert({
-      owner_id: firstMember.user_id,
-      org_id: orgId,
-      workspace_key: workspaceKey,
-      name: pushName ?? phoneNumber,
-      phone: phoneNumber,
-      source: "WhatsApp",
-    })
-    .select("id")
-    .single();
-  if (error) {
-    logError("api/whatsapp/webhook.contact-create-failed", error, { orgId, phoneNumber });
-    return null;
-  }
-  return created.id as string;
 }

@@ -25,9 +25,22 @@ export function WhatsappInbox({
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [toggling, setToggling] = useState(false);
+  const [importing, setImporting] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const selected = conversations.find((c) => c.id === selectedId) ?? null;
+
+  async function importHistory() {
+    if (importing) return;
+    setImporting(true);
+    try {
+      // Novas conversas/mensagens chegam via Realtime (assinatura abaixo) —
+      // não precisa recarregar a página manualmente.
+      await fetch("/api/whatsapp/import-history", { method: "POST" });
+    } finally {
+      setImporting(false);
+    }
+  }
 
   // Lista: qualquer conversa nova/atualizada da organização.
   useEffect(() => {
@@ -174,11 +187,22 @@ export function WhatsappInbox({
           (selectedId ? "hidden lg:flex" : "flex")
         }
       >
-        <div className="border-b border-line px-4 py-3">
-          <h1 className="text-base font-black tracking-[-0.02em] text-ink">WhatsApp</h1>
-          <p className="text-xs font-semibold text-ink-muted">
-            {conversations.length} {conversations.length === 1 ? "conversa" : "conversas"}
-          </p>
+        <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-3">
+          <div>
+            <h1 className="text-base font-black tracking-[-0.02em] text-ink">WhatsApp</h1>
+            <p className="text-xs font-semibold text-ink-muted">
+              {conversations.length} {conversations.length === 1 ? "conversa" : "conversas"}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={importHistory}
+            disabled={importing}
+            className="shrink-0 rounded-md bg-surface-2 px-2 py-1.5 text-[11px] font-black text-ink-muted hover:bg-brand-50 hover:text-brand-700 disabled:opacity-50"
+            title="Importar histórico já existente desse número no WhatsApp"
+          >
+            {importing ? "Importando..." : "Importar histórico"}
+          </button>
         </div>
         <ul className="min-h-0 flex-1 divide-y divide-line overflow-y-auto">
           {conversations.length === 0 ? (
