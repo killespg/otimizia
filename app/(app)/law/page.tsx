@@ -5,7 +5,7 @@ import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, LegalCase } from "@/lib/supabase/types";
 import { getWorkspaceKey } from "@/lib/workspaces";
-import { IconAlert, IconColumns, IconPlus, IconUsers, IconWallet } from "../icons";
+import { IconAlert, IconColumns, IconPlus, IconSearch, IconUsers, IconWallet } from "../icons";
 import { createLegalCase } from "./actions";
 
 export default async function LawPage() {
@@ -103,6 +103,12 @@ export default async function LawPage() {
           label="Honorários"
           description="Contratos, parcelas e recebimentos do escritório."
           icon={IconWallet}
+        />
+        <QuickLink
+          href="/law/consulta"
+          label="Consultar processo"
+          description="Busque um processo por tribunal e número antes de abrir caso."
+          icon={IconSearch}
         />
       </section>
 
