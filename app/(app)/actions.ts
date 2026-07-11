@@ -101,6 +101,7 @@ export async function updateProfession(formData: FormData) {
   revalidatePath("/contacts");
   revalidatePath("/pipeline");
   revalidatePath("/tasks");
+  revalidatePath("/calendar");
   redirect(safeReturnPath(formData.get("return_to"), "/dashboard"));
 }
 
@@ -136,6 +137,7 @@ export async function updateProfessionTypes(formData: FormData) {
   revalidatePath("/contacts");
   revalidatePath("/pipeline");
   revalidatePath("/tasks");
+  revalidatePath("/calendar");
   revalidatePath("/settings");
   redirect("/settings");
 }
@@ -161,6 +163,7 @@ export async function createContact(formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath("/pipeline");
   revalidatePath("/tasks");
+  revalidatePath("/calendar");
   redirect(safeReturnPath(formData.get("return_to"), "/contacts"));
 }
 
@@ -199,6 +202,7 @@ export async function updateContact(formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath("/pipeline");
   revalidatePath("/tasks");
+  revalidatePath("/calendar");
 }
 
 export async function deleteContact(formData: FormData) {
@@ -468,6 +472,7 @@ export async function createTask(formData: FormData) {
   });
   ensureOk(error, "Não deu para salvar o lembrete.");
   revalidatePath("/tasks");
+  revalidatePath("/calendar");
   revalidatePath("/dashboard");
   revalidatePath("/contacts");
   redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
@@ -487,6 +492,7 @@ export async function toggleTask(id: string, done: boolean) {
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para atualizar o lembrete.");
   revalidatePath("/tasks");
+  revalidatePath("/calendar");
   revalidatePath("/dashboard");
 }
 
@@ -500,6 +506,7 @@ export async function deleteTask(formData: FormData) {
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para excluir o lembrete.");
   revalidatePath("/tasks");
+  revalidatePath("/calendar");
   revalidatePath("/dashboard");
   redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }
@@ -509,7 +516,8 @@ export async function submitTaskForReview(formData: FormData) {
   const taskId = requiredText(formData.get("task_id"), "Tarefa", 80);
   const { error } = await supabase.rpc("submit_task_for_review", { p_task_id: taskId });
   ensureOk(error, "Não deu para enviar a tarefa para aprovação.");
-  revalidatePath("/tasks"); revalidatePath("/dashboard");
+  revalidatePath("/tasks");
+  revalidatePath("/calendar"); revalidatePath("/dashboard");
   redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }
 
@@ -521,7 +529,8 @@ export async function reviewTaskCompletion(formData: FormData) {
     p_task_id: taskId, p_approved: decision === "approve", p_note: text(formData.get("review_note"), 800) || null,
   });
   ensureOk(error, decision === "approve" ? "Não deu para aprovar a tarefa." : "Não deu para devolver a tarefa.");
-  revalidatePath("/tasks"); revalidatePath("/dashboard");
+  revalidatePath("/tasks");
+  revalidatePath("/calendar"); revalidatePath("/dashboard");
   redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }
 
@@ -538,6 +547,7 @@ export async function requestTaskHandoff(formData: FormData) {
   });
   ensureOk(error, "Não deu para solicitar a transferência.");
   revalidatePath("/tasks");
+  revalidatePath("/calendar");
   revalidatePath("/dashboard");
   redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }
@@ -548,6 +558,7 @@ export async function acceptTaskHandoff(formData: FormData) {
   const { error } = await supabase.rpc("accept_task_handoff", { p_task_id: taskId });
   ensureOk(error, "Não deu para aceitar a transferência.");
   revalidatePath("/tasks");
+  revalidatePath("/calendar");
   revalidatePath("/dashboard");
   redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }
@@ -558,6 +569,7 @@ export async function declineTaskHandoff(formData: FormData) {
   const { error } = await supabase.rpc("decline_task_handoff", { p_task_id: taskId });
   ensureOk(error, "Não deu para recusar a transferência.");
   revalidatePath("/tasks");
+  revalidatePath("/calendar");
   revalidatePath("/dashboard");
   redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }
@@ -573,6 +585,7 @@ export async function adminReassignTask(formData: FormData) {
   });
   ensureOk(error, "Não deu para reatribuir o lembrete.");
   revalidatePath("/tasks");
+  revalidatePath("/calendar");
   revalidatePath("/dashboard");
   redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }
@@ -638,6 +651,7 @@ export async function claimTask(formData: FormData) {
   const { error } = await supabase.rpc("claim_task", { p_task_id: taskId });
   ensureOk(error, "Essa tarefa já foi pega por alguém.");
   revalidatePath("/tasks");
+  revalidatePath("/calendar");
   revalidatePath("/dashboard");
   redirect(safeReturnPath(formData.get("return_to"), "/tasks"));
 }

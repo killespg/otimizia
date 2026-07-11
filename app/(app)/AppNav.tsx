@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   IconBell,
   IconBot,
+  IconCalendar,
   IconChartBar,
   IconColumns,
   IconGauge,
@@ -45,6 +46,7 @@ const NAV: NavItem[] = [
   { href: "/pipeline", label: "Vendas", icon: IconColumns, mobile: true },
   { href: "/whatsapp", label: "WhatsApp", icon: IconMessage },
   { href: "/tasks", label: "Tarefas", icon: IconBell, mobile: true },
+  { href: "/calendar", label: "Calendário", icon: IconCalendar },
   { href: "/dashboard#valor", label: "Valor aberto", icon: IconWallet, passive: true },
   { href: "/tasks", label: "Clientes para chamar", icon: IconPhone, passive: true },
   { href: "/assistant", label: "Sócio-Assistente", icon: IconBot },
@@ -57,6 +59,7 @@ const LAW_NAV: NavItem[] = [
   { href: "/pipeline", label: "Atendimentos", icon: IconPhone, mobile: true },
   { href: "/law", label: "Casos", icon: IconColumns, mobile: true },
   { href: "/law/deadlines", label: "Prazos", icon: IconBell },
+  { href: "/calendar", label: "Calendário", icon: IconCalendar },
   { href: "/whatsapp", label: "WhatsApp", icon: IconMessage },
   { href: "/tasks", label: "Tarefas", icon: IconBell },
   { href: "/assistant", label: "Assistente IA", icon: IconBot },
@@ -175,6 +178,12 @@ export function MobileTabBar({
       label: "Lembrete",
       description: "Chamar alguém depois",
       icon: IconBell,
+    },
+    {
+      href: "/calendar",
+      label: "Calendário",
+      description: "Ver tarefas e prazos no mês",
+      icon: IconCalendar,
     },
     {
       href: "/contacts#new-contact",

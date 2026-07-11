@@ -260,6 +260,15 @@ export function IconGrip({ className }: IconProps) {
   );
 }
 
+export function IconCalendar({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="4" y="5.5" width="16" height="14" rx="2" {...stroke} />
+      <path d="M4 10h16M8 3.5v3.4M16 3.5v3.4" {...stroke} />
+    </svg>
+  );
+}
+
 export function IconImage({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

@@ -13,6 +13,7 @@ import {
   metricLabel,
 } from "@/lib/dashboard-preferences";
 import { computeDevMetrics, type DevMetrics } from "@/lib/devMetrics";
+import { buildMonthCells } from "@/lib/calendar-grid";
 import { canManageLegal } from "@/lib/law-office";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { DatajudSearchForm } from "../law/consulta/DatajudSearchForm";
@@ -340,13 +341,7 @@ export default async function DashboardPage() {
       </div>
     ),
     open_claims: <OpenClaimsPanel tasks={unclaimedTasks} deals={unclaimedDeals} preset={preset} />,
-    calendar: (
-      <CalendarWidget
-        now={now}
-        items={calendarItems}
-        viewAllHref={workspaceKey === "law_office" ? "/law/deadlines/calendar" : "/tasks"}
-      />
-    ),
+    calendar: <CalendarWidget now={now} items={calendarItems} viewAllHref="/calendar" />,
     chart: (
       <RevenueChart
         openValue={openValue}
@@ -1054,14 +1049,7 @@ function CalendarWidget({
 }) {
   const year = now.getFullYear();
   const month = now.getMonth();
-  const monthStart = new Date(year, month, 1);
-  const firstWeekday = monthStart.getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const cells: (number | null)[] = [
-    ...Array.from({ length: firstWeekday }, () => null),
-    ...Array.from({ length: daysInMonth }, (_, index) => index + 1),
-  ];
-  while (cells.length % 7 !== 0) cells.push(null);
+  const cells = buildMonthCells(year, month);
 
   const byDay = new Map<number, CalendarItem[]>();
   for (const item of items) {

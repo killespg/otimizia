@@ -438,4 +438,5 @@ function revalidateLaw() {
   revalidatePath("/finance");
   revalidatePath("/dashboard");
   revalidatePath("/contacts");
+  revalidatePath("/calendar");
 }

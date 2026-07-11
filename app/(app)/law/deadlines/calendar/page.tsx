@@ -4,6 +4,7 @@ import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import type { LegalDeadline } from "@/lib/supabase/types";
 import { getWorkspaceKey } from "@/lib/workspaces";
+import { buildMonthCells, monthParam, parseMonthParam } from "@/lib/calendar-grid";
 import { IconArrowRight } from "../../../icons";
 
 const PRIORITY_COLOR: Record<string, string> = {
@@ -13,19 +14,6 @@ const PRIORITY_COLOR: Record<string, string> = {
   critical: "bg-danger-50 text-danger-700",
 };
 const WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-
-function parseMonth(value?: string) {
-  if (value && /^\d{4}-\d{2}$/.test(value)) {
-    const [year, month] = value.split("-").map(Number);
-    if (month >= 1 && month <= 12) return { year, month: month - 1 };
-  }
-  const now = new Date();
-  return { year: now.getFullYear(), month: now.getMonth() };
-}
-
-function monthParam(date: Date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-}
 
 export default async function DeadlinesCalendarPage({ searchParams }: { searchParams: { month?: string } }) {
   const supabase = createClient();
@@ -51,7 +39,7 @@ export default async function DeadlinesCalendarPage({ searchParams }: { searchPa
   const isAdmin = orgRole === "admin";
   if (!canViewLegal(membership?.job_role, isAdmin)) return <AccessDenied />;
 
-  const { year, month } = parseMonth(searchParams.month);
+  const { year, month } = parseMonthParam(searchParams.month, new Date());
   const rangeStart = new Date(year, month, 1);
   const rangeEnd = new Date(year, month + 1, 1);
 
@@ -72,13 +60,7 @@ export default async function DeadlinesCalendarPage({ searchParams }: { searchPa
     byDay.set(day, [...(byDay.get(day) ?? []), item]);
   }
 
-  const firstWeekday = rangeStart.getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const cells: (number | null)[] = [
-    ...Array.from({ length: firstWeekday }, () => null),
-    ...Array.from({ length: daysInMonth }, (_, index) => index + 1),
-  ];
-  while (cells.length % 7 !== 0) cells.push(null);
+  const cells = buildMonthCells(year, month);
 
   const prevParam = monthParam(new Date(year, month - 1, 1));
   const nextParam = monthParam(new Date(year, month + 1, 1));

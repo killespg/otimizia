@@ -27,6 +27,7 @@ export default function TaskItem({
   currentUserId,
   isAdmin,
   canReviewAll = false,
+  returnTo = "/tasks",
 }: {
   task: Task;
   overdue: boolean;
@@ -34,6 +35,7 @@ export default function TaskItem({
   currentUserId: string;
   isAdmin: boolean;
   canReviewAll?: boolean;
+  returnTo?: string;
 }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -95,7 +97,7 @@ export default function TaskItem({
             ))}
           <form action={deleteTask}>
             <input type="hidden" name="id" value={task.id} />
-            <input type="hidden" name="return_to" value="/tasks" />
+            <input type="hidden" name="return_to" value={returnTo} />
             <PendingButton
               className="icon-button grid h-11 w-11 place-items-center rounded-md text-ink-muted/50 opacity-100 hover:bg-danger-50 hover:text-danger-600 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
               title="Excluir tarefa"
@@ -117,7 +119,7 @@ export default function TaskItem({
 
       {requiresReview && isAssignee && !awaitingReview && !task.done && (
         <form action={submitTaskForReview} className="ml-1">
-          <input type="hidden" name="task_id" value={task.id}/><input type="hidden" name="return_to" value="/tasks"/>
+          <input type="hidden" name="task_id" value={task.id}/><input type="hidden" name="return_to" value={returnTo}/>
           <PendingButton className="rounded-md bg-brand-700 px-3 py-2 text-xs font-black text-white hover:bg-brand-800" pendingLabel="Enviando">
             Entregar para aprovação
           </PendingButton>
@@ -130,7 +132,7 @@ export default function TaskItem({
 
       {canReview && (
         <form action={reviewTaskCompletion} className="ml-1 grid gap-2 rounded-lg border border-line bg-surface-2 p-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
-          <input type="hidden" name="task_id" value={task.id}/><input type="hidden" name="return_to" value="/tasks"/>
+          <input type="hidden" name="task_id" value={task.id}/><input type="hidden" name="return_to" value={returnTo}/>
           <div><label className="label" htmlFor={`review-${task.id}`}>Orientação se devolver</label><input id={`review-${task.id}`} name="review_note" className="field mt-1.5 h-10" placeholder="Ex.: corrigir os documentos anexados"/></div>
           <PendingButton name="decision" value="changes" className="min-h-10 rounded-md border border-line bg-white px-3 text-xs font-black text-ink-soft hover:bg-warning-50" pendingLabel="Devolvendo">Devolver</PendingButton>
           <PendingButton name="decision" value="approve" className="min-h-10 rounded-md bg-brand-700 px-3 text-xs font-black text-white hover:bg-brand-800" pendingLabel="Aprovando">Aprovar</PendingButton>
@@ -148,7 +150,7 @@ export default function TaskItem({
               <span className="tag bg-warning-50 text-warning-700">Em aberto</span>
               <form action={claimTask}>
                 <input type="hidden" name="task_id" value={task.id} />
-                <input type="hidden" name="return_to" value="/tasks" />
+                <input type="hidden" name="return_to" value={returnTo} />
                 <PendingButton
                   className="rounded-md bg-brand-700 px-2 py-1 text-[11px] font-black text-white hover:bg-brand-800"
                   pendingLabel="Pegando"
@@ -165,14 +167,14 @@ export default function TaskItem({
                 <span className="tag bg-warning-50 text-warning-700">Pediram para você pegar</span>
                 <form action={acceptTaskHandoff}>
                   <input type="hidden" name="task_id" value={task.id} />
-                  <input type="hidden" name="return_to" value="/tasks" />
+                  <input type="hidden" name="return_to" value={returnTo} />
                   <PendingButton className="rounded-md bg-brand-700 px-2 py-1 text-[11px] font-black text-white hover:bg-brand-800" pendingLabel="Aceitando">
                     Aceitar
                   </PendingButton>
                 </form>
                 <form action={declineTaskHandoff}>
                   <input type="hidden" name="task_id" value={task.id} />
-                  <input type="hidden" name="return_to" value="/tasks" />
+                  <input type="hidden" name="return_to" value={returnTo} />
                   <PendingButton className="rounded-md border border-line bg-white px-2 py-1 text-[11px] font-black text-ink-soft hover:bg-surface-2" pendingLabel="Recusando">
                     Recusar
                   </PendingButton>
@@ -203,7 +205,7 @@ export default function TaskItem({
           className="ml-1 flex flex-wrap items-center gap-2"
         >
           <input type="hidden" name="task_id" value={task.id} />
-          <input type="hidden" name="return_to" value="/tasks" />
+          <input type="hidden" name="return_to" value={returnTo} />
           <select
             name={isAdmin ? "assignee_id" : "target_user_id"}
             required

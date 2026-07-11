@@ -45,6 +45,7 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/contacts") ||
     path.startsWith("/pipeline") ||
     path.startsWith("/tasks") ||
+    path.startsWith("/calendar") ||
     path.startsWith("/assistant") ||
     path.startsWith("/whatsapp") ||
     path.startsWith("/settings") ||
