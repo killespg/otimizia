@@ -2463,16 +2463,6 @@ label[class*="border-line"]::before,
    tela, então merecem ser a camada mais clara da hierarquia. */
 .dark .dashboard-board {
   --dashboard-bg: #292541;
-  --dashboard-panel: #373252;
-  --dashboard-panel-strong: #40395e;
-  --dashboard-line: #554d75;
-  padding: 1rem;
-  border: 1px solid rgba(153, 133, 207, 0.16);
-  border-radius: 14px;
-  background:
-    radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--dashboard-accent) 12%, transparent), transparent 28rem),
-    linear-gradient(145deg, #2c2847, var(--dashboard-bg));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
 }
 
 .dashboard-board .dashboard-header,
@@ -2507,10 +2497,6 @@ label[class*="border-line"]::before,
 .dark .dashboard-board .dashboard-metrics-grid .dashboard-card:hover {
   border-color: color-mix(in srgb, var(--dashboard-accent) 42%, var(--dashboard-line));
   background: linear-gradient(145deg, #453d65, #3a3457);
-}
-
-@media (max-width: 639px) {
-  .dark .dashboard-board { padding: .75rem; border-radius: 12px; }
 }
 
 .dark .dashboard-board-glow .enter,
@@ -3000,9 +2986,6 @@ label[class*="border-line"]::before,
   --dashboard-panel: #34314d;
   --dashboard-panel-strong: #3a3655;
   --dashboard-line: #504a6d;
-  background:
-    radial-gradient(circle at 4% -4%, color-mix(in srgb, var(--dashboard-accent) 9%, transparent), transparent 26rem),
-    linear-gradient(145deg, #2b2843, #27243d);
 }
 
 .dark .dashboard-board .dashboard-card,

@@ -71,7 +71,7 @@ export function ContactsExplorer({
           </p>
         </div>
 
-        <div className="hidden h-11 w-full items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:flex lg:w-[360px]">
+        <div className="flex h-11 w-full items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] lg:w-[360px]">
           <IconSearch className="h-5 w-5 shrink-0 text-ink-muted" />
           <label className="sr-only" htmlFor="contacts-search">
             Buscar contatos

@@ -311,18 +311,37 @@ export default async function DashboardPage() {
   return (
     <div className={`dashboard-board dashboard-board-${dashboardPreferences.style} dashboard-accent-${dashboardPreferences.accent} space-y-4 sm:space-y-5`}>
       <header className="dashboard-header enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="max-w-2xl">
-          <div className="dashboard-context-line">
-            <span>Visão operacional</span>
-            <span aria-hidden="true">•</span>
-            <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long" }).format(now)}</time>
+        <div className="flex items-start justify-between gap-3 max-w-2xl">
+          <div>
+            <div className="dashboard-context-line">
+              <span>Visão operacional</span>
+              <span aria-hidden="true">•</span>
+              <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long" }).format(now)}</time>
+            </div>
+            <h1 className="mt-2 text-[28px] font-black tracking-[-0.035em] text-ink sm:text-[2.15rem]">
+              Olá, {displayName}!
+            </h1>
+            <p className="mt-1 text-sm font-semibold leading-relaxed text-ink-soft sm:text-base">
+              {greeting}
+            </p>
           </div>
-          <h1 className="mt-2 text-[28px] font-black tracking-[-0.035em] text-ink sm:text-[2.15rem]">
-            Olá, {displayName}!
-          </h1>
-          <p className="mt-1 text-sm font-semibold leading-relaxed text-ink-soft sm:text-base">
-            {greeting}
-          </p>
+
+          <div className="flex shrink-0 items-center gap-2 sm:hidden">
+            <Link
+              href="/tasks"
+              className="nav-item relative grid h-10 w-10 place-items-center rounded-lg border border-line bg-white text-ink-soft shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] hover:text-brand-700"
+              aria-label="Ver lembretes"
+            >
+              <IconBell className="h-[18px] w-[18px]" />
+              <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-danger-500 px-1 text-[11px] font-black text-white">
+                {Math.min(overdue.length, 9)}
+              </span>
+            </Link>
+            <div className="relative grid h-10 w-10 place-items-center rounded-full bg-[linear-gradient(135deg,#6d28d9,#3b16c6)] text-xs font-black text-white shadow-[0_16px_36px_-18px_rgba(92,34,232,0.8)]">
+              {initials(displayName)}
+              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-success-500" />
+            </div>
+          </div>
         </div>
 
         <div className="hidden flex-col gap-3 sm:flex sm:flex-row sm:items-center">

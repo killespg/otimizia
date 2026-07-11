@@ -202,6 +202,20 @@ export function MobileTabBar({
           icon: IconWallet,
         }]
       : []),
+    ...(lawOfficeAccess?.enabled
+      ? [{
+          href: "/assistant",
+          label: "Assistente IA",
+          description: "Tire dúvidas e gere rascunhos",
+          icon: IconBot,
+        }]
+      : []),
+    {
+      href: "/team",
+      label: "Equipe",
+      description: "Gerenciar sua equipe",
+      icon: IconUsers,
+    },
   ];
 
   const renderItem = ({ href, label, icon: Icon }: NavItem) => {
@@ -243,7 +257,7 @@ export function MobileTabBar({
         <>
           <button
             type="button"
-            aria-label="Fechar menu de criação"
+            aria-label="Fechar menu rápido"
             className="mobile-create-backdrop fixed inset-0 bottom-[calc(4.9rem+env(safe-area-inset-bottom))] -z-10 cursor-default bg-ink/5"
             onClick={() => setMenuOpen(false)}
           />
@@ -274,7 +288,7 @@ export function MobileTabBar({
           type="button"
           onClick={() => setMenuOpen((open) => !open)}
           aria-expanded={menuOpen}
-          aria-label="Criar novo"
+          aria-label="Mais opções"
           className="mobile-create nav-item relative mx-auto mb-1 grid h-[58px] w-[64px] place-items-center rounded-2xl bg-brand-700 text-white shadow-[0_18px_36px_-18px_rgba(92,34,232,0.92)] focus-visible:ring-2 focus-visible:ring-white"
         >
           <IconPlus className={"h-7 w-7 transition-transform duration-200 " + (menuOpen ? "rotate-45" : "")} />
