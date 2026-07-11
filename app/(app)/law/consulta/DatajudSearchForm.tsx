@@ -5,9 +5,18 @@ import { DATAJUD_TRIBUNALS } from "@/lib/datajud-tribunals";
 import type { DatajudProcess } from "@/lib/datajud";
 import { IconAlert, IconClock, IconSearch } from "../../icons";
 
-const dateTime = (value: string) =>
-  new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
-const dateOnly = (value: string) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date(value));
+// Datas vindas do DataJud nem sempre são um ISO 8601 válido (já vimos
+// movimentação sem dataHora) — Intl.DateTimeFormat lança RangeError pra uma
+// Invalid Date, o que derrubava a tela inteira. Nunca deixa isso quebrar o
+// render; só mostra "Data não informada".
+function safeFormat(value: string | null | undefined, format: Intl.DateTimeFormatOptions) {
+  if (!value) return "Data não informada";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Data não informada";
+  return new Intl.DateTimeFormat("pt-BR", format).format(date);
+}
+const dateTime = (value: string | null | undefined) => safeFormat(value, { dateStyle: "short", timeStyle: "short" });
+const dateOnly = (value: string | null | undefined) => safeFormat(value, { dateStyle: "long" });
 
 export function DatajudSearchForm() {
   const [tribunalAlias, setTribunalAlias] = useState(DATAJUD_TRIBUNALS[0]?.alias ?? "");

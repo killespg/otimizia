@@ -9,6 +9,10 @@ export type DatajudSyncResult = {
   error?: string;
 };
 
+function isValidDate(value: string | null | undefined): value is string {
+  return Boolean(value) && !Number.isNaN(new Date(value as string).getTime());
+}
+
 type SyncableCase = {
   id: string;
   org_id: string;
@@ -55,11 +59,17 @@ export async function syncCaseWithDatajud(
 
   // Mais antigo primeiro, pra timeline ficar em ordem cronológica de criação.
   const movimentos = [...process.movimentos].sort(
-    (a, b) => new Date(a.dataHora).getTime() - new Date(b.dataHora).getTime()
+    (a, b) =>
+      (isValidDate(a.dataHora) ? new Date(a.dataHora).getTime() : 0) -
+      (isValidDate(b.dataHora) ? new Date(b.dataHora).getTime() : 0)
   );
 
   for (const movimento of movimentos) {
-    const externalRef = `datajud:${numeroNormalizado}:${movimento.codigo}:${movimento.dataHora}`;
+    // Já vimos movimentação do DataJud sem dataHora válida — occurred_at é
+    // not null na tabela, então cai pro momento da sincronização em vez de
+    // falhar o insert (e perder a movimentação) ou gravar lixo.
+    const occurredAt = isValidDate(movimento.dataHora) ? movimento.dataHora : new Date().toISOString();
+    const externalRef = `datajud:${numeroNormalizado}:${movimento.codigo}:${movimento.dataHora ?? occurredAt}`;
     const { error: insertError } = await supabase
       .from("legal_case_events")
       .insert({
@@ -69,7 +79,7 @@ export async function syncCaseWithDatajud(
         event_type: "update",
         title: movimento.nome,
         description: "Sincronizado automaticamente do DataJud (CNJ).",
-        occurred_at: movimento.dataHora,
+        occurred_at: occurredAt,
         external_ref: externalRef,
       })
       .select("id")
