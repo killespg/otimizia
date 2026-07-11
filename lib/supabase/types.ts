@@ -93,6 +93,8 @@ export type LegalCase = {
   summary: string | null;
   datajud_tribunal_alias: string | null;
   datajud_last_synced_at: string | null;
+  datajud_sync_failed_count: number;
+  datajud_next_sync_after: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -136,13 +138,13 @@ export type LegalDeadline = {
   id: string; org_id: string; case_id: string; assigned_to: string | null; created_by: string;
   title: string; deadline_type: "procedural" | "hearing" | "internal" | "client" | "administrative";
   due_at: string; status: "pending" | "completed" | "cancelled"; priority: "low" | "normal" | "high" | "critical";
-  completed_at: string | null; notes: string | null; created_at: string; updated_at: string;
+  completed_at: string | null; notes: string | null; client_visible: boolean; created_at: string; updated_at: string;
 };
 
 export type LegalCaseEvent = {
   id: string; org_id: string; case_id: string; created_by: string;
   event_type: "update" | "filing" | "decision" | "hearing" | "communication" | "note";
-  title: string; description: string | null; occurred_at: string; created_at: string;
+  title: string; description: string | null; occurred_at: string; client_visible: boolean; created_at: string;
   external_ref: string | null;
 };
 
@@ -156,16 +158,31 @@ export type LegalWatchedProcess = {
   last_movement_nome: string | null;
   last_movement_at: string | null;
   last_synced_at: string | null;
+  datajud_sync_failed_count: number;
+  datajud_next_sync_after: string | null;
   seen_at: string | null;
   created_by: string;
   created_at: string;
+};
+
+export type LegalExpense = {
+  id: string; org_id: string; case_id: string | null; contact_id: string | null; created_by: string;
+  description: string; category: "court_fee" | "travel" | "registry" | "expert" | "correspondent" | "copy" | "other";
+  amount_cents: number; expense_date: string; reimbursable: boolean; reimbursed: boolean; notes: string | null; created_at: string;
+};
+
+export type LegalCaseMember = { case_id: string; user_id: string; role: "lead" | "collaborator" | "viewer"; created_at: string };
+
+export type LegalCaseShareLink = {
+  id: string; org_id: string; case_id: string; token: string; created_by: string; label: string | null;
+  revoked_at: string | null; expires_at: string | null; last_accessed_at: string | null; view_count: number; created_at: string;
 };
 
 export type LegalDocument = {
   id: string; org_id: string; case_id: string; uploaded_by: string; name: string;
   document_type: "petition" | "contract" | "evidence" | "decision" | "power_of_attorney" | "client_document" | "other";
   storage_path: string | null; external_url: string | null; version: number;
-  status: "draft" | "review" | "approved" | "filed" | "archived"; notes: string | null; created_at: string; updated_at: string;
+  status: "draft" | "review" | "approved" | "filed" | "archived"; notes: string | null; client_visible: boolean; created_at: string; updated_at: string;
 };
 
 export type Contact = {

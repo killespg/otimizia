@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { classifyDatajudMovement } from "@/lib/ai/datajud-movement";
 import { DatajudApiError, isValidDate, normalizeProcessNumber, searchDatajudProcess } from "@/lib/datajud";
 import { logError } from "@/lib/logger";
+import { backoffHours, hoursFromNow, SUCCESS_SYNC_INTERVAL_HOURS } from "@/lib/law-datajud-sync-schedule";
 
 export type DatajudSyncResult = {
   newEvents: number;
@@ -17,6 +18,7 @@ type SyncableCase = {
   datajud_tribunal_alias: string | null;
   responsible_id: string | null;
   created_by: string;
+  datajud_sync_failed_count?: number;
 };
 
 // Busca o processo no DataJud, registra movimentações novas como
@@ -37,12 +39,21 @@ export async function syncCaseWithDatajud(
   } catch (error) {
     const message = error instanceof DatajudApiError ? error.message : "Falha ao consultar o DataJud.";
     logError("law-datajud-sync.search-failed", error, { caseId: legalCase.id });
+    const failedCount = (legalCase.datajud_sync_failed_count ?? 0) + 1;
+    await supabase
+      .from("legal_cases")
+      .update({ datajud_sync_failed_count: failedCount, datajud_next_sync_after: hoursFromNow(backoffHours(failedCount)) })
+      .eq("id", legalCase.id);
     return { newEvents: 0, newDeadlines: 0, error: message };
   }
 
   await supabase
     .from("legal_cases")
-    .update({ datajud_last_synced_at: new Date().toISOString() })
+    .update({
+      datajud_last_synced_at: new Date().toISOString(),
+      datajud_sync_failed_count: 0,
+      datajud_next_sync_after: hoursFromNow(SUCCESS_SYNC_INTERVAL_HOURS),
+    })
     .eq("id", legalCase.id);
 
   if (!process || process.movimentos.length === 0) {

@@ -68,12 +68,20 @@ export default async function DeadlinesPage() {
             Uma fila por data para o time jurídico saber o que precisa de atenção antes de abrir cada caso.
           </p>
         </div>
-        <Link
-          href="/law"
-          className="nav-item inline-flex min-h-11 items-center justify-center rounded-lg border border-line bg-white px-4 text-sm font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-600"
-        >
-          Ver carteira de casos
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/law/deadlines/calendar"
+            className="nav-item inline-flex min-h-11 items-center justify-center rounded-lg border border-line bg-white px-4 text-sm font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-600"
+          >
+            Ver calendário
+          </Link>
+          <Link
+            href="/law"
+            className="nav-item inline-flex min-h-11 items-center justify-center rounded-lg border border-line bg-white px-4 text-sm font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-600"
+          >
+            Ver carteira de casos
+          </Link>
+        </div>
       </header>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

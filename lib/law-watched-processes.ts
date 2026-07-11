@@ -7,6 +7,7 @@ import {
   type DatajudProcess,
 } from "@/lib/datajud";
 import { logError } from "@/lib/logger";
+import { backoffHours, hoursFromNow, SUCCESS_SYNC_INTERVAL_HOURS } from "@/lib/law-datajud-sync-schedule";
 
 // Registra um processo na lista de acompanhamento na primeira vez que é
 // pesquisado — não faz nada se já existir (não queremos resetar
@@ -42,14 +43,22 @@ export type WatchedProcessSyncResult = {
   updated: number;
 };
 
-// Roda no cron: verifica cada processo acompanhado por qualquer organização
-// e atualiza a última movimentação conhecida quando há algo mais novo do
-// que o que já tínhamos — isso é o que acende "Mudanças recentes" no
-// painel (seen_at não é tocado aqui, só quando o usuário vê/dispensa).
+const SYNC_BATCH_LIMIT = 200;
+
+// Roda no cron: verifica os processos acompanhados que já passaram do
+// próximo horário agendado (incremental — não varre tudo toda vez), até um
+// lote máximo por execução, e atualiza a última movimentação conhecida
+// quando há algo mais novo do que o que já tínhamos — isso é o que acende
+// "Mudanças recentes" no painel (seen_at não é tocado aqui, só quando o
+// usuário vê/dispensa).
 export async function syncWatchedProcesses(supabase: SupabaseClient): Promise<WatchedProcessSyncResult> {
+  const nowIso = new Date().toISOString();
   const { data: watched, error } = await supabase
     .from("legal_watched_processes")
-    .select("id, org_id, tribunal_alias, case_number, last_movement_at");
+    .select("id, org_id, tribunal_alias, case_number, last_movement_at, datajud_sync_failed_count")
+    .or(`datajud_next_sync_after.is.null,datajud_next_sync_after.lte.${nowIso}`)
+    .order("datajud_next_sync_after", { ascending: true, nullsFirst: true })
+    .limit(SYNC_BATCH_LIMIT);
   if (error) {
     logError("law-watched-processes.list-failed", error);
     return { checked: 0, updated: 0 };
@@ -66,19 +75,25 @@ export async function syncWatchedProcesses(supabase: SupabaseClient): Promise<Wa
     } catch (syncError) {
       const message = syncError instanceof DatajudApiError ? syncError.message : undefined;
       logError("law-watched-processes.search-failed", syncError, { entryId: entry.id, message });
+      const failedCount = (entry.datajud_sync_failed_count ?? 0) + 1;
+      await supabase
+        .from("legal_watched_processes")
+        .update({ datajud_sync_failed_count: failedCount, datajud_next_sync_after: hoursFromNow(backoffHours(failedCount)) })
+        .eq("id", entry.id);
       continue;
     }
     if (!process) continue;
 
     const latest = latestMovimento(process.movimentos);
-    if (!latest) continue;
-    const isNewer = !entry.last_movement_at || new Date(latest.dataHora).getTime() > new Date(entry.last_movement_at).getTime();
+    const isNewer = Boolean(latest) && (!entry.last_movement_at || new Date(latest!.dataHora).getTime() > new Date(entry.last_movement_at).getTime());
 
     await supabase
       .from("legal_watched_processes")
       .update({
         last_synced_at: new Date().toISOString(),
-        ...(isNewer ? { last_movement_at: latest.dataHora, last_movement_nome: latest.nome } : {}),
+        datajud_sync_failed_count: 0,
+        datajud_next_sync_after: hoursFromNow(SUCCESS_SYNC_INTERVAL_HOURS),
+        ...(isNewer ? { last_movement_at: latest!.dataHora, last_movement_nome: latest!.nome } : {}),
       })
       .eq("id", entry.id);
 

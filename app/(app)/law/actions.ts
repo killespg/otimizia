@@ -1,10 +1,12 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { canManageLegal, canViewFinance } from "@/lib/law-office";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import type { JobRole, LegalCaseStatus } from "@/lib/supabase/types";
 import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/datajud-tribunals";
@@ -12,6 +14,16 @@ import { normalizeProcessNumber } from "@/lib/datajud";
 import { syncCaseWithDatajud } from "@/lib/law-datajud-sync";
 
 const MAX = { title: 180, text: 1600, short: 160, reference: 180 };
+
+const DOCUMENT_MIME_EXTENSIONS: Record<string, string> = {
+  "application/pdf": "pdf",
+  "application/msword": "doc",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+const MAX_DOCUMENT_BYTES = 20 * 1024 * 1024;
 
 async function requireLawOffice() {
   const supabase = createClient();
@@ -172,6 +184,51 @@ export async function createLegalDocumentLink(formData: FormData) {
   revalidatePath(`/law/${caseId}`);
 }
 
+export async function uploadLegalDocument(formData: FormData) {
+  const { supabase, user, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode adicionar documentos.");
+  const caseId = requiredText(formData.get("case_id"), "Caso", 80);
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) throw new Error("Selecione um arquivo.");
+  if (file.size > MAX_DOCUMENT_BYTES) throw new Error("O arquivo excede o limite de 20MB.");
+  const extension = DOCUMENT_MIME_EXTENSIONS[file.type];
+  if (!extension) throw new Error("Tipo de arquivo não suportado. Envie PDF, Word, JPG, PNG ou WEBP.");
+  const documentType = text(formData.get("document_type"), 32);
+  const path = `${orgId}/${caseId}/${randomUUID()}.${extension}`;
+  const admin = createAdminClient();
+  const { error: uploadError } = await admin.storage.from("legal-documents").upload(path, file, { contentType: file.type });
+  if (uploadError) throw new Error("Não foi possível enviar o arquivo.");
+  const { error } = await supabase.from("legal_documents").insert({
+    org_id: orgId, case_id: caseId, uploaded_by: user.id,
+    name: requiredText(formData.get("name"), "Nome", MAX.title), storage_path: path,
+    document_type: ["petition", "contract", "evidence", "decision", "power_of_attorney", "client_document", "other"].includes(documentType) ? documentType : "other",
+    status: "draft", notes: text(formData.get("notes"), MAX.text) || null,
+  });
+  if (error) {
+    await admin.storage.from("legal-documents").remove([path]);
+    throw new Error("Não foi possível adicionar o documento.");
+  }
+  revalidatePath(`/law/${caseId}`);
+}
+
+// Confere o acesso pelo client normal do usuário (a RLS/can_access_legal_case
+// é o gate real aqui) e só então usa o admin client pra assinar a URL — a
+// signed URL nunca é gerada no render da página, só no clique.
+export async function getLegalDocumentSignedUrl(documentId: string): Promise<string> {
+  const { supabase, orgId } = await requireLawOffice();
+  const { data: document } = await supabase
+    .from("legal_documents")
+    .select("storage_path")
+    .eq("id", documentId)
+    .eq("org_id", orgId)
+    .maybeSingle();
+  if (!document?.storage_path) throw new Error("Documento não encontrado.");
+  const admin = createAdminClient();
+  const { data, error } = await admin.storage.from("legal-documents").createSignedUrl(document.storage_path, 120);
+  if (error || !data?.signedUrl) throw new Error("Não foi possível gerar o link do documento.");
+  return data.signedUrl;
+}
+
 export async function createFeeAgreement(formData: FormData) {
   const { supabase, user, orgId, jobRole, isAdmin } = await requireLawOffice();
   if (!canViewFinance(jobRole, isAdmin)) throw new Error("Seu cargo não pode criar contratos de honorários.");
@@ -237,6 +294,110 @@ export async function recordReceivablePayment(formData: FormData) {
   revalidateLaw();
 }
 
+export async function createLegalExpense(formData: FormData) {
+  const { supabase, user, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canViewFinance(jobRole, isAdmin)) throw new Error("Seu cargo não pode registrar despesas.");
+  const category = text(formData.get("category"), 24);
+  const amountCents = moneyToCents(formData.get("amount"));
+  if (amountCents <= 0) throw new Error("Informe um valor maior que zero.");
+  const { error } = await supabase.from("legal_expenses").insert({
+    org_id: orgId, created_by: user.id,
+    case_id: optionalUuid(formData.get("case_id")), contact_id: optionalUuid(formData.get("contact_id")),
+    description: requiredText(formData.get("description"), "Descrição", MAX.title),
+    category: ["court_fee", "travel", "registry", "expert", "correspondent", "copy", "other"].includes(category) ? category : "court_fee",
+    amount_cents: amountCents,
+    expense_date: dateOrNull(formData.get("expense_date")) ?? new Date().toISOString().slice(0, 10),
+    reimbursable: formData.get("reimbursable") === "on",
+    notes: text(formData.get("notes"), MAX.text) || null,
+  });
+  if (error) throw new Error("Não foi possível registrar a despesa.");
+  revalidateLaw();
+}
+
+export async function toggleLegalExpenseReimbursed(formData: FormData) {
+  const { supabase, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canViewFinance(jobRole, isAdmin)) throw new Error("Seu cargo não pode atualizar despesas.");
+  const id = requiredText(formData.get("id"), "Despesa", 80);
+  const reimbursed = formData.get("reimbursed") === "true";
+  const { error } = await supabase.from("legal_expenses").update({ reimbursed: !reimbursed }).eq("id", id).eq("org_id", orgId);
+  if (error) throw new Error("Não foi possível atualizar a despesa.");
+  revalidateLaw();
+}
+
+export async function addLegalCaseMember(formData: FormData) {
+  const { supabase, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode gerenciar a equipe do caso.");
+  const caseId = requiredText(formData.get("case_id"), "Caso", 80);
+  const userId = optionalUuid(formData.get("user_id"));
+  if (!userId) throw new Error("Escolha um integrante da equipe.");
+  const { data: member } = await supabase.from("organization_members").select("user_id").eq("org_id", orgId).eq("user_id", userId).maybeSingle();
+  if (!member) throw new Error("Esse integrante não pertence à organização.");
+  const role = text(formData.get("role"), 16);
+  const { error } = await supabase.from("legal_case_members").upsert({
+    case_id: caseId, user_id: userId,
+    role: ["lead", "collaborator", "viewer"].includes(role) ? role : "collaborator",
+  });
+  if (error) throw new Error("Não foi possível adicionar o integrante.");
+  revalidatePath(`/law/${caseId}`);
+}
+
+export async function removeLegalCaseMember(formData: FormData) {
+  const { jobRole, isAdmin, supabase } = await requireLawOffice();
+  if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode gerenciar a equipe do caso.");
+  const caseId = requiredText(formData.get("case_id"), "Caso", 80);
+  const userId = requiredText(formData.get("user_id"), "Integrante", 80);
+  const { error } = await supabase.from("legal_case_members").delete().eq("case_id", caseId).eq("user_id", userId);
+  if (error) throw new Error("Não foi possível remover o integrante.");
+  revalidatePath(`/law/${caseId}`);
+}
+
+export async function createCaseShareLink(formData: FormData) {
+  const { supabase, user, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode compartilhar casos.");
+  const caseId = requiredText(formData.get("case_id"), "Caso", 80);
+  const { data: legalCase } = await supabase.from("legal_cases").select("id").eq("id", caseId).eq("org_id", orgId).maybeSingle();
+  if (!legalCase) throw new Error("Caso não encontrado.");
+  const { error } = await supabase.from("legal_case_share_links").insert({
+    org_id: orgId, case_id: caseId, created_by: user.id,
+    label: text(formData.get("label"), MAX.short) || null,
+  });
+  if (error) throw new Error("Não foi possível criar o link.");
+  revalidatePath(`/law/${caseId}`);
+}
+
+export async function revokeCaseShareLink(formData: FormData) {
+  const { supabase, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode compartilhar casos.");
+  const id = requiredText(formData.get("id"), "Link", 80);
+  const caseId = requiredText(formData.get("case_id"), "Caso", 80);
+  const { error } = await supabase.from("legal_case_share_links").update({ revoked_at: new Date().toISOString() }).eq("id", id).eq("org_id", orgId);
+  if (error) throw new Error("Não foi possível revogar o link.");
+  revalidatePath(`/law/${caseId}`);
+}
+
+async function toggleClientVisibility(table: "legal_deadlines" | "legal_case_events" | "legal_documents", label: string, formData: FormData) {
+  const { supabase, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode alterar a visibilidade.");
+  const id = requiredText(formData.get("id"), label, 80);
+  const caseId = requiredText(formData.get("case_id"), "Caso", 80);
+  const current = formData.get("client_visible") === "true";
+  const { error } = await supabase.from(table).update({ client_visible: !current }).eq("id", id).eq("org_id", orgId);
+  if (error) throw new Error("Não foi possível atualizar a visibilidade.");
+  revalidatePath(`/law/${caseId}`);
+}
+
+export async function toggleDeadlineVisibility(formData: FormData) {
+  await toggleClientVisibility("legal_deadlines", "Prazo", formData);
+}
+
+export async function toggleEventVisibility(formData: FormData) {
+  await toggleClientVisibility("legal_case_events", "Movimentação", formData);
+}
+
+export async function toggleDocumentVisibility(formData: FormData) {
+  await toggleClientVisibility("legal_documents", "Documento", formData);
+}
+
 export async function linkDatajudProcess(formData: FormData) {
   const { supabase, orgId, jobRole, isAdmin } = await requireLawOffice();
   if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode vincular processo.");
@@ -261,7 +422,7 @@ export async function syncDatajudProcessNow(formData: FormData) {
   const caseId = requiredText(formData.get("case_id"), "Caso", 80);
   const { data: legalCase } = await supabase
     .from("legal_cases")
-    .select("id, org_id, title, case_number, datajud_tribunal_alias, responsible_id, created_by")
+    .select("id, org_id, title, case_number, datajud_tribunal_alias, responsible_id, created_by, datajud_sync_failed_count")
     .eq("id", caseId)
     .eq("org_id", orgId)
     .maybeSingle();
