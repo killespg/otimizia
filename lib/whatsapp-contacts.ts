@@ -2,23 +2,28 @@ import type { createAdminClient } from "@/lib/supabase/admin";
 import { logError } from "@/lib/logger";
 import { getWorkspaceKey } from "@/lib/workspaces";
 
+export type FoundOrCreatedContact = { contactId: string | null; isNew: boolean };
+
 // Compartilhado pelo webhook (mensagem nova) e pela importação de histórico:
 // acha o contato pelo telefone dentro da org ou cria um novo (fonte "WhatsApp"),
 // usando o workspace_key de um membro qualquer da org como padrão razoável —
-// o webhook não tem "usuário atual" pra herdar isso.
+// o webhook não tem "usuário atual" pra herdar isso. `isNew` importa pro
+// webhook decidir se a IA já pode responder sozinha (número que já era
+// cliente conhecido) ou se deve esperar revisão humana (número nunca visto —
+// em número compartilhado com uso pessoal, evita a IA responder amigo/família).
 export async function findOrCreateContact(
   admin: ReturnType<typeof createAdminClient>,
   orgId: string,
   phoneNumber: string,
   pushName: string | null
-): Promise<string | null> {
+): Promise<FoundOrCreatedContact> {
   const { data: existing } = await admin
     .from("contacts")
     .select("id")
     .eq("org_id", orgId)
     .eq("phone", phoneNumber)
     .maybeSingle();
-  if (existing) return existing.id as string;
+  if (existing) return { contactId: existing.id as string, isNew: false };
 
   const { data: firstMember } = await admin
     .from("organization_members")
@@ -27,7 +32,7 @@ export async function findOrCreateContact(
     .order("created_at", { ascending: true })
     .limit(1)
     .maybeSingle();
-  if (!firstMember) return null;
+  if (!firstMember) return { contactId: null, isNew: true };
 
   const { data: profile } = await admin
     .from("profiles")
@@ -50,7 +55,7 @@ export async function findOrCreateContact(
     .single();
   if (error) {
     logError("whatsapp-contacts.create-failed", error, { orgId, phoneNumber });
-    return null;
+    return { contactId: null, isNew: true };
   }
-  return created.id as string;
+  return { contactId: created.id as string, isNew: true };
 }

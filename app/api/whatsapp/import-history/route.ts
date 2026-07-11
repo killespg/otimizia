@@ -97,10 +97,19 @@ export async function POST() {
       conversationId = existingConversation.id as string;
     } else {
       const contactName = records.find((r) => !r.key.fromMe)?.pushName ?? null;
-      const contactId = await findOrCreateContact(admin, orgId, phone, contactName);
+      const { contactId, isNew } = await findOrCreateContact(admin, orgId, phone, contactName);
       const { data: created, error } = await admin
         .from("whatsapp_conversations")
-        .insert({ org_id: orgId, contact_id: contactId, phone_number: phone, contact_name: contactName })
+        .insert({
+          org_id: orgId,
+          contact_id: contactId,
+          phone_number: phone,
+          contact_name: contactName,
+          // Mesma proteção do webhook: contato que a importação está
+          // criando agora (nunca foi cliente conhecido) começa com IA
+          // pausada, já que number pode ser de uso pessoal.
+          ...(isNew ? { ia_active: false } : {}),
+        })
         .select("id")
         .single();
       if (error || !created) {

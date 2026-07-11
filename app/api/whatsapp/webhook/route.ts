@@ -101,7 +101,7 @@ export async function POST(request: Request) {
         })
         .eq("id", conversationId);
     } else {
-      const contactId = await findOrCreateContact(admin, orgId, phoneNumber, pushName);
+      const { contactId, isNew } = await findOrCreateContact(admin, orgId, phoneNumber, pushName);
       const { data: created, error: createError } = await admin
         .from("whatsapp_conversations")
         .insert({
@@ -109,6 +109,12 @@ export async function POST(request: Request) {
           contact_id: contactId,
           phone_number: phoneNumber,
           contact_name: pushName,
+          // Número desconhecido (nunca foi contato/cliente antes): a IA fica
+          // pausada até revisão humana — protege contra responder
+          // automaticamente amigo/família quando o número é compartilhado
+          // entre uso pessoal e o WhatsApp do negócio. Contato já conhecido
+          // (isNew=false) mantém o padrão da coluna (IA ativa).
+          ...(isNew ? { ia_active: false } : {}),
         })
         .select("id, ia_active")
         .single();
