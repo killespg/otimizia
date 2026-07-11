@@ -36,6 +36,31 @@ export function normalizeProcessNumber(raw: string): string {
   return raw.replace(/\D/g, "");
 }
 
+const MAX_ATTEMPTS = 4;
+// Status que valem retry: 429 (fila cheia, o "es_rejected_execution_exception"
+// que motivou isso) e 5xx (instabilidade momentânea do serviço do CNJ).
+const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchWithRetry(url: string, init: RequestInit): Promise<Response> {
+  let lastResponse: Response | null = null;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const response = await fetch(url, init);
+    if (response.ok || !RETRYABLE_STATUS.has(response.status) || attempt === MAX_ATTEMPTS) {
+      return response;
+    }
+    lastResponse = response;
+    // Backoff exponencial com jitter — a fila do DataJud costuma liberar em
+    // poucos segundos, não faz sentido tentar de novo instantaneamente.
+    const backoffMs = 500 * 2 ** (attempt - 1) + Math.random() * 300;
+    await sleep(backoffMs);
+  }
+  return lastResponse!;
+}
+
 export async function searchDatajudProcess(
   tribunalAlias: string,
   numeroProcessoRaw: string
@@ -49,7 +74,7 @@ export async function searchDatajudProcess(
     throw new DatajudApiError("Número de processo inválido — o formato CNJ tem 20 dígitos.");
   }
 
-  const response = await fetch(`${DATAJUD_BASE_URL}/api_publica_${tribunalAlias}/_search`, {
+  const response = await fetchWithRetry(`${DATAJUD_BASE_URL}/api_publica_${tribunalAlias}/_search`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -59,10 +84,11 @@ export async function searchDatajudProcess(
   });
   if (!response.ok) {
     const body = await response.text().catch(() => "");
-    throw new DatajudApiError(
-      `DataJud respondeu ${response.status} para ${tribunalAlias}: ${body.slice(0, 300)}`,
-      response.status
-    );
+    const friendly =
+      response.status === 429
+        ? "O DataJud está sobrecarregado agora (fila cheia do lado deles). Tentei de novo algumas vezes automaticamente, mas ainda não conseguiu — tente novamente em instantes."
+        : `DataJud respondeu ${response.status} para ${tribunalAlias}: ${body.slice(0, 300)}`;
+    throw new DatajudApiError(friendly, response.status);
   }
   const data = await response.json();
   const hit = data?.hits?.hits?.[0]?._source;
