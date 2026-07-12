@@ -100,57 +100,60 @@ export default async function DashboardPage() {
   ]);
   const orgId = await getActiveOrgId(supabase, user!.id);
   const isAdmin = profile?.is_admin ?? false;
-  const founderMetrics = isAdmin ? await loadFounderMetrics() : null;
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
     user?.user_metadata?.profession_type,
     isAdmin
   );
-  const orgRole = await getOrgRole(supabase, orgId, user!.id);
-  const isOrgAdmin = orgRole === "admin";
-  const lawJobRole =
-    workspaceKey === "law_office"
-      ? (
-          await supabase
+  const isLawOffice = workspaceKey === "law_office";
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+  // Consultas independentes entre si (só precisam de orgId/workspaceKey, já
+  // conhecidos aqui) — feitas juntas para não formar uma fila de idas e
+  // vindas ao banco antes do Promise.all principal logo abaixo.
+  const [orgRole, founderMetrics, { data: lawJobRoleRow }, { data: watchedProcessesData }, { data: legalDeadlinesData }] =
+    await Promise.all([
+      getOrgRole(supabase, orgId, user!.id),
+      isAdmin ? loadFounderMetrics() : Promise.resolve(null),
+      isLawOffice
+        ? supabase
             .from("organization_members")
             .select("job_role")
             .eq("org_id", orgId)
             .eq("user_id", user!.id)
             .maybeSingle()
-        ).data?.job_role
-      : undefined;
-  const watchedProcesses: LegalWatchedProcess[] =
-    workspaceKey === "law_office"
-      ? (
-          await supabase
+        : Promise.resolve({ data: null }),
+      isLawOffice
+        ? supabase
             .from("legal_watched_processes")
             .select("*")
             .eq("org_id", orgId)
             .not("last_movement_at", "is", null)
-        ).data ?? []
-      : [];
-  const recentProcessChanges = watchedProcesses
-    .filter((item) => !item.seen_at || new Date(item.last_movement_at as string) > new Date(item.seen_at))
-    .sort((a, b) => new Date(b.last_movement_at as string).getTime() - new Date(a.last_movement_at as string).getTime())
-    .slice(0, 8);
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  const legalDeadlines: LegalDeadline[] =
-    workspaceKey === "law_office"
-      ? (
-          await supabase
+        : Promise.resolve({ data: null }),
+      isLawOffice
+        ? supabase
             .from("legal_deadlines")
             .select("*")
             .eq("org_id", orgId)
             .eq("status", "pending")
             .gte("due_at", monthStart.toISOString())
             .lt("due_at", monthEnd.toISOString())
-        ).data ?? []
-      : [];
+        : Promise.resolve({ data: null }),
+    ]);
+  const isOrgAdmin = orgRole === "admin";
+  const lawJobRole = lawJobRoleRow?.job_role;
+  const watchedProcesses: LegalWatchedProcess[] = watchedProcessesData ?? [];
+  const recentProcessChanges = watchedProcesses
+    .filter((item) => !item.seen_at || new Date(item.last_movement_at as string) > new Date(item.seen_at))
+    .sort((a, b) => new Date(b.last_movement_at as string).getTime() - new Date(a.last_movement_at as string).getTime())
+    .slice(0, 8);
+  const legalDeadlines: LegalDeadline[] = legalDeadlinesData ?? [];
   const [
     { data: deals },
     { data: tasks },
     { data: contactOptions },
     { count: contactsCount },
+    { count: newContactsThisMonth },
     { count: conversationsToday },
     { count: totalTasksCount },
     { data: orgContext },
@@ -181,6 +184,12 @@ export default async function DashboardPage() {
       .select("*", { count: "exact", head: true })
       .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey),
+    supabase
+      .from("contacts")
+      .select("*", { count: "exact", head: true })
+      .eq("org_id", orgId)
+      .eq("workspace_key", workspaceKey)
+      .gte("created_at", monthStart.toISOString()),
     supabase
       .from("interactions")
       .select("*", { count: "exact", head: true })
@@ -254,6 +263,58 @@ export default async function DashboardPage() {
     ? Math.round(wonValue / wonThisMonth.length)
     : null;
 
+  const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const wonPreviousMonth = allDeals.filter(
+    (deal) =>
+      deal.stage === "ganho" &&
+      deal.closed_at &&
+      new Date(deal.closed_at) >= previousMonthStart &&
+      new Date(deal.closed_at) < monthStart
+  );
+  const lostPreviousMonth = allDeals.filter(
+    (deal) =>
+      deal.stage === "perdido" &&
+      deal.closed_at &&
+      new Date(deal.closed_at) >= previousMonthStart &&
+      new Date(deal.closed_at) < monthStart
+  );
+  const wonValuePreviousMonth = wonPreviousMonth.reduce((sum, deal) => sum + (deal.value_cents ?? 0), 0);
+  const closedPreviousMonth = wonPreviousMonth.length + lostPreviousMonth.length;
+  const conversionRatePreviousMonth = closedPreviousMonth > 0
+    ? Math.round((wonPreviousMonth.length / closedPreviousMonth) * 100)
+    : null;
+  const avgTicketPreviousMonthCents = wonPreviousMonth.length > 0
+    ? Math.round(wonValuePreviousMonth / wonPreviousMonth.length)
+    : null;
+
+  const metricDeltas: Partial<Record<MetricKey, { delta?: string; compare?: string }>> = {
+    won_value_month: {
+      delta: percentChange(wonValue, wonValuePreviousMonth),
+      compare: `${formatBRL(wonValuePreviousMonth)} mês passado`,
+    },
+    won_count_month: {
+      delta: countChange(wonThisMonth.length, wonPreviousMonth.length),
+      compare: `${wonPreviousMonth.length} mês passado`,
+    },
+    conversion_rate:
+      conversionRate !== null && conversionRatePreviousMonth !== null
+        ? {
+            delta: pointsChange(conversionRate, conversionRatePreviousMonth),
+            compare: `${conversionRatePreviousMonth}% mês passado`,
+          }
+        : {},
+    avg_ticket:
+      avgTicketCents !== null && avgTicketPreviousMonthCents !== null
+        ? {
+            delta: percentChange(avgTicketCents, avgTicketPreviousMonthCents),
+            compare: `${formatBRL(avgTicketPreviousMonthCents)} mês passado`,
+          }
+        : {},
+    contacts: {
+      compare: `+${newContactsThisMonth ?? 0} este mês`,
+    },
+  };
+
   const daysElapsed = now.getDate();
   const dailyWonCents = new Array(daysElapsed).fill(0);
   for (const deal of wonThisMonth) {
@@ -316,6 +377,8 @@ export default async function DashboardPage() {
     metricKey: key,
     label: metricLabel(key, preset, dashboardPreferences),
     value: metricValues[key],
+    delta: metricDeltas[key]?.delta,
+    compare: metricDeltas[key]?.compare,
     tone: index % 2 === 0 ? ("purple" as const) : ("pink" as const),
     icon: METRIC_ICONS[key],
     visible: dashboardPreferences.metrics.includes(key),
@@ -406,6 +469,23 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
+
+        <form
+          action="/contacts"
+          className="flex h-11 w-full min-w-0 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:hidden"
+        >
+          <IconSearch className="h-5 w-5 shrink-0 text-ink-muted" />
+          <label className="sr-only" htmlFor="dashboard-contact-search-mobile">
+            Buscar contatos
+          </label>
+          <input
+            id="dashboard-contact-search-mobile"
+            name="q"
+            type="search"
+            placeholder="Buscar contatos, empresas..."
+            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-ink outline-none placeholder:text-ink-muted"
+          />
+        </form>
 
         <div className="hidden flex-col gap-3 sm:flex sm:flex-row sm:items-center">
           <form
@@ -723,6 +803,26 @@ function OpenClaimsPanel({
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function percentChange(current: number, previous: number): string | undefined {
+  if (previous <= 0) return undefined;
+  const change = Math.round(((current - previous) / previous) * 100);
+  if (change === 0) return "estável";
+  return `${change > 0 ? "+" : ""}${change}%`;
+}
+
+function countChange(current: number, previous: number): string | undefined {
+  if (previous <= 0) return undefined;
+  const change = current - previous;
+  if (change === 0) return "estável";
+  return `${change > 0 ? "+" : ""}${change}`;
+}
+
+function pointsChange(current: number, previous: number): string | undefined {
+  const change = current - previous;
+  if (change === 0) return "estável";
+  return `${change > 0 ? "+" : ""}${change}pp`;
 }
 
 function RevenueChart({

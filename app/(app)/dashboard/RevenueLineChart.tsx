@@ -65,8 +65,8 @@ export function RevenueLineChart({ series }: { series: Point[] }) {
       >
         <defs>
           <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#7b3ff2" stopOpacity="0.24" />
-            <stop offset="100%" stopColor="#7b3ff2" stopOpacity="0" />
+            <stop offset="0%" style={{ stopColor: "var(--dashboard-accent, #7b3ff2)" }} stopOpacity="0.24" />
+            <stop offset="100%" style={{ stopColor: "var(--dashboard-accent, #7b3ff2)" }} stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -109,7 +109,7 @@ export function RevenueLineChart({ series }: { series: Point[] }) {
             pathLength={1}
             d={linePath}
             fill="none"
-            stroke="#6d28d9"
+            style={{ stroke: "var(--dashboard-accent-strong, #6d28d9)" }}
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="2"
@@ -120,7 +120,7 @@ export function RevenueLineChart({ series }: { series: Point[] }) {
             cx={x(n - 1)}
             cy={y(series[n - 1].cumulativeCents)}
             r="4"
-            fill="#6d28d9"
+            style={{ fill: "var(--dashboard-accent-strong, #6d28d9)" }}
             stroke="#fff"
             strokeWidth="2"
           />
@@ -151,7 +151,7 @@ export function RevenueLineChart({ series }: { series: Point[] }) {
             x2={x(displayIndex)}
             y1={TOP}
             y2={BOTTOM}
-            stroke="#7b3ff2"
+            style={{ stroke: "var(--dashboard-accent, #7b3ff2)" }}
             strokeWidth="1"
             strokeDasharray="4 4"
             opacity={isHovering ? 1 : 0}
@@ -163,7 +163,7 @@ export function RevenueLineChart({ series }: { series: Point[] }) {
             cx={x(displayIndex)}
             cy={y(displayed.cumulativeCents)}
             r="5"
-            fill="#6d28d9"
+            style={{ fill: "var(--dashboard-accent-strong, #6d28d9)" }}
             stroke="#fff"
             strokeWidth="2"
             opacity={isHovering ? 1 : 0}
