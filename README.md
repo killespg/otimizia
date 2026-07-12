@@ -33,6 +33,20 @@ via **Capacitor** (WebView apontando para o site em produção).
   contatos, mover vendas, gerenciar tarefas, personalizar o painel), lê PDFs
   e fotos anexadas, e responde por voz.
 - **Assinatura**: trial + plano pago via Stripe (checkout, portal, webhook).
+- **Notificações**: push no navegador/app (Web Push) e e-mail (Resend) com
+  resumo diário de retornos de hoje/atrasados e alerta de venda parada,
+  configuráveis em Configurações → Notificações.
+- **Importação de contatos via CSV** com mapeamento de colunas
+  (`/contacts/import`).
+- **Relatório de vendas** por período — criados, ganhos, perdidos, taxa de
+  conversão — com exportação em CSV (`/pipeline/report`).
+- **Lembretes recorrentes** (diário/semanal/mensal): concluir gera a próxima
+  ocorrência automaticamente.
+- **Assinatura de calendário (.ics)**: feed pessoal com lembretes e prazos,
+  compatível com Google Agenda/Apple Calendário (Configurações →
+  Calendário).
+- **LGPD**: exportação dos próprios dados em JSON e exclusão de conta
+  (Configurações → Seus dados / Zona de risco).
 
 ## Configuração
 
@@ -89,19 +103,21 @@ android/         projeto Capacitor (WebView apontando pro site em produção)
 ## Testes e CI
 
 ```bash
-npm run lint       # eslint
-npm run typecheck  # tsc --noEmit
-npm test           # vitest (unidade — módulos puros/lib)
-npm run build      # build de produção
+npm run lint             # eslint
+npm run typecheck        # tsc --noEmit
+npm test                 # vitest (unidade — módulos puros/lib)
+npm run build            # build de produção
+npm run test:integration # RLS/multi-tenancy contra Supabase local (precisa Docker) — veja test/integration/README.md
+npm run test:e2e         # Playwright, fluxo completo no navegador — veja e2e/README.md
 ```
 
-Essas quatro checagens rodam automaticamente em CI a cada push/PR
-(`.github/workflows/ci.yml`). A cobertura de testes ainda é limitada a
-lógica pura (`lib/`); não há testes de integração contra o Supabase (RLS,
-multi-tenancy) nem end-to-end — ver oportunidades abaixo.
+As quatro primeiras checagens rodam automaticamente em CI a cada push/PR
+(`.github/workflows/ci.yml`). `test:integration` e `test:e2e` precisam de
+Supabase local via Docker e não rodam nessa CI por padrão — são para rodar
+localmente (ou num job à parte com Docker disponível).
 
 ## Próximos passos
 
-- Testes de integração para RLS/multi-tenancy (precisa de Supabase local via
-  Docker) e testes e2e (Playwright já está como devDependency).
-- Integração com WhatsApp / e-mail.
+- Integração com WhatsApp já existe (`app/(app)/whatsapp`); e-mail
+  transacional (Resend) cobre resumo diário e venda parada — falta cobrir
+  outros eventos (ex. nova venda ganha, convite de equipe).

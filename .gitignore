@@ -14,6 +14,9 @@ next-env.d.ts
 /.vercel
 /supabase/.branches
 /supabase/.temp
+/test-results/
+/playwright-report/
+/playwright/.cache/
 
 # Ignore local and tool-specific files
 .agents/
