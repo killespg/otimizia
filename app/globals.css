@@ -1331,46 +1331,46 @@
   }
 }
 
-/* Vidro espelhado: fundo translucido + desfoque do que esta atras
-   (backdrop-filter), pra qualquer bg-white/bg-surface/.panel/.card/.glass
-   do app — cards, secoes e janelas flutuantes (modal de lembrete, chat do
-   assistente etc.) usam essas mesmas classes, entao o efeito ja cai em
-   praticamente toda superficie "de cartao" sem precisar tocar em cada tela. */
+/* Vidro espelhado: fundo quase opaco (so uma pitada de translucidez) +
+   desfoque leve do que esta atras (backdrop-filter). Restrito a .card/
+   .panel/.glass/bg-white e as janelas flutuantes que usam <div> (chat do
+   assistente, menu mobile, personalizar painel) — de proposito NAO inclui
+   bg-surface generico, que tambem e usado em input/select/badge/chip
+   pequenos; aplicar blur+transparencia neles borrava texto e deixava a
+   tela "suja" em vez de vidro. */
 .bg-white,
-.bg-surface,
 .card,
 .panel,
 .glass,
+.assistant-sheet,
+.mobile-create-menu,
+.dashboard-customize-panel,
 article[class*="bg-white"],
-article[class*="bg-surface"],
 section[class*="bg-white"],
-section[class*="bg-surface"],
-form[class*="bg-white"],
-form[class*="bg-surface"] {
-  background-color: rgba(255, 255, 255, 0.6) !important;
+form[class*="bg-white"] {
+  background-color: rgba(255, 255, 255, 0.86) !important;
   background-image:
-    radial-gradient(circle at 12% 0%, rgba(139, 61, 255, 0.09), transparent 17rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.08));
+    radial-gradient(circle at 12% 0%, rgba(139, 61, 255, 0.07), transparent 17rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.06));
   background-blend-mode: screen;
-  backdrop-filter: blur(18px) saturate(165%);
-  -webkit-backdrop-filter: blur(18px) saturate(165%);
+  backdrop-filter: blur(11px) saturate(150%);
+  -webkit-backdrop-filter: blur(11px) saturate(150%);
 }
 
 .dark .bg-white,
-.dark .bg-surface,
 .dark .card,
 .dark .panel,
 .dark .glass,
+.dark .assistant-sheet,
+.dark .mobile-create-menu,
+.dark .dashboard-customize-panel,
 .dark article[class*="bg-white"],
-.dark article[class*="bg-surface"],
 .dark section[class*="bg-white"],
-.dark section[class*="bg-surface"],
-.dark form[class*="bg-white"],
-.dark form[class*="bg-surface"] {
-  background-color: rgba(42, 37, 67, 0.55) !important;
+.dark form[class*="bg-white"] {
+  background-color: rgba(42, 37, 67, 0.78) !important;
   background-image:
-    radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.08), transparent 17rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
+    radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.06), transparent 17rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
   background-blend-mode: screen;
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
@@ -1458,8 +1458,8 @@ label[class*="border-line"]::before,
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.4;
-  transform: translate3d(-8%, -6%, 0) scale(0.97);
+  opacity: 0.2;
+  transform: translate3d(-16%, -12%, 0) scale(0.95);
   background:
     radial-gradient(circle at 18% 0%, rgba(139, 61, 255, 0.1), transparent 0 34%),
     linear-gradient(115deg, transparent 0 36%, rgba(255, 255, 255, 0.42) 45%, transparent 56% 100%);
