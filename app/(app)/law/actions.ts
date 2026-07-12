@@ -12,6 +12,8 @@ import type { JobRole, LegalCaseStatus } from "@/lib/supabase/types";
 import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/datajud-tribunals";
 import { normalizeProcessNumber } from "@/lib/datajud";
 import { syncCaseWithDatajud } from "@/lib/law-datajud-sync";
+import { generatePetitionDraft } from "@/lib/ai/petition-draft";
+import { sendDocumentForSignature } from "@/lib/autentique";
 
 const MAX = { title: 180, text: 1600, short: 160, reference: 180 };
 
@@ -184,6 +186,52 @@ export async function createLegalDocumentLink(formData: FormData) {
   revalidatePath(`/law/${caseId}`);
 }
 
+export async function generateLegalDocumentDraft(formData: FormData) {
+  const { supabase, user, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode gerar minutas.");
+  const caseId = requiredText(formData.get("case_id"), "Caso", 80);
+  const pieceType = requiredText(formData.get("piece_type"), "Tipo de peça", MAX.short);
+  const instructions = text(formData.get("instructions"), MAX.text);
+
+  const { data } = await supabase
+    .from("legal_cases")
+    .select("title, area, court, jurisdiction, case_number, opposing_party, summary, contacts(name)")
+    .eq("id", caseId)
+    .eq("org_id", orgId)
+    .maybeSingle();
+  if (!data) throw new Error("Caso não encontrado.");
+  const legalCase = data as typeof data & { contacts: { name: string } | null };
+
+  const { data: eventRows } = await supabase
+    .from("legal_case_events")
+    .select("title, description")
+    .eq("case_id", caseId)
+    .eq("org_id", orgId)
+    .order("occurred_at", { ascending: false })
+    .limit(5);
+
+  const draft = await generatePetitionDraft(pieceType, instructions, {
+    title: legalCase.title,
+    area: legalCase.area,
+    court: legalCase.court,
+    jurisdiction: legalCase.jurisdiction,
+    caseNumber: legalCase.case_number,
+    opposingParty: legalCase.opposing_party,
+    clientName: legalCase.contacts?.name ?? null,
+    summary: legalCase.summary,
+    recentEvents: eventRows ?? [],
+  });
+  if (!draft) throw new Error("Não foi possível gerar a minuta agora. Tente novamente em instantes.");
+
+  const name = text(formData.get("name"), MAX.title) || `${pieceType} (minuta IA)`;
+  const { error } = await supabase.from("legal_documents").insert({
+    org_id: orgId, case_id: caseId, uploaded_by: user.id,
+    name, document_type: "petition", content: draft, generated_by_ai: true, status: "draft",
+  });
+  if (error) throw new Error("Não foi possível salvar a minuta gerada.");
+  revalidatePath(`/law/${caseId}`);
+}
+
 export async function uploadLegalDocument(formData: FormData) {
   const { supabase, user, orgId, jobRole, isAdmin } = await requireLawOffice();
   if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode adicionar documentos.");
@@ -227,6 +275,42 @@ export async function getLegalDocumentSignedUrl(documentId: string): Promise<str
   const { data, error } = await admin.storage.from("legal-documents").createSignedUrl(document.storage_path, 120);
   if (error || !data?.signedUrl) throw new Error("Não foi possível gerar o link do documento.");
   return data.signedUrl;
+}
+
+export async function sendLegalDocumentForSignature(formData: FormData) {
+  const { supabase, user, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode enviar documentos para assinatura.");
+  const documentId = requiredText(formData.get("document_id"), "Documento", 80);
+  const signerName = requiredText(formData.get("signer_name"), "Nome do signatário", MAX.title);
+  const signerEmail = requiredText(formData.get("signer_email"), "E-mail do signatário", MAX.short);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signerEmail)) throw new Error("Informe um e-mail válido.");
+
+  const { data: document } = await supabase
+    .from("legal_documents")
+    .select("id, case_id, name, storage_path")
+    .eq("id", documentId)
+    .eq("org_id", orgId)
+    .maybeSingle();
+  if (!document) throw new Error("Documento não encontrado.");
+  if (!document.storage_path || !document.storage_path.toLowerCase().endsWith(".pdf")) {
+    throw new Error("Só é possível enviar para assinatura arquivos PDF enviados como upload.");
+  }
+
+  const admin = createAdminClient();
+  const { data: file, error: downloadError } = await admin.storage.from("legal-documents").download(document.storage_path);
+  if (downloadError || !file) throw new Error("Não foi possível ler o arquivo do documento.");
+
+  const sent = await sendDocumentForSignature(Buffer.from(await file.arrayBuffer()), document.name, document.name, [
+    { name: signerName, email: signerEmail },
+  ]);
+  if (!sent) throw new Error("Não foi possível enviar o documento para assinatura. Confira se a integração com a Autentique está configurada.");
+
+  const { error } = await supabase.from("legal_document_signatures").insert({
+    org_id: orgId, document_id: document.id, autentique_document_id: sent.id,
+    signer_name: signerName, signer_email: signerEmail, sent_by: user.id,
+  });
+  if (error) throw new Error("O documento foi enviado para assinatura, mas não foi possível registrar o acompanhamento.");
+  revalidatePath(`/law/${document.case_id}`);
 }
 
 export async function createFeeAgreement(formData: FormData) {

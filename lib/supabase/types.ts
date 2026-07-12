@@ -181,8 +181,15 @@ export type LegalCaseShareLink = {
 export type LegalDocument = {
   id: string; org_id: string; case_id: string; uploaded_by: string; name: string;
   document_type: "petition" | "contract" | "evidence" | "decision" | "power_of_attorney" | "client_document" | "other";
-  storage_path: string | null; external_url: string | null; version: number;
+  storage_path: string | null; external_url: string | null; content: string | null; generated_by_ai: boolean; version: number;
   status: "draft" | "review" | "approved" | "filed" | "archived"; notes: string | null; client_visible: boolean; created_at: string; updated_at: string;
+};
+
+export type LegalDocumentSignature = {
+  id: string; org_id: string; document_id: string; autentique_document_id: string;
+  status: "pending" | "viewed" | "signed" | "rejected" | "delivery_failed";
+  signer_name: string; signer_email: string; signed_file_url: string | null;
+  sent_by: string; created_at: string; updated_at: string;
 };
 
 export type Contact = {

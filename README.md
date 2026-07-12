@@ -18,8 +18,9 @@ via **Capacitor** (WebView apontando para o site em produção).
 - **Presets por profissão**: campos, etapas e templates de mensagem se
   adaptam ao tipo de negócio (vendedor autônomo, corretor, consultor,
   prestador de serviço, produtor rural, pequeno negócio, e um vertical
-  dedicado para **escritório de advocacia** — prazos, casos, honorários e
-  recebíveis).
+  dedicado para **escritório de advocacia** — prazos, casos, honorários,
+  recebíveis, minuta de peça gerada por IA e assinatura eletrônica de
+  documentos via Autentique).
 - **Contatos**: cadastro de clientes/leads com telefone, e-mail, empresa,
   origem, observações e campos extras por profissão.
 - **Vendas em etapas**: funil em colunas (Novo → Em contato → Proposta →

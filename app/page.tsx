@@ -27,9 +27,9 @@ const previewTasks = [
 ];
 
 const proofItems = [
-  ["01", "Fila clara", "clientes importantes primeiro"],
-  ["02", "Venda visível", "valor e etapa sem procurar"],
-  ["03", "Sócio-Assistente", "sugestão quando bater dúvida"],
+  ["01", "Fila clara", "Clientes importantes primeiro"],
+  ["02", "Venda visível", "Valor e etapa sem procurar"],
+  ["03", "Sócio-Assistente", "Sugestão quando bater dúvida"],
 ];
 
 const navLinks = [
