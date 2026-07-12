@@ -1505,22 +1505,89 @@ label[class*="border-line"]::before,
   animation-name: activeNavBreatheDark;
 }
 
-.bg-brand-700 {
+/* Roxo "automotive": gradiente de tinta metalica em varias camadas (realce
+   frio no topo, degrade profundo na base) + brilho de clearcoat fixo.
+   Vale pra qualquer bg-brand-700 e pros botoes solidos do app (.btn/.btn-primary/.glass-btn). */
+.bg-brand-700,
+.btn,
+.btn-primary,
+.glass-btn {
   background-image:
-    radial-gradient(circle at 28% 10%, rgba(255, 255, 255, 0.32), transparent 34%),
-    linear-gradient(135deg, #8b3dff, #5f18c4) !important;
+    radial-gradient(circle at 26% 6%, rgba(255, 255, 255, 0.42), transparent 30%),
+    linear-gradient(135deg, #a566ff 0%, #7e2ff0 34%, #5414b8 68%, #2f0a7c 100%) !important;
   box-shadow:
-    0 14px 32px -24px rgba(139, 61, 255, 0.68),
-    inset 0 1px 0 rgba(255, 255, 255, 0.26);
+    0 16px 34px -22px rgba(139, 61, 255, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -14px 22px -16px rgba(0, 0, 0, 0.5);
 }
 
-.dark .bg-brand-700 {
+.dark .bg-brand-700,
+.dark .btn,
+.dark .btn-primary,
+.dark .glass-btn {
   background-image:
-    radial-gradient(circle at 28% 10%, rgba(255, 255, 255, 0.28), transparent 34%),
-    linear-gradient(135deg, #8b3dff, #5f18c4) !important;
+    radial-gradient(circle at 26% 6%, rgba(255, 255, 255, 0.32), transparent 30%),
+    linear-gradient(135deg, #a566ff 0%, #7e2ff0 34%, #5414b8 68%, #2f0a7c 100%) !important;
   box-shadow:
-    0 14px 32px -22px rgba(139, 61, 255, 0.95),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 16px 34px -20px rgba(139, 61, 255, 1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -14px 22px -16px rgba(0, 0, 0, 0.6);
+}
+
+/* Reflexo animado ao passar o mouse: uma faixa de luz varre a superficie,
+   como o brilho de clearcoat em pintura automotiva. Restrito a elementos
+   clicaveis (nav-item/press) pra nao "brilhar" em pontinhos/badges
+   decorativos; .landing-button fica de fora porque ja tem esse mesmo
+   mecanismo (ver .landing-button::before mais acima). */
+.btn,
+.btn-primary,
+.glass-btn,
+.nav-item.bg-brand-700:not(.landing-button),
+.press.bg-brand-700 {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.btn::before,
+.btn-primary::before,
+.glass-btn::before,
+.nav-item.bg-brand-700:not(.landing-button)::before,
+.press.bg-brand-700::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(-120%, 0, 0) skewX(-18deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transition:
+    opacity 180ms var(--ease-ui-out),
+    transform 650ms var(--ease-ui-out);
+}
+
+/* :not(.absolute) preserva o overlay de "carregando" do PendingButton
+   (que usa position:absolute pra cobrir o botao) — sem essa exclusao,
+   essa regra reescreveria a posicao dele pra relative e quebraria o overlay. */
+.btn > *:not(.absolute),
+.btn-primary > *:not(.absolute),
+.glass-btn > *:not(.absolute),
+.nav-item.bg-brand-700:not(.landing-button) > *:not(.absolute),
+.press.bg-brand-700 > *:not(.absolute) {
+  position: relative;
+  z-index: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover::before,
+  .btn-primary:hover::before,
+  .glass-btn:hover::before,
+  .nav-item.bg-brand-700:not(.landing-button):hover::before,
+  .press.bg-brand-700:hover::before {
+    opacity: 1;
+    transform: translate3d(120%, 0, 0) skewX(-18deg);
+  }
 }
 
 .voice-panel.is-live {
