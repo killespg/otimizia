@@ -7,9 +7,10 @@ import { dealValueOrZero } from "@/lib/deals";
 import { formatBRL } from "@/lib/format";
 import { getWorkspaceLabels } from "@/lib/workspace-preferences";
 import { getWorkspaceKey } from "@/lib/workspaces";
+import Link from "next/link";
 import { createDeal } from "../actions";
 import { ContactField } from "../ContactField";
-import { IconColumns, IconPlus, IconUsers, IconWallet } from "../icons";
+import { IconChartBar, IconColumns, IconPlus, IconUsers, IconWallet } from "../icons";
 import { PresetFields } from "../PresetFields";
 import Board from "./Board";
 
@@ -101,6 +102,10 @@ export default async function PipelinePage() {
             {preset.pipelineDescription}
           </p>
         </div>
+        <Link href="/pipeline/report" className="btn-soft inline-flex items-center gap-1.5 self-start">
+          <IconChartBar className="h-4 w-4" />
+          Relatório
+        </Link>
       </header>
 
       <section className="grid gap-3 sm:grid-cols-3 sm:gap-4">
