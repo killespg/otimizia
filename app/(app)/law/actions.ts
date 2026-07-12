@@ -408,6 +408,148 @@ export async function toggleLegalExpenseReimbursed(formData: FormData) {
   revalidateLaw();
 }
 
+const IMPORT_RECEIVABLES_LIMIT = 500;
+const RECEIVABLE_CATEGORIES = ["office_fee", "success_fee", "consultation", "reimbursement", "client_funds"];
+
+export type ImportReceivableRow = {
+  description: string;
+  contactName?: string;
+  category?: string;
+  amount?: string;
+  dueDate?: string;
+  paidAmount?: string;
+  notes?: string;
+};
+
+function safeMoneyToCents(raw: string | undefined): number | null {
+  if (!raw) return null;
+  const cleaned = raw.replace(/R\$|\s/g, "");
+  if (!cleaned) return null;
+  const normalized = cleaned.includes(",") ? cleaned.replace(/\./g, "").replace(",", ".") : cleaned;
+  const amount = Number(normalized);
+  if (!Number.isFinite(amount) || amount < 0) return null;
+  return Math.round(amount * 100);
+}
+
+// Aceita yyyy-mm-dd (ISO, o que o <input type="date"> usa) e dd/mm/yyyy ou
+// dd-mm-yyyy (formato comum de planilha brasileira) — sem isso, qualquer
+// exportação de Excel/Google Sheets em pt-BR cairia toda como inválida.
+function safeDueDate(raw: string | undefined): string | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+  const brMatch = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (brMatch) {
+    const [, day, month, year] = brMatch;
+    const iso = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    const date = new Date(`${iso}T12:00:00`);
+    return Number.isNaN(date.valueOf()) ? null : iso;
+  }
+  return null;
+}
+
+// Importação de contas a receber via CSV (planilha de honorários/recebíveis
+// do escritório). Repetível — cada chamada só insere linhas novas, não
+// mexe no que já existe. Cliente é casado por nome (o mais próximo de "sem
+// fricção" sem pedir pra escolher linha a linha); sem correspondência exata,
+// cria um contato novo.
+export async function importReceivablesCsv(
+  rows: ImportReceivableRow[]
+): Promise<{ imported: number; skipped: number }> {
+  const { supabase, user, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canViewFinance(jobRole, isAdmin)) throw new Error("Seu cargo não pode importar contas a receber.");
+
+  const limited = rows.slice(0, IMPORT_RECEIVABLES_LIMIT);
+  const contactIdByName = new Map<string, string | null>();
+
+  async function resolveContactId(name: string | undefined): Promise<string | null> {
+    const trimmed = name?.trim();
+    if (!trimmed) return null;
+    const key = trimmed.toLocaleLowerCase("pt-BR");
+    if (contactIdByName.has(key)) return contactIdByName.get(key)!;
+
+    const { data: existing } = await supabase
+      .from("contacts")
+      .select("id")
+      .eq("org_id", orgId)
+      .eq("workspace_key", "law_office")
+      .ilike("name", trimmed)
+      .limit(1)
+      .maybeSingle();
+    if (existing) {
+      contactIdByName.set(key, existing.id);
+      return existing.id;
+    }
+
+    const { data: created } = await supabase
+      .from("contacts")
+      .insert({
+        owner_id: user.id,
+        org_id: orgId,
+        workspace_key: "law_office",
+        name: trimmed.slice(0, 120),
+        source: "Importação CSV",
+      })
+      .select("id")
+      .single();
+    contactIdByName.set(key, created?.id ?? null);
+    return created?.id ?? null;
+  }
+
+  let imported = 0;
+  let skipped = 0;
+
+  for (const row of limited) {
+    const description = row.description?.trim().slice(0, MAX.title);
+    const originalCents = safeMoneyToCents(row.amount);
+    const dueDate = safeDueDate(row.dueDate);
+    if (!description || originalCents === null || originalCents <= 0 || !dueDate) {
+      skipped++;
+      continue;
+    }
+    const category = RECEIVABLE_CATEGORIES.includes(row.category ?? "") ? (row.category as string) : "office_fee";
+    const contactId = await resolveContactId(row.contactName);
+
+    const { data: receivable, error } = await supabase
+      .from("receivables")
+      .insert({
+        org_id: orgId,
+        workspace_key: "law_office",
+        contact_id: contactId,
+        created_by: user.id,
+        description,
+        category,
+        original_cents: originalCents,
+        due_date: dueDate,
+        notes: text(row.notes ?? null, MAX.text) || null,
+      })
+      .select("id")
+      .single();
+    if (error || !receivable) {
+      skipped++;
+      continue;
+    }
+
+    const paidCents = safeMoneyToCents(row.paidAmount);
+    if (paidCents && paidCents > 0) {
+      await supabase.from("receivable_payments").insert({
+        receivable_id: receivable.id,
+        org_id: orgId,
+        recorded_by: user.id,
+        amount_cents: Math.min(paidCents, originalCents),
+        paid_at: new Date().toISOString(),
+        method: "other",
+        reference: "Importação CSV",
+      });
+    }
+
+    imported++;
+  }
+
+  revalidateLaw();
+  return { imported, skipped };
+}
+
 export async function addLegalCaseMember(formData: FormData) {
   const { supabase, orgId, jobRole, isAdmin } = await requireLawOffice();
   if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode gerenciar a equipe do caso.");
