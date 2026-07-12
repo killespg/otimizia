@@ -1331,30 +1331,49 @@
   }
 }
 
+/* Vidro espelhado: fundo translucido + desfoque do que esta atras
+   (backdrop-filter), pra qualquer bg-white/bg-surface/.panel/.card/.glass
+   do app — cards, secoes e janelas flutuantes (modal de lembrete, chat do
+   assistente etc.) usam essas mesmas classes, entao o efeito ja cai em
+   praticamente toda superficie "de cartao" sem precisar tocar em cada tela. */
 .bg-white,
+.bg-surface,
 .card,
 .panel,
 .glass,
 article[class*="bg-white"],
+article[class*="bg-surface"],
 section[class*="bg-white"],
-form[class*="bg-white"] {
+section[class*="bg-surface"],
+form[class*="bg-white"],
+form[class*="bg-surface"] {
+  background-color: rgba(255, 255, 255, 0.6) !important;
   background-image:
-    radial-gradient(circle at 12% 0%, rgba(139, 61, 255, 0.052), transparent 17rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0));
+    radial-gradient(circle at 12% 0%, rgba(139, 61, 255, 0.09), transparent 17rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.08));
   background-blend-mode: screen;
+  backdrop-filter: blur(18px) saturate(165%);
+  -webkit-backdrop-filter: blur(18px) saturate(165%);
 }
 
 .dark .bg-white,
+.dark .bg-surface,
 .dark .card,
 .dark .panel,
 .dark .glass,
 .dark article[class*="bg-white"],
+.dark article[class*="bg-surface"],
 .dark section[class*="bg-white"],
-.dark form[class*="bg-white"] {
+.dark section[class*="bg-surface"],
+.dark form[class*="bg-white"],
+.dark form[class*="bg-surface"] {
+  background-color: rgba(42, 37, 67, 0.55) !important;
   background-image:
-    radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.055), transparent 17rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0));
+    radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.08), transparent 17rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
   background-blend-mode: screen;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
 
 .card,
@@ -1364,7 +1383,10 @@ article[class*="border-line"],
 section[class*="border-line"],
 form[class*="border-line"],
 label[class*="border-line"],
-.voice-panel {
+.voice-panel,
+.assistant-sheet,
+.mobile-create-menu,
+.dashboard-customize-panel {
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -1379,7 +1401,10 @@ label[class*="border-line"],
 .dark section[class*="border-line"],
 .dark form[class*="border-line"],
 .dark label[class*="border-line"],
-.dark .voice-panel {
+.dark .voice-panel,
+.dark .assistant-sheet,
+.dark .mobile-create-menu,
+.dark .dashboard-customize-panel {
   border-color: rgba(90, 88, 116, 0.48);
 }
 
@@ -1387,7 +1412,10 @@ article[class*="border-line"] > *,
 section[class*="border-line"] > *,
 form[class*="border-line"] > *,
 label[class*="border-line"] > *,
-.voice-panel > * {
+.voice-panel > *,
+.assistant-sheet > *,
+.mobile-create-menu > *,
+.dashboard-customize-panel > * {
   position: relative;
   z-index: 1;
 }
@@ -1414,18 +1442,24 @@ section[class*="border-line"] > .reminder-modal {
   }
 }
 
+/* Brilho de cristal sempre ligeiramente visivel em repouso (nao so no
+   hover) - e o que da a sensacao de vidro espelhado em vez de card liso;
+   o hover abaixo so intensifica e centraliza esse mesmo brilho. */
 article[class*="border-line"]::before,
 section[class*="border-line"]::before,
 form[class*="border-line"]::before,
 label[class*="border-line"]::before,
-.voice-panel::before {
+.voice-panel::before,
+.assistant-sheet::before,
+.mobile-create-menu::before,
+.dashboard-customize-panel::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0;
-  transform: translate3d(-22%, -18%, 0) scale(0.92);
+  opacity: 0.4;
+  transform: translate3d(-8%, -6%, 0) scale(0.97);
   background:
     radial-gradient(circle at 18% 0%, rgba(139, 61, 255, 0.1), transparent 0 34%),
     linear-gradient(115deg, transparent 0 36%, rgba(255, 255, 255, 0.42) 45%, transparent 56% 100%);
@@ -1438,7 +1472,10 @@ label[class*="border-line"]::before,
 .dark section[class*="border-line"]::before,
 .dark form[class*="border-line"]::before,
 .dark label[class*="border-line"]::before,
-.dark .voice-panel::before {
+.dark .voice-panel::before,
+.dark .assistant-sheet::before,
+.dark .mobile-create-menu::before,
+.dark .dashboard-customize-panel::before {
   background:
     radial-gradient(circle at 18% 0%, rgba(199, 168, 255, 0.17), transparent 0 34%),
     linear-gradient(115deg, transparent 0 36%, rgba(255, 255, 255, 0.07) 45%, transparent 56% 100%);
@@ -1447,7 +1484,10 @@ label[class*="border-line"]::before,
 @media (hover: hover) and (pointer: fine) {
   article[class*="border-line"]:hover,
   section[class*="border-line"]:hover,
-  form[class*="border-line"]:hover {
+  form[class*="border-line"]:hover,
+  .assistant-sheet:hover,
+  .mobile-create-menu:hover,
+  .dashboard-customize-panel:hover {
     border-color: rgba(139, 61, 255, 0.28);
     box-shadow:
       0 24px 54px -46px rgba(54, 35, 92, 0.54),
@@ -1457,7 +1497,10 @@ label[class*="border-line"]::before,
 
   .dark article[class*="border-line"]:hover,
   .dark section[class*="border-line"]:hover,
-  .dark form[class*="border-line"]:hover {
+  .dark form[class*="border-line"]:hover,
+  .dark .assistant-sheet:hover,
+  .dark .mobile-create-menu:hover,
+  .dark .dashboard-customize-panel:hover {
     border-color: rgba(158, 136, 216, 0.68);
     box-shadow:
       0 24px 60px -44px rgba(0, 0, 0, 0.98),
@@ -1469,7 +1512,10 @@ label[class*="border-line"]::before,
   section[class*="border-line"]:hover::before,
   form[class*="border-line"]:hover::before,
   label[class*="border-line"]:hover::before,
-  .voice-panel:hover::before {
+  .voice-panel:hover::before,
+  .assistant-sheet:hover::before,
+  .mobile-create-menu:hover::before,
+  .dashboard-customize-panel:hover::before {
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
   }
