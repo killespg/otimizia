@@ -13,10 +13,15 @@ import { createClient } from "@/lib/supabase/server";
 import type { Organization, Profile } from "@/lib/supabase/types";
 import { getWorkspaceLabels } from "@/lib/workspace-preferences";
 import { getWorkspaceKey } from "@/lib/workspaces";
+import type { NotificationPreferences } from "@/lib/supabase/types";
 import { updateProfessionTypes } from "../actions";
 import { updateDashboardPreferences } from "../dashboard/actions";
 import { IconAlert, IconCheck } from "../icons";
 import { DeleteAccountForm } from "./DeleteAccountForm";
+import { DataExportButton } from "./DataExportButton";
+import { CalendarFeedField } from "./CalendarFeedField";
+import { PushNotificationToggle } from "./PushNotificationToggle";
+import { updateNotificationPreferences } from "./notifications-actions";
 import {
   deleteAccount,
   updateEmail,
@@ -37,14 +42,17 @@ export default async function SettingsPage({
   if (!user) redirect("/login");
 
   const orgId = await getActiveOrgId(supabase, user.id);
-  const [{ data: profileData }, { data: orgData }, role] = await Promise.all([
+  const [{ data: profileData }, { data: orgData }, role, { data: notificationPrefsData }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
     supabase.from("organizations").select("*").eq("id", orgId).maybeSingle(),
     getOrgRole(supabase, orgId, user.id),
+    supabase.from("notification_preferences").select("*").eq("user_id", user.id).maybeSingle(),
   ]);
   const profile = profileData as Profile | null;
   const org = orgData as Organization | null;
   const isOrgAdmin = role === "admin";
+  const notificationPrefs = notificationPrefsData as NotificationPreferences | null;
+  const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null;
 
   const isFounder = profile?.is_admin ?? false;
   const workspaceKey = getWorkspaceKey(
@@ -136,6 +144,52 @@ export default async function SettingsPage({
             Nome da empresa, contexto e preferências da IA ficam em Equipe
             <span aria-hidden="true">→</span>
           </Link>
+
+          <SectionCard
+            title="Notificações"
+            description="Como e quando você quer ser avisado de quem precisa de retorno."
+          >
+            <PushNotificationToggle vapidPublicKey={vapidPublicKey} />
+            <form action={updateNotificationPreferences} className="space-y-2 border-t border-line pt-4">
+              <label className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line px-3 py-2 text-sm font-bold text-ink-soft">
+                <input
+                  type="checkbox"
+                  name="daily_push"
+                  defaultChecked={notificationPrefs?.daily_push ?? true}
+                  className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
+                />
+                Aviso push diário (hoje + atrasados)
+              </label>
+              <label className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line px-3 py-2 text-sm font-bold text-ink-soft">
+                <input
+                  type="checkbox"
+                  name="daily_summary_email"
+                  defaultChecked={notificationPrefs?.daily_summary_email ?? true}
+                  className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
+                />
+                Resumo diário por e-mail
+              </label>
+              <label className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line px-3 py-2 text-sm font-bold text-ink-soft">
+                <input
+                  type="checkbox"
+                  name="stalled_deal_email"
+                  defaultChecked={notificationPrefs?.stalled_deal_email ?? true}
+                  className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
+                />
+                Alerta por e-mail quando uma venda fica parada
+              </label>
+              <PendingButton className="btn-soft" pendingLabel="Salvando">
+                Salvar preferências
+              </PendingButton>
+            </form>
+          </SectionCard>
+
+          <SectionCard
+            title="Calendário"
+            description="Assine seus lembretes no Google Agenda, Apple Calendário ou outro app de calendário."
+          >
+            <CalendarFeedField token={profile?.calendar_ics_token ?? null} />
+          </SectionCard>
         </div>
 
         <div className="space-y-4">
@@ -323,6 +377,13 @@ export default async function SettingsPage({
             </form>
           </div>
         )}
+      </SectionCard>
+
+      <SectionCard
+        title="Seus dados"
+        description="Baixe uma cópia dos seus contatos, vendas, lembretes e conversas registradas."
+      >
+        <DataExportButton />
       </SectionCard>
 
       <SectionCard title="Zona de risco" description="Ações permanentes, sem volta." danger>

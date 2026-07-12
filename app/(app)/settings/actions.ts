@@ -179,6 +179,19 @@ export async function deleteAccount(formData: FormData) {
 
   const { error } = await admin.auth.admin.deleteUser(user.id);
   ensureOk(error, "Não deu para excluir a conta.");
+
+  // Best-effort: se essa era a última pessoa da organização, ela fica órfã
+  // (organization_members já foi zerada pelo cascade acima). Tenta limpar a
+  // linha também — se houver algo com FK sem cascade (ex. instância de
+  // WhatsApp), a exclusão da conta já aconteceu de qualquer forma, então só
+  // registra e segue; não é motivo para falhar a exclusão da conta.
+  if ((memberCount ?? 0) <= 1) {
+    const { error: orgDeleteError } = await admin.from("organizations").delete().eq("id", orgId);
+    if (orgDeleteError) {
+      logError("settings.delete-account.orphan-org-cleanup", orgDeleteError, { orgId });
+    }
+  }
+
   redirect("/");
 }
 

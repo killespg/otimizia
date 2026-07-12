@@ -26,6 +26,7 @@ export type Profile = {
   checklist_dismissed_at: string | null;
   dashboard_preferences: Record<string, unknown>;
   favorite_tribunals: string[];
+  calendar_ics_token: string;
   created_at: string;
 };
 
@@ -242,6 +243,8 @@ export type Task = {
   title: string;
   due_at: string | null;
   done: boolean;
+  recurrence: "none" | "daily" | "weekly" | "monthly";
+  recurrence_spawned: boolean;
   created_at: string;
 };
 
@@ -253,6 +256,24 @@ export type Interaction = {
   contact_id: string;
   body: string;
   created_at: string;
+};
+
+export type PushSubscriptionRow = {
+  id: string;
+  user_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  user_agent: string | null;
+  created_at: string;
+};
+
+export type NotificationPreferences = {
+  user_id: string;
+  daily_push: boolean;
+  daily_summary_email: boolean;
+  stalled_deal_email: boolean;
+  updated_at: string;
 };
 
 export type WhatsappInstanceStatus = "pendente" | "conectado" | "desconectado";
