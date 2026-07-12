@@ -55,10 +55,10 @@
 
   .dark body {
     background-image:
-      radial-gradient(circle at 14% -8%, rgba(165, 121, 255, 0.46), transparent 38rem),
-      radial-gradient(circle at 86% 4%, rgba(72, 187, 235, 0.26), transparent 34rem),
-      radial-gradient(circle at 50% 118%, rgba(140, 74, 255, 0.24), transparent 36rem),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(8, 7, 16, 0) 380px);
+      radial-gradient(circle at 14% -8%, rgba(155, 113, 255, 0.38), transparent 36rem),
+      radial-gradient(circle at 86% 4%, rgba(72, 161, 214, 0.2), transparent 32rem),
+      radial-gradient(circle at 50% 118%, rgba(123, 63, 242, 0.18), transparent 34rem),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(8, 7, 16, 0) 380px);
   }
 
   /* Titulos: quebra equilibrada; prosa longa: sem orfas. */
@@ -1332,13 +1332,16 @@
   }
 }
 
-/* Vidro espelhado: fundo quase opaco (so uma pitada de translucidez) +
-   desfoque leve do que esta atras (backdrop-filter). Restrito a .card/
-   .panel/.glass/bg-white e as janelas flutuantes que usam <div> (chat do
+/* Vidro espelhado: a cor de fundo continua vindo do MESMO token que o
+   resto do app usa (rgb(var(--color-surface)), o mesmo que .dark .bg-white
+   resolve mais abaixo) — so com uma pitada de transparencia via color-mix()
+   e um blur leve por cima. Isso evita ter duas fontes de verdade pra cor
+   do card (uma no token, outra hardcoded aqui) que saem levemente
+   diferentes e ficam "brigando" visualmente. Restrito a .card/.panel/
+   .glass/bg-white e as janelas flutuantes que usam <div> (chat do
    assistente, menu mobile, personalizar painel) — de proposito NAO inclui
-   bg-surface generico, que tambem e usado em input/select/badge/chip
-   pequenos; aplicar blur+transparencia neles borrava texto e deixava a
-   tela "suja" em vez de vidro. */
+   bg-surface generico (input/select/badge/chip), que fica ilegivel com
+   blur+transparencia em cima. */
 .bg-white,
 .card,
 .panel,
@@ -1349,13 +1352,13 @@
 article[class*="bg-white"],
 section[class*="bg-white"],
 form[class*="bg-white"] {
-  background-color: rgba(255, 255, 255, 0.86) !important;
+  background-color: color-mix(in srgb, rgb(var(--color-surface)) 90%, transparent) !important;
   background-image:
-    radial-gradient(circle at 12% 0%, rgba(139, 61, 255, 0.07), transparent 17rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.06));
+    radial-gradient(circle at 12% 0%, rgba(139, 61, 255, 0.052), transparent 17rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0));
   background-blend-mode: screen;
-  backdrop-filter: blur(11px) saturate(150%);
-  -webkit-backdrop-filter: blur(11px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
 }
 
 .dark .bg-white,
@@ -1368,13 +1371,13 @@ form[class*="bg-white"] {
 .dark article[class*="bg-white"],
 .dark section[class*="bg-white"],
 .dark form[class*="bg-white"] {
-  background-color: rgba(24, 20, 40, 0.82) !important;
+  background-color: color-mix(in srgb, rgb(var(--color-surface)) 90%, transparent) !important;
   background-image:
-    radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.09), transparent 17rem),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0));
+    radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.055), transparent 17rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0));
   background-blend-mode: screen;
-  backdrop-filter: blur(11px) saturate(150%);
-  -webkit-backdrop-filter: blur(11px) saturate(150%);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
 }
 
 .card,
@@ -1443,9 +1446,11 @@ section[class*="border-line"] > .reminder-modal {
   }
 }
 
-/* Brilho de cristal sempre ligeiramente visivel em repouso (nao so no
-   hover) - e o que da a sensacao de vidro espelhado em vez de card liso;
-   o hover abaixo so intensifica e centraliza esse mesmo brilho. */
+/* Brilho de cristal: fica invisivel em repouso e so aparece ao passar o
+   mouse (descoberta pelo gesto, nao um brilho ligado o tempo todo) — um
+   reflexo estatico em toda superficie fica "sujo"/gimmick rapido demais;
+   como detalhe de hover ele ainda entrega a sensacao de vidro sem virar
+   ruido visual permanente na tela. */
 article[class*="border-line"]::before,
 section[class*="border-line"]::before,
 form[class*="border-line"]::before,
@@ -1459,8 +1464,8 @@ label[class*="border-line"]::before,
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.2;
-  transform: translate3d(-16%, -12%, 0) scale(0.95);
+  opacity: 0;
+  transform: translate3d(-22%, -18%, 0) scale(0.92);
   background:
     radial-gradient(circle at 18% 0%, rgba(139, 61, 255, 0.1), transparent 0 34%),
     linear-gradient(115deg, transparent 0 36%, rgba(255, 255, 255, 0.42) 45%, transparent 56% 100%);
@@ -1478,8 +1483,8 @@ label[class*="border-line"]::before,
 .dark .mobile-create-menu::before,
 .dark .dashboard-customize-panel::before {
   background:
-    radial-gradient(circle at 18% 0%, rgba(199, 168, 255, 0.26), transparent 0 34%),
-    linear-gradient(115deg, transparent 0 36%, rgba(255, 255, 255, 0.14) 45%, transparent 56% 100%);
+    radial-gradient(circle at 18% 0%, rgba(199, 168, 255, 0.2), transparent 0 34%),
+    linear-gradient(115deg, transparent 0 36%, rgba(255, 255, 255, 0.1) 45%, transparent 56% 100%);
 }
 
 @media (hover: hover) and (pointer: fine) {
