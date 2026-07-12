@@ -20,6 +20,13 @@ import { IconTrash } from "../icons";
 
 type Member = { user_id: string; name: string | null };
 
+const RECURRENCE_LABEL: Record<Task["recurrence"], string> = {
+  none: "",
+  daily: "↻ diário",
+  weekly: "↻ semanal",
+  monthly: "↻ mensal",
+};
+
 export default function TaskItem({
   task,
   overdue,
@@ -85,6 +92,14 @@ export default function TaskItem({
         </label>
 
         <div className="flex shrink-0 items-center gap-2">
+          {task.recurrence !== "none" && (
+            <span
+              className="hidden rounded-md bg-surface-2 px-2 py-1 text-xs font-bold text-ink-muted sm:inline"
+              title="Lembrete recorrente"
+            >
+              {RECURRENCE_LABEL[task.recurrence]}
+            </span>
+          )}
           {task.due_at &&
             (isOverdue ? (
               <span className="rounded-md bg-danger-50 px-2.5 py-1 text-xs font-black tabular-nums text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]">

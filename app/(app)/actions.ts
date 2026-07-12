@@ -167,6 +167,49 @@ export async function createContact(formData: FormData) {
   redirect(safeReturnPath(formData.get("return_to"), "/contacts"));
 }
 
+const IMPORT_BATCH_LIMIT = 500;
+
+export type ImportContactRow = {
+  name: string;
+  phone?: string;
+  email?: string;
+  company?: string;
+  source?: string;
+  notes?: string;
+};
+
+export async function importContacts(
+  rows: ImportContactRow[]
+): Promise<{ imported: number; skipped: number }> {
+  const { supabase, user, orgId, workspaceKey } = await requireUserWithPreset();
+  const limited = rows.slice(0, IMPORT_BATCH_LIMIT);
+
+  const toInsert = limited
+    .map((row) => ({
+      owner_id: user.id,
+      org_id: orgId,
+      workspace_key: workspaceKey,
+      name: (row.name ?? "").trim().slice(0, LIMIT.name),
+      phone: row.phone?.trim().slice(0, LIMIT.phone) || null,
+      email: row.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email.trim()) ? row.email.trim().toLowerCase().slice(0, LIMIT.email) : null,
+      company: row.company?.trim().slice(0, LIMIT.company) || null,
+      source: row.source?.trim().slice(0, LIMIT.source) || "Importação CSV",
+      notes: row.notes?.trim().slice(0, LIMIT.notes) || null,
+      details: {},
+    }))
+    .filter((row) => row.name.length > 0);
+
+  const skipped = limited.length - toInsert.length;
+  if (toInsert.length === 0) return { imported: 0, skipped };
+
+  const { error } = await supabase.from("contacts").insert(toInsert);
+  ensureOk(error, "Não deu para importar os contatos.");
+
+  revalidatePath("/contacts");
+  revalidatePath("/dashboard");
+  return { imported: toInsert.length, skipped };
+}
+
 export async function updateContact(formData: FormData) {
   const { supabase, orgId, workspaceKey, preset } = await requireUserWithPreset();
   const id = requiredText(formData.get("id"), "Contato", 80);
@@ -469,6 +512,7 @@ export async function createTask(formData: FormData) {
     contact_id: contactId,
     title: requiredText(formData.get("title"), "Lembrete", LIMIT.title),
     due_at: dateTimeOrNull(formData.get("due_at")),
+    recurrence: recurrenceOrNone(formData.get("recurrence")),
   });
   ensureOk(error, "Não deu para salvar o lembrete.");
   revalidatePath("/tasks");
@@ -480,7 +524,12 @@ export async function createTask(formData: FormData) {
 
 export async function toggleTask(id: string, done: boolean) {
   const { supabase, user, orgId, workspaceKey } = await requireActiveUserWithWorkspace();
-  const { data: task } = await supabase.from("tasks").select("reviewer_id,review_status,assignee_id").eq("id",id).eq("org_id",orgId).maybeSingle();
+  const { data: task } = await supabase
+    .from("tasks")
+    .select("reviewer_id,review_status,assignee_id,owner_id,contact_id,deal_id,title,due_at,recurrence,recurrence_spawned")
+    .eq("id", id)
+    .eq("org_id", orgId)
+    .maybeSingle();
   if (done && task?.reviewer_id && task.assignee_id === user.id) {
     throw new Error("Entregue a tarefa para aprovação em vez de concluí-la diretamente.");
   }
@@ -491,9 +540,40 @@ export async function toggleTask(id: string, done: boolean) {
     .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para atualizar o lembrete.");
+
+  // Concluir uma tarefa recorrente cria a próxima ocorrência. recurrence_spawned
+  // evita duplicar a próxima tarefa se o usuário desmarcar e marcar de novo.
+  if (done && task && task.recurrence !== "none" && !task.recurrence_spawned) {
+    const nextDueAt = advanceRecurrence(task.due_at, task.recurrence as "daily" | "weekly" | "monthly");
+    await supabase.from("tasks").insert({
+      owner_id: task.owner_id,
+      org_id: orgId,
+      workspace_key: workspaceKey,
+      assignee_id: task.assignee_id,
+      contact_id: task.contact_id,
+      deal_id: task.deal_id,
+      title: task.title,
+      due_at: nextDueAt,
+      recurrence: task.recurrence,
+    });
+    await supabase.from("tasks").update({ recurrence_spawned: true }).eq("id", id);
+  }
+
   revalidatePath("/tasks");
   revalidatePath("/calendar");
   revalidatePath("/dashboard");
+}
+
+function recurrenceOrNone(v: FormDataEntryValue | null): "none" | "daily" | "weekly" | "monthly" {
+  return v === "daily" || v === "weekly" || v === "monthly" ? v : "none";
+}
+
+function advanceRecurrence(dueAt: string | null, recurrence: "daily" | "weekly" | "monthly"): string | null {
+  const base = dueAt ? new Date(dueAt) : new Date();
+  if (recurrence === "daily") base.setDate(base.getDate() + 1);
+  else if (recurrence === "weekly") base.setDate(base.getDate() + 7);
+  else base.setMonth(base.getMonth() + 1);
+  return base.toISOString();
 }
 
 export async function deleteTask(formData: FormData) {

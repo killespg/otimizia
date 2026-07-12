@@ -148,8 +148,19 @@ export default async function TasksPage() {
             Salvar
           </PendingButton>
         </div>
-        {members.length > 1 && (
-          <div className="mt-3 flex flex-wrap items-end gap-3">
+        <div className="mt-3 flex flex-wrap items-end gap-3">
+          <div className="max-w-xs">
+            <label className="label" htmlFor="task-recurrence">
+              Repetir
+            </label>
+            <select id="task-recurrence" name="recurrence" className="field mt-1.5" defaultValue="none">
+              <option value="none">Não repetir</option>
+              <option value="daily">Todo dia</option>
+              <option value="weekly">Toda semana</option>
+              <option value="monthly">Todo mês</option>
+            </select>
+          </div>
+          {members.length > 1 && (
             <div className="max-w-xs">
               <label className="label" htmlFor="task-assignee">
                 Responsável
@@ -167,18 +178,18 @@ export default async function TasksPage() {
                 ))}
               </select>
             </div>
-            {isAdmin && (
-              <label className="flex min-h-11 items-center gap-2 pb-0.5 text-sm font-bold text-ink-soft">
-                <input
-                  type="checkbox"
-                  name="open_assignment"
-                  className="h-4 w-4 rounded border-line accent-brand-700"
-                />
-                Deixar em aberto (quem pegar primeiro fica com ela)
-              </label>
-            )}
-          </div>
-        )}
+          )}
+          {members.length > 1 && isAdmin && (
+            <label className="flex min-h-11 items-center gap-2 pb-0.5 text-sm font-bold text-ink-soft">
+              <input
+                type="checkbox"
+                name="open_assignment"
+                className="h-4 w-4 rounded border-line accent-brand-700"
+              />
+              Deixar em aberto (quem pegar primeiro fica com ela)
+            </label>
+          )}
+        </div>
       </form>
 
       {handoffRequests.length > 0 && (
