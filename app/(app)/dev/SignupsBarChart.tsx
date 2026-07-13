@@ -85,7 +85,7 @@ export function SignupsBarChart({ series }: { series: Point[] }) {
       {displayed && hoverXPercent !== null && (
         <div
           className={
-            "pointer-events-none absolute top-2 -translate-x-1/2 rounded-md border border-line bg-white px-2.5 py-1.5 text-xs font-bold text-ink shadow-[0_10px_28px_-16px_rgba(15,23,42,0.55)] transition-[left,opacity,transform] duration-100 ease-out " +
+            "pointer-events-none absolute top-2 -translate-x-1/2 rounded-md border border-line bg-surface px-2.5 py-1.5 text-xs font-bold text-ink shadow-[0_10px_28px_-16px_rgba(15,23,42,0.55)] transition-[left,opacity,transform] duration-100 ease-out " +
             (isHovering ? "opacity-100 scale-100" : "scale-95 opacity-0")
           }
           style={{ left: `${Math.min(92, Math.max(8, hoverXPercent))}%` }}

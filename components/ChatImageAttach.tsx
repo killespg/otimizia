@@ -68,7 +68,7 @@ export function ChatImageAttach({
           onClick={() => inputRef.current?.click()}
           aria-label="Anexar foto"
           title="Anexar foto"
-          className="press-sm flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-line bg-white text-ink-muted transition-colors duration-150 ease-out hover:border-brand-300 hover:text-brand-700"
+          className="press-sm flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-line bg-surface text-ink-muted transition-colors duration-150 ease-out hover:border-brand-300 hover:text-brand-700"
         >
           <IconImage className="h-5 w-5" />
         </button>

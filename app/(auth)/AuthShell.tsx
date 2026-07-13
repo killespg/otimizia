@@ -20,7 +20,7 @@ export function AuthShell({
 }) {
   return (
     <main className="min-h-[100dvh] bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-2 sm:p-5 md:p-6">
-      <div className="relative mx-auto grid min-h-[calc(100dvh-1rem)] max-w-6xl overflow-hidden rounded-2xl bg-white shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] md:min-h-[calc(100dvh-3rem)] lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="relative mx-auto grid min-h-[calc(100dvh-1rem)] max-w-6xl overflow-hidden rounded-2xl bg-surface shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] md:min-h-[calc(100dvh-3rem)] lg:grid-cols-[1.05fr_0.95fr]">
         <ThemeToggle compact className="absolute right-4 top-4 z-20" />
 
         <section className="hidden bg-[#f8fbff] p-8 lg:block">
@@ -135,7 +135,7 @@ function PreviewItem({
   body: string;
 }) {
   return (
-    <article className="flex items-start gap-3 rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)]">
+    <article className="flex items-start gap-3 card p-4">
       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-700">
         <Icon className="h-5 w-5" />
       </span>

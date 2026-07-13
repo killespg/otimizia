@@ -20,7 +20,7 @@ export function CopyShareLink({ token }: { token: string }) {
     <button
       type="button"
       onClick={copy}
-      className="nav-item rounded-md border border-line bg-white px-3 py-2 text-xs font-black text-brand-700 hover:border-brand-300 hover:bg-brand-50"
+      className="nav-item rounded-md border border-line bg-surface px-3 py-2 text-xs font-black text-brand-700 hover:border-brand-300 hover:bg-brand-50"
     >
       {copied ? "Copiado!" : "Copiar link"}
     </button>

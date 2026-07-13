@@ -192,25 +192,6 @@
     @apply inline-flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-lg border border-line bg-surface px-6 py-3.5 text-base font-semibold text-ink-soft hover:border-line-strong hover:bg-brand-50 hover:text-brand-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 active:scale-[0.96];
   }
 
-  /* ===== Aliases legados: telas nao migradas seguem legiveis ===== */
-  .glass {
-    @apply rounded-lg border border-line bg-surface;
-    box-shadow: 0 18px 44px -34px rgba(21, 19, 46, 0.72);
-  }
-  .glass-soft {
-    @apply rounded-lg border border-line bg-surface-2;
-  }
-  .glass-input {
-    @apply w-full rounded-md border border-line bg-surface px-3 py-2.5 text-[15px] font-medium text-ink outline-none placeholder:text-ink-muted/70 focus:border-brand-600 focus:shadow-focus;
-    transition:
-      border-color var(--motion-fast) var(--ease-ui-out),
-      background-color var(--motion-fast) var(--ease-ui-out),
-      box-shadow var(--motion-fast) var(--ease-ui-out);
-  }
-  .glass-btn {
-    @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 active:scale-[0.96];
-  }
-
   /* Press / realce por fio: hover muda a borda. */
   .press {
     @apply active:scale-[0.96];
@@ -227,8 +208,7 @@
   .btn,
   .btn-soft,
   .btn-primary,
-  .btn-ghost,
-  .glass-btn {
+  .btn-ghost {
     transition:
       background-color var(--motion-fast) var(--ease-ui-out),
       border-color var(--motion-fast) var(--ease-ui-out),
@@ -241,12 +221,10 @@
   .btn-soft:disabled,
   .btn-primary:disabled,
   .btn-ghost:disabled,
-  .glass-btn:disabled,
   .btn[aria-disabled="true"],
   .btn-soft[aria-disabled="true"],
   .btn-primary[aria-disabled="true"],
-  .btn-ghost[aria-disabled="true"],
-  .glass-btn[aria-disabled="true"] {
+  .btn-ghost[aria-disabled="true"] {
     cursor: not-allowed;
     opacity: 0.58;
     transform: none;
@@ -313,7 +291,6 @@
     .btn-soft:hover,
     .btn-primary:hover,
     .btn-ghost:hover,
-    .glass-btn:hover,
     .press:hover {
       transform: translateY(-2px);
     }
@@ -322,7 +299,6 @@
     .btn-soft:active,
     .btn-primary:active,
     .btn-ghost:active,
-    .glass-btn:active,
     .nav-item:active,
     .row-link:active {
       transform: scale(0.96);
@@ -805,8 +781,7 @@
 }
 
 .dark .card,
-.dark .panel,
-.dark .glass {
+.dark .panel {
   box-shadow:
     0 28px 70px -48px rgba(0, 0, 0, 0.95),
     0 0 32px -28px rgba(155, 113, 255, 0.9),
@@ -816,14 +791,11 @@
 .dark .card,
 .dark .card-quiet,
 .dark .panel,
-.dark .panel-soft,
-.dark .glass,
-.dark .glass-soft {
+.dark .panel-soft {
   border-color: rgba(90, 88, 116, 0.48);
 }
 
-.dark .field,
-.dark .glass-input {
+.dark .field {
   background-color: rgb(var(--color-surface-2));
   border-color: rgba(110, 103, 143, 0.62);
   box-shadow:
@@ -834,8 +806,7 @@
 .dark input:focus,
 .dark textarea:focus,
 .dark select:focus,
-.dark .field:focus,
-.dark .glass-input:focus {
+.dark .field:focus {
   transform: translateY(-1px);
   box-shadow:
     0 0 0 3px rgba(139, 61, 255, 0.18),
@@ -850,22 +821,6 @@
 .dark .field:disabled {
   background-color: rgb(var(--color-surface));
   color: rgba(204, 198, 220, 0.58);
-}
-
-.dark .bg-white {
-  background-color: rgb(var(--color-surface)) !important;
-}
-
-.dark .bg-white\/80 {
-  background-color: rgb(var(--color-surface) / 0.86) !important;
-}
-
-.dark .bg-white\/92 {
-  background-color: rgb(var(--color-surface) / 0.92) !important;
-}
-
-.dark .bg-white\/45 {
-  background-color: rgb(var(--color-surface) / 0.76) !important;
 }
 
 .dark .bg-\[\#f8fbff\],
@@ -894,17 +849,6 @@
     0 34px 86px -48px rgba(0, 0, 0, 0.98),
     0 0 0 1px rgba(255, 255, 255, 0.06),
     0 0 70px -46px rgba(166, 118, 255, 0.9) !important;
-}
-
-.dark .shadow-\[0_18px_44px_-34px_rgba\(21\2c 19\2c 46\2c 0\.72\)\],
-.dark .shadow-\[0_18px_44px_-34px_rgba\(21\2c 19\2c 46\2c 0\.75\)\],
-.dark .shadow-\[0_10px_30px_-24px_rgba\(15\2c 23\2c 42\2c 0\.55\)\],
-.dark .shadow-\[0_10px_28px_-24px_rgba\(15\2c 23\2c 42\2c 0\.55\)\],
-.dark .shadow-\[0_8px_28px_-24px_rgba\(15\2c 23\2c 42\2c 0\.55\)\] {
-  box-shadow:
-    0 20px 52px -42px rgba(0, 0, 0, 0.98),
-    0 0 30px -28px rgba(155, 113, 255, 0.85),
-    inset 0 1px 0 rgba(255, 255, 255, 0.045) !important;
 }
 
 .dark .rounded-full.bg-\[linear-gradient\(135deg\2c \#6d28d9\2c \#3b16c6\)\] {
@@ -1316,14 +1260,12 @@
     font-size: 16px;
   }
 
-  .field,
-  .glass-input {
+  .field {
     min-height: 46px;
   }
 
   .btn,
-  .btn-soft,
-  .glass-btn {
+  .btn-soft {
     min-height: 46px;
   }
 
@@ -1333,25 +1275,19 @@
 }
 
 /* Vidro espelhado: a cor de fundo continua vindo do MESMO token que o
-   resto do app usa (rgb(var(--color-surface)), o mesmo que .dark .bg-white
-   resolve mais abaixo) — so com uma pitada de transparencia via color-mix()
-   e um blur leve por cima. Isso evita ter duas fontes de verdade pra cor
-   do card (uma no token, outra hardcoded aqui) que saem levemente
-   diferentes e ficam "brigando" visualmente. Restrito a .card/.panel/
-   .glass/bg-white e as janelas flutuantes que usam <div> (chat do
+   resto do app usa (rgb(var(--color-surface))) — so com uma pitada de
+   transparencia via color-mix() e um blur leve por cima. Isso evita ter
+   duas fontes de verdade pra cor do card (uma no token, outra hardcoded
+   aqui) que saem levemente diferentes e ficam "brigando" visualmente.
+   Restrito a .card/.panel e as janelas flutuantes que usam <div> (chat do
    assistente, menu mobile, personalizar painel) — de proposito NAO inclui
    bg-surface generico (input/select/badge/chip), que fica ilegivel com
    blur+transparencia em cima. */
-.bg-white,
 .card,
 .panel,
-.glass,
 .assistant-sheet,
 .mobile-create-menu,
-.dashboard-customize-panel,
-article[class*="bg-white"],
-section[class*="bg-white"],
-form[class*="bg-white"] {
+.dashboard-customize-panel {
   background-color: color-mix(in srgb, rgb(var(--color-surface)) 90%, transparent) !important;
   background-image:
     radial-gradient(circle at 12% 0%, rgba(139, 61, 255, 0.052), transparent 17rem),
@@ -1361,16 +1297,11 @@ form[class*="bg-white"] {
   -webkit-backdrop-filter: blur(10px) saturate(140%);
 }
 
-.dark .bg-white,
 .dark .card,
 .dark .panel,
-.dark .glass,
 .dark .assistant-sheet,
 .dark .mobile-create-menu,
-.dark .dashboard-customize-panel,
-.dark article[class*="bg-white"],
-.dark section[class*="bg-white"],
-.dark form[class*="bg-white"] {
+.dark .dashboard-customize-panel {
   background-color: color-mix(in srgb, rgb(var(--color-surface)) 90%, transparent) !important;
   background-image:
     radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.055), transparent 17rem),
@@ -1382,7 +1313,6 @@ form[class*="bg-white"] {
 
 .card,
 .panel,
-.glass,
 article[class*="border-line"],
 section[class*="border-line"],
 form[class*="border-line"],
@@ -1559,11 +1489,10 @@ label[class*="border-line"]::before,
 
 /* Roxo "automotive": gradiente de tinta metalica em varias camadas (realce
    frio no topo, degrade profundo na base) + brilho de clearcoat fixo.
-   Vale pra qualquer bg-brand-700 e pros botoes solidos do app (.btn/.btn-primary/.glass-btn). */
+   Vale pra qualquer bg-brand-700 e pros botoes solidos do app (.btn/.btn-primary). */
 .bg-brand-700,
 .btn,
-.btn-primary,
-.glass-btn {
+.btn-primary {
   background-image:
     radial-gradient(circle at 26% 6%, rgba(255, 255, 255, 0.42), transparent 30%),
     linear-gradient(135deg, #a566ff 0%, #7e2ff0 34%, #5414b8 68%, #2f0a7c 100%) !important;
@@ -1575,8 +1504,7 @@ label[class*="border-line"]::before,
 
 .dark .bg-brand-700,
 .dark .btn,
-.dark .btn-primary,
-.dark .glass-btn {
+.dark .btn-primary {
   background-image:
     radial-gradient(circle at 26% 6%, rgba(255, 255, 255, 0.32), transparent 30%),
     linear-gradient(135deg, #a566ff 0%, #7e2ff0 34%, #5414b8 68%, #2f0a7c 100%) !important;
@@ -1593,7 +1521,6 @@ label[class*="border-line"]::before,
    mecanismo (ver .landing-button::before mais acima). */
 .btn,
 .btn-primary,
-.glass-btn,
 .nav-item.bg-brand-700:not(.landing-button),
 .press.bg-brand-700 {
   position: relative;
@@ -1603,7 +1530,6 @@ label[class*="border-line"]::before,
 
 .btn::before,
 .btn-primary::before,
-.glass-btn::before,
 .nav-item.bg-brand-700:not(.landing-button)::before,
 .press.bg-brand-700::before {
   content: "";
@@ -1624,7 +1550,6 @@ label[class*="border-line"]::before,
    essa regra reescreveria a posicao dele pra relative e quebraria o overlay. */
 .btn > *:not(.absolute),
 .btn-primary > *:not(.absolute),
-.glass-btn > *:not(.absolute),
 .nav-item.bg-brand-700:not(.landing-button) > *:not(.absolute),
 .press.bg-brand-700 > *:not(.absolute) {
   position: relative;
@@ -1634,7 +1559,6 @@ label[class*="border-line"]::before,
 @media (hover: hover) and (pointer: fine) {
   .btn:hover::before,
   .btn-primary:hover::before,
-  .glass-btn:hover::before,
   .nav-item.bg-brand-700:not(.landing-button):hover::before,
   .press.bg-brand-700:hover::before {
     opacity: 1;
@@ -3188,22 +3112,6 @@ label[class*="border-line"]::before,
 
 /* ===== Compatibilidade: utilitários claros viram escuros dentro do app ===== */
 
-.app-frame .bg-white {
-  background-color: rgb(var(--color-surface)) !important;
-}
-
-.app-frame .bg-white\/80 {
-  background-color: rgb(var(--color-surface) / 0.86) !important;
-}
-
-.app-frame .bg-white\/92 {
-  background-color: rgb(var(--color-surface) / 0.92) !important;
-}
-
-.app-frame .bg-white\/45 {
-  background-color: rgb(var(--color-surface) / 0.76) !important;
-}
-
 .app-frame .bg-\[\#f8fbff\],
 .app-frame .bg-\[\#f8faff\] {
   background-color: rgb(var(--color-surface-2)) !important;
@@ -3279,26 +3187,11 @@ label[class*="border-line"]::before,
   stroke: #8d78ff;
 }
 
-.app-frame .shadow-\[0_18px_44px_-34px_rgba\(21\2c 19\2c 46\2c 0\.72\)\],
-.app-frame .shadow-\[0_18px_44px_-34px_rgba\(21\2c 19\2c 46\2c 0\.75\)\],
-.app-frame .shadow-\[0_10px_30px_-24px_rgba\(15\2c 23\2c 42\2c 0\.55\)\],
-.app-frame .shadow-\[0_10px_28px_-24px_rgba\(15\2c 23\2c 42\2c 0\.55\)\],
-.app-frame .shadow-\[0_8px_28px_-24px_rgba\(15\2c 23\2c 42\2c 0\.55\)\] {
-  box-shadow:
-    0 18px 44px -38px rgba(0, 0, 0, 0.95),
-    0 0 28px -26px rgba(139, 92, 246, 0.7),
-    inset 0 1px 0 var(--reflect-topline) !important;
-}
-
 /* Overlay de vidro dos elementos genéricos: versão escura (a regra clara da
    base usaria um véu branco de 38% que estoura sobre grafite). */
-.app-frame .bg-white,
 .app-frame .assistant-sheet,
 .app-frame .mobile-create-menu,
-.app-frame .dashboard-customize-panel,
-.app-frame article[class*="bg-white"],
-.app-frame section[class*="bg-white"],
-.app-frame form[class*="bg-white"] {
+.app-frame .dashboard-customize-panel {
   background-image:
     radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.05), transparent 17rem),
     linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)) !important;
@@ -3329,8 +3222,7 @@ label[class*="border-line"]::before,
 }
 
 /* Campos: grafite fundo-2 com fio de luz; foco com anel roxo. */
-.app-frame .field,
-.app-frame .glass-input {
+.app-frame .field {
   border-color: color-mix(in srgb, var(--violet-core) 18%, rgb(var(--color-line)));
   background-color: rgb(var(--color-surface-2));
   box-shadow:
@@ -3341,8 +3233,7 @@ label[class*="border-line"]::before,
 .app-frame input:focus,
 .app-frame textarea:focus,
 .app-frame select:focus,
-.app-frame .field:focus,
-.app-frame .glass-input:focus {
+.app-frame .field:focus {
   transform: translateY(-1px);
   border-color: var(--violet-strong);
   box-shadow:
@@ -3532,8 +3423,8 @@ label[class*="border-line"]::before,
 
 /* ===== Superfícies: vidro grafite com reflexo de estúdio ===== */
 
-.app-frame :is(.card, .panel, .glass),
-.dark .app-frame :is(.card, .panel, .glass) {
+.app-frame :is(.card, .panel),
+.dark .app-frame :is(.card, .panel) {
   border-color: color-mix(in srgb, var(--violet-core) 16%, rgb(var(--color-line))) !important;
   border-radius: 9px;
   background-color: rgb(var(--color-surface)) !important;
@@ -3558,8 +3449,8 @@ label[class*="border-line"]::before,
 
 /* CTAs sólidos: roxo profundo metálico; o reflexo animado do hover vem do
    sistema (.btn::before, definido mais acima). */
-.app-frame :is(.btn, .btn-primary, .glass-btn),
-.dark .app-frame :is(.btn, .btn-primary, .glass-btn),
+.app-frame :is(.btn, .btn-primary),
+.dark .app-frame :is(.btn, .btn-primary),
 .app-frame .bg-brand-700,
 .app-frame .dashboard-global-search button,
 .app-frame .dashboard-process-search .btn {
@@ -4256,8 +4147,8 @@ label[class*="border-line"]::before,
       0 0 18px -15px var(--violet-light);
   }
 
-  .app-frame :is(.card, .panel, .glass):hover,
-  .dark .app-frame :is(.card, .panel, .glass):hover {
+  .app-frame :is(.card, .panel):hover,
+  .dark .app-frame :is(.card, .panel):hover {
     border-color: color-mix(in srgb, var(--violet-strong) 46%, rgb(var(--color-line))) !important;
     box-shadow:
       0 26px 52px -32px rgba(0, 0, 0, 0.9),
@@ -4300,7 +4191,7 @@ label[class*="border-line"]::before,
       inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
   }
 
-  .app-frame :is(.dashboard-global-search button, .dashboard-process-search .btn, .btn-primary, .glass-btn):hover {
+  .app-frame :is(.dashboard-global-search button, .dashboard-process-search .btn, .btn-primary):hover {
     filter: brightness(1.1) saturate(1.08);
     box-shadow:
       0 16px 32px -18px rgba(46, 5, 79, 0.88),
@@ -4442,7 +4333,7 @@ label[class*="border-line"]::before,
 @media (prefers-reduced-motion: reduce) {
   .dashboard-command-center .dashboard-card,
   .app-sidebar .nav-item::before,
-  .app-frame :is(.dashboard-global-search button, .dashboard-process-search .btn, .btn-primary, .glass-btn) {
+  .app-frame :is(.dashboard-global-search button, .dashboard-process-search .btn, .btn-primary) {
     transition: none !important;
   }
 
@@ -4528,8 +4419,8 @@ label[class*="border-line"]::before,
   background: #1d1e2e !important;
 }
 
-.app-frame :is(.card, .panel, .glass),
-.dark .app-frame :is(.card, .panel, .glass),
+.app-frame :is(.card, .panel),
+.dark .app-frame :is(.card, .panel),
 .app-frame .dashboard-command-center .dashboard-card,
 .app-frame .dashboard-command-center section.enter:not(.dashboard-metrics-grid),
 .app-frame .dashboard-command-center .panel,

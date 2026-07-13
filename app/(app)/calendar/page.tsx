@@ -264,14 +264,14 @@ export default async function CalendarPage({
             <Link
               href={`/calendar?month=${prevParam}`}
               aria-label="Mês anterior"
-              className="nav-item grid h-9 w-9 place-items-center rounded-lg border border-line bg-white hover:border-brand-300 hover:bg-brand-50"
+              className="nav-item grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface hover:border-brand-300 hover:bg-brand-50"
             >
               <IconArrowRight className="h-4 w-4 rotate-180" />
             </Link>
             <Link
               href={`/calendar?month=${nextParam}`}
               aria-label="Próximo mês"
-              className="nav-item grid h-9 w-9 place-items-center rounded-lg border border-line bg-white hover:border-brand-300 hover:bg-brand-50"
+              className="nav-item grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface hover:border-brand-300 hover:bg-brand-50"
             >
               <IconArrowRight className="h-4 w-4" />
             </Link>

@@ -243,7 +243,7 @@ export default async function ContactDetailPage({
             </div>
             <input type="hidden" name="id" value={c.id} />
             <PendingButton
-              className="press inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-danger-200 bg-white px-3.5 py-2 text-sm font-black text-danger-700 hover:bg-danger-50"
+              className="press inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-danger-200 bg-surface px-3.5 py-2 text-sm font-black text-danger-700 hover:bg-danger-50"
               pendingLabel="Excluindo"
             >
               <IconTrash className="h-4 w-4" />
@@ -293,7 +293,7 @@ export default async function ContactDetailPage({
                       ).toISOString()}
                     />
                     <PendingButton
-                      className="press-sm min-h-9 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                      className="press-sm min-h-9 rounded-md border border-line bg-surface px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
                       pendingLabel="Agendando"
                     >
                       {offset.label}
@@ -348,7 +348,7 @@ export default async function ContactDetailPage({
                   {logs.map((log) => (
                     <li
                       key={log.id}
-                      className="rounded-lg border border-line bg-white p-4"
+                      className="rounded-lg border border-line bg-surface p-4"
                     >
                       <p className="text-safe text-sm font-medium leading-relaxed text-ink">
                         {log.body}
@@ -389,7 +389,7 @@ export default async function ContactDetailPage({
                           "grid h-5 w-5 shrink-0 place-items-center rounded-full " +
                           (task.done
                             ? "bg-brand-700 text-white"
-                            : "border border-line bg-white")
+                            : "border border-line bg-surface")
                         }
                       >
                         {task.done && <IconCheck className="h-3 w-3" />}

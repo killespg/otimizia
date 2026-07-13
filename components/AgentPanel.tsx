@@ -45,7 +45,7 @@ export function AgentPanel() {
   return (
     <section
       id="agente"
-      className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5"
+      className="enter card p-4 sm:p-5"
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -86,7 +86,7 @@ export function AgentPanel() {
                 key={prompt.title}
                 type="button"
                 onClick={() => submit(prompt.title)}
-                className="nav-item rounded-lg border border-line bg-white p-3 text-left hover:border-brand-200 hover:bg-brand-50"
+                className="nav-item rounded-lg border border-line bg-surface p-3 text-left hover:border-brand-200 hover:bg-brand-50"
               >
                 <span className="flex items-center gap-2 text-[11px] font-black leading-tight text-brand-700">
                   <IconBot className="h-3.5 w-3.5 shrink-0" />
@@ -180,7 +180,7 @@ export function AgentPanel() {
         <button
           type="button"
           onClick={attachment.pick}
-          className="nav-item grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-line bg-white text-ink-muted transition-colors hover:text-ink"
+          className="nav-item grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-line bg-surface text-ink-muted transition-colors hover:text-ink"
           aria-label="Anexar PDF"
           title="Anexar PDF"
         >
@@ -191,7 +191,7 @@ export function AgentPanel() {
           onChange={(event) => setInput(event.target.value)}
           placeholder="Pergunte algo..."
           maxLength={4000}
-          className="h-11 min-w-0 flex-1 rounded-lg border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition placeholder:text-ink-muted focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
+          className="field h-11 min-w-0 flex-1"
         />
         <button
           type="submit"

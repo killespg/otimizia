@@ -123,7 +123,7 @@ export default function Home() {
     <main className="landing-page min-h-[100dvh] overflow-hidden bg-[#f8fbff] text-ink">
       {/* ===== Hero ===== */}
       <section className="bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_45%,#0bbfe8_100%)] p-2 sm:p-5 md:p-6">
-        <div className="intro-shell relative mx-auto min-h-0 max-w-[1580px] overflow-hidden rounded-2xl bg-white shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] sm:min-h-[calc(100dvh-1rem)] md:min-h-[calc(100dvh-3rem)]">
+        <div className="intro-shell relative mx-auto min-h-0 max-w-[1580px] overflow-hidden rounded-2xl bg-surface shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] sm:min-h-[calc(100dvh-1rem)] md:min-h-[calc(100dvh-3rem)]">
           <div
             className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(123,63,242,0.10)_0%,rgba(255,255,255,0)_35%,rgba(11,191,232,0.11)_100%)]"
             aria-hidden="true"
@@ -207,7 +207,7 @@ export default function Home() {
                 {proofItems.map(([number, title, body]) => (
                   <article
                     key={title}
-                    className="motion-card rounded-lg border border-line bg-white/80 p-2 shadow-[0_12px_34px_-30px_rgba(21,19,46,0.72)] sm:p-3"
+                    className="motion-card rounded-lg border border-line bg-surface/80 p-2 shadow-[0_12px_34px_-30px_rgba(21,19,46,0.72)] sm:p-3"
                   >
                     <p className="text-xs font-black text-brand-700">{number}</p>
                     <p className="mt-1.5 text-xs font-black leading-tight text-ink sm:mt-2 sm:text-sm">{title}</p>
@@ -235,7 +235,7 @@ export default function Home() {
       {/* ===== Marquee: o que ele tira do seu caminho ===== */}
       <section
         aria-label="O que o OtimizIA tira do seu caminho"
-        className="marquee hidden overflow-hidden border-y border-line bg-white py-4 [mask-image:linear-gradient(90deg,transparent,#000_7%,#000_93%,transparent)] sm:block"
+        className="marquee hidden overflow-hidden border-y border-line bg-surface py-4 [mask-image:linear-gradient(90deg,transparent,#000_7%,#000_93%,transparent)] sm:block"
       >
         <div className="marquee-track flex items-center gap-4">
           {[...marqueeItems, ...marqueeItems].map((item, index) => (
@@ -268,7 +268,7 @@ export default function Home() {
           <div className="mt-5 grid grid-cols-2 gap-2.5 sm:mt-10 sm:gap-4 md:grid-cols-6">
             {/* Pipeline (largo) */}
             <article
-              className="lift motion-card group col-span-2 flex flex-col overflow-hidden rounded-lg border border-line bg-white p-3.5 sm:rounded-2xl sm:p-6 md:col-span-4"
+              className="lift motion-card group col-span-2 flex flex-col overflow-hidden rounded-lg border border-line bg-surface p-3.5 sm:rounded-2xl sm:p-6 md:col-span-4"
               data-reveal
             >
               <div className="flex items-start justify-between gap-4">
@@ -320,7 +320,7 @@ export default function Home() {
 
             {/* Lembretes */}
             <article
-              className="lift motion-card flex flex-col rounded-lg border border-line bg-white p-3.5 sm:rounded-2xl sm:p-6 md:col-span-2"
+              className="lift motion-card flex flex-col rounded-lg border border-line bg-surface p-3.5 sm:rounded-2xl sm:p-6 md:col-span-2"
               data-reveal
               style={{ "--reveal-delay": "40ms" } as CSSProperties}
             >
@@ -335,7 +335,7 @@ export default function Home() {
 
             {/* Contatos */}
             <article
-              className="lift motion-card flex flex-col rounded-lg border border-line bg-white p-3.5 sm:rounded-2xl sm:p-6 md:col-span-2"
+              className="lift motion-card flex flex-col rounded-lg border border-line bg-surface p-3.5 sm:rounded-2xl sm:p-6 md:col-span-2"
               data-reveal
               style={{ "--reveal-delay": "110ms" } as CSSProperties}
             >
@@ -350,7 +350,7 @@ export default function Home() {
 
             {/* Números (full) */}
             <article
-              className="lift motion-card col-span-2 grid grid-cols-1 gap-3 overflow-hidden rounded-lg border border-line bg-white p-3.5 sm:gap-6 sm:rounded-2xl sm:p-6 md:col-span-6 md:grid-cols-[1fr_1.1fr] md:items-center"
+              className="lift motion-card col-span-2 grid grid-cols-1 gap-3 overflow-hidden rounded-lg border border-line bg-surface p-3.5 sm:gap-6 sm:rounded-2xl sm:p-6 md:col-span-6 md:grid-cols-[1fr_1.1fr] md:items-center"
               data-reveal
             >
               <div>
@@ -377,7 +377,7 @@ export default function Home() {
 
       {/* ===== Como funciona ===== */}
       <section id="como-funciona" className="px-5 pb-8 sm:px-8 sm:pb-20 lg:px-10 lg:pb-28">
-        <div className="mx-auto max-w-[1500px] rounded-lg border border-line bg-white px-4 py-5 sm:rounded-2xl sm:px-10 sm:py-12 lg:py-16">
+        <div className="mx-auto max-w-[1500px] rounded-lg border border-line bg-surface px-4 py-5 sm:rounded-2xl sm:px-10 sm:py-12 lg:py-16">
           <div className="max-w-2xl" data-reveal>
             <h2 className="text-[clamp(2rem,4.6vw,3.4rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
               Do primeiro oi à venda fechada.
@@ -471,7 +471,7 @@ export default function Home() {
               <div className="ml-auto w-fit max-w-[80%] rounded-2xl rounded-br-sm bg-brand-700 px-4 py-2.5 text-sm font-bold text-white">
                 O que eu faço primeiro hoje?
               </div>
-              <div className="w-fit max-w-[88%] rounded-2xl rounded-bl-sm border border-line bg-white px-4 py-3 text-sm font-medium leading-relaxed text-ink-soft">
+              <div className="w-fit max-w-[88%] rounded-2xl rounded-bl-sm border border-line bg-surface px-4 py-3 text-sm font-medium leading-relaxed text-ink-soft">
                 Comece pela Tech Sul: a proposta está aberta há 3 dias e o lembrete
                 venceu. Depois, retorne a ligação da Marina.
               </div>
@@ -509,7 +509,7 @@ export default function Home() {
             {useCases.map((useCase, index) => (
               <figure
                 key={useCase.name}
-                className="lift motion-card flex h-full flex-col justify-between rounded-2xl border border-line bg-white p-6"
+                className="lift motion-card flex h-full flex-col justify-between rounded-2xl border border-line bg-surface p-6"
                 data-reveal
                 style={{ "--reveal-delay": `${index * 80}ms` } as CSSProperties}
               >
@@ -551,7 +551,7 @@ export default function Home() {
           className="mx-auto grid max-w-[1500px] gap-2 rounded-lg bg-[linear-gradient(135deg,#5c22e8,#0bbfe8)] p-1.5 shadow-[0_32px_90px_-48px_rgba(7,8,28,0.8)] sm:gap-5 sm:rounded-2xl sm:p-2 lg:grid-cols-[1fr_auto]"
           data-reveal
         >
-          <div className="rounded-lg bg-white p-4 sm:rounded-xl sm:p-8">
+          <div className="rounded-lg bg-surface p-4 sm:rounded-xl sm:p-8">
             <p className="text-sm font-black text-brand-700">Comece hoje</p>
             <h2 className="mt-3 max-w-3xl text-[clamp(2rem,5vw,4.2rem)] font-black leading-[0.96] tracking-[-0.04em] text-ink">
               Abra o painel e organize a primeira venda.
@@ -624,7 +624,7 @@ function LandingButton({
           : "min-h-12 w-full gap-3 px-6 text-sm sm:min-h-14 sm:w-auto sm:text-base") +
         " " +
         (inverted
-          ? "bg-white text-brand-800 hover:bg-brand-50"
+          ? "bg-surface text-brand-800 hover:bg-brand-50"
           : "bg-brand-700 text-white hover:bg-brand-800")
       }
     >
@@ -672,7 +672,7 @@ function KanbanMini() {
           </div>
           <div className="mt-2.5 space-y-1.5">
             {Array.from({ length: col.cards }).map((_, i) => (
-              <div key={i} className="rounded-md border border-line bg-white px-2 py-1.5">
+              <div key={i} className="rounded-md border border-line bg-surface px-2 py-1.5">
                 <span className="block h-1.5 w-3/4 rounded-full bg-line-strong" />
                 <span className="mt-1.5 block h-1.5 w-2/5 rounded-full bg-brand-200" />
               </div>
@@ -732,10 +732,10 @@ function Initials({ name }: { name: string }) {
 
 function ProductPreview() {
   return (
-    <figure className="preview-float w-full rounded-[1.65rem] border border-white/70 bg-white/45 p-2 shadow-[0_34px_90px_-52px_rgba(7,8,28,0.85)] [&_*]:min-w-0">
+    <figure className="preview-float w-full rounded-[1.65rem] border border-white/70 bg-surface/45 p-2 shadow-[0_34px_90px_-52px_rgba(7,8,28,0.85)] [&_*]:min-w-0">
       <span className="hero-pointer-glow" aria-hidden="true" />
       <div className="overflow-hidden rounded-[1.2rem] border border-line bg-[#f8fbff] shadow-[inset_0_1px_0_rgba(255,255,255,0.88)]">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-white px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface px-4 py-3">
           <div className="flex items-center gap-3">
             <Image
               src="/otimizia-mark.png"
@@ -767,7 +767,7 @@ function ProductPreview() {
               <MiniMetric label="Conversas" value="87" icon={IconMessage} pink target="contacts" />
             </div>
 
-            <div className="preview-card rounded-lg border border-line bg-white p-4" data-preview-target="sales">
+            <div className="preview-card rounded-lg border border-line bg-surface p-4" data-preview-target="sales">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-black text-ink">Vendas em aberto</p>
                 <span className="text-xs font-black text-brand-700">Este mês</span>
@@ -812,7 +812,7 @@ function ProductPreview() {
           </div>
 
           <div className="space-y-4">
-            <div className="preview-card rounded-lg border border-line bg-white p-4" data-preview-target="contacts">
+            <div className="preview-card rounded-lg border border-line bg-surface p-4" data-preview-target="contacts">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-black text-ink">Fila de tarefas</p>
                 <span className="rounded-md bg-surface-2 px-2 py-1 text-xs font-black text-ink-muted">
@@ -826,7 +826,7 @@ function ProductPreview() {
                     className="preview-row flex items-center gap-3 rounded-lg border border-line px-3 py-3"
                     style={{ "--d": `${260 + index * 70}ms` } as CSSProperties}
                   >
-                    <span className="preview-node h-4 w-4 rounded-full border border-brand-200 bg-white" />
+                    <span className="preview-node h-4 w-4 rounded-full border border-brand-200 bg-surface" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-black text-ink">{title}</p>
                       <p className="text-xs font-bold text-ink-muted">{time}</p>
@@ -839,7 +839,7 @@ function ProductPreview() {
               </ul>
             </div>
 
-            <div className="preview-card rounded-lg border border-line bg-white p-4" data-preview-target="assistant">
+            <div className="preview-card rounded-lg border border-line bg-surface p-4" data-preview-target="assistant">
               <div className="flex items-center gap-3">
                 <Image
                   src="/otimizia-mark.png"
@@ -886,7 +886,7 @@ function MiniMetric({
   target?: string;
 }) {
   return (
-    <div className="preview-card rounded-lg border border-line bg-white p-3" data-preview-target={target}>
+    <div className="preview-card rounded-lg border border-line bg-surface p-3" data-preview-target={target}>
       <span
         className={
           "grid h-9 w-9 place-items-center rounded-full " +
@@ -922,7 +922,7 @@ function SiteFooter() {
   ];
 
   return (
-    <footer className="border-t border-line bg-white px-5 py-6 sm:px-8 sm:py-14 lg:px-10">
+    <footer className="border-t border-line bg-surface px-5 py-6 sm:px-8 sm:py-14 lg:px-10">
       <div className="mx-auto grid max-w-[1500px] gap-6 sm:grid-cols-2 sm:gap-10 lg:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <Image

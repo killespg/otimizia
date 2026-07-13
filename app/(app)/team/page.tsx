@@ -243,7 +243,7 @@ export default async function TeamPage({
                         ))}
                       </select>
                       <PendingButton
-                        className="press-sm rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:bg-surface-2"
+                        className="press-sm rounded-md border border-line bg-surface px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:bg-surface-2"
                         pendingLabel="Salvando"
                       >
                         Salvar
@@ -262,7 +262,7 @@ export default async function TeamPage({
                           value={member.role === "admin" ? "member" : "admin"}
                         />
                         <PendingButton
-                          className="press-sm rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:bg-surface-2"
+                          className="press-sm rounded-md border border-line bg-surface px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:bg-surface-2"
                           pendingLabel="Salvando"
                         >
                           {member.role === "admin"

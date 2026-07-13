@@ -118,7 +118,7 @@ export default async function DevMetricsPage() {
               return (
                 <li
                   key={`${signup.createdAt}-${index}`}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-line bg-white px-3 py-3 shadow-[0_8px_28px_-24px_rgba(15,23,42,0.55)]"
+                  className="flex items-center justify-between gap-3 card px-3 py-3"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-black text-ink">

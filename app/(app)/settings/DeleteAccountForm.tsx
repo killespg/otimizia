@@ -48,7 +48,7 @@ export function DeleteAccountForm({
       </div>
       <PendingButton
         disabled={!confirmed}
-        className="press inline-flex items-center gap-1.5 rounded-lg border border-danger-200 bg-white px-3.5 py-2 text-sm font-black text-danger-700 hover:bg-danger-50 disabled:cursor-not-allowed disabled:opacity-50"
+        className="press inline-flex items-center gap-1.5 rounded-lg border border-danger-200 bg-surface px-3.5 py-2 text-sm font-black text-danger-700 hover:bg-danger-50 disabled:cursor-not-allowed disabled:opacity-50"
         pendingLabel="Excluindo"
       >
         <IconTrash className="h-4 w-4" />

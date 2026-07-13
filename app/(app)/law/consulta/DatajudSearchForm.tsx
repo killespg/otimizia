@@ -137,7 +137,7 @@ export function DatajudSearchForm({
               title={isFavorite ? "Remover dos favoritos" : "Favoritar este tribunal"}
               className={
                 "nav-item grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-line " +
-                (isFavorite ? "bg-brand-50 text-brand-700" : "bg-white text-ink-muted")
+                (isFavorite ? "bg-brand-50 text-brand-700" : "bg-surface text-ink-muted")
               }
             >
               <IconStar className="h-5 w-5" filled={isFavorite} />
