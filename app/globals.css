@@ -3141,11 +3141,11 @@ label[class*="border-line"]::before,
 */
 
 .app-frame {
-  /* Grafite com subtom violeta: canvas < superfície < superfície-2. */
+  /* Canvas cinza solicitado; superfícies mantêm o contraste noturno. */
   --color-ink: 245 243 251;
   --color-ink-soft: 203 199 219;
   --color-ink-muted: 145 140 166;
-  --color-canvas: 19 17 24;
+  --color-canvas: 105 105 105;
   --color-surface: 27 25 36;
   --color-surface-2: 37 35 52;
   --color-line: 53 50 74;
@@ -3513,9 +3513,7 @@ label[class*="border-line"]::before,
 .app-content,
 .dark .app-content {
   background-color: rgb(var(--color-canvas)) !important;
-  background-image:
-    radial-gradient(ellipse 62% 32% at 76% -8%, rgba(109, 40, 217, 0.13), transparent 70%),
-    radial-gradient(ellipse 48% 26% at 10% -6%, rgba(255, 255, 255, 0.03), transparent 72%) !important;
+  background-image: none !important;
 }
 
 .app-content .mobile-app-header,

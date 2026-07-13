@@ -21,7 +21,7 @@ usam este sistema.
 
 | Token | Valor | Uso |
 | --- | --- | --- |
-| `--color-canvas` | `#131118` | fundo da página |
+| `--color-canvas` | `#696969` | fundo da página |
 | `--color-surface` | `#1B1924` | cards, sidebar, header |
 | `--color-surface-2` | `#252334` | campos, linhas de tabela hover, chips |
 | `--color-line` | `#35324A` | bordas estruturais |

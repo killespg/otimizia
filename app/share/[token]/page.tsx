@@ -32,7 +32,8 @@ export default async function SharedCasePage({ params }: { params: Promise<{ tok
 
   const supabase = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
   const { data, error } = await supabase.rpc("get_shared_case", { p_token: token });
