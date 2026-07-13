@@ -14,9 +14,9 @@ const MONTHS_BACK = 6;
 export default async function PipelineReportPage({
   searchParams,
 }: {
-  searchParams?: { months?: string };
+  searchParams?: Promise<{ months?: string }>;
 }) {
-  const monthsBack = clampMonths(searchParams?.months);
+  const monthsBack = clampMonths((await searchParams)?.months);
   const supabase = createClient();
   const {
     data: { user },
