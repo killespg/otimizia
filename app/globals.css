@@ -4449,6 +4449,12 @@ label[class*="border-line"]::before,
   .dashboard-command-center .dashboard-card:hover {
     translate: none;
   }
+
+  .animate-pulse,
+  .animate-spin,
+  .animate-bounce {
+    animation: none !important;
+  }
 }
 
 /* ===== Dashboard de referência: grafite plano e roxo discreto ===== */

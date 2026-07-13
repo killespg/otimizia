@@ -92,8 +92,9 @@ export async function POST(req: Request) {
   }
   const orgId = await getActiveOrgId(supabase, user.id);
   if (!process.env.ANTHROPIC_API_KEY) {
+    logError("api/assistant", new Error("ANTHROPIC_API_KEY não configurada no servidor."));
     return Response.json(
-      { error: "ANTHROPIC_API_KEY não configurada no servidor." },
+      { error: "Não consegui falar com o assistente agora. Tente de novo em instantes." },
       { status: 500 }
     );
   }
@@ -423,7 +424,7 @@ function friendlyError(error: unknown): string {
     return "Muitas solicitações agora. Espere alguns segundos e tente de novo.";
   }
   if (error instanceof Anthropic.AuthenticationError) {
-    return "A chave da API do Claude é inválida. Verifique a ANTHROPIC_API_KEY.";
+    return "Não consegui falar com o assistente agora. Tente de novo em instantes.";
   }
   if (error instanceof Anthropic.APIConnectionError) {
     return "Não consegui conectar ao serviço de IA. Verifique a internet e tente de novo.";

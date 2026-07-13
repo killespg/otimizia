@@ -8,6 +8,21 @@ export type VoiceLine = { role: "user" | "assistant"; text: string };
 
 const HEARTBEAT_INTERVAL_MS = 20_000;
 
+function cleanupCallResources(
+  peer: RTCPeerConnection | null,
+  stream: MediaStream | null,
+  audioCtx: AudioContext | null,
+  audio: HTMLAudioElement | null
+) {
+  peer?.close();
+  stream?.getTracks().forEach((track) => track.stop());
+  if (audio) {
+    audio.pause();
+    audio.srcObject = null;
+  }
+  void audioCtx?.close().catch(() => undefined);
+}
+
 function readLevel(analyser: AnalyserNode | null): number {
   if (!analyser) return 0;
   const data = new Uint8Array(analyser.fftSize);
@@ -44,6 +59,10 @@ export function useVoiceCall() {
   const assistantTextRef = useRef("");
   const callSecondsRef = useRef(0);
   const sessionIdRef = useRef<string | null>(null);
+  // Incrementado a cada startVoice()/stopVoice() para invalidar chamadas
+  // assíncronas em andamento — evita que uma conexão cancelada "reviva"
+  // a ligação ao resolver depois que o usuário já cancelou.
+  const callIdRef = useRef(0);
 
   function startLevelLoop() {
     function tick() {
@@ -75,6 +94,7 @@ export function useVoiceCall() {
   }, []);
 
   const stopVoice = useCallback(() => {
+    callIdRef.current += 1;
     checkpointUsage(true);
     sessionIdRef.current = null;
     peerRef.current?.close();
@@ -118,8 +138,14 @@ export function useVoiceCall() {
 
   async function startVoice() {
     if (voiceStatus === "connecting" || voiceStatus === "live") return;
+    const callId = ++callIdRef.current;
     setVoiceError(null);
     setVoiceStatus("connecting");
+
+    let peer: RTCPeerConnection | null = null;
+    let audioCtx: AudioContext | null = null;
+    let audio: HTMLAudioElement | null = null;
+    let stream: MediaStream | null = null;
 
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
@@ -136,36 +162,49 @@ export function useVoiceCall() {
       if (!tokenResponse.ok || !ephemeralKey) {
         throw new Error(tokenData?.error ?? "Nao consegui iniciar a chamada.");
       }
-      sessionIdRef.current = typeof tokenData?.session_id === "string" ? tokenData.session_id : null;
 
-      const peer = new RTCPeerConnection();
-      peerRef.current = peer;
+      const sessionId = typeof tokenData?.session_id === "string" ? tokenData.session_id : null;
+      if (callId !== callIdRef.current) {
+        // Cancelado enquanto o token estava em voo — a sessão já foi criada
+        // no servidor, então precisamos fechá-la mesmo sem ter conectado.
+        if (sessionId) {
+          sessionIdRef.current = sessionId;
+          checkpointUsage(true);
+          sessionIdRef.current = null;
+        }
+        return;
+      }
+      sessionIdRef.current = sessionId;
 
-      const audioCtx = new AudioContext();
-      audioCtxRef.current = audioCtx;
-
-      const audio = document.createElement("audio");
+      peer = new RTCPeerConnection();
+      audioCtx = new AudioContext();
+      audio = document.createElement("audio");
       audio.autoplay = true;
       audio.setAttribute("playsinline", "true");
-      audioRef.current = audio;
 
-      peer.ontrack = (event) => {
-        const [stream] = event.streams;
-        if (stream && audioRef.current) {
-          audioRef.current.srcObject = stream;
-          void audioRef.current.play().catch(() => undefined);
-        }
-        if (stream) {
-          const remoteSource = audioCtx.createMediaStreamSource(stream);
-          const remoteAnalyser = audioCtx.createAnalyser();
+      const localPeer = peer;
+      const localAudioCtx = audioCtx;
+      const localAudio = audio;
+
+      localPeer.ontrack = (event) => {
+        if (callId !== callIdRef.current) return;
+        const [remoteStream] = event.streams;
+        if (remoteStream) {
+          localAudio.srcObject = remoteStream;
+          void localAudio.play().catch(() => undefined);
+          const remoteSource = localAudioCtx.createMediaStreamSource(remoteStream);
+          const remoteAnalyser = localAudioCtx.createAnalyser();
           remoteAnalyser.fftSize = 512;
           remoteSource.connect(remoteAnalyser);
           remoteAnalyserRef.current = remoteAnalyser;
         }
       };
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (callId !== callIdRef.current) {
+        cleanupCallResources(peer, stream, audioCtx, audio);
+        return;
+      }
       for (const track of stream.getAudioTracks()) {
         peer.addTrack(track, stream);
       }
@@ -174,10 +213,10 @@ export function useVoiceCall() {
       const localAnalyser = audioCtx.createAnalyser();
       localAnalyser.fftSize = 512;
       localSource.connect(localAnalyser);
-      localAnalyserRef.current = localAnalyser;
 
       const dataChannel = peer.createDataChannel("oai-events");
       dataChannel.addEventListener("message", (event) => {
+        if (callId !== callIdRef.current) return;
         try {
           const data = JSON.parse(event.data);
           const type: string = data?.type ?? "";
@@ -241,6 +280,10 @@ export function useVoiceCall() {
 
       const offer = await peer.createOffer();
       await peer.setLocalDescription(offer);
+      if (callId !== callIdRef.current) {
+        cleanupCallResources(peer, stream, audioCtx, audio);
+        return;
+      }
 
       const sdpResponse = await fetch("https://api.openai.com/v1/realtime/calls", {
         method: "POST",
@@ -255,11 +298,26 @@ export function useVoiceCall() {
       if (!sdpResponse.ok) {
         throw new Error(answerSdp || "Nao consegui conectar a chamada.");
       }
+      if (callId !== callIdRef.current) {
+        cleanupCallResources(peer, stream, audioCtx, audio);
+        return;
+      }
 
       await peer.setRemoteDescription({
         type: "answer",
         sdp: answerSdp,
       });
+      if (callId !== callIdRef.current) {
+        cleanupCallResources(peer, stream, audioCtx, audio);
+        return;
+      }
+
+      peerRef.current = peer;
+      streamRef.current = stream;
+      audioCtxRef.current = audioCtx;
+      audioRef.current = audio;
+      localAnalyserRef.current = localAnalyser;
+
       setVoiceStatus("live");
       startLevelLoop();
       callTimerRef.current = setInterval(() => {
@@ -270,6 +328,8 @@ export function useVoiceCall() {
         checkpointUsage(false);
       }, HEARTBEAT_INTERVAL_MS);
     } catch (error) {
+      cleanupCallResources(peer, stream, audioCtx, audio);
+      if (callId !== callIdRef.current) return;
       stopVoice();
       setVoiceStatus("error");
       setVoiceError(
