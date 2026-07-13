@@ -2,10 +2,10 @@ import type { MetricKey, ProfessionPreset } from "@/lib/professions";
 
 export const DASHBOARD_WIDGETS = [
   "metrics",
-  "calendar",
   "chart",
-  "deals",
   "tasks",
+  "calendar",
+  "deals",
   "assistant",
   "open_claims",
   "onboarding",

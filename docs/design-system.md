@@ -14,21 +14,21 @@ usam este sistema.
    microcópia em tom humano.
 3. **Uma linguagem só.** Toda tela usa as mesmas primitivas. Se uma tela
    precisa de algo novo, a primitiva nasce no sistema, não na tela.
-4. **Reflexo é acabamento, não decoração.** Luz especular no topo dos cards,
-   varredura no hover, glow roxo apenas em elementos interativos primários.
+4. **Profundidade vem do contraste.** Superfícies planas, bordas discretas e
+   roxo reservado para seleção, foco e ações primárias.
 
 ## Tokens (definidos em `app/globals.css`, escopo `.app-frame`)
 
 | Token | Valor | Uso |
 | --- | --- | --- |
-| `--color-canvas` | `#696969` | fundo da página |
-| `--color-surface` | `#1B1924` | cards, sidebar, header |
-| `--color-surface-2` | `#252334` | campos, linhas de tabela hover, chips |
-| `--color-line` | `#35324A` | bordas estruturais |
-| `--color-line-strong` | `#6F66A0` | bordas em foco/hover |
-| `--color-ink` | `#F5F3FB` | texto principal |
-| `--color-ink-soft` | `#CBC7DB` | texto secundário |
-| `--color-ink-muted` | `#918CA6` | rótulos, metadados |
+| `--color-canvas` | `#1D1E2E` | fundo da página |
+| `--color-surface` | `#171825` | cards, sidebar, header |
+| `--color-surface-2` | `#1F1F31` | campos, linhas de tabela hover, chips |
+| `--color-line` | `#393A4E` | bordas estruturais |
+| `--color-line-strong` | `#745BAE` | bordas em foco/hover |
+| `--color-ink` | `#F7F6FB` | texto principal |
+| `--color-ink-soft` | `#CDC9DB` | texto secundário |
+| `--color-ink-muted` | `#9792AB` | rótulos, metadados |
 | `--violet-*` | `#2E054F → #8B5CF6` | acento da marca |
 
 ## Tipografia
@@ -64,7 +64,7 @@ Importar SEMPRE que a tela tiver o elemento equivalente:
 
 ## Classes CSS de componente (globals.css)
 
-- `.card` — superfície padrão (grafite, borda, reflexo especular embutido).
+- `.card` — superfície padrão (grafite plano e borda discreta).
 - `.card-head` / `.card-title` / `.card-desc` — cabeçalho de card.
 - `.page-head`, `.page-eyebrow`, `.page-title`, `.page-desc`, `.page-actions`.
 - `.stat-card`, `.stat-label`, `.stat-value`, `.stat-icon`.

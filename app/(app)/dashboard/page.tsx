@@ -443,13 +443,6 @@ export default async function DashboardPage() {
     order: Math.max(0, dashboardPreferences.metrics.indexOf(key)),
   }));
 
-  const isFirstRun =
-    contacts === 0 && allDeals.length === 0 && openTasks.length === 0;
-  const greeting = dashboardGreeting(preset, {
-    overdueCount: overdue.length,
-    todayCount: todayTasks.length,
-    isFirstRun,
-  });
   const widgetNodes: Partial<Record<DashboardWidgetKey, JSX.Element>> = {
     metrics: (
       <div className="space-y-4 sm:space-y-5">
@@ -510,24 +503,7 @@ export default async function DashboardPage() {
         <div className="dashboard-hero-copy flex items-start justify-between gap-3 max-w-2xl">
           <PageHeader
             className="dashboard-welcome-copy"
-            navigation={
-              <div className="dashboard-context-line">
-                <span>Visão operacional</span>
-                <span aria-hidden="true">•</span>
-                <time dateTime={now.toISOString()}>
-                  {new Intl.DateTimeFormat("pt-BR", {
-                    weekday: "long",
-                    day: "2-digit",
-                    month: "long",
-                  }).format(now)}
-                </time>
-                <span className="dashboard-live-status">
-                  <span aria-hidden="true" /> Modo operacional
-                </span>
-              </div>
-            }
             title={`Olá, ${displayName}!`}
-            description={greeting}
           />
 
           <div className="flex shrink-0 items-center gap-2 sm:hidden">
