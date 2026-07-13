@@ -129,12 +129,14 @@ export default function AssistantPage() {
           )
         )}
 
-        {status && (
-          <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-brand-600" />
-            {status}
-          </div>
-        )}
+        <div aria-live="polite">
+          {status && (
+            <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-brand-600" />
+              {status}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="shrink-0 space-y-3 border-t border-line bg-surface px-4 pb-[calc(0.85rem+env(safe-area-inset-bottom))] pt-3 sm:px-5 sm:pb-4">
@@ -151,7 +153,7 @@ export default function AssistantPage() {
                 <button
                   type="button"
                   onClick={attachment.clear}
-                  className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-ink-muted hover:bg-line hover:text-ink"
+                  className="relative grid h-6 w-6 shrink-0 place-items-center rounded-md text-ink-muted before:absolute before:-inset-2.5 before:content-[''] hover:bg-line hover:text-ink"
                   aria-label="Remover PDF anexado"
                 >
                   <IconX className="h-3.5 w-3.5" />

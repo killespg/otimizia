@@ -109,8 +109,9 @@ export async function GET() {
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
+    logError("api/realtime/token", new Error("OPENAI_API_KEY nao configurada no servidor."));
     return Response.json(
-      { error: "OPENAI_API_KEY nao configurada no servidor." },
+      { error: "Nao consegui iniciar a chamada de voz agora." },
       { status: 500 }
     );
   }

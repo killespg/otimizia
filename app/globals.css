@@ -41,6 +41,7 @@
     @apply bg-canvas text-ink antialiased;
     min-height: 100vh;
     touch-action: manipulation;
+    overscroll-behavior: none;
     font-feature-settings: "ss01", "cv01";
     text-rendering: optimizeLegibility;
     background-image:
@@ -87,6 +88,11 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     touch-action: manipulation;
+    background-color: rgb(var(--color-canvas));
+    /* Sem isso, puxar a tela além do topo/rodapé (rubber-band no PWA/app
+       Android) expõe a cor de fundo padrão do WebView (preta) em vez do
+       fundo do app — some com o "bounce" e com a barra preta. */
+    overscroll-behavior: none;
   }
 
   strong,
@@ -1114,7 +1120,6 @@
   body {
     min-width: 320px;
     overflow-x: hidden;
-    overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -4448,6 +4453,12 @@ label[class*="border-line"]::before,
 
   .dashboard-command-center .dashboard-card:hover {
     translate: none;
+  }
+
+  .animate-pulse,
+  .animate-spin,
+  .animate-bounce {
+    animation: none !important;
   }
 }
 

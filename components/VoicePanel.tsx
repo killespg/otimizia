@@ -60,7 +60,7 @@ export function VoicePanel() {
             <IconBot className="h-6 w-6" />
           </div>
 
-          <p className="text-[11px] font-black uppercase tracking-wide text-ink-muted">
+          <p aria-live="polite" className="text-[11px] font-black uppercase tracking-wide text-ink-muted">
             {voiceSpeaker === "assistant"
               ? "Sócio-Assistente falando"
               : voiceSpeaker === "user"
@@ -117,7 +117,7 @@ export function VoicePanel() {
             </span>
             <div className="min-w-0">
               <p className="text-xs font-black text-ink">Voz em tempo real</p>
-              <p className="mt-0.5 truncate text-xs font-semibold text-ink-muted">
+              <p aria-live="polite" className="mt-0.5 truncate text-xs font-semibold text-ink-muted">
                 {voiceStatus === "connecting"
                   ? "Conectando microfone..."
                   : voiceError ?? "Converse por áudio com o Sócio-Assistente."}

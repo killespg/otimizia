@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IconChevronRight } from "@/app/(app)/icons";
 
 type FaqItem = {
@@ -12,6 +12,13 @@ export function FaqAccordion({ items }: { items: FaqItem[] }) {
   const [openItems, setOpenItems] = useState<Record<number, boolean>>({});
   const [closingItems, setClosingItems] = useState<Record<number, boolean>>({});
   const timers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
+
+  useEffect(() => {
+    const pending = timers.current;
+    return () => {
+      Object.values(pending).forEach((timer) => window.clearTimeout(timer));
+    };
+  }, []);
 
   function toggle(index: number) {
     const isOpen = openItems[index];

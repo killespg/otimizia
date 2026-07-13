@@ -33,17 +33,32 @@ function relativeDate(value: string) {
 export function RecentProcessChanges({ initialItems }: { initialItems: WatchedProcess[] }) {
   const [items, setItems] = useState(initialItems);
   const [dismissing, setDismissing] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function markSeen(id: string) {
     if (dismissing) return;
     setDismissing(id);
+    setError(null);
+    const removedIndex = items.findIndex((item) => item.id === id);
+    const removedItem = items[removedIndex];
     setItems((prev) => prev.filter((item) => item.id !== id));
     try {
-      await fetch("/api/law/watched-processes/mark-seen", {
+      const res = await fetch("/api/law/watched-processes/mark-seen", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
+      if (!res.ok) throw new Error("mark-seen failed");
+    } catch {
+      if (removedItem) {
+        setItems((prev) => {
+          if (prev.some((item) => item.id === id)) return prev;
+          const next = [...prev];
+          next.splice(Math.min(removedIndex, next.length), 0, removedItem);
+          return next;
+        });
+      }
+      setError("Não consegui marcar como visto. Tente de novo.");
     } finally {
       setDismissing(null);
     }
@@ -57,6 +72,14 @@ export function RecentProcessChanges({ initialItems }: { initialItems: WatchedPr
         <h2 className="text-base font-black text-ink">Mudanças recentes</h2>
         <span className="tag bg-brand-50 text-brand-700">{items.length}</span>
       </div>
+      {error && (
+        <p
+          aria-live="polite"
+          className="border-b border-line bg-danger-50 px-5 py-2 text-xs font-semibold text-danger-700"
+        >
+          {error}
+        </p>
+      )}
       <div className="divide-y divide-line">
         {items.map((item) => {
           const tribunalLabel = DATAJUD_TRIBUNALS.find((t) => t.alias === item.tribunal_alias)?.label ?? item.tribunal_alias;

@@ -128,12 +128,14 @@ export function AgentPanel() {
             )
           )}
 
-          {status && (
-            <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-brand-600" />
-              {status}
-            </div>
-          )}
+          <div aria-live="polite">
+            {status && (
+              <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-brand-600" />
+                {status}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -150,7 +152,7 @@ export function AgentPanel() {
               <button
                 type="button"
                 onClick={attachment.clear}
-                className="icon-button grid h-6 w-6 shrink-0 place-items-center rounded-md text-ink-muted transition-colors duration-150 ease-out hover:bg-line hover:text-ink"
+                className="icon-button relative grid h-6 w-6 shrink-0 place-items-center rounded-md text-ink-muted transition-colors duration-150 ease-out before:absolute before:-inset-2.5 before:content-[''] hover:bg-line hover:text-ink"
                 aria-label="Remover PDF anexado"
               >
                 <IconX className="h-3.5 w-3.5" />
