@@ -54,6 +54,18 @@ export function DashboardPreferencesForm({
   const [isSaving, startSaving] = useTransition();
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
   const [section, setSection] = useState<"appearance" | "metrics">("appearance");
+  // HTML5 drag-and-drop não funciona em telas de toque — mesmo em tablets/
+  // telas grandes com pointer:coarse, então usamos os botões Subir/Descer
+  // ali também, não só abaixo do breakpoint sm.
+  const [coarsePointer, setCoarsePointer] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const isTouchOnly =
+      window.matchMedia("(pointer: coarse)").matches &&
+      !window.matchMedia("(pointer: fine)").matches;
+    setCoarsePointer(isTouchOnly);
+  }, []);
 
   const availableMetrics = useMemo(
     () =>
@@ -172,7 +184,7 @@ export function DashboardPreferencesForm({
             return (
               <div
                 key={key}
-                draggable={active}
+                draggable={active && !coarsePointer}
                 onDragStart={() => setDraggingMetric(key)}
                 onDragOver={(event) => event.preventDefault()}
                 onDrop={() => {
@@ -226,6 +238,7 @@ export function DashboardPreferencesForm({
                 />
                 {active && (
                   <MobileOrderButtons
+                    forceVisible={coarsePointer}
                     onMoveUp={() => setMetrics((current) => moveBy(current, key, -1))}
                     onMoveDown={() => setMetrics((current) => moveBy(current, key, 1))}
                   />
@@ -308,16 +321,26 @@ function OptionButton({
 function MobileOrderButtons({
   onMoveUp,
   onMoveDown,
+  forceVisible,
 }: {
   onMoveUp: () => void;
   onMoveDown: () => void;
+  forceVisible: boolean;
 }) {
   return (
-    <div className="mt-2 grid grid-cols-2 gap-2 sm:hidden">
-      <button type="button" onClick={onMoveUp} className="rounded-md border border-line bg-surface px-2 py-1.5 text-xs font-black text-ink-soft">
+    <div className={"mt-2 grid grid-cols-2 gap-2 " + (forceVisible ? "" : "lg:hidden")}>
+      <button
+        type="button"
+        onClick={onMoveUp}
+        className="flex min-h-11 items-center justify-center rounded-md border border-line bg-surface px-2 text-xs font-black text-ink-soft"
+      >
         Subir
       </button>
-      <button type="button" onClick={onMoveDown} className="rounded-md border border-line bg-surface px-2 py-1.5 text-xs font-black text-ink-soft">
+      <button
+        type="button"
+        onClick={onMoveDown}
+        className="flex min-h-11 items-center justify-center rounded-md border border-line bg-surface px-2 text-xs font-black text-ink-soft"
+      >
         Descer
       </button>
     </div>

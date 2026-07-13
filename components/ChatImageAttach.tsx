@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { IconImage, IconX } from "@/app/(app)/icons";
 
@@ -17,17 +17,19 @@ export function ChatImageAttach({
   onChange: (image: PendingImage | null) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string | null>(null);
 
   function handleFile(file: File | undefined) {
     if (!file) return;
     if (!ALLOWED_TYPES.has(file.type)) {
-      window.alert("Envie uma imagem (JPEG, PNG, WEBP ou GIF).");
+      setError("Envie uma imagem (JPEG, PNG, WEBP ou GIF).");
       return;
     }
     if (file.size > MAX_BYTES) {
-      window.alert("A imagem pode ter no máximo 6 MB.");
+      setError("A imagem pode ter no máximo 6 MB.");
       return;
     }
+    setError(null);
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = String(reader.result);
@@ -38,7 +40,7 @@ export function ChatImageAttach({
   }
 
   return (
-    <div className="flex shrink-0 items-center">
+    <div className="relative flex shrink-0 items-center">
       {value ? (
         <span className="pop-in relative inline-flex h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-line">
           {/* Prévia local (data URL) antes de enviar — não é a imagem final salva. */}
@@ -57,7 +59,7 @@ export function ChatImageAttach({
               if (inputRef.current) inputRef.current.value = "";
             }}
             aria-label="Remover foto"
-            className="press-sm absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-ink text-white transition-colors duration-150 ease-out"
+            className="press-sm absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-ink text-white transition-colors duration-150 ease-out before:absolute before:-inset-3 before:content-['']"
           >
             <IconX className="h-3 w-3" />
           </button>
@@ -80,6 +82,11 @@ export function ChatImageAttach({
         className="hidden"
         onChange={(event) => handleFile(event.target.files?.[0])}
       />
+      {error && (
+        <p className="absolute left-0 top-full z-10 mt-1 w-44 text-xs font-semibold text-danger-700">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
