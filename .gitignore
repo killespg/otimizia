@@ -42,3 +42,6 @@ hook.cache.json
 # Instaladores baixados por engano para public/ (nao devem ser servidos pelo site)
 /public/*.exe
 /public/*.msi
+
+# Previews de design gerados por ferramenta local
+/output/

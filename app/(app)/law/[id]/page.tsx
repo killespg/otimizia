@@ -29,15 +29,16 @@ const EVENT_LABEL: Record<string,string> = { update:"Andamento", filing:"Protoco
 const DOCUMENT_LABEL: Record<string,string> = { petition:"Petição", contract:"Contrato", evidence:"Prova", decision:"Decisão", power_of_attorney:"Procuração", client_document:"Documento do cliente", other:"Outro" };
 const MEMBER_ROLE_LABEL: Record<string,string> = { lead:"Responsável", collaborator:"Colaborador(a)", viewer:"Visualizador(a)" };
 
-export default async function LegalCasePage({ params }: { params: { id: string } }) {
+export default async function LegalCasePage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = createClient(); const { data: { user } } = await supabase.auth.getUser();
   if (!user) notFound();
-  const [{ data: profile }, orgId] = await Promise.all([supabase.from("profiles").select("profession_type,is_admin,favorite_tribunals").maybeSingle(), getActiveOrgId(supabase, user.id)]);
+  const [{ data: profile }, orgId] = await Promise.all([supabase.from("profiles").select("profession_type,is_admin,favorite_tribunals").eq("id", user.id).maybeSingle(), getActiveOrgId(supabase, user.id)]);
   if (getWorkspaceKey(profile?.profession_type, user.user_metadata?.profession_type, profile?.is_admin) !== "law_office") notFound();
   const [orgRole, { data: membership }, members] = await Promise.all([getOrgRole(supabase, orgId, user.id), supabase.from("organization_members").select("job_role").eq("org_id", orgId).eq("user_id", user.id).maybeSingle(), getOrgMembers(supabase, orgId)]);
   const isAdmin = orgRole === "admin"; const jobRole = membership?.job_role;
   if (!canViewLegal(jobRole, isAdmin)) notFound();
-  const { data } = await supabase.from("legal_cases").select("*, contacts(name,phone,email)").eq("id", params.id).eq("org_id", orgId).maybeSingle();
+  const { id } = await params;
+  const { data } = await supabase.from("legal_cases").select("*, contacts(name,phone,email)").eq("id", id).eq("org_id", orgId).maybeSingle();
   if (!data) notFound();
   const legalCase = data as LegalCase & { contacts: {name:string;phone:string|null;email:string|null} | null };
   const [{data: deadlineRows},{data:eventRows},{data:documentRows},{data:memberRows},{data:shareLinkRows},financeResult] = await Promise.all([

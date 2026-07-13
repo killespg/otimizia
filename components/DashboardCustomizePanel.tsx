@@ -32,7 +32,7 @@ export function DashboardCustomizePanel({
   }, [open]);
 
   return (
-    <div className="dashboard-customize-header">
+    <div className="dashboard-customize-header dashboard-workspace-heading">
       <div>
         <p className="dashboard-section-eyebrow">Área de trabalho</p>
         <h2 className="dashboard-customize-title">Visão geral do escritório</h2>

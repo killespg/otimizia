@@ -24,30 +24,27 @@ import { MessageTemplates } from "./MessageTemplates";
 export default async function ContactDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const supabase = createClient();
 
-  const [
-    {
-      data: { user },
-    },
-    { data: profile },
-  ] = await Promise.all([
-    supabase.auth.getUser(),
-    supabase.from("profiles").select("profession_type, name, is_admin").maybeSingle(),
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) notFound();
+  const [{ data: profile }, orgId] = await Promise.all([
+    supabase.from("profiles").select("profession_type, name, is_admin").eq("id", user.id).maybeSingle(),
+    getActiveOrgId(supabase, user.id),
   ]);
-  const orgId = await getActiveOrgId(supabase, user!.id);
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
     user?.user_metadata?.profession_type,
     profile?.is_admin ?? false
   );
   const preset = getProfessionPreset(workspaceKey);
+  const { id } = await params;
   const { data: contact } = await supabase
     .from("contacts")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey)
     .maybeSingle();

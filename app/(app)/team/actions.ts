@@ -8,6 +8,7 @@ import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { resolveOrigin } from "@/lib/request-origin";
 import type { JobRole } from "@/lib/supabase/types";
 
 async function requireOrgAdmin() {
@@ -84,26 +85,35 @@ export async function updateOrganizationContext(formData: FormData) {
 }
 
 export async function inviteMember(formData: FormData) {
-  const { orgId } = await requireOrgAdmin();
+  const { orgId, user } = await requireOrgAdmin();
   const email = emailField(formData.get("email"));
   const jobRole = jobRoleField(formData.get("job_role"));
   if (!email) throw new Error("Informe um e-mail válido.");
 
   const admin = createAdminClient();
-  const headersList = headers();
-  const host = headersList.get("x-forwarded-host") ?? headersList.get("host");
-  const protocol = headersList.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
+  const origin = resolveOrigin(await headers());
+
+  const { data: invitation, error: invitationError } = await admin
+    .from("organization_invitations")
+    .insert({ org_id: orgId, email, job_role: jobRole, created_by: user.id })
+    .select("token")
+    .single();
+  if (invitationError || !invitation) {
+    throw new Error("Não deu para preparar o convite.");
+  }
 
   const { error } = await admin.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${protocol}://${host}/reset-password`,
-    data: { invited_org_id: orgId, invited_job_role: jobRole },
+    redirectTo: `${origin}/reset-password`,
+    data: { invitation_token: invitation.token },
   });
 
   if (error) {
     const message = (error.message ?? "").toLowerCase();
     if (message.includes("already") || message.includes("registered")) {
+      await admin.from("organization_invitations").delete().eq("token", invitation.token);
       await addExistingUserToOrg(admin, orgId, email, jobRole);
     } else {
+      await admin.from("organization_invitations").delete().eq("token", invitation.token);
       console.error("[team/invite]", error);
       throw new Error("Não deu para enviar o convite.");
     }
@@ -149,7 +159,8 @@ async function addExistingUserToOrg(
     throw new Error("Não deu para adicionar essa pessoa à equipe.");
   }
 
-  await admin.from("profiles").update({ active_org_id: orgId }).eq("id", existing.id);
+  // A pessoa passa a poder escolher a equipe no seletor, mas não trocamos a
+  // organização ativa dela sem consentimento.
 }
 
 export async function updateMemberRole(formData: FormData) {

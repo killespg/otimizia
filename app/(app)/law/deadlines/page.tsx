@@ -12,7 +12,7 @@ export default async function DeadlinesPage() {
     data: { user },
   } = await supabase.auth.getUser();
   const [{ data: profile }, orgId] = await Promise.all([
-    supabase.from("profiles").select("profession_type, is_admin").maybeSingle(),
+    supabase.from("profiles").select("profession_type, is_admin").eq("id", user!.id).maybeSingle(),
     getActiveOrgId(supabase, user!.id),
   ]);
 

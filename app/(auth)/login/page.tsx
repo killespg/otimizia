@@ -3,17 +3,18 @@ import { PendingButton } from "@/components/PendingButton";
 import { login } from "../actions";
 import { AuthShell, AuthField } from "../AuthShell";
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { error?: string; message?: string };
+  searchParams: Promise<{ error?: string; message?: string }>;
 }) {
+  const params = await searchParams;
   return (
     <AuthShell
       title="Entrar"
       subtitle="Entre e veja quem você precisa chamar hoje."
-      error={searchParams.error}
-      notice={searchParams.message}
+      error={params.error}
+      notice={params.message}
       footer={
         <>
           Não tem conta?{" "}

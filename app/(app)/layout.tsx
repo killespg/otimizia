@@ -117,8 +117,8 @@ export default async function AppLayout({
     <AssistantChatProvider>
     <div className={`app-frame workspace-${preset.key} min-h-[100dvh] bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-0 sm:p-6`}>
       <div className="app-shell mx-auto flex min-h-[100dvh] max-w-[1580px] overflow-visible bg-surface shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] sm:min-h-[calc(100dvh-3rem)] sm:overflow-hidden sm:rounded-2xl">
-        <aside className="hidden w-[250px] shrink-0 flex-col border-r border-line bg-surface sm:flex">
-          <div className="flex h-[92px] items-center px-6">
+        <aside className="app-sidebar hidden w-[250px] shrink-0 flex-col border-r border-line bg-surface sm:flex">
+          <div className="app-sidebar-brand flex h-[92px] items-center px-6">
             <Logo />
           </div>
 
@@ -131,7 +131,7 @@ export default async function AppLayout({
             </div>
           )}
 
-          <div className="flex-1 overflow-y-auto px-5 py-3">
+          <div className="app-sidebar-nav flex-1 overflow-y-auto px-5 py-3">
             <SidebarNav
               labels={workspaceLabels}
               isAdmin={isAdmin}
@@ -139,7 +139,7 @@ export default async function AppLayout({
             />
           </div>
 
-          <div className="space-y-3 px-5 pb-5">
+          <div className="app-sidebar-footer space-y-3 px-5 pb-5">
             <ThemeToggle className="w-full justify-between" />
 
             {access.status === "trialing" && (
@@ -190,7 +190,7 @@ export default async function AppLayout({
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col bg-canvas">
+        <div className="app-content flex min-w-0 flex-1 flex-col bg-canvas">
           <header className="mobile-app-header sticky top-0 z-30 flex h-16 items-center justify-between border-b border-line bg-surface/92 px-4 backdrop-blur-xl sm:hidden">
             <Logo />
             <div className="flex items-center gap-2">
@@ -230,7 +230,7 @@ export default async function AppLayout({
             <TrialBanner trialDaysLeft={access.trialDaysLeft} />
           )}
 
-          <main className="mx-auto w-full max-w-[1500px] px-4 pb-[calc(7.5rem+env(safe-area-inset-bottom))] pt-4 sm:px-8 sm:pb-8 sm:pt-7 lg:px-10">
+          <main className="app-main mx-auto w-full max-w-[1500px] px-4 pb-[calc(7.5rem+env(safe-area-inset-bottom))] pt-4 sm:px-8 sm:pb-8 sm:pt-7 lg:px-10">
             {children}
           </main>
         </div>

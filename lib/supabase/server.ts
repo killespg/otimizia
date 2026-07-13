@@ -2,7 +2,13 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export function createClient() {
-  const cookieStore = cookies();
+  // Next 15 mantém a API síncrona durante a transição. Mantemos esse client
+  // síncrono para não transformar todos os Server Components em factories
+  // assíncronas; a migração completa para cookies() assíncrono fica isolada.
+  const cookieStore = cookies() as unknown as {
+    getAll: () => { name: string; value: string }[];
+    set: (name: string, value: string, options?: Record<string, unknown>) => void;
+  };
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

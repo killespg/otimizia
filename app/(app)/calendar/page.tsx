@@ -25,13 +25,13 @@ type CalendarEntry =
   | { kind: "task"; date: Date; task: Task }
   | { kind: "deadline"; date: Date; deadline: LegalDeadline };
 
-export default async function CalendarPage({ searchParams }: { searchParams: { month?: string } }) {
+export default async function CalendarPage({ searchParams }: { searchParams: Promise<{ month?: string }> }) {
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   const [{ data: profile }, orgId] = await Promise.all([
-    supabase.from("profiles").select("profession_type, is_admin").maybeSingle(),
+    supabase.from("profiles").select("profession_type, is_admin").eq("id", user!.id).maybeSingle(),
     getActiveOrgId(supabase, user!.id),
   ]);
   const workspaceKey = getWorkspaceKey(
@@ -93,7 +93,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: { m
     (deadline) => new Date(deadline.due_at) >= now && new Date(deadline.due_at) <= endOfToday
   );
 
-  const { year, month } = parseMonthParam(searchParams.month, now);
+  const { year, month } = parseMonthParam((await searchParams).month, now);
   const rangeStart = new Date(year, month, 1);
   const rangeEnd = new Date(year, month + 1, 1);
   const cells = buildMonthCells(year, month);

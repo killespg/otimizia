@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient as createSupabaseAdminClient } from "@supabase/supabase-js";
+import { parseSaoPauloDateTime } from "@/lib/date-time";
 import { logError } from "@/lib/logger";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
@@ -898,9 +899,7 @@ function percentOrNull(v: FormDataEntryValue | null): number | null {
 
 function dateTimeOrNull(v: FormDataEntryValue | null): string | null {
   const raw = text(v, 64);
-  if (!raw) return null;
-  const date = new Date(raw);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+  return parseSaoPauloDateTime(raw);
 }
 
 async function visibleContactIdOrNull(

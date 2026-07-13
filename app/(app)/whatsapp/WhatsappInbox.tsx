@@ -26,6 +26,7 @@ export function WhatsappInbox({
   const [sending, setSending] = useState(false);
   const [toggling, setToggling] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const selected = conversations.find((c) => c.id === selectedId) ?? null;
@@ -33,10 +34,14 @@ export function WhatsappInbox({
   async function importHistory() {
     if (importing) return;
     setImporting(true);
+    setFeedback(null);
     try {
       // Novas conversas/mensagens chegam via Realtime (assinatura abaixo) —
       // não precisa recarregar a página manualmente.
-      await fetch("/api/whatsapp/import-history", { method: "POST" });
+      const response = await fetch("/api/whatsapp/import-history", { method: "POST" });
+      if (!response.ok) throw new Error("Não foi possível importar o histórico agora.");
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Não foi possível importar o histórico agora.");
     } finally {
       setImporting(false);
     }
@@ -143,19 +148,25 @@ export function WhatsappInbox({
     const text = input.trim();
     if (!text || !selectedId || sending) return;
     setSending(true);
-    setInput("");
+    setFeedback(null);
     try {
       const response = await fetch("/api/whatsapp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ conversationId: selectedId, text }),
       });
-      const data = await response.json();
-      if (response.ok && data.message) {
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(typeof data?.error === "string" ? data.error : "Não foi possível enviar a mensagem.");
+      }
+      if (data?.message) {
         setMessages((prev) =>
           prev.some((m) => m.id === data.message.id) ? prev : [...prev, data.message]
         );
       }
+      setInput("");
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Não foi possível enviar a mensagem.");
     } finally {
       setSending(false);
     }
@@ -164,16 +175,23 @@ export function WhatsappInbox({
   async function toggleIa() {
     if (!selected || toggling) return;
     setToggling(true);
+    setFeedback(null);
     const nextValue = !selected.ia_active;
     setConversations((prev) =>
       prev.map((c) => (c.id === selected.id ? { ...c, ia_active: nextValue } : c))
     );
     try {
-      await fetch("/api/whatsapp/toggle-ia", {
+      const response = await fetch("/api/whatsapp/toggle-ia", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ conversationId: selected.id, iaActive: nextValue }),
       });
+      if (!response.ok) throw new Error("Não foi possível alterar a IA desta conversa.");
+    } catch (error) {
+      setConversations((prev) =>
+        prev.map((c) => (c.id === selected.id ? { ...c, ia_active: !nextValue } : c))
+      );
+      setFeedback(error instanceof Error ? error.message : "Não foi possível alterar a IA desta conversa.");
     } finally {
       setToggling(false);
     }
@@ -358,6 +376,11 @@ export function WhatsappInbox({
                 <IconArrowRight className="h-5 w-5 -rotate-45" />
               </button>
             </form>
+            {feedback ? (
+              <p className="border-t border-danger-100 bg-danger-50 px-4 py-2 text-xs font-bold text-danger-700" role="alert">
+                {feedback}
+              </p>
+            ) : null}
           </>
         )}
       </section>

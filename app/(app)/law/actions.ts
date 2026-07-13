@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { parseSaoPauloDateTime } from "@/lib/date-time";
 import { canManageLegal, canViewFinance } from "@/lib/law-office";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
@@ -64,8 +65,7 @@ function dateOrNull(value: FormDataEntryValue | null) {
 
 function dateTimeOrNull(value: FormDataEntryValue | null) {
   const result = text(value, 40);
-  const date = result ? new Date(result) : null;
-  return date && !Number.isNaN(date.valueOf()) ? date.toISOString() : null;
+  return parseSaoPauloDateTime(result);
 }
 
 function moneyToCents(value: FormDataEntryValue | null) {

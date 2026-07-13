@@ -13,20 +13,16 @@ import { ContactsExplorer } from "./ContactsExplorer";
 export default async function ContactsPage({
   searchParams,
 }: {
-  searchParams?: { q?: string };
+  searchParams?: Promise<{ q?: string }>;
 }) {
   const supabase = createClient();
-  const initialQuery = normalizeSearch(searchParams?.q);
-  const [
-    {
-      data: { user },
-    },
-    { data: profile },
-  ] = await Promise.all([
-    supabase.auth.getUser(),
-    supabase.from("profiles").select("profession_type, is_admin").maybeSingle(),
+  const initialQuery = normalizeSearch((await searchParams)?.q);
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  const [{ data: profile }, orgId] = await Promise.all([
+    supabase.from("profiles").select("profession_type, is_admin").eq("id", user.id).maybeSingle(),
+    getActiveOrgId(supabase, user.id),
   ]);
-  const orgId = await getActiveOrgId(supabase, user!.id);
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
     user?.user_metadata?.profession_type,

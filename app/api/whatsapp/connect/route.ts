@@ -38,7 +38,7 @@ export async function POST() {
 
   let qrcodeBase64: string | null;
   try {
-    const webhookUrl = `${resolveOrigin(headers())}/api/whatsapp/webhook`;
+    const webhookUrl = `${resolveOrigin(await headers())}/api/whatsapp/webhook`;
     const result = await createEvolutionInstance(instanceName, webhookUrl);
     qrcodeBase64 = result.qrcodeBase64;
   } catch (error) {

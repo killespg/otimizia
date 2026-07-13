@@ -15,13 +15,13 @@ const PRIORITY_COLOR: Record<string, string> = {
 };
 const WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
-export default async function DeadlinesCalendarPage({ searchParams }: { searchParams: { month?: string } }) {
+export default async function DeadlinesCalendarPage({ searchParams }: { searchParams: Promise<{ month?: string }> }) {
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   const [{ data: profile }, orgId] = await Promise.all([
-    supabase.from("profiles").select("profession_type, is_admin").maybeSingle(),
+    supabase.from("profiles").select("profession_type, is_admin").eq("id", user!.id).maybeSingle(),
     getActiveOrgId(supabase, user!.id),
   ]);
 
@@ -39,7 +39,7 @@ export default async function DeadlinesCalendarPage({ searchParams }: { searchPa
   const isAdmin = orgRole === "admin";
   if (!canViewLegal(membership?.job_role, isAdmin)) return <AccessDenied />;
 
-  const { year, month } = parseMonthParam(searchParams.month, new Date());
+  const { year, month } = parseMonthParam((await searchParams).month, new Date());
   const rangeStart = new Date(year, month, 1);
   const rangeEnd = new Date(year, month + 1, 1);
 

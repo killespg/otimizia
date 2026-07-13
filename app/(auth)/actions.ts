@@ -64,7 +64,7 @@ export async function signup(formData: FormData) {
     );
   }
 
-  const origin = resolveOrigin(headers());
+  const origin = resolveOrigin(await headers());
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -103,7 +103,7 @@ export async function requestPasswordReset(formData: FormData) {
     redirectWithError("/forgot-password", "Informe um e-mail válido.");
   }
 
-  const origin = resolveOrigin(headers());
+  const origin = resolveOrigin(await headers());
 
   await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/reset-password`,

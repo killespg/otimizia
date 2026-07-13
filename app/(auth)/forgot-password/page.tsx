@@ -3,17 +3,18 @@ import { PendingButton } from "@/components/PendingButton";
 import { requestPasswordReset } from "../actions";
 import { AuthShell, AuthField } from "../AuthShell";
 
-export default function ForgotPasswordPage({
+export default async function ForgotPasswordPage({
   searchParams,
 }: {
-  searchParams: { error?: string; message?: string };
+  searchParams: Promise<{ error?: string; message?: string }>;
 }) {
+  const params = await searchParams;
   return (
     <AuthShell
       title="Esqueci minha senha"
       subtitle="Informe seu e-mail e mandamos um link para criar uma nova senha."
-      error={searchParams.error}
-      notice={searchParams.message}
+      error={params.error}
+      notice={params.message}
       footer={
         <>
           Lembrou a senha?{" "}

@@ -10,8 +10,9 @@ import { inviteMember, removeMember, updateMemberJobRole, updateMemberRole, upda
 export default async function TeamPage({
   searchParams,
 }: {
-  searchParams: { error?: string };
+  searchParams: Promise<{ error?: string }>;
 }) {
+  const errorMessage = (await searchParams).error;
   const supabase = createClient();
   const {
     data: { user },
@@ -43,9 +44,9 @@ export default async function TeamPage({
         </p>
       </header>
 
-      {searchParams.error && (
+      {errorMessage && (
         <div className="rounded-md border border-danger-200 bg-danger-50 px-3.5 py-3 text-sm font-bold text-danger-700">
-          {searchParams.error}
+          {errorMessage}
         </div>
       )}
 

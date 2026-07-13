@@ -33,8 +33,9 @@ import {
 export default async function SettingsPage({
   searchParams,
 }: {
-  searchParams: { checkout?: string };
+  searchParams: Promise<{ checkout?: string }>;
 }) {
+  const checkout = (await searchParams).checkout;
   const supabase = createClient();
   const {
     data: { user },
@@ -86,13 +87,13 @@ export default async function SettingsPage({
         </p>
       </header>
 
-      {searchParams.checkout === "success" && (
+      {checkout === "success" && (
         <div className="flex items-start gap-2 rounded-md border border-success-200 bg-success-50 px-3.5 py-3 text-sm font-bold text-success-700">
           <IconCheck className="mt-0.5 h-4 w-4 shrink-0" />
           Assinatura Pro ativada.
         </div>
       )}
-      {searchParams.checkout === "cancel" && (
+      {checkout === "cancel" && (
         <div className="flex items-start gap-2 rounded-md border border-danger-200 bg-danger-50 px-3.5 py-3 text-sm font-bold text-danger-700">
           <IconAlert className="mt-0.5 h-4 w-4 shrink-0" />
           Checkout cancelado. Nenhuma cobrança foi feita.

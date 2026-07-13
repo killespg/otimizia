@@ -26,15 +26,16 @@ type SharedCase = {
   documents: { name: string; document_type: string; external_url: string }[];
 };
 
-export default async function SharedCasePage({ params }: { params: { token: string } }) {
-  if (!/^[0-9a-f-]{36}$/i.test(params.token)) notFound();
+export default async function SharedCasePage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params;
+  if (!/^[0-9a-f-]{36}$/i.test(token)) notFound();
 
   const supabase = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
-  const { data, error } = await supabase.rpc("get_shared_case", { p_token: params.token });
+  const { data, error } = await supabase.rpc("get_shared_case", { p_token: token });
   if (error || !data) notFound();
   const shared = data as SharedCase;
 

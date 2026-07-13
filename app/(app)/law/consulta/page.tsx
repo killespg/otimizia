@@ -12,7 +12,7 @@ export default async function DatajudSearchPage() {
     data: { user },
   } = await supabase.auth.getUser();
   const [{ data: profile }, orgId] = await Promise.all([
-    supabase.from("profiles").select("profession_type, is_admin, favorite_tribunals").maybeSingle(),
+    supabase.from("profiles").select("profession_type, is_admin, favorite_tribunals").eq("id", user!.id).maybeSingle(),
     getActiveOrgId(supabase, user!.id),
   ]);
   const workspaceKey = getWorkspaceKey(

@@ -86,19 +86,16 @@ export default async function DashboardPage() {
   endOfToday.setHours(23, 59, 59, 999);
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const [
-    {
-      data: { user },
-    },
-    { data: profile },
-  ] = await Promise.all([
-    supabase.auth.getUser(),
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  const [{ data: profile }, orgId] = await Promise.all([
     supabase
       .from("profiles")
       .select("profession_type, is_admin, checklist_dismissed_at, dashboard_preferences, favorite_tribunals")
+      .eq("id", user.id)
       .maybeSingle(),
+    getActiveOrgId(supabase, user.id),
   ]);
-  const orgId = await getActiveOrgId(supabase, user!.id);
   const isAdmin = profile?.is_admin ?? false;
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
@@ -435,14 +432,15 @@ export default async function DashboardPage() {
   };
 
   return (
-    <div className={`dashboard-board dashboard-board-${dashboardPreferences.style} dashboard-accent-${dashboardPreferences.accent} space-y-4 sm:space-y-5`}>
-      <header className="dashboard-header enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-start justify-between gap-3 max-w-2xl">
-          <div>
+    <div className={`dashboard-board dashboard-command-center dashboard-board-${dashboardPreferences.style} dashboard-accent-${dashboardPreferences.accent} space-y-4 sm:space-y-5`}>
+      <header className="dashboard-header dashboard-hero enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="dashboard-hero-copy flex items-start justify-between gap-3 max-w-2xl">
+          <div className="dashboard-welcome-copy">
             <div className="dashboard-context-line">
               <span>Visão operacional</span>
               <span aria-hidden="true">•</span>
               <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long" }).format(now)}</time>
+              <span className="dashboard-live-status"><span aria-hidden="true" /> Modo operacional</span>
             </div>
             <h1 className="mt-2 text-[28px] font-black tracking-[-0.035em] text-ink sm:text-[2.15rem]">
               Olá, {displayName}!
@@ -455,7 +453,7 @@ export default async function DashboardPage() {
           <div className="flex shrink-0 items-center gap-2 sm:hidden">
             <Link
               href="/tasks"
-              className="nav-item relative grid h-10 w-10 place-items-center rounded-lg border border-line bg-white text-ink-soft shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] hover:text-brand-700"
+              className="dashboard-alert-button nav-item relative grid h-10 w-10 place-items-center rounded-lg border border-line bg-white text-ink-soft shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] hover:text-brand-700"
               aria-label="Ver lembretes"
             >
               <IconBell className="h-[18px] w-[18px]" />
@@ -463,7 +461,7 @@ export default async function DashboardPage() {
                 {Math.min(overdue.length, 9)}
               </span>
             </Link>
-            <div className="relative grid h-10 w-10 place-items-center rounded-full bg-[linear-gradient(135deg,#6d28d9,#3b16c6)] text-xs font-black text-white shadow-[0_16px_36px_-18px_rgba(92,34,232,0.8)]">
+            <div className="dashboard-user-orb relative grid h-10 w-10 place-items-center rounded-full bg-[linear-gradient(135deg,#6d28d9,#3b16c6)] text-xs font-black text-white shadow-[0_16px_36px_-18px_rgba(92,34,232,0.8)]">
               {initials(displayName)}
               <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-success-500" />
             </div>
@@ -472,7 +470,7 @@ export default async function DashboardPage() {
 
         <form
           action="/contacts"
-          className="flex h-11 w-full min-w-0 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:hidden"
+          className="dashboard-global-search flex h-11 w-full min-w-0 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:hidden"
         >
           <IconSearch className="h-5 w-5 shrink-0 text-ink-muted" />
           <label className="sr-only" htmlFor="dashboard-contact-search-mobile">
@@ -487,10 +485,10 @@ export default async function DashboardPage() {
           />
         </form>
 
-        <div className="hidden flex-col gap-3 sm:flex sm:flex-row sm:items-center">
+        <div className="dashboard-hero-actions hidden flex-col gap-3 sm:flex sm:flex-row sm:items-center">
           <form
             action="/contacts"
-            className="flex h-11 w-full min-w-0 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:w-[430px]"
+            className="dashboard-global-search flex h-11 w-full min-w-0 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:w-[430px]"
           >
             <IconSearch className="h-5 w-5 shrink-0 text-ink-muted" />
             <label className="sr-only" htmlFor="dashboard-contact-search">
@@ -514,7 +512,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/tasks"
-              className="nav-item relative grid h-11 w-11 place-items-center rounded-lg border border-line bg-white text-ink-soft shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] hover:text-brand-700"
+              className="dashboard-alert-button nav-item relative grid h-11 w-11 place-items-center rounded-lg border border-line bg-white text-ink-soft shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] hover:text-brand-700"
               aria-label="Ver lembretes"
             >
               <IconBell className="h-5 w-5" />
@@ -522,7 +520,7 @@ export default async function DashboardPage() {
                 {Math.min(overdue.length, 9)}
               </span>
             </Link>
-            <div className="relative grid h-12 w-12 place-items-center rounded-full bg-[linear-gradient(135deg,#6d28d9,#3b16c6)] text-sm font-black text-white shadow-[0_16px_36px_-18px_rgba(92,34,232,0.8)]">
+            <div className="dashboard-user-orb relative grid h-12 w-12 place-items-center rounded-full bg-[linear-gradient(135deg,#6d28d9,#3b16c6)] text-sm font-black text-white shadow-[0_16px_36px_-18px_rgba(92,34,232,0.8)]">
               {initials(displayName)}
               <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-success-500" />
             </div>
@@ -564,7 +562,7 @@ export default async function DashboardPage() {
       )}
 
       {workspaceKey === "law_office" && (
-        <section className="panel p-4 sm:p-5">
+        <section className="dashboard-process-search panel p-4 sm:p-5">
           <h2 className="text-sm font-black text-ink">Consultar processo</h2>
           <p className="mt-1 text-xs font-medium text-ink-muted">
             Busque um processo no DataJud (CNJ) sem sair do painel.

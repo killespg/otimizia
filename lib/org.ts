@@ -78,15 +78,14 @@ export async function getOrgMembers(
     .order("created_at", { ascending: true });
 
   const rows = members ?? [];
-  const ids = rows.map((m) => m.user_id as string);
-  if (ids.length === 0) return [];
+  if (rows.length === 0) return [];
 
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, name")
-    .in("id", ids);
+  const { data } = await supabase.rpc("get_org_member_profiles", {
+    p_org_id: orgId,
+  });
+  const profiles = (data ?? []) as { id: string; name: string | null }[];
 
-  const nameById = new Map((profiles ?? []).map((p) => [p.id as string, p.name as string | null]));
+  const nameById = new Map(profiles.map((p) => [p.id, p.name]));
 
   return rows.map((m) => ({
     user_id: m.user_id as string,
