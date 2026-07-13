@@ -50,7 +50,7 @@ export function DeadlineCalculator({ defaultValue = "" }: { defaultValue?: strin
           className="field mt-1.5"
         />
       </div>
-      <details className="rounded-lg border border-line bg-surface p-3">
+      <details className="rounded-lg border border-line bg-white p-3">
         <summary className="cursor-pointer text-xs font-black text-brand-700">Calcular prazo em dias úteis (CPC)</summary>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <div>

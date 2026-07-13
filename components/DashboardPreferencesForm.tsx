@@ -196,7 +196,7 @@ export function DashboardPreferencesForm({
                       "mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border " +
                       (active
                         ? "border-brand-600 bg-brand-700 text-white"
-                        : "border-line bg-surface text-transparent")
+                        : "border-line bg-white text-transparent")
                     }
                   >
                     <IconCheck className="h-3.5 w-3.5" />
@@ -296,7 +296,7 @@ function OptionButton({
         "flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm font-black transition-colors focus-visible:ring-2 focus-visible:ring-brand-600 " +
         (active
           ? "border-brand-400 bg-brand-50 text-brand-800 dark:border-brand-700 dark:bg-brand-950/70 dark:text-brand-100"
-          : "border-line bg-surface text-ink-soft hover:border-brand-300 hover:text-ink dark:bg-[#151426]")
+          : "border-line bg-white text-ink-soft hover:border-brand-300 hover:text-ink dark:bg-[#151426]")
       }
     >
       {swatch && <span className={`h-4 w-4 rounded-full ${swatch}`} />}

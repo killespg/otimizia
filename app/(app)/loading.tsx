@@ -7,19 +7,19 @@ export default function AppLoading() {
           <div className="mt-3 h-10 w-72 max-w-full rounded-md bg-line" />
           <div className="mt-3 h-4 w-96 max-w-full rounded-md bg-line" />
         </div>
-        <div className="h-11 w-full rounded-lg bg-surface lg:w-80" />
+        <div className="h-11 w-full rounded-lg bg-white lg:w-80" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3 xl:grid-cols-4">
-        <div className="panel h-36 bg-surface" />
-        <div className="panel h-36 bg-surface" />
-        <div className="panel h-36 bg-surface" />
-        <div className="panel hidden h-36 bg-surface xl:block" />
+        <div className="panel h-36 bg-white" />
+        <div className="panel h-36 bg-white" />
+        <div className="panel h-36 bg-white" />
+        <div className="panel hidden h-36 bg-white xl:block" />
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(23rem,0.72fr)]">
-        <div className="panel h-[380px] bg-surface" />
-        <div className="panel h-[380px] bg-surface" />
+        <div className="panel h-[380px] bg-white" />
+        <div className="panel h-[380px] bg-white" />
       </div>
     </div>
   );

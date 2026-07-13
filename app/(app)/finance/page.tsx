@@ -420,7 +420,7 @@ export default async function FinancePage({
                         {state !== "paid" && state !== "cancelled" && (
                           <Link
                             href={`/finance?receive=${item.id}`}
-                            className="nav-item rounded-md border border-line bg-surface px-3 py-2 text-xs font-black text-brand-700 hover:border-brand-300 hover:bg-brand-50"
+                            className="nav-item rounded-md border border-line bg-white px-3 py-2 text-xs font-black text-brand-700 hover:border-brand-300 hover:bg-brand-50"
                           >
                             Receber
                           </Link>
@@ -588,7 +588,7 @@ export default async function FinancePage({
                             value={String(item.reimbursed)}
                           />
                           <PendingButton
-                            className="nav-item rounded-md border border-line bg-surface px-3 py-2 text-xs font-black text-brand-700 hover:border-brand-300 hover:bg-brand-50"
+                            className="nav-item rounded-md border border-line bg-white px-3 py-2 text-xs font-black text-brand-700 hover:border-brand-300 hover:bg-brand-50"
                             pendingLabel="Salvando"
                           >
                             {item.reimbursed

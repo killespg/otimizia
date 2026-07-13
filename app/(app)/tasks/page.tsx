@@ -303,7 +303,7 @@ export default async function TasksPage() {
                 Revise o trabalho, aprove ou devolva com uma orientação.
               </p>
             </div>
-            <span className="tag bg-surface text-brand-700">
+            <span className="tag bg-white text-brand-700">
               {reviewQueue.length}
             </span>
           </div>

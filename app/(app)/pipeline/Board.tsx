@@ -261,7 +261,7 @@ export default function Board({
             ))}
           </select>
         </label>
-        <label className="flex min-h-[42px] items-center gap-2 rounded-lg border border-line bg-surface px-3 text-sm font-bold text-ink-soft">
+        <label className="flex min-h-[42px] items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-bold text-ink-soft">
           <input
             type="checkbox"
             checked={hideEmpty}
@@ -327,7 +327,7 @@ export default function Board({
                 (isOver ? "border-brand-300 bg-brand-50" : "")
               }
             >
-              <header className="border-b border-line bg-surface px-4 py-4">
+              <header className="border-b border-line bg-white px-4 py-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${meta.dot}`} />
@@ -344,7 +344,7 @@ export default function Board({
 
               <div className="enter flex min-h-[22rem] flex-1 flex-col gap-3 bg-[#f8fbff] p-3">
                 {columnDeals.length === 0 ? (
-                  <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-line bg-surface px-4 py-8 text-center">
+                  <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-line bg-white px-4 py-8 text-center">
                     <p className="text-sm font-black text-ink">
                       {isOver ? "Solte aqui" : "Vazio"}
                     </p>
@@ -367,7 +367,7 @@ export default function Board({
                           setOverList(null);
                         }}
                         className={
-                          "row-link group rounded-lg border border-line bg-surface p-3 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] hover:border-brand-200 " +
+                          "row-link group rounded-lg border border-line bg-white p-3 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] hover:border-brand-200 " +
                           (boardBusy ? "cursor-wait opacity-70" : canDrag ? "cursor-grab active:cursor-grabbing" : "") +
                           " " +
                           (dragId === deal.id ? "scale-[0.985] opacity-45 ring-2 ring-brand-300" : "")
@@ -456,7 +456,7 @@ export default function Board({
                                     commitMove(deal.id, list);
                                     setMenuId(null);
                                   }}
-                                  className="min-h-11 rounded-md border border-line bg-surface px-3 py-2 text-xs font-bold text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                                  className="min-h-11 rounded-md border border-line bg-white px-3 py-2 text-xs font-bold text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
                                 >
                                   {list}
                                 </button>
@@ -508,7 +508,7 @@ export default function Board({
                               </PendingButton>
                             </form>
 
-                            <form action={uploadDealPhoto} className="space-y-2 rounded-lg border border-line bg-surface p-3">
+                            <form action={uploadDealPhoto} className="space-y-2 rounded-lg border border-line bg-white p-3">
                               <input type="hidden" name="id" value={deal.id} />
                               <input type="hidden" name="return_to" value="/pipeline" />
                               <label className="block">
@@ -521,7 +521,7 @@ export default function Board({
                                 />
                               </label>
                               <PendingButton
-                                className="min-h-9 rounded-md border border-line bg-surface px-3 py-1.5 text-xs font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                                className="min-h-9 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
                                 pendingLabel="Anexando"
                               >
                                 Anexar foto
@@ -692,7 +692,7 @@ function DealAssignee({
               <input type="hidden" name="deal_id" value={deal.id} />
               <input type="hidden" name="return_to" value="/pipeline" />
               <PendingButton
-                className="rounded-md border border-line bg-surface px-2 py-1 text-[11px] font-black text-ink-soft hover:bg-surface-2"
+                className="rounded-md border border-line bg-white px-2 py-1 text-[11px] font-black text-ink-soft hover:bg-surface-2"
                 pendingLabel="Recusando"
               >
                 Recusar

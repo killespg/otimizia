@@ -919,7 +919,7 @@ export default async function LegalCasePage({
                                 value={legalCase.id}
                               />
                               <PendingButton
-                                className="nav-item rounded-md border border-line bg-surface px-3 py-2 text-xs font-black text-danger-600 hover:border-danger-300 hover:bg-danger-50"
+                                className="nav-item rounded-md border border-line bg-white px-3 py-2 text-xs font-black text-danger-600 hover:border-danger-300 hover:bg-danger-50"
                                 pendingLabel="Revogando"
                               >
                                 Revogar

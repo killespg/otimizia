@@ -84,13 +84,13 @@ export default async function DeadlinesPage() {
           <div className="flex flex-wrap gap-2">
             <Link
               href="/law/deadlines/calendar"
-              className="nav-item inline-flex min-h-11 items-center justify-center rounded-lg border border-line bg-surface px-4 text-sm font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-600"
+              className="nav-item inline-flex min-h-11 items-center justify-center rounded-lg border border-line bg-white px-4 text-sm font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-600"
             >
               Ver calendário
             </Link>
             <Link
               href="/law"
-              className="nav-item inline-flex min-h-11 items-center justify-center rounded-lg border border-line bg-surface px-4 text-sm font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-600"
+              className="nav-item inline-flex min-h-11 items-center justify-center rounded-lg border border-line bg-white px-4 text-sm font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-600"
             >
               Ver carteira de casos
             </Link>

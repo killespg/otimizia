@@ -26,7 +26,7 @@ export function SendForSignature({
   return (
     <form
       action={sendLegalDocumentForSignature}
-      className="w-56 space-y-2 rounded-lg border border-line bg-surface p-3 text-left shadow-[0_12px_28px_-22px_rgba(15,23,42,.5)]"
+      className="w-56 space-y-2 rounded-lg border border-line bg-white p-3 text-left shadow-[0_12px_28px_-22px_rgba(15,23,42,.5)]"
     >
       <input type="hidden" name="document_id" value={documentId} />
       <input

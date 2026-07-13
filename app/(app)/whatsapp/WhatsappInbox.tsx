@@ -430,7 +430,7 @@ export function WhatsappInbox({
                 onChange={(event) => setInput(event.target.value)}
                 placeholder="Digite uma mensagem..."
                 maxLength={4000}
-                className="field h-11 min-w-0 flex-1"
+                className="h-11 min-w-0 flex-1 rounded-lg border border-line bg-white px-3.5 text-sm font-medium text-ink outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
               />
               <button
                 type="submit"

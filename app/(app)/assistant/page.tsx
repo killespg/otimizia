@@ -82,7 +82,7 @@ export default function AssistantPage() {
                   key={suggestion}
                   type="button"
                   onClick={() => submit(suggestion)}
-                  className="nav-item rounded-lg border border-line bg-surface px-3 py-2.5 text-left text-sm font-bold text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                  className="nav-item rounded-lg border border-line bg-white px-3 py-2.5 text-left text-sm font-bold text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
                 >
                   {suggestion}
                 </button>
@@ -184,7 +184,7 @@ export default function AssistantPage() {
           <button
             type="button"
             onClick={attachment.pick}
-            className="nav-item grid h-12 w-12 shrink-0 place-items-center rounded-lg border border-line bg-surface text-ink-muted transition-colors hover:text-ink"
+            className="nav-item grid h-12 w-12 shrink-0 place-items-center rounded-lg border border-line bg-white text-ink-muted transition-colors hover:text-ink"
             aria-label="Anexar PDF"
             title="Anexar PDF"
           >
@@ -195,7 +195,7 @@ export default function AssistantPage() {
             onChange={(event) => setInput(event.target.value)}
             placeholder="Pergunte algo..."
             maxLength={4000}
-            className="field h-12 min-w-0 flex-1"
+            className="h-12 min-w-0 flex-1 rounded-lg border border-line bg-white px-3.5 text-sm font-medium text-ink outline-none transition placeholder:text-ink-muted focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
           />
           <button
             type="submit"

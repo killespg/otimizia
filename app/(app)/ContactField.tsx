@@ -17,7 +17,8 @@ const styles = {
   },
   compact: {
     label: "text-xs font-bold text-ink-soft",
-    control: "field mt-1 h-10",
+    control:
+      "mt-1 h-10 w-full rounded-md border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100",
     toggle: "press-sm text-xs font-black text-brand-700 transition-colors duration-150 ease-out hover:text-brand-900",
     row: "flex items-center justify-between gap-2",
   },

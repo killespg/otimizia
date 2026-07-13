@@ -84,7 +84,7 @@ export function AssistantChat() {
       {open && (
         <div
           ref={sheetRef}
-          className="assistant-sheet fixed inset-x-3 bottom-[calc(6.6rem+env(safe-area-inset-bottom))] z-50 flex max-h-[min(620px,calc(100dvh-8rem))] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_24px_70px_-30px_rgba(7,8,28,0.55)] sm:inset-x-auto sm:bottom-24 sm:right-6 sm:w-[400px]"
+          className="assistant-sheet fixed inset-x-3 bottom-[calc(6.6rem+env(safe-area-inset-bottom))] z-50 flex max-h-[min(620px,calc(100dvh-8rem))] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-[0_24px_70px_-30px_rgba(7,8,28,0.55)] sm:inset-x-auto sm:bottom-24 sm:right-6 sm:w-[400px]"
           role="dialog"
           aria-modal="true"
           aria-label="Sócio-Assistente"

@@ -509,7 +509,7 @@ export default async function DashboardPage() {
           <div className="flex shrink-0 items-center gap-2 sm:hidden">
             <Link
               href="/tasks"
-              className="dashboard-alert-button nav-item relative grid h-10 w-10 place-items-center card text-ink-soft hover:text-brand-700"
+              className="dashboard-alert-button nav-item relative grid h-10 w-10 place-items-center rounded-lg border border-line bg-white text-ink-soft shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] hover:text-brand-700"
               aria-label="Ver lembretes"
             >
               <IconBell className="h-[18px] w-[18px]" />
@@ -526,7 +526,7 @@ export default async function DashboardPage() {
 
         <form
           action="/contacts"
-          className="dashboard-global-search flex h-11 w-full min-w-0 items-center gap-2 card px-3 text-sm sm:hidden"
+          className="dashboard-global-search flex h-11 w-full min-w-0 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:hidden"
         >
           <IconSearch className="h-5 w-5 shrink-0 text-ink-muted" />
           <label className="sr-only" htmlFor="dashboard-contact-search-mobile">
@@ -544,7 +544,7 @@ export default async function DashboardPage() {
         <div className="dashboard-hero-actions hidden flex-col gap-3 sm:flex sm:flex-row sm:items-center">
           <form
             action="/contacts"
-            className="dashboard-global-search flex h-11 w-full min-w-0 items-center gap-2 card px-3 text-sm sm:w-[430px]"
+            className="dashboard-global-search flex h-11 w-full min-w-0 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:w-[430px]"
           >
             <IconSearch className="h-5 w-5 shrink-0 text-ink-muted" />
             <label className="sr-only" htmlFor="dashboard-contact-search">
@@ -568,7 +568,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/tasks"
-              className="dashboard-alert-button nav-item relative grid h-11 w-11 place-items-center card text-ink-soft hover:text-brand-700"
+              className="dashboard-alert-button nav-item relative grid h-11 w-11 place-items-center rounded-lg border border-line bg-white text-ink-soft shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] hover:text-brand-700"
               aria-label="Ver lembretes"
             >
               <IconBell className="h-5 w-5" />
@@ -729,7 +729,7 @@ function MetricCard({
   return (
     <article
       data-dashboard-metric={metricKey}
-      className="enter dashboard-card card relative min-h-[96px] overflow-hidden p-3 sm:min-h-[150px] sm:p-5"
+      className="enter dashboard-card relative min-h-[96px] overflow-hidden rounded-lg border border-line bg-white p-3 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:min-h-[150px] sm:p-5"
       style={{ display: visible ? undefined : "none", order }}
     >
       <div className="flex items-start justify-between gap-2 sm:gap-3">
@@ -815,7 +815,7 @@ function FounderMetricsPanel({ metrics }: { metrics: DevMetrics }) {
         {tiles.map((tile) => (
           <div
             key={tile.label}
-            className="rounded-lg border border-brand-200 bg-surface p-3"
+            className="rounded-lg border border-brand-200 bg-white p-3"
           >
             <p className="text-xs font-semibold text-ink-soft">{tile.label}</p>
             <p className="mt-1 text-lg font-black leading-none tracking-[-0.02em] text-ink">
@@ -850,7 +850,7 @@ function OpenClaimsPanel({
             Deixados em aberto pelo admin — quem pegar primeiro fica com o item.
           </p>
         </div>
-        <span className="rounded-md bg-surface px-2.5 py-1 text-xs font-black text-brand-700">
+        <span className="rounded-md bg-white px-2.5 py-1 text-xs font-black text-brand-700">
           {String(tasks.length + deals.length).padStart(2, "0")}
         </span>
       </div>
@@ -858,7 +858,7 @@ function OpenClaimsPanel({
         {tasks.map((task) => (
           <li
             key={`task-${task.id}`}
-            className="flex items-center justify-between gap-3 rounded-lg border border-brand-200 bg-surface px-3 py-2.5"
+            className="flex items-center justify-between gap-3 rounded-lg border border-brand-200 bg-white px-3 py-2.5"
           >
             <div className="min-w-0">
               <p className="clip-1 text-safe text-sm font-black text-ink">
@@ -883,7 +883,7 @@ function OpenClaimsPanel({
         {deals.map((deal) => (
           <li
             key={`deal-${deal.id}`}
-            className="flex items-center justify-between gap-3 rounded-lg border border-brand-200 bg-surface px-3 py-2.5"
+            className="flex items-center justify-between gap-3 rounded-lg border border-brand-200 bg-white px-3 py-2.5"
           >
             <div className="min-w-0">
               <p className="clip-1 text-safe text-sm font-black text-ink">
@@ -953,7 +953,7 @@ function RevenueChart({
   return (
     <section
       id="valor"
-      className="enter card relative overflow-hidden p-4 sm:min-h-[382px] sm:p-6"
+      className="enter relative overflow-hidden rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:min-h-[382px] sm:p-6"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -987,7 +987,7 @@ function ReminderModal({
   return (
     <form
       action={createTask}
-      className="absolute bottom-6 right-6 z-10 hidden w-[360px] rounded-lg border border-line bg-surface p-5 shadow-[0_22px_60px_-28px_rgba(15,23,42,0.65)] lg:block"
+      className="absolute bottom-6 right-6 z-10 hidden w-[360px] rounded-lg border border-line bg-white p-5 shadow-[0_22px_60px_-28px_rgba(15,23,42,0.65)] lg:block"
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -1014,7 +1014,7 @@ function ReminderModal({
             name="title"
             required
             placeholder="Ex.: Ligar para cliente"
-            className="field mt-1 h-10"
+            className="mt-1 h-10 w-full rounded-md border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
           />
         </label>
         <label className="block">
@@ -1023,14 +1023,14 @@ function ReminderModal({
             name="due_at"
             type="datetime-local"
             defaultValue={defaultDueAt}
-            className="field mt-1 h-10"
+            className="mt-1 h-10 w-full rounded-md border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
           />
         </label>
         <label className="block">
           <span className="text-xs font-bold text-ink-soft">Relacionado a</span>
           <select
             name="contact_id"
-            className="field mt-1 h-10"
+            className="mt-1 h-10 w-full rounded-md border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
             defaultValue=""
           >
             <option value="">Selecione um contato ou empresa</option>
@@ -1051,7 +1051,7 @@ function ReminderModal({
             name="notes"
             rows={2}
             placeholder="Detalhes adicionais..."
-            className="field mt-1 resize-none"
+            className="mt-1 w-full resize-none rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink outline-none transition placeholder:text-ink-muted focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
           />
         </label>
       </div>
@@ -1059,7 +1059,7 @@ function ReminderModal({
       <div className="mt-4 flex justify-end gap-2">
         <button
           type="button"
-          className="nav-item rounded-md border border-line bg-surface px-4 py-2 text-sm font-bold text-ink-soft hover:bg-surface-2 hover:text-ink"
+          className="nav-item rounded-md border border-line bg-white px-4 py-2 text-sm font-bold text-ink-soft hover:bg-surface-2 hover:text-ink"
         >
           Cancelar
         </button>
@@ -1086,7 +1086,7 @@ function DealsTable({
   const recent = deals.slice(0, 4);
 
   return (
-    <section className="enter card p-4 sm:p-5">
+    <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">
@@ -1122,7 +1122,7 @@ function DealsTable({
               return (
                 <li
                   key={deal.id}
-                  className="card p-3"
+                  className="rounded-lg border border-line bg-white p-3 shadow-[0_8px_28px_-24px_rgba(15,23,42,0.55)]"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p className="clip-2 text-safe min-w-0 text-sm font-black leading-snug text-ink">
@@ -1162,7 +1162,7 @@ function DealsTable({
                   <th className="px-3 py-3">Previsão</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line bg-surface">
+              <tbody className="divide-y divide-line bg-white">
                 {recent.map((deal) => {
                   const stage = stageMeta(deal.stage, preset);
                   const contact = deal.contact_id
@@ -1212,7 +1212,7 @@ function TaskQueue({
   now: Date;
 }) {
   return (
-    <section className="enter card p-4 sm:p-5">
+    <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">
@@ -1244,9 +1244,9 @@ function TaskQueue({
             return (
               <li
                 key={task.id}
-                className="flex items-center gap-3 card px-3 py-3"
+                className="flex items-center gap-3 rounded-lg border border-line bg-white px-3 py-3 shadow-[0_8px_28px_-24px_rgba(15,23,42,0.55)]"
               >
-                <span className="h-4 w-4 shrink-0 rounded-full border border-line bg-surface" />
+                <span className="h-4 w-4 shrink-0 rounded-full border border-line bg-white" />
                 <div className="min-w-0 flex-1">
                   <p className="clip-1 text-safe text-sm font-black text-ink">
                     {task.title}
@@ -1310,7 +1310,7 @@ function CalendarWidget({
     .slice(0, 4);
 
   return (
-    <section className="enter card p-4 sm:p-5">
+    <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">
@@ -1501,7 +1501,7 @@ function OnboardingChecklist({
                 "row-link relative rounded-lg border p-4 " +
                 (step.done
                   ? "border-success-200 bg-white/70"
-                  : "border-brand-200 bg-surface hover:border-brand-400")
+                  : "border-brand-200 bg-white hover:border-brand-400")
               }
             >
               <div className="flex items-center justify-between gap-2">
