@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { PageHeader } from "@/components/app-ui";
 import { AgentPanel } from "@/components/AgentPanel";
 import { BrandName } from "@/components/BrandName";
 import { DashboardCustomizePanel } from "@/components/DashboardCustomizePanel";
@@ -17,7 +18,11 @@ import { buildMonthCells } from "@/lib/calendar-grid";
 import { canManageLegal } from "@/lib/law-office";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { DatajudSearchForm } from "../law/consulta/DatajudSearchForm";
-import { getProfessionPreset, type MetricKey, type ProfessionPreset } from "@/lib/professions";
+import {
+  getProfessionPreset,
+  type MetricKey,
+  type ProfessionPreset,
+} from "@/lib/professions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -49,7 +54,10 @@ import {
   IconX,
 } from "../icons";
 
-const METRIC_ICONS: Record<MetricKey, (props: { className?: string }) => JSX.Element> = {
+const METRIC_ICONS: Record<
+  MetricKey,
+  (props: { className?: string }) => JSX.Element
+> = {
   open_value: IconWallet,
   open_deals: IconColumns,
   won_value_month: IconWallet,
@@ -62,18 +70,31 @@ const METRIC_ICONS: Record<MetricKey, (props: { className?: string }) => JSX.Ele
 };
 
 type ContactOption = Pick<Contact, "id" | "name" | "company">;
-type CalendarItem = { date: Date; title: string; href: string; tone: "danger" | "warning" | "brand" };
+type CalendarItem = {
+  date: Date;
+  title: string;
+  href: string;
+  tone: "danger" | "warning" | "brand";
+};
 
 const DASHBOARD_GREETINGS: Record<ProfessionPreset["key"], string> = {
-  autonomous_seller: "Bora olhar os clientes quentes e destravar os próximos fechamentos.",
-  law_office: "Triagens, propostas e retornos em ordem para o escritório respirar melhor.",
-  real_estate_broker: "Vamos cuidar dos leads, visitas e propostas que podem virar negócio.",
-  service_provider: "Pedidos, orçamentos e agenda alinhados para o serviço fluir.",
-  consultant: "Hora de acompanhar propostas, diagnósticos e próximos passos com clareza.",
+  autonomous_seller:
+    "Bora olhar os clientes quentes e destravar os próximos fechamentos.",
+  law_office:
+    "Triagens, propostas e retornos em ordem para o escritório respirar melhor.",
+  real_estate_broker:
+    "Vamos cuidar dos leads, visitas e propostas que podem virar negócio.",
+  service_provider:
+    "Pedidos, orçamentos e agenda alinhados para o serviço fluir.",
+  consultant:
+    "Hora de acompanhar propostas, diagnósticos e próximos passos com clareza.",
   freelancer: "Projetos, prazos e aprovações no radar para nada escapar.",
-  livestock_producer: "Lotes, compradores e retornos organizados para tocar a pecuária.",
-  small_business: "Pedidos, clientes e recompra no ponto para vender com mais ritmo.",
-  other: "Seu painel está pronto para organizar contatos, oportunidades e retornos.",
+  livestock_producer:
+    "Lotes, compradores e retornos organizados para tocar a pecuária.",
+  small_business:
+    "Pedidos, clientes e recompra no ponto para vender com mais ritmo.",
+  other:
+    "Seu painel está pronto para organizar contatos, oportunidades e retornos.",
   founder: "Acompanhe sua prospecção e as métricas do produto num só lugar.",
 };
 
@@ -86,12 +107,16 @@ export default async function DashboardPage() {
   endOfToday.setHours(23, 59, 59, 999);
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return null;
   const [{ data: profile }, orgId] = await Promise.all([
     supabase
       .from("profiles")
-      .select("profession_type, is_admin, checklist_dismissed_at, dashboard_preferences, favorite_tribunals")
+      .select(
+        "profession_type, is_admin, checklist_dismissed_at, dashboard_preferences, favorite_tribunals",
+      )
       .eq("id", user.id)
       .maybeSingle(),
     getActiveOrgId(supabase, user.id),
@@ -100,7 +125,7 @@ export default async function DashboardPage() {
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
     user?.user_metadata?.profession_type,
-    isAdmin
+    isAdmin,
   );
   const isLawOffice = workspaceKey === "law_office";
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
@@ -108,41 +133,54 @@ export default async function DashboardPage() {
   // Consultas independentes entre si (só precisam de orgId/workspaceKey, já
   // conhecidos aqui) — feitas juntas para não formar uma fila de idas e
   // vindas ao banco antes do Promise.all principal logo abaixo.
-  const [orgRole, founderMetrics, { data: lawJobRoleRow }, { data: watchedProcessesData }, { data: legalDeadlinesData }] =
-    await Promise.all([
-      getOrgRole(supabase, orgId, user!.id),
-      isAdmin ? loadFounderMetrics() : Promise.resolve(null),
-      isLawOffice
-        ? supabase
-            .from("organization_members")
-            .select("job_role")
-            .eq("org_id", orgId)
-            .eq("user_id", user!.id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-      isLawOffice
-        ? supabase
-            .from("legal_watched_processes")
-            .select("*")
-            .eq("org_id", orgId)
-            .not("last_movement_at", "is", null)
-        : Promise.resolve({ data: null }),
-      isLawOffice
-        ? supabase
-            .from("legal_deadlines")
-            .select("*")
-            .eq("org_id", orgId)
-            .eq("status", "pending")
-            .gte("due_at", monthStart.toISOString())
-            .lt("due_at", monthEnd.toISOString())
-        : Promise.resolve({ data: null }),
-    ]);
+  const [
+    orgRole,
+    founderMetrics,
+    { data: lawJobRoleRow },
+    { data: watchedProcessesData },
+    { data: legalDeadlinesData },
+  ] = await Promise.all([
+    getOrgRole(supabase, orgId, user!.id),
+    isAdmin ? loadFounderMetrics() : Promise.resolve(null),
+    isLawOffice
+      ? supabase
+          .from("organization_members")
+          .select("job_role")
+          .eq("org_id", orgId)
+          .eq("user_id", user!.id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    isLawOffice
+      ? supabase
+          .from("legal_watched_processes")
+          .select("*")
+          .eq("org_id", orgId)
+          .not("last_movement_at", "is", null)
+      : Promise.resolve({ data: null }),
+    isLawOffice
+      ? supabase
+          .from("legal_deadlines")
+          .select("*")
+          .eq("org_id", orgId)
+          .eq("status", "pending")
+          .gte("due_at", monthStart.toISOString())
+          .lt("due_at", monthEnd.toISOString())
+      : Promise.resolve({ data: null }),
+  ]);
   const isOrgAdmin = orgRole === "admin";
   const lawJobRole = lawJobRoleRow?.job_role;
   const watchedProcesses: LegalWatchedProcess[] = watchedProcessesData ?? [];
   const recentProcessChanges = watchedProcesses
-    .filter((item) => !item.seen_at || new Date(item.last_movement_at as string) > new Date(item.seen_at))
-    .sort((a, b) => new Date(b.last_movement_at as string).getTime() - new Date(a.last_movement_at as string).getTime())
+    .filter(
+      (item) =>
+        !item.seen_at ||
+        new Date(item.last_movement_at as string) > new Date(item.seen_at),
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.last_movement_at as string).getTime() -
+        new Date(a.last_movement_at as string).getTime(),
+    )
     .slice(0, 8);
   const legalDeadlines: LegalDeadline[] = legalDeadlinesData ?? [];
   const [
@@ -221,11 +259,13 @@ export default async function DashboardPage() {
   const openTasks = (tasks ?? []) as Task[];
   const contacts = contactsCount ?? 0;
   const contactsForForms = (contactOptions ?? []) as ContactOption[];
-  const contactMap = new Map(contactsForForms.map((contact) => [contact.id, contact]));
+  const contactMap = new Map(
+    contactsForForms.map((contact) => [contact.id, contact]),
+  );
   const preset = getProfessionPreset(workspaceKey);
   const dashboardPreferences = getDashboardPreferences(
     profile?.dashboard_preferences,
-    preset
+    preset,
   );
 
   const displayName =
@@ -234,31 +274,37 @@ export default async function DashboardPage() {
       : firstName(user?.email?.split("@")[0] ?? "João");
 
   const openDeals = allDeals.filter(
-    (deal) => deal.stage !== "ganho" && deal.stage !== "perdido"
+    (deal) => deal.stage !== "ganho" && deal.stage !== "perdido",
   );
   const unclaimedTasks = openTasks.filter((task) => !task.assignee_id);
   const unclaimedDeals = openDeals.filter((deal) => !deal.assignee_id);
-  const openValue = openDeals.reduce((sum, deal) => sum + (deal.value_cents ?? 0), 0);
+  const openValue = openDeals.reduce(
+    (sum, deal) => sum + (deal.value_cents ?? 0),
+    0,
+  );
   const wonThisMonth = allDeals.filter(
     (deal) =>
       deal.stage === "ganho" &&
       deal.closed_at &&
-      new Date(deal.closed_at) >= monthStart
+      new Date(deal.closed_at) >= monthStart,
   );
-  const wonValue = wonThisMonth.reduce((sum, deal) => sum + (deal.value_cents ?? 0), 0);
+  const wonValue = wonThisMonth.reduce(
+    (sum, deal) => sum + (deal.value_cents ?? 0),
+    0,
+  );
   const lostThisMonth = allDeals.filter(
     (deal) =>
       deal.stage === "perdido" &&
       deal.closed_at &&
-      new Date(deal.closed_at) >= monthStart
+      new Date(deal.closed_at) >= monthStart,
   );
   const closedThisMonth = wonThisMonth.length + lostThisMonth.length;
-  const conversionRate = closedThisMonth > 0
-    ? Math.round((wonThisMonth.length / closedThisMonth) * 100)
-    : null;
-  const avgTicketCents = wonThisMonth.length > 0
-    ? Math.round(wonValue / wonThisMonth.length)
-    : null;
+  const conversionRate =
+    closedThisMonth > 0
+      ? Math.round((wonThisMonth.length / closedThisMonth) * 100)
+      : null;
+  const avgTicketCents =
+    wonThisMonth.length > 0 ? Math.round(wonValue / wonThisMonth.length) : null;
 
   const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const wonPreviousMonth = allDeals.filter(
@@ -266,25 +312,33 @@ export default async function DashboardPage() {
       deal.stage === "ganho" &&
       deal.closed_at &&
       new Date(deal.closed_at) >= previousMonthStart &&
-      new Date(deal.closed_at) < monthStart
+      new Date(deal.closed_at) < monthStart,
   );
   const lostPreviousMonth = allDeals.filter(
     (deal) =>
       deal.stage === "perdido" &&
       deal.closed_at &&
       new Date(deal.closed_at) >= previousMonthStart &&
-      new Date(deal.closed_at) < monthStart
+      new Date(deal.closed_at) < monthStart,
   );
-  const wonValuePreviousMonth = wonPreviousMonth.reduce((sum, deal) => sum + (deal.value_cents ?? 0), 0);
-  const closedPreviousMonth = wonPreviousMonth.length + lostPreviousMonth.length;
-  const conversionRatePreviousMonth = closedPreviousMonth > 0
-    ? Math.round((wonPreviousMonth.length / closedPreviousMonth) * 100)
-    : null;
-  const avgTicketPreviousMonthCents = wonPreviousMonth.length > 0
-    ? Math.round(wonValuePreviousMonth / wonPreviousMonth.length)
-    : null;
+  const wonValuePreviousMonth = wonPreviousMonth.reduce(
+    (sum, deal) => sum + (deal.value_cents ?? 0),
+    0,
+  );
+  const closedPreviousMonth =
+    wonPreviousMonth.length + lostPreviousMonth.length;
+  const conversionRatePreviousMonth =
+    closedPreviousMonth > 0
+      ? Math.round((wonPreviousMonth.length / closedPreviousMonth) * 100)
+      : null;
+  const avgTicketPreviousMonthCents =
+    wonPreviousMonth.length > 0
+      ? Math.round(wonValuePreviousMonth / wonPreviousMonth.length)
+      : null;
 
-  const metricDeltas: Partial<Record<MetricKey, { delta?: string; compare?: string }>> = {
+  const metricDeltas: Partial<
+    Record<MetricKey, { delta?: string; compare?: string }>
+  > = {
     won_value_month: {
       delta: percentChange(wonValue, wonValuePreviousMonth),
       compare: `${formatBRL(wonValuePreviousMonth)} mês passado`,
@@ -334,11 +388,14 @@ export default async function DashboardPage() {
       (task) =>
         task.due_at &&
         new Date(task.due_at) >= now &&
-        new Date(task.due_at) <= endOfToday
+        new Date(task.due_at) <= endOfToday,
     )
     .sort((a, b) => (a.due_at! < b.due_at! ? -1 : 1));
   const taskQueue = [...overdue, ...todayTasks, ...openTasks]
-    .filter((task, index, arr) => arr.findIndex((item) => item.id === task.id) === index)
+    .filter(
+      (task, index, arr) =>
+        arr.findIndex((item) => item.id === task.id) === index,
+    )
     .slice(0, 5);
 
   const calendarItems: CalendarItem[] = [
@@ -348,13 +405,17 @@ export default async function DashboardPage() {
         date: new Date(task.due_at as string),
         title: task.title,
         href: "/tasks",
-        tone: (new Date(task.due_at as string) < now ? "danger" : "brand") as CalendarItem["tone"],
+        tone: (new Date(task.due_at as string) < now
+          ? "danger"
+          : "brand") as CalendarItem["tone"],
       })),
     ...legalDeadlines.map((deadline) => ({
       date: new Date(deadline.due_at),
       title: deadline.title,
       href: `/law/${deadline.case_id}`,
-      tone: (deadline.priority === "critical" || deadline.priority === "high" ? "warning" : "brand") as CalendarItem["tone"],
+      tone: (deadline.priority === "critical" || deadline.priority === "high"
+        ? "warning"
+        : "brand") as CalendarItem["tone"],
     })),
   ];
 
@@ -400,8 +461,16 @@ export default async function DashboardPage() {
         </section>
       </div>
     ),
-    open_claims: <OpenClaimsPanel tasks={unclaimedTasks} deals={unclaimedDeals} preset={preset} />,
-    calendar: <CalendarWidget now={now} items={calendarItems} viewAllHref="/calendar" />,
+    open_claims: (
+      <OpenClaimsPanel
+        tasks={unclaimedTasks}
+        deals={unclaimedDeals}
+        preset={preset}
+      />
+    ),
+    calendar: (
+      <CalendarWidget now={now} items={calendarItems} viewAllHref="/calendar" />
+    ),
     chart: (
       <RevenueChart
         openValue={openValue}
@@ -412,7 +481,9 @@ export default async function DashboardPage() {
         preset={preset}
       />
     ),
-    deals: <DealsTable deals={openDeals} contactMap={contactMap} preset={preset} />,
+    deals: (
+      <DealsTable deals={openDeals} contactMap={contactMap} preset={preset} />
+    ),
     tasks: <TaskQueue tasks={taskQueue} overdue={overdue} now={now} />,
     assistant: <AgentPanel />,
     onboarding: !profile?.checklist_dismissed_at ? (
@@ -432,23 +503,32 @@ export default async function DashboardPage() {
   };
 
   return (
-    <div className={`dashboard-board dashboard-command-center dashboard-board-${dashboardPreferences.style} dashboard-accent-${dashboardPreferences.accent} space-y-4 sm:space-y-5`}>
-      <header className="dashboard-header dashboard-hero enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div
+      className={`dashboard-board dashboard-command-center dashboard-board-${dashboardPreferences.style} dashboard-accent-${dashboardPreferences.accent} space-y-4 sm:space-y-5`}
+    >
+      <div className="dashboard-header dashboard-hero enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="dashboard-hero-copy flex items-start justify-between gap-3 max-w-2xl">
-          <div className="dashboard-welcome-copy">
-            <div className="dashboard-context-line">
-              <span>Visão operacional</span>
-              <span aria-hidden="true">•</span>
-              <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long" }).format(now)}</time>
-              <span className="dashboard-live-status"><span aria-hidden="true" /> Modo operacional</span>
-            </div>
-            <h1 className="mt-2 text-[28px] font-black tracking-[-0.035em] text-ink sm:text-[2.15rem]">
-              Olá, {displayName}!
-            </h1>
-            <p className="mt-1 text-sm font-semibold leading-relaxed text-ink-soft sm:text-base">
-              {greeting}
-            </p>
-          </div>
+          <PageHeader
+            className="dashboard-welcome-copy"
+            navigation={
+              <div className="dashboard-context-line">
+                <span>Visão operacional</span>
+                <span aria-hidden="true">•</span>
+                <time dateTime={now.toISOString()}>
+                  {new Intl.DateTimeFormat("pt-BR", {
+                    weekday: "long",
+                    day: "2-digit",
+                    month: "long",
+                  }).format(now)}
+                </time>
+                <span className="dashboard-live-status">
+                  <span aria-hidden="true" /> Modo operacional
+                </span>
+              </div>
+            }
+            title={`Olá, ${displayName}!`}
+            description={greeting}
+          />
 
           <div className="flex shrink-0 items-center gap-2 sm:hidden">
             <Link
@@ -526,40 +606,60 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {workspaceKey === "law_office" && (
-        <section className="law-docket-strip" aria-label="Expediente do escritório">
+        <section
+          className="law-docket-strip"
+          aria-label="Expediente do escritório"
+        >
           <div className="law-docket-heading">
             <span>Expediente</span>
-            <strong>{new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" }).format(now)}</strong>
+            <strong>
+              {new Intl.DateTimeFormat("pt-BR", {
+                day: "2-digit",
+                month: "short",
+              }).format(now)}
+            </strong>
           </div>
           <Link href="/tasks" className="law-docket-item">
-            <span>Vencidos</span><strong>{overdue.length}</strong><small>{overdue.length === 1 ? "pendência" : "pendências"}</small>
+            <span>Vencidos</span>
+            <strong>{overdue.length}</strong>
+            <small>{overdue.length === 1 ? "pendência" : "pendências"}</small>
           </Link>
           <Link href="/tasks" className="law-docket-item">
-            <span>Para hoje</span><strong>{todayTasks.length}</strong><small>{todayTasks.length === 1 ? "compromisso" : "compromissos"}</small>
+            <span>Para hoje</span>
+            <strong>{todayTasks.length}</strong>
+            <small>
+              {todayTasks.length === 1 ? "compromisso" : "compromissos"}
+            </small>
           </Link>
           <Link href="/pipeline" className="law-docket-item">
-            <span>Em andamento</span><strong>{openDeals.length}</strong><small>atendimentos</small>
+            <span>Em andamento</span>
+            <strong>{openDeals.length}</strong>
+            <small>atendimentos</small>
           </Link>
-          <Link href="/law/deadlines" className="law-docket-action">Abrir pauta <IconArrowRight className="h-4 w-4" /></Link>
+          <Link href="/law/deadlines" className="law-docket-action">
+            Abrir pauta <IconArrowRight className="h-4 w-4" />
+          </Link>
         </section>
       )}
 
       {workspaceKey === "law_office" && recentProcessChanges.length > 0 && (
         <RecentProcessChanges initialItems={recentProcessChanges} />
       )}
-      {workspaceKey === "law_office" && recentProcessChanges.length === 0 && watchedProcesses.length > 0 && (
-        <section className="panel flex items-center gap-3 p-4 sm:p-5">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-success-50 text-success-700">
-            <IconCheckCircle className="h-5 w-5" />
-          </span>
-          <p className="text-sm font-bold text-ink-soft">
-            Nenhum processo consultado recentemente teve alteração.
-          </p>
-        </section>
-      )}
+      {workspaceKey === "law_office" &&
+        recentProcessChanges.length === 0 &&
+        watchedProcesses.length > 0 && (
+          <section className="panel flex items-center gap-3 p-4 sm:p-5">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-success-50 text-success-700">
+              <IconCheckCircle className="h-5 w-5" />
+            </span>
+            <p className="text-sm font-bold text-ink-soft">
+              Nenhum processo consultado recentemente teve alteração.
+            </p>
+          </section>
+        )}
 
       {workspaceKey === "law_office" && (
         <section className="dashboard-process-search panel p-4 sm:p-5">
@@ -592,8 +692,14 @@ export default async function DashboardPage() {
             className: widgetShellClass(widgetKey as DashboardWidgetKey),
             node,
           }))
-          .filter((item): item is { id: DashboardWidgetKey; className: string; node: JSX.Element } =>
-            Boolean(item.node)
+          .filter(
+            (
+              item,
+            ): item is {
+              id: DashboardWidgetKey;
+              className: string;
+              node: JSX.Element;
+            } => Boolean(item.node),
           )}
       />
     </div>
@@ -601,7 +707,11 @@ export default async function DashboardPage() {
 }
 
 function widgetShellClass(widget: DashboardWidgetKey) {
-  if (widget === "metrics" || widget === "onboarding" || widget === "open_claims") {
+  if (
+    widget === "metrics" ||
+    widget === "onboarding" ||
+    widget === "open_claims"
+  ) {
     return "min-w-0 xl:col-span-12";
   }
   if (widget === "chart" || widget === "deals") return "min-w-0 xl:col-span-8";
@@ -658,14 +768,20 @@ function MetricCard({
             {value}
           </p>
         </div>
-        <span className={`hidden h-8 w-8 shrink-0 place-items-center rounded-full sm:grid sm:h-9 sm:w-9 ${toneClass.icon}`}>
+        <span
+          className={`hidden h-8 w-8 shrink-0 place-items-center rounded-full sm:grid sm:h-9 sm:w-9 ${toneClass.icon}`}
+        >
           <Icon className="h-4 w-4" />
         </span>
       </div>
 
       {(delta || compare) && (
         <div className="relative z-10 mt-3 hidden flex-wrap items-center gap-1.5 text-xs font-bold sm:mt-4 sm:flex sm:gap-2">
-          {delta && <span className={`rounded-md px-2 py-1 ${toneClass.badge}`}>{delta}</span>}
+          {delta && (
+            <span className={`rounded-md px-2 py-1 ${toneClass.badge}`}>
+              {delta}
+            </span>
+          )}
           {compare && <span className="text-ink-muted">{compare}</span>}
         </div>
       )}
@@ -677,22 +793,30 @@ function MetricCard({
 // fundadora (is_admin), por isso usa o admin client em vez de filtrar por org.
 async function loadFounderMetrics(): Promise<DevMetrics> {
   const admin = createAdminClient();
-  const [{ data: profiles }, { data: contacts }, { data: deals }] = await Promise.all([
-    admin
-      .from("profiles")
-      .select("name,plan,plan_status,trial_ends_at,stripe_subscription_id,created_at"),
-    admin.from("contacts").select("owner_id"),
-    admin.from("deals").select("owner_id,stage,value_cents"),
-  ]);
+  const [{ data: profiles }, { data: contacts }, { data: deals }] =
+    await Promise.all([
+      admin
+        .from("profiles")
+        .select(
+          "name,plan,plan_status,trial_ends_at,stripe_subscription_id,created_at",
+        ),
+      admin.from("contacts").select("owner_id"),
+      admin.from("deals").select("owner_id,stage,value_cents"),
+    ]);
   return computeDevMetrics(profiles ?? [], contacts ?? [], deals ?? []);
 }
 
 function FounderMetricsPanel({ metrics }: { metrics: DevMetrics }) {
   const activationRate =
-    metrics.totalUsers > 0 ? Math.round((metrics.activatedUsers / metrics.totalUsers) * 100) : 0;
+    metrics.totalUsers > 0
+      ? Math.round((metrics.activatedUsers / metrics.totalUsers) * 100)
+      : 0;
   const tiles = [
     { label: "Cadastros totais", value: String(metrics.totalUsers) },
-    { label: "Ativados", value: `${metrics.activatedUsers} (${activationRate}%)` },
+    {
+      label: "Ativados",
+      value: `${metrics.activatedUsers} (${activationRate}%)`,
+    },
     { label: "Em teste", value: String(metrics.planCounts.trialing) },
     { label: "Pagantes", value: String(metrics.planCounts.active) },
   ];
@@ -700,7 +824,9 @@ function FounderMetricsPanel({ metrics }: { metrics: DevMetrics }) {
   return (
     <section className="enter rounded-lg border border-brand-200 bg-brand-50 p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-black text-brand-800">Métricas do <BrandName /></p>
+        <p className="text-sm font-black text-brand-800">
+          Métricas do <BrandName />
+        </p>
         <Link
           href="/dev"
           className="nav-item inline-flex items-center gap-1 text-xs font-black text-brand-700 hover:text-brand-900"
@@ -711,7 +837,10 @@ function FounderMetricsPanel({ metrics }: { metrics: DevMetrics }) {
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
         {tiles.map((tile) => (
-          <div key={tile.label} className="rounded-lg border border-brand-200 bg-white p-3">
+          <div
+            key={tile.label}
+            className="rounded-lg border border-brand-200 bg-white p-3"
+          >
             <p className="text-xs font-semibold text-ink-soft">{tile.label}</p>
             <p className="mt-1 text-lg font-black leading-none tracking-[-0.02em] text-ink">
               {tile.value}
@@ -738,7 +867,9 @@ function OpenClaimsPanel({
     <section className="enter rounded-lg border border-brand-200 bg-brand-50 p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-black text-brand-800">Disponíveis pra pegar</p>
+          <p className="text-sm font-black text-brand-800">
+            Disponíveis pra pegar
+          </p>
           <p className="mt-1 text-xs font-medium text-ink-muted">
             Deixados em aberto pelo admin — quem pegar primeiro fica com o item.
           </p>
@@ -754,7 +885,9 @@ function OpenClaimsPanel({
             className="flex items-center justify-between gap-3 rounded-lg border border-brand-200 bg-white px-3 py-2.5"
           >
             <div className="min-w-0">
-              <p className="clip-1 text-safe text-sm font-black text-ink">{task.title}</p>
+              <p className="clip-1 text-safe text-sm font-black text-ink">
+                {task.title}
+              </p>
               <p className="mt-0.5 text-xs font-semibold text-ink-muted">
                 Tarefa{task.due_at ? ` · ${formatDate(task.due_at)}` : ""}
               </p>
@@ -777,9 +910,12 @@ function OpenClaimsPanel({
             className="flex items-center justify-between gap-3 rounded-lg border border-brand-200 bg-white px-3 py-2.5"
           >
             <div className="min-w-0">
-              <p className="clip-1 text-safe text-sm font-black text-ink">{deal.title}</p>
+              <p className="clip-1 text-safe text-sm font-black text-ink">
+                {deal.title}
+              </p>
               <p className="mt-0.5 text-xs font-semibold text-ink-muted">
-                {capitalize(preset.dealSingular)} · {formatBRL(deal.value_cents ?? 0)}
+                {capitalize(preset.dealSingular)} ·{" "}
+                {formatBRL(deal.value_cents ?? 0)}
               </p>
             </div>
             <form action={claimDeal}>
@@ -845,7 +981,9 @@ function RevenueChart({
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Receita</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">
+            Receita
+          </p>
           <h2 className="mt-0.5 text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
             {preset.wonLabel} no mês (R$)
           </h2>
@@ -893,7 +1031,9 @@ function ReminderModal({
 
       <div className="mt-4 space-y-3">
         <label className="block">
-          <span className="text-xs font-bold text-ink-soft">Título do lembrete *</span>
+          <span className="text-xs font-bold text-ink-soft">
+            Título do lembrete *
+          </span>
           <input
             name="title"
             required
@@ -920,13 +1060,17 @@ function ReminderModal({
             <option value="">Selecione um contato ou empresa</option>
             {contacts.map((contact) => (
               <option key={contact.id} value={contact.id}>
-                {contact.company ? `${contact.name} - ${contact.company}` : contact.name}
+                {contact.company
+                  ? `${contact.name} - ${contact.company}`
+                  : contact.name}
               </option>
             ))}
           </select>
         </label>
         <label className="block">
-          <span className="text-xs font-bold text-ink-soft">Observação opcional</span>
+          <span className="text-xs font-bold text-ink-soft">
+            Observação opcional
+          </span>
           <textarea
             name="notes"
             rows={2}
@@ -969,7 +1113,9 @@ function DealsTable({
     <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Pipeline</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">
+            Pipeline
+          </p>
           <h2 className="mt-0.5 text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
             Negócios recentes
           </h2>
@@ -994,7 +1140,9 @@ function DealsTable({
           <ul className="mt-4 space-y-2 sm:hidden">
             {recent.map((deal) => {
               const stage = stageMeta(deal.stage, preset);
-              const contact = deal.contact_id ? contactMap.get(deal.contact_id) : null;
+              const contact = deal.contact_id
+                ? contactMap.get(deal.contact_id)
+                : null;
               return (
                 <li
                   key={deal.id}
@@ -1004,7 +1152,9 @@ function DealsTable({
                     <p className="clip-2 text-safe min-w-0 text-sm font-black leading-snug text-ink">
                       {deal.title}
                     </p>
-                    <span className={`shrink-0 rounded-md px-2 py-1 text-[11px] font-black ${stage.className}`}>
+                    <span
+                      className={`shrink-0 rounded-md px-2 py-1 text-[11px] font-black ${stage.className}`}
+                    >
                       {stage.label}
                     </span>
                   </div>
@@ -1039,20 +1189,31 @@ function DealsTable({
               <tbody className="divide-y divide-line bg-white">
                 {recent.map((deal) => {
                   const stage = stageMeta(deal.stage, preset);
-                  const contact = deal.contact_id ? contactMap.get(deal.contact_id) : null;
+                  const contact = deal.contact_id
+                    ? contactMap.get(deal.contact_id)
+                    : null;
                   return (
-                    <tr key={deal.id} className="text-xs font-semibold text-ink-soft">
+                    <tr
+                      key={deal.id}
+                      className="text-xs font-semibold text-ink-soft"
+                    >
                       <td className="px-3 py-3 text-ink">{deal.title}</td>
                       <td className="px-3 py-3">
                         {contact?.company ?? contact?.name ?? "-"}
                       </td>
                       <td className="px-3 py-3">
-                        <span className={`rounded-md px-2 py-1 text-[11px] font-black ${stage.className}`}>
+                        <span
+                          className={`rounded-md px-2 py-1 text-[11px] font-black ${stage.className}`}
+                        >
                           {stage.label}
                         </span>
                       </td>
-                      <td className="px-3 py-3">{formatBRL(deal.value_cents ?? 0)}</td>
-                      <td className="px-3 py-3">{formatDate(deal.created_at)}</td>
+                      <td className="px-3 py-3">
+                        {formatBRL(deal.value_cents ?? 0)}
+                      </td>
+                      <td className="px-3 py-3">
+                        {formatDate(deal.created_at)}
+                      </td>
                     </tr>
                   );
                 })}
@@ -1078,7 +1239,9 @@ function TaskQueue({
     <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Agenda</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">
+            Agenda
+          </p>
           <h2 className="mt-0.5 text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
             Fila de tarefas
           </h2>
@@ -1091,7 +1254,9 @@ function TaskQueue({
       {tasks.length === 0 ? (
         <div className="mt-4 rounded-lg border border-dashed border-line bg-[#f8faff] p-5 text-center">
           <IconCheckCircle className="mx-auto h-8 w-8 text-brand-700" />
-          <p className="mt-3 text-sm font-black text-ink">Tudo em dia por aqui.</p>
+          <p className="mt-3 text-sm font-black text-ink">
+            Tudo em dia por aqui.
+          </p>
           <p className="mt-1 text-sm font-medium text-ink-muted">
             Os próximos lembretes vão aparecer nesta fila.
           </p>
@@ -1114,7 +1279,9 @@ function TaskQueue({
                     {task.due_at ? dueLabel(task.due_at, now) : "Sem data"}
                   </p>
                 </div>
-                <span className={`rounded-md px-2.5 py-1 text-xs font-black ${priority.className}`}>
+                <span
+                  className={`rounded-md px-2.5 py-1 text-xs font-black ${priority.className}`}
+                >
                   {priority.label}
                 </span>
               </li>
@@ -1157,7 +1324,10 @@ function CalendarWidget({
     }
   }
 
-  const monthLabel = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(now);
+  const monthLabel = new Intl.DateTimeFormat("pt-BR", {
+    month: "long",
+    year: "numeric",
+  }).format(now);
   const upcoming = items
     .filter((item) => item.date >= now)
     .sort((a, b) => a.date.getTime() - b.date.getTime())
@@ -1167,7 +1337,9 @@ function CalendarWidget({
     <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Agenda</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">
+            Agenda
+          </p>
           <h2 className="mt-0.5 text-base font-black capitalize tracking-[-0.02em] text-ink sm:text-lg">
             {monthLabel}
           </h2>
@@ -1188,7 +1360,7 @@ function CalendarWidget({
       </div>
       <div className="mt-1 grid grid-cols-7 gap-1">
         {cells.map((day, index) => {
-          const dayItems = day ? byDay.get(day) ?? [] : [];
+          const dayItems = day ? (byDay.get(day) ?? []) : [];
           const isToday = day === now.getDate();
           return (
             <div
@@ -1204,7 +1376,9 @@ function CalendarWidget({
                       : "text-ink-soft")
               }
             >
-              {day && <span className="grid h-full place-items-center">{day}</span>}
+              {day && (
+                <span className="grid h-full place-items-center">{day}</span>
+              )}
             </div>
           );
         })}
@@ -1222,8 +1396,15 @@ function CalendarWidget({
                 href={item.href}
                 className="row-link flex items-center justify-between gap-2 rounded-lg border border-line px-3 py-2 hover:border-brand-300 hover:bg-brand-50"
               >
-                <span className="clip-1 text-safe min-w-0 text-xs font-bold text-ink">{item.title}</span>
-                <span className={"shrink-0 text-[11px] font-black " + calendarToneClass(item.tone)}>
+                <span className="clip-1 text-safe min-w-0 text-xs font-bold text-ink">
+                  {item.title}
+                </span>
+                <span
+                  className={
+                    "shrink-0 text-[11px] font-black " +
+                    calendarToneClass(item.tone)
+                  }
+                >
                   {formatDate(item.date.toISOString())}
                 </span>
               </Link>
@@ -1348,8 +1529,15 @@ function OnboardingChecklist({
               }
             >
               <div className="flex items-center justify-between gap-2">
-                <Icon className={"h-6 w-6 " + (step.done ? "text-success-600" : "text-brand-700")} />
-                {step.done && <IconCheckCircle className="h-5 w-5 text-success-600" />}
+                <Icon
+                  className={
+                    "h-6 w-6 " +
+                    (step.done ? "text-success-600" : "text-brand-700")
+                  }
+                />
+                {step.done && (
+                  <IconCheckCircle className="h-5 w-5 text-success-600" />
+                )}
               </div>
               <p
                 className={
@@ -1371,13 +1559,19 @@ function OnboardingChecklist({
 }
 
 function stageMeta(stage: DealStage, preset: ProfessionPreset) {
-  const label = preset.stages[stage]?.label ?? DEAL_STAGES.find((item) => item.key === stage)?.label ?? "Etapa";
+  const label =
+    preset.stages[stage]?.label ??
+    DEAL_STAGES.find((item) => item.key === stage)?.label ??
+    "Etapa";
   const map: Record<DealStage, string> = {
     novo: "bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-200",
-    em_contato: "bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-brand-200",
+    em_contato:
+      "bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-brand-200",
     negociacao: "bg-warning-50 text-warning-700",
-    ganho: "bg-success-50 text-success-700 dark:bg-[#062d1c] dark:text-[#9ff0c5]",
-    perdido: "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
+    ganho:
+      "bg-success-50 text-success-700 dark:bg-[#062d1c] dark:text-[#9ff0c5]",
+    perdido:
+      "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
   };
 
   return {
@@ -1390,7 +1584,8 @@ function taskPriority(task: Task, overdue: Task[], index: number) {
   if (overdue.some((item) => item.id === task.id) || index === 0) {
     return {
       label: "Alta",
-      className: "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
+      className:
+        "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
     };
   }
   if (index === 1) {
@@ -1426,7 +1621,9 @@ function defaultDateTimeValue(now: Date) {
   value.setDate(value.getDate() + 1);
   value.setHours(10, 30, 0, 0);
   const offset = value.getTimezoneOffset();
-  return new Date(value.getTime() - offset * 60 * 1000).toISOString().slice(0, 16);
+  return new Date(value.getTime() - offset * 60 * 1000)
+    .toISOString()
+    .slice(0, 16);
 }
 
 function firstName(value: string) {
@@ -1436,17 +1633,19 @@ function firstName(value: string) {
 }
 
 function initials(value: string) {
-  return value
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("") || "JS";
+  return (
+    value
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "JS"
+  );
 }
 
 function dashboardGreeting(
   preset: ProfessionPreset,
-  state: { overdueCount: number; todayCount: number; isFirstRun: boolean }
+  state: { overdueCount: number; todayCount: number; isFirstRun: boolean },
 ) {
   if (state.isFirstRun) {
     return `Comece pela área de ${preset.signupLabel}: cadastre um contato, crie um ${preset.dealSingular} e deixe um lembrete.`;

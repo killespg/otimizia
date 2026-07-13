@@ -2,10 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { EmptyState, PageHeader, Tag } from "@/components/app-ui";
 import { IconArrowRight, IconBot, IconPaperclip, IconX } from "../icons";
 import { useAssistantChat } from "@/lib/ai/AssistantChatProvider";
 import { usePdfAttachment } from "@/lib/ai/usePdfAttachment";
-import { ChatImageAttach, type PendingImage } from "@/components/ChatImageAttach";
+import {
+  ChatImageAttach,
+  type PendingImage,
+} from "@/components/ChatImageAttach";
 import { VoicePanel } from "@/components/VoicePanel";
 
 const SUGGESTIONS = [
@@ -39,43 +43,39 @@ export default function AssistantPage() {
 
   return (
     <div className="assistant-page-shell -mx-4 -my-4 flex min-h-0 flex-col overflow-hidden bg-canvas sm:mx-0 sm:my-0 sm:h-[calc(100dvh-9.5rem)] sm:rounded-xl sm:border sm:border-line sm:bg-surface">
-      <header className="enter shrink-0 border-b border-line bg-surface px-4 py-3 sm:px-5 sm:py-4">
-        <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Image
-            src="/otimizia-mark-dark.png"
-            alt=""
-            width={44}
-            height={44}
-            className="h-10 w-10 shrink-0 object-contain"
-          />
-          <div>
-            <h1 className="text-lg font-black tracking-[-0.02em] text-ink sm:text-xl">
-              Sócio-Assistente
-            </h1>
-            <p className="text-sm font-medium text-ink-muted">
-              Cria contatos, move vendas, agenda lembretes e responde sobre seu negócio.
-            </p>
-          </div>
-        </div>
-        <span className="hidden shrink-0 rounded-md bg-success-50 px-2 py-1 text-xs font-black text-success-700 sm:inline-block">
-          Online
-        </span>
-        </div>
-      </header>
+      <PageHeader
+        className="shrink-0 border-b border-line bg-surface px-4 py-3 sm:px-5 sm:py-4"
+        title={
+          <span className="flex items-center gap-3">
+            <Image
+              src="/otimizia-mark-dark.png"
+              alt=""
+              width={44}
+              height={44}
+              className="h-10 w-10 shrink-0 object-contain"
+            />
+            Sócio-Assistente
+          </span>
+        }
+        description="Cria contatos, move vendas, agenda lembretes e responde sobre seu negócio."
+        actions={
+          <Tag tone="success" className="hidden sm:inline-flex">
+            Online
+          </Tag>
+        }
+      />
 
-      <div ref={scrollRef} className="enter min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">
+      <div
+        ref={scrollRef}
+        className="enter min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5"
+      >
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-            <span className="grid h-14 w-14 place-items-center rounded-full bg-brand-50 text-brand-700">
-              <IconBot className="h-7 w-7" />
-            </span>
-            <div>
-              <p className="text-base font-black text-ink">E aí! Bora ver como tá o negócio hoje?</p>
-              <p className="mt-1 text-sm font-medium text-ink-muted">
-                Pergunte qualquer coisa ou peça uma ação — eu cuido do resto.
-              </p>
-            </div>
+            <EmptyState
+              icon={IconBot}
+              title="E aí! Bora ver como tá o negócio hoje?"
+              hint="Pergunte qualquer coisa ou peça uma ação — eu cuido do resto."
+            />
             <div className="grid w-full max-w-xl gap-2 sm:grid-cols-2">
               {SUGGESTIONS.map((suggestion) => (
                 <button
@@ -125,7 +125,7 @@ export default function AssistantPage() {
                   </div>
                 </div>
               )
-            )
+            ),
           )
         )}
 
@@ -145,7 +145,9 @@ export default function AssistantPage() {
             {attachment.file && (
               <div className="flex items-center gap-2 rounded-lg bg-surface-2 px-2.5 py-1.5 text-xs font-semibold text-ink">
                 <IconPaperclip className="h-3.5 w-3.5 shrink-0 text-ink-muted" />
-                <span className="min-w-0 flex-1 truncate">{attachment.file.name}</span>
+                <span className="min-w-0 flex-1 truncate">
+                  {attachment.file.name}
+                </span>
                 <button
                   type="button"
                   onClick={attachment.clear}
@@ -157,7 +159,9 @@ export default function AssistantPage() {
               </div>
             )}
             {attachment.error && (
-              <p className="mt-1 text-xs font-semibold text-danger-700">{attachment.error}</p>
+              <p className="mt-1 text-xs font-semibold text-danger-700">
+                {attachment.error}
+              </p>
             )}
           </div>
         )}
@@ -195,7 +199,9 @@ export default function AssistantPage() {
           />
           <button
             type="submit"
-            disabled={sending || (!input.trim() && !pendingImage && !attachment.file)}
+            disabled={
+              sending || (!input.trim() && !pendingImage && !attachment.file)
+            }
             className="nav-item grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-brand-700 text-white shadow-[0_14px_30px_-16px_rgba(109,40,217,0.9)] transition-opacity hover:bg-brand-800 disabled:opacity-40"
             aria-label="Enviar pergunta"
           >

@@ -2,9 +2,22 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import {
+  EmptyState,
+  PageHeader,
+  SectionCard,
+  StatCard,
+  Tag,
+} from "@/components/app-ui";
 import type { Contact } from "@/lib/supabase/types";
 import { Avatar } from "../Avatar";
-import { IconArrowRight, IconMessage, IconPhone, IconSearch, IconUsers } from "../icons";
+import {
+  IconArrowRight,
+  IconMessage,
+  IconPhone,
+  IconSearch,
+  IconUsers,
+} from "../icons";
 
 // Range U+0300-U+036F: combining diacritical marks split out by NFD
 // normalization (e.g. "joão" -> "joa" + combining ~), so search matches
@@ -29,7 +42,7 @@ function contactMatchesTerms(contact: Contact, terms: string[]) {
       contact.notes,
     ]
       .filter(Boolean)
-      .join(" ")
+      .join(" "),
   );
   return terms.every((term) => haystack.includes(term));
 }
@@ -49,98 +62,104 @@ export function ContactsExplorer({
 }) {
   const [query, setQuery] = useState(initialQuery);
 
-  const withPhone = useMemo(() => contacts.filter((contact) => contact.phone).length, [contacts]);
-  const withCompany = useMemo(() => contacts.filter((contact) => contact.company).length, [contacts]);
+  const withPhone = useMemo(
+    () => contacts.filter((contact) => contact.phone).length,
+    [contacts],
+  );
+  const withCompany = useMemo(
+    () => contacts.filter((contact) => contact.company).length,
+    [contacts],
+  );
 
-  const terms = useMemo(() => normalize(query).split(/\s+/).filter(Boolean), [query]);
+  const terms = useMemo(
+    () => normalize(query).split(/\s+/).filter(Boolean),
+    [query],
+  );
   const results = useMemo(
-    () => (terms.length === 0 ? contacts : contacts.filter((contact) => contactMatchesTerms(contact, terms))),
-    [contacts, terms]
+    () =>
+      terms.length === 0
+        ? contacts
+        : contacts.filter((contact) => contactMatchesTerms(contact, terms)),
+    [contacts, terms],
   );
 
   return (
     <>
-      <header className="enter flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm font-black text-brand-700">Contatos</p>
-          <h1 className="mt-2 text-[clamp(1.55rem,6vw,3.2rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
-            {title}
-          </h1>
-          <p className="mt-2 hidden max-w-xl text-sm font-medium leading-relaxed text-ink-soft sm:block">
-            {description}
-          </p>
-          <Link
-            href="/contacts/import"
-            className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-brand-700 hover:text-brand-800"
-          >
-            Importar contatos via CSV
-            <IconArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-
-        <div className="flex h-11 w-full items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] lg:w-[360px]">
-          <IconSearch className="h-5 w-5 shrink-0 text-ink-muted" />
-          <label className="sr-only" htmlFor="contacts-search">
-            Buscar contatos
-          </label>
-          <input
-            id="contacts-search"
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar contato, empresa, telefone, Instagram..."
-            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-ink outline-none placeholder:text-ink-muted"
-          />
-        </div>
-      </header>
+      <PageHeader
+        eyebrow="Contatos"
+        title={title}
+        description={description}
+        actions={
+          <div className="field flex h-11 w-full items-center gap-2 px-3 lg:w-[360px]">
+            <IconSearch className="h-5 w-5 shrink-0 text-ink-muted" />
+            <label className="sr-only" htmlFor="contacts-search">
+              Buscar contatos
+            </label>
+            <input
+              id="contacts-search"
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Buscar contato, empresa, telefone, Instagram..."
+              className="min-w-0 flex-1 bg-transparent text-sm font-medium text-ink outline-none placeholder:text-ink-muted"
+            />
+          </div>
+        }
+      >
+        <Link
+          href="/contacts/import"
+          className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-brand-700 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-600"
+        >
+          Importar contatos via CSV
+          <IconArrowRight className="h-4 w-4" />
+        </Link>
+      </PageHeader>
 
       <section className="enter grid grid-cols-3 gap-3 sm:gap-4">
-        <MetricCard label="Total" value={String(contacts.length)} icon={IconUsers} />
-        <MetricCard label="Com WhatsApp" value={String(withPhone)} icon={IconPhone} pink />
-        <MetricCard label="Com empresa" value={String(withCompany)} icon={IconMessage} />
+        <StatCard
+          label="Total"
+          value={String(contacts.length)}
+          icon={IconUsers}
+        />
+        <StatCard
+          label="Com WhatsApp"
+          value={String(withPhone)}
+          icon={IconPhone}
+          tone="warning"
+        />
+        <StatCard
+          label="Com empresa"
+          value={String(withCompany)}
+          icon={IconMessage}
+        />
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="panel order-2 overflow-hidden xl:order-1">
-          <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
-            <div>
-              <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
-                Lista de contatos
-              </h2>
-              <p className="mt-1 text-sm font-medium text-ink-muted">
-                {query
-                  ? results.length === 0
-                    ? `Nenhum resultado para "${query}".`
-                    : `${results.length} ${results.length === 1 ? "resultado" : "resultados"} para "${query}".`
-                  : results.length === 0
-                    ? "Comece adicionando seu primeiro cliente."
-                    : `${results.length} ${results.length === 1 ? "contato salvo" : "contatos salvos"}.`}
-              </p>
-            </div>
-            <span className="rounded-md bg-surface-2 px-2.5 py-1 text-xs font-black text-ink-muted">
-              {String(results.length).padStart(2, "0")}
-            </span>
-          </div>
-
+        <SectionCard
+          flush
+          className="order-2 xl:order-1"
+          title="Lista de contatos"
+          description={
+            query
+              ? results.length === 0
+                ? `Nenhum resultado para "${query}".`
+                : `${results.length} ${results.length === 1 ? "resultado" : "resultados"} para "${query}".`
+              : results.length === 0
+                ? "Comece adicionando seu primeiro cliente."
+                : `${results.length} ${results.length === 1 ? "contato salvo" : "contatos salvos"}.`
+          }
+          actions={<Tag>{String(results.length).padStart(2, "0")}</Tag>}
+        >
           {results.length === 0 ? (
-            <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-              <span className="grid h-14 w-14 place-items-center rounded-full bg-brand-50 text-brand-700">
-                <IconUsers className="h-7 w-7" />
-              </span>
-              <p className="mt-4 text-lg font-black text-ink">
-                {query ? "Nenhum resultado" : "Nenhum contato ainda"}
-              </p>
-              {query && (
-                <p className="mt-1 max-w-xs text-sm font-medium leading-relaxed text-ink-muted">
-                  Tente buscar por outro nome, empresa, telefone, Instagram ou origem.
-                </p>
-              )}
-              {!query && (
-                <p className="mt-1 max-w-xs text-sm font-medium leading-relaxed text-ink-muted">
-                  Salve nome, WhatsApp e uma observação simples para começar.
-                </p>
-              )}
-            </div>
+            <EmptyState
+              icon={IconUsers}
+              title={query ? "Nenhum resultado" : "Nenhum contato ainda"}
+              hint={
+                query
+                  ? "Tente buscar por outro nome, empresa, telefone, Instagram ou origem."
+                  : "Salve nome, WhatsApp e uma observação simples para começar."
+              }
+            />
           ) : (
             <ul className="enter divide-y divide-line">
               {results.map((contact) => (
@@ -155,19 +174,17 @@ export function ContactsExplorer({
                         {displayContactName(contact)}
                       </p>
                       <p className="truncate text-xs font-bold text-ink-muted">
-                        {contact.company || contact.instagram || contact.email || contact.phone || "Sem dados extras"}
+                        {contact.company ||
+                          contact.instagram ||
+                          contact.email ||
+                          contact.phone ||
+                          "Sem dados extras"}
                       </p>
                     </div>
                     <div className="hidden items-center gap-2 sm:flex">
-                      {contact.phone && (
-                        <span className="tag bg-brand-50 text-brand-700">WhatsApp</span>
-                      )}
-                      {contact.instagram && (
-                        <span className="tag bg-surface-2 text-ink-muted">Instagram</span>
-                      )}
-                      {contact.source && (
-                        <span className="tag bg-surface-2 text-ink-muted">{contact.source}</span>
-                      )}
+                      {contact.phone && <Tag tone="brand">WhatsApp</Tag>}
+                      {contact.instagram && <Tag>Instagram</Tag>}
+                      {contact.source && <Tag>{contact.source}</Tag>}
                     </div>
                     <IconArrowRight className="h-4 w-4 text-ink-muted transition-transform duration-200 group-hover:translate-x-1 group-hover:text-brand-700" />
                   </Link>
@@ -175,7 +192,7 @@ export function ContactsExplorer({
               ))}
             </ul>
           )}
-        </section>
+        </SectionCard>
 
         {children}
       </div>
@@ -183,39 +200,8 @@ export function ContactsExplorer({
   );
 }
 
-function MetricCard({
-  label,
-  value,
-  icon: Icon,
-  pink = false,
-}: {
-  label: string;
-  value: string;
-  icon: (props: { className?: string }) => JSX.Element;
-  pink?: boolean;
-}) {
-  return (
-    <article className="panel p-3 sm:p-5">
-      <div className="flex items-start justify-between gap-2 sm:gap-3">
-        <div className="min-w-0">
-          <p className="text-xs font-bold leading-tight text-ink-soft sm:text-sm">{label}</p>
-          <p className="mt-2 text-2xl font-black tracking-[-0.04em] text-ink sm:mt-3 sm:text-3xl">
-            {value}
-          </p>
-        </div>
-        <span
-          className={
-            "hidden h-11 w-11 place-items-center rounded-full sm:grid " +
-            (pink ? "bg-warning-50 text-warning-700" : "bg-brand-50 text-brand-700")
-          }
-        >
-          <Icon className="h-5 w-5" />
-        </span>
-      </div>
-    </article>
-  );
-}
-
 function displayContactName(contact: Pick<Contact, "name">) {
-  return typeof contact.name === "string" && contact.name.trim() ? contact.name : "Cliente sem nome";
+  return typeof contact.name === "string" && contact.name.trim()
+    ? contact.name
+    : "Cliente sem nome";
 }

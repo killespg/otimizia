@@ -1,4 +1,5 @@
 import { PendingButton } from "@/components/PendingButton";
+import { SectionCard } from "@/components/app-ui";
 import { getActiveOrgId } from "@/lib/org";
 import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
@@ -17,16 +18,22 @@ export default async function ContactsPage({
 }) {
   const supabase = createClient();
   const initialQuery = normalizeSearch((await searchParams)?.q);
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return null;
   const [{ data: profile }, orgId] = await Promise.all([
-    supabase.from("profiles").select("profession_type, is_admin").eq("id", user.id).maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("profession_type, is_admin")
+      .eq("id", user.id)
+      .maybeSingle(),
     getActiveOrgId(supabase, user.id),
   ]);
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
     user?.user_metadata?.profession_type,
-    profile?.is_admin ?? false
+    profile?.is_admin ?? false,
   );
   const preset = getProfessionPreset(workspaceKey);
   const [{ data }, { data: org }] = await Promise.all([
@@ -45,7 +52,7 @@ export default async function ContactsPage({
   const workspaceLabels = getWorkspaceLabels(
     preset,
     org?.workspace_preferences,
-    workspaceKey
+    workspaceKey,
   );
   const allContacts = (data ?? []) as Contact[];
 
@@ -57,22 +64,22 @@ export default async function ContactsPage({
         title={workspaceLabels.contacts}
         description={preset.contactsDescription}
       >
-        <section id="new-contact" className="panel order-1 h-max scroll-mt-28 p-5 xl:sticky xl:top-8 xl:order-2">
-          <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-full bg-brand-50 text-brand-700">
-              <IconPlus className="h-5 w-5" />
-            </span>
-            <div>
-              <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
-                {preset.newContactTitle}
-              </h2>
-              <p className="text-sm font-medium text-ink-muted">Adicione em poucos campos.</p>
-            </div>
-          </div>
-
+        <SectionCard
+          id="new-contact"
+          className="order-1 h-max scroll-mt-28 xl:sticky xl:top-8 xl:order-2"
+          title={preset.newContactTitle}
+          description="Adicione em poucos campos."
+          actions={<IconPlus className="h-5 w-5 text-brand-700" />}
+        >
           <form action={createContact} className="mt-5 space-y-3.5">
             <input type="hidden" name="return_to" value="/contacts" />
-            <Field name="name" label="Nome" required maxLength={120} autoComplete="name" />
+            <Field
+              name="name"
+              label="Nome"
+              required
+              maxLength={120}
+              autoComplete="name"
+            />
             <Field
               name="phone"
               label="Telefone / WhatsApp"
@@ -80,9 +87,25 @@ export default async function ContactsPage({
               autoComplete="tel"
               inputMode="tel"
             />
-            <Field name="email" label="E-mail" type="email" maxLength={160} autoComplete="email" />
-            <Field name="instagram" label="Instagram" maxLength={60} placeholder="@usuario" />
-            <Field name="company" label="Empresa" maxLength={120} autoComplete="organization" />
+            <Field
+              name="email"
+              label="E-mail"
+              type="email"
+              maxLength={160}
+              autoComplete="email"
+            />
+            <Field
+              name="instagram"
+              label="Instagram"
+              maxLength={60}
+              placeholder="@usuario"
+            />
+            <Field
+              name="company"
+              label="Empresa"
+              maxLength={120}
+              autoComplete="organization"
+            />
             <Field name="source" label="Origem" maxLength={120} />
             <PresetFields fields={preset.contactFields} />
             <div>
@@ -102,7 +125,7 @@ export default async function ContactsPage({
               Salvar cliente
             </PendingButton>
           </form>
-        </section>
+        </SectionCard>
       </ContactsExplorer>
     </div>
   );

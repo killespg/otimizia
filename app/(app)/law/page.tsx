@@ -1,11 +1,29 @@
 import Link from "next/link";
+import {
+  EmptyState,
+  PageHeader,
+  SectionCard,
+  StatCard,
+  Tag,
+} from "@/components/app-ui";
 import { PendingButton } from "@/components/PendingButton";
-import { canManageLegal, canViewLegal, LEGAL_CASE_STATUS } from "@/lib/law-office";
+import {
+  canManageLegal,
+  canViewLegal,
+  LEGAL_CASE_STATUS,
+} from "@/lib/law-office";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, LegalCase } from "@/lib/supabase/types";
 import { getWorkspaceKey } from "@/lib/workspaces";
-import { IconAlert, IconColumns, IconPlus, IconSearch, IconUsers, IconWallet } from "../icons";
+import {
+  IconAlert,
+  IconColumns,
+  IconPlus,
+  IconSearch,
+  IconUsers,
+  IconWallet,
+} from "../icons";
 import { createLegalCase } from "./actions";
 
 export default async function LawPage() {
@@ -14,18 +32,28 @@ export default async function LawPage() {
     data: { user },
   } = await supabase.auth.getUser();
   const [{ data: profile }, orgId] = await Promise.all([
-    supabase.from("profiles").select("profession_type, is_admin").eq("id", user!.id).maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("profession_type, is_admin")
+      .eq("id", user!.id)
+      .maybeSingle(),
     getActiveOrgId(supabase, user!.id),
   ]);
 
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
     user?.user_metadata?.profession_type,
-    profile?.is_admin
+    profile?.is_admin,
   );
   if (workspaceKey !== "law_office") return <NotLawOffice />;
 
-  const [orgRole, { data: membership }, members, { data: cases }, { data: contacts }] = await Promise.all([
+  const [
+    orgRole,
+    { data: membership },
+    members,
+    { data: cases },
+    { data: contacts },
+  ] = await Promise.all([
     getOrgRole(supabase, orgId, user!.id),
     supabase
       .from("organization_members")
@@ -53,31 +81,33 @@ export default async function LawPage() {
 
   const allCases = (cases ?? []) as LegalCase[];
   const allContacts = (contacts ?? []) as Pick<Contact, "id" | "name">[];
-  const activeCases = allCases.filter((item) => ["intake", "active", "waiting", "suspended"].includes(item.status));
-  const deadlines = activeCases.filter(
-    (item) => item.next_deadline_at && new Date(item.next_deadline_at) < new Date(Date.now() + 7 * 86_400_000)
+  const activeCases = allCases.filter((item) =>
+    ["intake", "active", "waiting", "suspended"].includes(item.status),
   );
-  const memberName = new Map(members.map((member) => [member.user_id, member.name ?? "Sem nome"]));
+  const deadlines = activeCases.filter(
+    (item) =>
+      item.next_deadline_at &&
+      new Date(item.next_deadline_at) < new Date(Date.now() + 7 * 86_400_000),
+  );
+  const memberName = new Map(
+    members.map((member) => [member.user_id, member.name ?? "Sem nome"]),
+  );
 
   return (
     <div className="space-y-4 sm:space-y-5">
-      <header className="enter flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm font-black text-brand-700">Operação jurídica</p>
-          <h1 className="mt-2 text-[clamp(1.7rem,5vw,3.1rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
-            Casos
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-ink-soft">
-            Carteira de trabalho depois que o atendimento virou cliente: responsável, área, processo, risco e próximo passo.
-          </p>
-        </div>
-        <Link
-          href="/law/deadlines"
-          className="nav-item inline-flex min-h-11 items-center justify-center rounded-lg border border-line bg-white px-4 text-sm font-black text-ink-soft shadow-[0_12px_28px_-22px_rgba(15,23,42,.5)] hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-600"
-        >
-          Ver prazos
-        </Link>
-      </header>
+      <PageHeader
+        eyebrow="Operação jurídica"
+        title="Casos"
+        description="Carteira de trabalho depois que o atendimento virou cliente: responsável, área, processo, risco e próximo passo."
+        actions={
+          <Link
+            href="/law/deadlines"
+            className="btn-soft inline-flex min-h-11 items-center justify-center px-4"
+          >
+            Ver prazos
+          </Link>
+        }
+      />
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <QuickLink
@@ -113,12 +143,24 @@ export default async function LawPage() {
       </section>
 
       <section className="grid gap-3 sm:grid-cols-3 sm:gap-4">
-        <Metric icon={IconColumns} label="Casos ativos" value={String(activeCases.length)} />
-        <Metric icon={IconAlert} label="Prazo nos próximos 7 dias" value={String(deadlines.length)} warning />
-        <Metric
+        <StatCard
+          icon={IconColumns}
+          label="Casos ativos"
+          value={String(activeCases.length)}
+        />
+        <StatCard
+          icon={IconAlert}
+          label="Prazo nos próximos 7 dias"
+          value={String(deadlines.length)}
+          tone="danger"
+        />
+        <StatCard
           icon={IconUsers}
           label="Clientes com caso"
-          value={String(new Set(activeCases.map((item) => item.contact_id).filter(Boolean)).size)}
+          value={String(
+            new Set(activeCases.map((item) => item.contact_id).filter(Boolean))
+              .size,
+          )}
         />
       </section>
 
@@ -131,12 +173,16 @@ export default async function LawPage() {
             <div>
               <h2 className="text-base font-black text-ink">Abrir novo caso</h2>
               <p className="text-sm font-medium text-ink-muted">
-                Use caso para trabalho jurídico ativo. Para lead, consulta ou proposta, use Atendimentos.
+                Use caso para trabalho jurídico ativo. Para lead, consulta ou
+                proposta, use Atendimentos.
               </p>
             </div>
           </div>
 
-          <form action={createLegalCase} className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <form
+            action={createLegalCase}
+            className="grid gap-3 md:grid-cols-2 xl:grid-cols-4"
+          >
             <Field
               name="title"
               label="Caso"
@@ -147,7 +193,10 @@ export default async function LawPage() {
             <Select
               name="contact_id"
               label="Cliente"
-              options={allContacts.map((contact) => ({ value: contact.id, label: contact.name }))}
+              options={allContacts.map((contact) => ({
+                value: contact.id,
+                label: contact.name,
+              }))}
               placeholder="Selecione"
             />
             <Select
@@ -156,12 +205,27 @@ export default async function LawPage() {
               defaultValue={user!.id}
               options={members.map((member) => ({
                 value: member.user_id,
-                label: member.user_id === user!.id ? "Eu" : member.name ?? "Sem nome",
+                label:
+                  member.user_id === user!.id
+                    ? "Eu"
+                    : (member.name ?? "Sem nome"),
               }))}
             />
-            <Field name="area" label="Área do direito" placeholder="Ex.: Trabalhista" />
-            <Field name="case_number" label="Nº do processo" placeholder="0000000-00.0000.0.00.0000" />
-            <Field name="next_deadline_at" label="Próximo prazo" type="datetime-local" />
+            <Field
+              name="area"
+              label="Área do direito"
+              placeholder="Ex.: Trabalhista"
+            />
+            <Field
+              name="case_number"
+              label="Nº do processo"
+              placeholder="0000000-00.0000.0.00.0000"
+            />
+            <Field
+              name="next_deadline_at"
+              label="Próximo prazo"
+              type="datetime-local"
+            />
             <Select
               name="risk_level"
               label="Prioridade"
@@ -202,9 +266,13 @@ export default async function LawPage() {
         <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
           <div>
             <h2 className="text-lg font-black text-ink">Carteira de casos</h2>
-            <p className="mt-1 text-sm font-medium text-ink-muted">Casos ordenados pelo próximo prazo.</p>
+            <p className="mt-1 text-sm font-medium text-ink-muted">
+              Casos ordenados pelo próximo prazo.
+            </p>
           </div>
-          <span className="tag bg-surface-2 text-ink-muted">{allCases.length} no total</span>
+          <span className="tag bg-surface-2 text-ink-muted">
+            {allCases.length} no total
+          </span>
         </div>
         {allCases.length === 0 ? (
           <EmptyCases />
@@ -217,7 +285,9 @@ export default async function LawPage() {
                 className="nav-item grid gap-3 px-5 py-4 hover:bg-brand-50 sm:grid-cols-[minmax(0,1fr)_9rem_10rem_10rem] sm:items-center"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-black text-ink">{item.title}</p>
+                  <p className="truncate text-sm font-black text-ink">
+                    {item.title}
+                  </p>
                   <p className="mt-1 truncate text-xs font-bold text-ink-muted">
                     {item.area ?? "Área não informada"}
                     {item.case_number ? ` · ${item.case_number}` : ""}
@@ -225,20 +295,25 @@ export default async function LawPage() {
                 </div>
                 <Status status={item.status} />
                 <span className="text-xs font-bold text-ink-muted">
-                  {item.responsible_id ? memberName.get(item.responsible_id) : "Sem responsável"}
+                  {item.responsible_id
+                    ? memberName.get(item.responsible_id)
+                    : "Sem responsável"}
                 </span>
                 <span
                   className={
                     "text-xs font-black " +
-                    (item.next_deadline_at && new Date(item.next_deadline_at) < new Date(Date.now() + 7 * 86_400_000)
+                    (item.next_deadline_at &&
+                    new Date(item.next_deadline_at) <
+                      new Date(Date.now() + 7 * 86_400_000)
                       ? "text-danger-600"
                       : "text-ink-muted")
                   }
                 >
                   {item.next_deadline_at
-                    ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(
-                        new Date(item.next_deadline_at)
-                      )
+                    ? new Intl.DateTimeFormat("pt-BR", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      }).format(new Date(item.next_deadline_at))
                     : "Sem prazo"}
                 </span>
               </Link>
@@ -271,41 +346,16 @@ function QuickLink({
       </span>
       <span className="min-w-0">
         <span className="block text-sm font-black text-ink">{label}</span>
-        <span className="mt-1 block text-xs font-semibold leading-relaxed text-ink-muted">{description}</span>
+        <span className="mt-1 block text-xs font-semibold leading-relaxed text-ink-muted">
+          {description}
+        </span>
       </span>
     </Link>
   );
 }
 
-function Metric({
-  icon: Icon,
-  label,
-  value,
-  warning = false,
-}: {
-  icon: (p: { className?: string }) => JSX.Element;
-  label: string;
-  value: string;
-  warning?: boolean;
-}) {
-  return (
-    <article className="panel p-4">
-      <span
-        className={
-          "grid h-10 w-10 place-items-center rounded-full " +
-          (warning ? "bg-danger-50 text-danger-600" : "bg-brand-50 text-brand-700")
-        }
-      >
-        <Icon className="h-5 w-5" />
-      </span>
-      <p className="mt-4 text-xs font-bold text-ink-muted">{label}</p>
-      <p className="mt-0.5 text-2xl font-black tracking-[-.04em] text-ink">{value}</p>
-    </article>
-  );
-}
-
 function Status({ status }: { status: LegalCase["status"] }) {
-  return <span className="w-fit rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-black text-ink-soft">{LEGAL_CASE_STATUS[status]}</span>;
+  return <Tag className="w-fit">{LEGAL_CASE_STATUS[status]}</Tag>;
 }
 
 function Field({
@@ -364,7 +414,11 @@ function Select({
   return (
     <label className="block">
       <span className="label">{label}</span>
-      <select name={name} defaultValue={defaultValue ?? ""} className="field mt-1.5">
+      <select
+        name={name}
+        defaultValue={defaultValue ?? ""}
+        className="field mt-1.5"
+      >
         <option value="">{placeholder ?? "Selecione"}</option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -378,35 +432,33 @@ function Select({
 
 function AccessDenied() {
   return (
-    <section className="panel max-w-xl p-6">
-      <p className="text-sm font-black text-brand-700">Acesso restrito</p>
-      <h1 className="mt-2 text-2xl font-black text-ink">Sua função não acessa casos jurídicos.</h1>
-      <p className="mt-2 text-sm font-medium leading-relaxed text-ink-muted">
-        Peça a um sócio administrador para atribuir um cargo jurídico à sua conta.
-      </p>
-    </section>
+    <SectionCard className="max-w-xl">
+      <PageHeader
+        eyebrow="Acesso restrito"
+        title="Sua função não acessa casos jurídicos."
+        description="Peça a um sócio administrador para atribuir um cargo jurídico à sua conta."
+      />
+    </SectionCard>
   );
 }
 
 function NotLawOffice() {
   return (
-    <section className="panel max-w-xl p-6">
-      <h1 className="text-2xl font-black text-ink">Área jurídica disponível no workspace de advocacia.</h1>
+    <SectionCard className="max-w-xl">
+      <PageHeader title="Área jurídica disponível no workspace de advocacia." />
       <Link href="/dashboard" className="btn mt-4">
         Voltar ao painel
       </Link>
-    </section>
+    </SectionCard>
   );
 }
 
 function EmptyCases() {
   return (
-    <div className="p-8 text-center">
-      <IconColumns className="mx-auto h-8 w-8 text-brand-700" />
-      <p className="mt-3 text-sm font-black text-ink">Nenhum caso aberto ainda.</p>
-      <p className="mt-1 text-sm font-medium text-ink-muted">
-        Use o formulário acima para transformar um atendimento contratado em operação jurídica.
-      </p>
-    </div>
+    <EmptyState
+      icon={IconColumns}
+      title="Nenhum caso aberto ainda."
+      hint="Use o formulário acima para transformar um atendimento contratado em operação jurídica."
+    />
   );
 }

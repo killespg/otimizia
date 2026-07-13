@@ -1,4 +1,5 @@
 import { PendingButton } from "@/components/PendingButton";
+import { PageHeader, StatCard } from "@/components/app-ui";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
 import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
@@ -10,7 +11,13 @@ import { getWorkspaceKey } from "@/lib/workspaces";
 import Link from "next/link";
 import { createDeal } from "../actions";
 import { ContactField } from "../ContactField";
-import { IconChartBar, IconColumns, IconPlus, IconUsers, IconWallet } from "../icons";
+import {
+  IconChartBar,
+  IconColumns,
+  IconPlus,
+  IconUsers,
+  IconWallet,
+} from "../icons";
 import { PresetFields } from "../PresetFields";
 import Board from "./Board";
 
@@ -32,39 +39,46 @@ const LIVESTOCK_LIST_ORDER = [
 export default async function PipelinePage() {
   const supabase = createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return null;
   const [{ data: profile }, orgId] = await Promise.all([
-    supabase.from("profiles").select("profession_type, is_admin").eq("id", user.id).maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("profession_type, is_admin")
+      .eq("id", user.id)
+      .maybeSingle(),
     getActiveOrgId(supabase, user.id),
   ]);
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
     user?.user_metadata?.profession_type,
-    profile?.is_admin ?? false
+    profile?.is_admin ?? false,
   );
   const preset = getProfessionPreset(workspaceKey);
-  const [{ data: deals }, { data: contacts }, { data: org }, members, role] = await Promise.all([
-    supabase
-      .from("deals")
-      .select("*")
-      .eq("org_id", orgId)
-      .eq("workspace_key", workspaceKey)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("contacts")
-      .select("id, name")
-      .eq("org_id", orgId)
-      .eq("workspace_key", workspaceKey)
-      .order("name"),
-    supabase
-      .from("organizations")
-      .select("workspace_preferences")
-      .eq("id", orgId)
-      .maybeSingle(),
-    getOrgMembers(supabase, orgId),
-    getOrgRole(supabase, orgId, user!.id),
-  ]);
+  const [{ data: deals }, { data: contacts }, { data: org }, members, role] =
+    await Promise.all([
+      supabase
+        .from("deals")
+        .select("*")
+        .eq("org_id", orgId)
+        .eq("workspace_key", workspaceKey)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("contacts")
+        .select("id, name")
+        .eq("org_id", orgId)
+        .eq("workspace_key", workspaceKey)
+        .order("name"),
+      supabase
+        .from("organizations")
+        .select("workspace_preferences")
+        .eq("id", orgId)
+        .maybeSingle(),
+      getOrgMembers(supabase, orgId),
+      getOrgRole(supabase, orgId, user!.id),
+    ]);
   const isAdmin = role === "admin";
 
   const allDeals = (deals ?? []) as Deal[];
@@ -72,47 +86,70 @@ export default async function PipelinePage() {
   const workspaceLabels = getWorkspaceLabels(
     preset,
     org?.workspace_preferences,
-    workspaceKey
+    workspaceKey,
   );
   const pipelineLists = pipelineListsFor(allDeals, preset.key);
   const contactNames = Object.fromEntries(
-    allContacts.map((contact) => [contact.id, contact.name])
+    allContacts.map((contact) => [contact.id, contact.name]),
   );
   const openDeals = allDeals.filter(
-    (deal) => deal.stage !== "ganho" && deal.stage !== "perdido"
+    (deal) => deal.stage !== "ganho" && deal.stage !== "perdido",
   );
-  const openValue = openDeals.reduce((sum, deal) => sum + dealValueOrZero(deal), 0);
+  const openValue = openDeals.reduce(
+    (sum, deal) => sum + dealValueOrZero(deal),
+    0,
+  );
   const wonValue = allDeals
     .filter((deal) => deal.stage === "ganho")
     .reduce((sum, deal) => sum + dealValueOrZero(deal), 0);
 
   return (
     <div className="space-y-4 sm:space-y-5">
-      <header className="enter flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm font-black text-brand-700">{workspaceLabels.pipeline}</p>
-          <h1 className="mt-2 text-[clamp(1.55rem,6vw,3.2rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
-            {preset.pipelineTitle}
-          </h1>
-          <p className="mt-2 hidden max-w-xl text-sm font-medium leading-relaxed text-ink-soft sm:block">
-            {preset.pipelineDescription}
-          </p>
-        </div>
-        <Link href="/pipeline/report" className="btn-soft inline-flex items-center gap-1.5 self-start">
-          <IconChartBar className="h-4 w-4" />
-          Relatório
-        </Link>
-      </header>
+      <PageHeader
+        eyebrow={workspaceLabels.pipeline}
+        title={preset.pipelineTitle}
+        description={preset.pipelineDescription}
+        actions={
+          <Link
+            href="/pipeline/report"
+            className="btn-soft inline-flex items-center gap-1.5"
+          >
+            <IconChartBar className="h-4 w-4" />
+            Relatório
+          </Link>
+        }
+      />
 
       <section className="grid gap-3 sm:grid-cols-3 sm:gap-4">
-        <MetricCard label="Abertas" value={String(openDeals.length)} icon={IconColumns} />
-        <MetricCard label={workspaceLabels.value} value={formatBRL(openValue)} icon={IconWallet} />
-        <MetricCard label={preset.wonLabel} value={formatBRL(wonValue)} icon={IconUsers} pink />
+        <StatCard
+          label="Abertas"
+          value={String(openDeals.length)}
+          icon={IconColumns}
+        />
+        <StatCard
+          label={workspaceLabels.value}
+          value={formatBRL(openValue)}
+          icon={IconWallet}
+        />
+        <StatCard
+          label={preset.wonLabel}
+          value={formatBRL(wonValue)}
+          icon={IconUsers}
+          tone="success"
+        />
       </section>
 
-      <form id="new-deal" action={createDeal} className="panel scroll-mt-28 p-4 sm:p-5">
+      <form
+        id="new-deal"
+        action={createDeal}
+        className="panel scroll-mt-28 p-4 sm:p-5"
+      >
         <input type="hidden" name="return_to" value="/pipeline" />
-        <input type="hidden" name="pipeline_list" value={pipelineLists[0] ?? "Novo"} />
+        <input
+          type="hidden"
+          name="pipeline_list"
+          value={pipelineLists[0] ?? "Novo"}
+        />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_9rem_minmax(0,1fr)_auto] lg:items-end">
           <div>
             <label className="label" htmlFor="deal-title">
@@ -146,7 +183,10 @@ export default async function PipelinePage() {
             />
           </div>
           <ContactField contacts={allContacts} />
-          <PendingButton className="btn h-[42px] w-full lg:w-auto" pendingLabel="Salvando">
+          <PendingButton
+            className="btn h-[42px] w-full lg:w-auto"
+            pendingLabel="Salvando"
+          >
             <IconPlus className="h-4 w-4" />
             Salvar
           </PendingButton>
@@ -166,7 +206,9 @@ export default async function PipelinePage() {
               >
                 {members.map((member) => (
                   <option key={member.user_id} value={member.user_id}>
-                    {member.user_id === user!.id ? "Eu" : (member.name ?? "Sem nome")}
+                    {member.user_id === user!.id
+                      ? "Eu"
+                      : (member.name ?? "Sem nome")}
                   </option>
                 ))}
               </select>
@@ -243,8 +285,8 @@ function pipelineListsFor(deals: Deal[], presetKey: string) {
     new Set(
       deals
         .map((deal) => deal.details?.pipeline_list || deal.details?.trello_list)
-        .filter(Boolean)
-    )
+        .filter(Boolean),
+    ),
   ) as string[];
 
   if (presetKey === "real_estate_broker") {
@@ -264,42 +306,16 @@ function pipelineListsFor(deals: Deal[], presetKey: string) {
     return uniqueLists([...LIVESTOCK_LIST_ORDER, ...fromDeals]);
   }
 
-  return uniqueLists([...fromDeals, "Novo", "Em contato", "Proposta", "Ganho", "Perdido"]);
+  return uniqueLists([
+    ...fromDeals,
+    "Novo",
+    "Em contato",
+    "Proposta",
+    "Ganho",
+    "Perdido",
+  ]);
 }
 
 function uniqueLists(lists: string[]) {
   return lists.filter((list, index) => list && lists.indexOf(list) === index);
-}
-
-function MetricCard({
-  label,
-  value,
-  icon: Icon,
-  pink = false,
-}: {
-  label: string;
-  value: string;
-  icon: (props: { className?: string }) => JSX.Element;
-  pink?: boolean;
-}) {
-  return (
-    <article className="panel p-3 sm:p-5">
-      <div className="flex items-center justify-between gap-3 sm:items-start">
-        <div className="min-w-0">
-          <p className="text-xs font-bold text-ink-soft sm:text-sm">{label}</p>
-          <p className="text-safe mt-0.5 text-xl font-black tracking-[-0.04em] text-ink sm:mt-3 sm:text-3xl">
-            {value}
-          </p>
-        </div>
-        <span
-          className={
-            "hidden h-9 w-9 shrink-0 place-items-center rounded-full sm:grid sm:h-11 sm:w-11 " +
-            (pink ? "bg-warning-50 text-warning-700" : "bg-brand-50 text-brand-700")
-          }
-        >
-          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-        </span>
-      </div>
-    </article>
-  );
 }

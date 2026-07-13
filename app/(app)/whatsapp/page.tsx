@@ -1,4 +1,5 @@
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { PageHeader } from "@/components/app-ui";
 import { createClient } from "@/lib/supabase/server";
 import type { WhatsappConversation } from "@/lib/supabase/types";
 import { ConnectWhatsappPanel } from "./ConnectWhatsappPanel";
@@ -20,10 +21,17 @@ export default async function WhatsappPage() {
 
   if (!instance || instance.status !== "conectado") {
     return (
-      <ConnectWhatsappPanel
-        currentStatus={instance?.status ?? "nao_conectado"}
-        isAdmin={role === "admin"}
-      />
+      <div className="space-y-5">
+        <PageHeader
+          eyebrow="Atendimento"
+          title="WhatsApp"
+          description="Conecte o número da empresa e acompanhe as conversas com seus clientes."
+        />
+        <ConnectWhatsappPanel
+          currentStatus={instance?.status ?? "nao_conectado"}
+          isAdmin={role === "admin"}
+        />
+      </div>
     );
   }
 
@@ -48,10 +56,17 @@ export default async function WhatsappPage() {
   }
 
   return (
-    <WhatsappInbox
-      orgId={orgId}
-      initialConversations={(conversations ?? []) as WhatsappConversation[]}
-      initialUnreadCounts={unreadCounts}
-    />
+    <div className="space-y-5">
+      <PageHeader
+        eyebrow="Atendimento"
+        title="WhatsApp"
+        description="Acompanhe as conversas do número conectado e escolha onde a IA pode ajudar."
+      />
+      <WhatsappInbox
+        orgId={orgId}
+        initialConversations={(conversations ?? []) as WhatsappConversation[]}
+        initialUnreadCounts={unreadCounts}
+      />
+    </div>
   );
 }

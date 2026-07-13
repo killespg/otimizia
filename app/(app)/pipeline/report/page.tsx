@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader, SectionCard, StatCard } from "@/components/app-ui";
 import { buildMonthlyDealStats } from "@/lib/deals-report";
 import { formatBRL } from "@/lib/format";
 import { getActiveOrgId } from "@/lib/org";
@@ -23,19 +24,35 @@ export default async function PipelineReportPage({
   } = await supabase.auth.getUser();
   const orgId = await getActiveOrgId(supabase, user!.id);
   const [{ data: profile }, { data: org }] = await Promise.all([
-    supabase.from("profiles").select("profession_type, is_admin").eq("id", user!.id).maybeSingle(),
-    supabase.from("organizations").select("workspace_preferences").eq("id", orgId).maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("profession_type, is_admin")
+      .eq("id", user!.id)
+      .maybeSingle(),
+    supabase
+      .from("organizations")
+      .select("workspace_preferences")
+      .eq("id", orgId)
+      .maybeSingle(),
   ]);
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
     user?.user_metadata?.profession_type,
-    profile?.is_admin ?? false
+    profile?.is_admin ?? false,
   );
   const preset = getProfessionPreset(workspaceKey);
-  const workspaceLabels = getWorkspaceLabels(preset, org?.workspace_preferences, workspaceKey);
+  const workspaceLabels = getWorkspaceLabels(
+    preset,
+    org?.workspace_preferences,
+    workspaceKey,
+  );
 
   const now = new Date();
-  const from = new Date(now.getFullYear(), now.getMonth() - (monthsBack - 1), 1);
+  const from = new Date(
+    now.getFullYear(),
+    now.getMonth() - (monthsBack - 1),
+    1,
+  );
   const to = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const { data } = await supabase
@@ -43,7 +60,9 @@ export default async function PipelineReportPage({
     .select("*")
     .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey)
-    .or(`created_at.gte.${from.toISOString()},closed_at.gte.${from.toISOString()}`);
+    .or(
+      `created_at.gte.${from.toISOString()},closed_at.gte.${from.toISOString()}`,
+    );
   const deals = (data ?? []) as Deal[];
 
   const stats = buildMonthlyDealStats(deals, from, to);
@@ -54,71 +73,75 @@ export default async function PipelineReportPage({
       lost: acc.lost + m.lost,
       wonValueCents: acc.wonValueCents + m.wonValueCents,
     }),
-    { created: 0, won: 0, lost: 0, wonValueCents: 0 }
+    { created: 0, won: 0, lost: 0, wonValueCents: 0 },
   );
   const overallConversion =
-    totals.won + totals.lost > 0 ? Math.round((totals.won / (totals.won + totals.lost)) * 100) : null;
+    totals.won + totals.lost > 0
+      ? Math.round((totals.won / (totals.won + totals.lost)) * 100)
+      : null;
 
   return (
     <div className="max-w-5xl space-y-4 sm:space-y-5">
-      <header className="enter flex flex-col gap-4 rounded-lg border border-line bg-surface p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between">
-        <div>
+      <PageHeader
+        navigation={
           <Link
             href="/pipeline"
-            className="inline-flex items-center gap-1 text-sm font-bold text-ink-muted hover:text-ink"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-ink-muted hover:text-ink focus-visible:ring-2 focus-visible:ring-brand-600"
           >
             <IconArrowRight className="h-4 w-4 rotate-180" />
             Voltar para {workspaceLabels.pipeline}
           </Link>
-          <h1 className="mt-3 text-[clamp(1.4rem,5vw,2.2rem)] font-black leading-[1.05] tracking-[-0.03em] text-ink">
-            Relatório de vendas
-          </h1>
-          <p className="mt-2 max-w-xl text-sm font-semibold leading-relaxed text-ink-muted">
-            {workspaceLabels.pipeline} por mês — criados, ganhos, perdidos e taxa de conversão.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <form method="get" className="flex items-center gap-2">
-            <label className="sr-only" htmlFor="months">
-              Período
-            </label>
-            <select
-              id="months"
-              name="months"
-              defaultValue={String(monthsBack)}
-              className="field !w-auto"
+        }
+        eyebrow="Desempenho comercial"
+        title="Relatório de vendas"
+        description={`${workspaceLabels.pipeline} por mês — criados, ganhos, perdidos e taxa de conversão.`}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <form method="get" className="flex items-center gap-2">
+              <label className="sr-only" htmlFor="months">
+                Período
+              </label>
+              <select
+                id="months"
+                name="months"
+                defaultValue={String(monthsBack)}
+                className="field !w-auto"
+              >
+                <option value="3">Últimos 3 meses</option>
+                <option value="6">Últimos 6 meses</option>
+                <option value="12">Últimos 12 meses</option>
+              </select>
+              <button type="submit" className="btn-soft">
+                Aplicar
+              </button>
+            </form>
+            <a
+              href={`/api/reports/deals?months=${monthsBack}`}
+              className="btn-soft inline-flex items-center gap-1.5"
             >
-              <option value="3">Últimos 3 meses</option>
-              <option value="6">Últimos 6 meses</option>
-              <option value="12">Últimos 12 meses</option>
-            </select>
-            <button type="submit" className="btn-soft">
-              Aplicar
-            </button>
-          </form>
-          <a
-            href={`/api/reports/deals?months=${monthsBack}`}
-            className="btn-soft inline-flex items-center gap-1.5"
-          >
-            <IconDownload className="h-4 w-4" />
-            Exportar CSV
-          </a>
-        </div>
-      </header>
+              <IconDownload className="h-4 w-4" />
+              Exportar CSV
+            </a>
+          </div>
+        }
+      />
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        <MetricCard label="Negócios criados" value={String(totals.created)} />
-        <MetricCard label="Ganhos" value={String(totals.won)} />
-        <MetricCard label="Valor ganho" value={formatBRL(totals.wonValueCents)} />
-        <MetricCard
+        <StatCard label="Negócios criados" value={String(totals.created)} />
+        <StatCard label="Ganhos" value={String(totals.won)} tone="success" />
+        <StatCard
+          label="Valor ganho"
+          value={formatBRL(totals.wonValueCents)}
+          tone="success"
+        />
+        <StatCard
           label="Taxa de conversão"
           value={overallConversion !== null ? `${overallConversion}%` : "—"}
         />
       </section>
 
-      <section className="panel overflow-x-auto p-5 sm:p-6">
-        <table className="w-full min-w-[560px] border-collapse text-sm">
+      <SectionCard title="Evolução mensal" flush className="overflow-x-auto">
+        <table className="data-table min-w-[560px] text-sm">
           <thead>
             <tr className="text-left text-xs font-bold uppercase tracking-wide text-ink-muted">
               <th className="border-b border-line pb-2">Mês</th>
@@ -132,11 +155,21 @@ export default async function PipelineReportPage({
           <tbody>
             {stats.map((m) => (
               <tr key={m.monthKey}>
-                <td className="border-b border-line py-2 font-bold text-ink">{m.monthLabel}</td>
-                <td className="border-b border-line py-2 text-ink-soft">{m.created}</td>
-                <td className="border-b border-line py-2 text-ink-soft">{m.won}</td>
-                <td className="border-b border-line py-2 text-ink-soft">{m.lost}</td>
-                <td className="border-b border-line py-2 text-ink-soft">{formatBRL(m.wonValueCents)}</td>
+                <td className="border-b border-line py-2 font-bold text-ink">
+                  {m.monthLabel}
+                </td>
+                <td className="border-b border-line py-2 text-ink-soft">
+                  {m.created}
+                </td>
+                <td className="border-b border-line py-2 text-ink-soft">
+                  {m.won}
+                </td>
+                <td className="border-b border-line py-2 text-ink-soft">
+                  {m.lost}
+                </td>
+                <td className="border-b border-line py-2 text-ink-soft">
+                  {formatBRL(m.wonValueCents)}
+                </td>
                 <td className="border-b border-line py-2 text-ink-soft">
                   {m.conversionRate !== null ? `${m.conversionRate}%` : "—"}
                 </td>
@@ -144,7 +177,7 @@ export default async function PipelineReportPage({
             ))}
           </tbody>
         </table>
-      </section>
+      </SectionCard>
     </div>
   );
 }
@@ -153,13 +186,4 @@ function clampMonths(raw: string | undefined): number {
   const n = Number(raw);
   if (n === 3 || n === 12) return n;
   return MONTHS_BACK;
-}
-
-function MetricCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="panel p-4">
-      <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">{label}</p>
-      <p className="mt-1 text-xl font-black text-ink">{value}</p>
-    </div>
-  );
 }

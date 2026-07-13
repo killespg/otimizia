@@ -2,8 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { WhatsappConversation, WhatsappMessage } from "@/lib/supabase/types";
-import { IconArrowRight, IconBot, IconChevronRight, IconMessage, IconUsers } from "../icons";
+import type {
+  WhatsappConversation,
+  WhatsappMessage,
+} from "@/lib/supabase/types";
+import {
+  IconArrowRight,
+  IconBot,
+  IconChevronRight,
+  IconMessage,
+  IconUsers,
+} from "../icons";
 
 export function WhatsappInbox({
   orgId,
@@ -18,7 +27,7 @@ export function WhatsappInbox({
   const [conversations, setConversations] = useState(initialConversations);
   const [unreadCounts, setUnreadCounts] = useState(initialUnreadCounts);
   const [selectedId, setSelectedId] = useState<string | null>(
-    initialConversations[0]?.id ?? null
+    initialConversations[0]?.id ?? null,
   );
   const [messages, setMessages] = useState<WhatsappMessage[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
@@ -38,10 +47,17 @@ export function WhatsappInbox({
     try {
       // Novas conversas/mensagens chegam via Realtime (assinatura abaixo) —
       // não precisa recarregar a página manualmente.
-      const response = await fetch("/api/whatsapp/import-history", { method: "POST" });
-      if (!response.ok) throw new Error("Não foi possível importar o histórico agora.");
+      const response = await fetch("/api/whatsapp/import-history", {
+        method: "POST",
+      });
+      if (!response.ok)
+        throw new Error("Não foi possível importar o histórico agora.");
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Não foi possível importar o histórico agora.");
+      setFeedback(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível importar o histórico agora.",
+      );
     } finally {
       setImporting(false);
     }
@@ -62,17 +78,21 @@ export function WhatsappInbox({
         (payload) => {
           setConversations((prev) => {
             if (payload.eventType === "DELETE") {
-              return prev.filter((c) => c.id !== (payload.old as WhatsappConversation).id);
+              return prev.filter(
+                (c) => c.id !== (payload.old as WhatsappConversation).id,
+              );
             }
             const incoming = payload.new as WhatsappConversation;
             const next = prev.some((c) => c.id === incoming.id)
               ? prev.map((c) => (c.id === incoming.id ? incoming : c))
               : [incoming, ...prev];
             return next.sort(
-              (a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()
+              (a, b) =>
+                new Date(b.last_message_at).getTime() -
+                new Date(a.last_message_at).getTime(),
             );
           });
-        }
+        },
       )
       .subscribe();
     return () => {
@@ -121,7 +141,9 @@ export function WhatsappInbox({
         },
         (payload) => {
           const incoming = payload.new as WhatsappMessage;
-          setMessages((prev) => (prev.some((m) => m.id === incoming.id) ? prev : [...prev, incoming]));
+          setMessages((prev) =>
+            prev.some((m) => m.id === incoming.id) ? prev : [...prev, incoming],
+          );
           if (incoming.direction === "inbound") {
             supabase
               .from("whatsapp_messages")
@@ -129,7 +151,7 @@ export function WhatsappInbox({
               .eq("id", incoming.id)
               .then(() => {});
           }
-        }
+        },
       )
       .subscribe();
 
@@ -157,16 +179,26 @@ export function WhatsappInbox({
       });
       const data = await response.json().catch(() => null);
       if (!response.ok) {
-        throw new Error(typeof data?.error === "string" ? data.error : "Não foi possível enviar a mensagem.");
+        throw new Error(
+          typeof data?.error === "string"
+            ? data.error
+            : "Não foi possível enviar a mensagem.",
+        );
       }
       if (data?.message) {
         setMessages((prev) =>
-          prev.some((m) => m.id === data.message.id) ? prev : [...prev, data.message]
+          prev.some((m) => m.id === data.message.id)
+            ? prev
+            : [...prev, data.message],
         );
       }
       setInput("");
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Não foi possível enviar a mensagem.");
+      setFeedback(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível enviar a mensagem.",
+      );
     } finally {
       setSending(false);
     }
@@ -178,20 +210,32 @@ export function WhatsappInbox({
     setFeedback(null);
     const nextValue = !selected.ia_active;
     setConversations((prev) =>
-      prev.map((c) => (c.id === selected.id ? { ...c, ia_active: nextValue } : c))
+      prev.map((c) =>
+        c.id === selected.id ? { ...c, ia_active: nextValue } : c,
+      ),
     );
     try {
       const response = await fetch("/api/whatsapp/toggle-ia", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId: selected.id, iaActive: nextValue }),
+        body: JSON.stringify({
+          conversationId: selected.id,
+          iaActive: nextValue,
+        }),
       });
-      if (!response.ok) throw new Error("Não foi possível alterar a IA desta conversa.");
+      if (!response.ok)
+        throw new Error("Não foi possível alterar a IA desta conversa.");
     } catch (error) {
       setConversations((prev) =>
-        prev.map((c) => (c.id === selected.id ? { ...c, ia_active: !nextValue } : c))
+        prev.map((c) =>
+          c.id === selected.id ? { ...c, ia_active: !nextValue } : c,
+        ),
       );
-      setFeedback(error instanceof Error ? error.message : "Não foi possível alterar a IA desta conversa.");
+      setFeedback(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível alterar a IA desta conversa.",
+      );
     } finally {
       setToggling(false);
     }
@@ -207,9 +251,10 @@ export function WhatsappInbox({
       >
         <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-3">
           <div>
-            <h1 className="text-base font-black tracking-[-0.02em] text-ink">WhatsApp</h1>
+            <h2 className="card-title">Conversas</h2>
             <p className="text-xs font-semibold text-ink-muted">
-              {conversations.length} {conversations.length === 1 ? "conversa" : "conversas"}
+              {conversations.length}{" "}
+              {conversations.length === 1 ? "conversa" : "conversas"}
             </p>
           </div>
           <button
@@ -228,9 +273,12 @@ export function WhatsappInbox({
               <span className="grid h-12 w-12 place-items-center rounded-full bg-brand-50 text-brand-700">
                 <IconMessage className="h-6 w-6" />
               </span>
-              <p className="text-sm font-bold text-ink">Nenhuma conversa ainda</p>
+              <p className="text-sm font-bold text-ink">
+                Nenhuma conversa ainda
+              </p>
               <p className="text-xs font-medium text-ink-muted">
-                Assim que alguém mandar mensagem no WhatsApp conectado, ela aparece aqui.
+                Assim que alguém mandar mensagem no WhatsApp conectado, ela
+                aparece aqui.
               </p>
             </li>
           ) : (
@@ -247,12 +295,15 @@ export function WhatsappInbox({
                     }
                   >
                     <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-surface-2 text-sm font-black text-ink-soft">
-                      {initials(conversation.contact_name ?? conversation.phone_number)}
+                      {initials(
+                        conversation.contact_name ?? conversation.phone_number,
+                      )}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center justify-between gap-2">
                         <span className="truncate text-sm font-bold text-ink">
-                          {conversation.contact_name ?? conversation.phone_number}
+                          {conversation.contact_name ??
+                            conversation.phone_number}
                         </span>
                         {unread > 0 && (
                           <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-brand-700 px-1 text-[11px] font-black text-white">
@@ -284,7 +335,9 @@ export function WhatsappInbox({
             <span className="grid h-12 w-12 place-items-center rounded-full bg-surface-2 text-ink-muted">
               <IconMessage className="h-6 w-6" />
             </span>
-            <p className="text-sm font-bold text-ink-muted">Selecione uma conversa</p>
+            <p className="text-sm font-bold text-ink-muted">
+              Selecione uma conversa
+            </p>
           </div>
         ) : (
           <>
@@ -305,7 +358,9 @@ export function WhatsappInbox({
                   <p className="truncate text-sm font-black text-ink">
                     {selected.contact_name ?? selected.phone_number}
                   </p>
-                  <p className="truncate text-xs font-medium text-ink-muted">{selected.phone_number}</p>
+                  <p className="truncate text-xs font-medium text-ink-muted">
+                    {selected.phone_number}
+                  </p>
                 </div>
               </div>
               <button
@@ -324,14 +379,24 @@ export function WhatsappInbox({
               </button>
             </div>
 
-            <div ref={scrollRef} className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 py-4">
+            <div
+              ref={scrollRef}
+              className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 py-4"
+            >
               {messagesLoading ? (
-                <p className="text-center text-xs font-semibold text-ink-muted">Carregando...</p>
+                <p className="text-center text-xs font-semibold text-ink-muted">
+                  Carregando...
+                </p>
               ) : (
                 messages.map((message) => {
                   const isOutbound = message.direction === "outbound";
                   return (
-                    <div key={message.id} className={"flex " + (isOutbound ? "justify-end" : "justify-start")}>
+                    <div
+                      key={message.id}
+                      className={
+                        "flex " + (isOutbound ? "justify-end" : "justify-start")
+                      }
+                    >
                       <div
                         className={
                           "max-w-[80%] space-y-1 rounded-2xl px-3.5 py-2 text-sm " +
@@ -377,7 +442,10 @@ export function WhatsappInbox({
               </button>
             </form>
             {feedback ? (
-              <p className="border-t border-danger-100 bg-danger-50 px-4 py-2 text-xs font-bold text-danger-700" role="alert">
+              <p
+                className="border-t border-danger-100 bg-danger-50 px-4 py-2 text-xs font-bold text-danger-700"
+                role="alert"
+              >
                 {feedback}
               </p>
             ) : null}
@@ -391,5 +459,8 @@ export function WhatsappInbox({
 function initials(value: string) {
   const words = value.match(/[A-Za-zÀ-ÿ]+/g);
   if (!words) return <IconUsers className="h-4 w-4" />;
-  return words.slice(0, 2).map((word) => word[0].toUpperCase()).join("");
+  return words
+    .slice(0, 2)
+    .map((word) => word[0].toUpperCase())
+    .join("");
 }

@@ -1,11 +1,18 @@
 import { redirect } from "next/navigation";
+import { PageHeader, SectionCard, Tag } from "@/components/app-ui";
 import { PendingButton } from "@/components/PendingButton";
 import { LAW_JOB_ROLES, jobRoleLabel } from "@/lib/law-office";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Organization } from "@/lib/supabase/types";
 import { IconPlus, IconTrash, IconUsers } from "../icons";
-import { inviteMember, removeMember, updateMemberJobRole, updateMemberRole, updateOrganizationContext } from "./actions";
+import {
+  inviteMember,
+  removeMember,
+  updateMemberJobRole,
+  updateMemberRole,
+  updateOrganizationContext,
+} from "./actions";
 
 export default async function TeamPage({
   searchParams,
@@ -32,17 +39,15 @@ export default async function TeamPage({
 
   return (
     <div className="max-w-2xl space-y-4 sm:space-y-5">
-      <header className="enter">
-        <p className="text-sm font-black text-brand-700">Equipe</p>
-        <h1 className="mt-2 text-[clamp(1.55rem,6vw,2.6rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
-          {org?.name ?? "Sua empresa"}
-        </h1>
-        <p className="mt-2 text-sm font-medium leading-relaxed text-ink-soft">
-          {isSolo
+      <PageHeader
+        eyebrow="Equipe"
+        title={org?.name ?? "Sua empresa"}
+        description={
+          isSolo
             ? "Você tá sozinho(a) por enquanto — dá pra usar assim numa boa, e convidar alguém quando quiser."
-            : "Todo mundo aqui compartilha os mesmos contatos, vendas e lembretes."}
-        </p>
-      </header>
+            : "Todo mundo aqui compartilha os mesmos contatos, vendas e lembretes."
+        }
+      />
 
       {errorMessage && (
         <div className="rounded-md border border-danger-200 bg-danger-50 px-3.5 py-3 text-sm font-bold text-danger-700">
@@ -145,23 +150,23 @@ export default async function TeamPage({
             </p>
             <div className="rounded-md border border-line bg-surface px-3 py-2">
               <span className="label">Empresa/operação</span>
-              <p className="mt-1 font-bold text-ink">{org?.name ?? "Empresa"}</p>
+              <p className="mt-1 font-bold text-ink">
+                {org?.name ?? "Empresa"}
+              </p>
             </div>
           </div>
         )}
       </SectionCard>
 
       {isAdmin && (
-        <section className="panel space-y-3 p-5 sm:p-6">
-          <div>
-            <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
-              Convidar
-            </h2>
-            <p className="mt-1 text-sm font-medium text-ink-muted">
-              A pessoa recebe um e-mail para criar a senha e entra direto na empresa.
-            </p>
-          </div>
-          <form action={safeInvite} className="grid gap-2 sm:grid-cols-[1fr_13rem_auto]">
+        <SectionCard
+          title="Convidar"
+          description="A pessoa recebe um e-mail para criar a senha e entra direto na empresa."
+        >
+          <form
+            action={safeInvite}
+            className="grid gap-2 sm:grid-cols-[1fr_13rem_auto]"
+          >
             <input
               name="email"
               type="email"
@@ -182,19 +187,14 @@ export default async function TeamPage({
               Convidar
             </PendingButton>
           </form>
-        </section>
+        </SectionCard>
       )}
 
-      <section className="panel overflow-hidden">
-        <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
-          <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
-            Membros
-          </h2>
-          <span className="rounded-md bg-surface-2 px-2.5 py-1 text-xs font-black text-ink-muted">
-            {String(members.length).padStart(2, "0")}
-          </span>
-        </div>
-
+      <SectionCard
+        flush
+        title="Membros"
+        actions={<Tag>{String(members.length).padStart(2, "0")}</Tag>}
+      >
         <ul className="enter divide-y divide-line px-5">
           {members.map((member) => {
             const isSelf = member.user_id === user.id;
@@ -207,7 +207,11 @@ export default async function TeamPage({
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-black text-ink">
                     {member.name || "Sem nome"}
-                    {isSelf && <span className="ml-1.5 font-medium text-ink-muted">(você)</span>}
+                    {isSelf && (
+                      <span className="ml-1.5 font-medium text-ink-muted">
+                        (você)
+                      </span>
+                    )}
                   </p>
                   <p className="text-xs font-bold text-ink-muted">
                     {jobRoleLabel(member.job_role)}
@@ -217,8 +221,15 @@ export default async function TeamPage({
 
                 {isAdmin && (
                   <div className="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center">
-                    <form action={updateMemberJobRole} className="flex items-center gap-2">
-                      <input type="hidden" name="user_id" value={member.user_id} />
+                    <form
+                      action={updateMemberJobRole}
+                      className="flex items-center gap-2"
+                    >
+                      <input
+                        type="hidden"
+                        name="user_id"
+                        value={member.user_id}
+                      />
                       <select
                         name="job_role"
                         defaultValue={member.job_role}
@@ -240,7 +251,11 @@ export default async function TeamPage({
                     </form>
                     {(member.role !== "admin" || !isLastAdmin) && (
                       <form action={updateMemberRole}>
-                        <input type="hidden" name="user_id" value={member.user_id} />
+                        <input
+                          type="hidden"
+                          name="user_id"
+                          value={member.user_id}
+                        />
                         <input
                           type="hidden"
                           name="role"
@@ -250,13 +265,19 @@ export default async function TeamPage({
                           className="press-sm rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:bg-surface-2"
                           pendingLabel="Salvando"
                         >
-                          {member.role === "admin" ? "Rebaixar" : "Promover a admin"}
+                          {member.role === "admin"
+                            ? "Rebaixar"
+                            : "Promover a admin"}
                         </PendingButton>
                       </form>
                     )}
                     {!isSelf && !isLastAdmin && (
                       <form action={removeMember}>
-                        <input type="hidden" name="user_id" value={member.user_id} />
+                        <input
+                          type="hidden"
+                          name="user_id"
+                          value={member.user_id}
+                        />
                         <PendingButton
                           className="icon-button grid h-9 w-9 place-items-center rounded-md text-ink-muted/60 hover:bg-danger-50 hover:text-danger-600"
                           title="Remover"
@@ -274,7 +295,7 @@ export default async function TeamPage({
             );
           })}
         </ul>
-      </section>
+      </SectionCard>
     </div>
   );
 }
@@ -284,31 +305,10 @@ async function safeInvite(formData: FormData) {
   try {
     await inviteMember(formData);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Não deu para enviar o convite.";
+    const message =
+      error instanceof Error ? error.message : "Não deu para enviar o convite.";
     redirect(`/team?error=${encodeURIComponent(message)}`);
   }
-}
-
-function SectionCard({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="panel space-y-4 p-5 sm:p-6">
-      <div>
-        <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
-          {title}
-        </h2>
-        <p className="mt-1 text-sm font-medium text-ink-muted">{description}</p>
-      </div>
-      {children}
-    </section>
-  );
 }
 
 function TextAreaField({

@@ -47,8 +47,18 @@ const NAV: NavItem[] = [
   { href: "/whatsapp", label: "WhatsApp", icon: IconMessage },
   { href: "/tasks", label: "Tarefas", icon: IconBell, mobile: true },
   { href: "/calendar", label: "Calendário", icon: IconCalendar },
-  { href: "/dashboard#valor", label: "Valor aberto", icon: IconWallet, passive: true },
-  { href: "/tasks", label: "Clientes para chamar", icon: IconPhone, passive: true },
+  {
+    href: "/dashboard#valor",
+    label: "Valor aberto",
+    icon: IconWallet,
+    passive: true,
+  },
+  {
+    href: "/tasks",
+    label: "Clientes para chamar",
+    icon: IconPhone,
+    passive: true,
+  },
   { href: "/assistant", label: "Sócio-Assistente", icon: IconBot },
   { href: "/team", label: "Equipe", icon: IconUsers },
 ];
@@ -101,7 +111,11 @@ export function SidebarNav({
     : NAV;
   if (lawOfficeAccess?.enabled) {
     items = LAW_NAV.filter((item) => {
-      if ((item.href === "/law" || item.href === "/law/deadlines") && !lawOfficeAccess.canViewLegal) return false;
+      if (
+        (item.href === "/law" || item.href === "/law/deadlines") &&
+        !lawOfficeAccess.canViewLegal
+      )
+        return false;
       return true;
     });
     if (lawOfficeAccess.canViewFinance) {
@@ -111,7 +125,11 @@ export function SidebarNav({
         ...items.slice(5),
       ];
     }
-    if (isAdmin) items = [...items, { href: "/dev", label: "MÃ©tricas", icon: IconChartBar }];
+    if (isAdmin)
+      items = [
+        ...items,
+        { href: "/dev", label: "Métricas", icon: IconChartBar },
+      ];
   }
 
   return (
@@ -134,7 +152,9 @@ export function SidebarNav({
             <Icon
               className={
                 "h-[20px] w-[20px] shrink-0 transition-colors duration-150 " +
-                (active ? "text-brand-700 dark:text-white" : "text-ink-muted group-hover:text-brand-700")
+                (active
+                  ? "text-brand-700 dark:text-white"
+                  : "text-ink-muted group-hover:text-brand-700")
               }
             />
             {displayLabel}
@@ -159,7 +179,9 @@ export function MobileTabBar({
   const dealSingular = labels?.dealSingular ?? "venda";
   const contactSingular = contactsLabel === "Sujeitos" ? "sujeito" : "contato";
   const mobileItems = lawOfficeAccess?.enabled
-    ? LAW_NAV.filter((item) => item.mobile).filter((item) => item.href !== "/law" || lawOfficeAccess.canViewLegal)
+    ? LAW_NAV.filter((item) => item.mobile).filter(
+        (item) => item.href !== "/law" || lawOfficeAccess.canViewLegal,
+      )
     : [
         ...NAV.filter((item) => item.mobile && item.href !== "/tasks"),
         { href: "/assistant", label: "IA", icon: IconBot, mobile: true },
@@ -193,40 +215,49 @@ export function MobileTabBar({
     },
     {
       href: "/pipeline#new-deal",
-      label: lawOfficeAccess?.enabled ? "Atendimento" : capitalize(dealSingular),
+      label: lawOfficeAccess?.enabled
+        ? "Atendimento"
+        : capitalize(dealSingular),
       description: lawOfficeAccess?.enabled
         ? "Triagem, consulta ou proposta"
         : `Criar ${articleFor(dealSingular)} ${dealSingular}`,
       icon: lawOfficeAccess?.enabled ? IconPhone : IconColumns,
     },
     ...(lawOfficeAccess?.enabled && lawOfficeAccess.canViewLegal
-      ? [{
-          href: "/law#new-case",
-          label: "Caso",
-          description: "Abrir caso jurídico",
-          icon: IconColumns,
-        }, {
-          href: "/law/deadlines",
-          label: "Prazo",
-          description: "Ver proximos prazos",
-          icon: IconBell,
-        }]
+      ? [
+          {
+            href: "/law#new-case",
+            label: "Caso",
+            description: "Abrir caso jurídico",
+            icon: IconColumns,
+          },
+          {
+            href: "/law/deadlines",
+            label: "Prazo",
+            description: "Ver proximos prazos",
+            icon: IconBell,
+          },
+        ]
       : []),
     ...(lawOfficeAccess?.enabled && lawOfficeAccess.canViewFinance
-      ? [{
-          href: "/finance",
-          label: "Financeiro",
-          description: "Honorários e recebimentos",
-          icon: IconWallet,
-        }]
+      ? [
+          {
+            href: "/finance",
+            label: "Financeiro",
+            description: "Honorários e recebimentos",
+            icon: IconWallet,
+          },
+        ]
       : []),
     ...(lawOfficeAccess?.enabled
-      ? [{
-          href: "/assistant",
-          label: "Assistente IA",
-          description: "Tire dúvidas e gere rascunhos",
-          icon: IconBot,
-        }]
+      ? [
+          {
+            href: "/assistant",
+            label: "Assistente IA",
+            description: "Tire dúvidas e gere rascunhos",
+            icon: IconBot,
+          },
+        ]
       : []),
     {
       href: "/team",
@@ -239,7 +270,11 @@ export function MobileTabBar({
   const renderItem = ({ href, label, icon: Icon }: NavItem) => {
     const active = isActive(href);
     const displayLabel =
-      href === "/pipeline" ? pipelineLabel : href === "/contacts" ? contactsLabel : label;
+      href === "/pipeline"
+        ? pipelineLabel
+        : href === "/contacts"
+          ? contactsLabel
+          : label;
     return (
       <Link
         key={href}
@@ -291,8 +326,12 @@ export function MobileTabBar({
                   <Icon className="h-5 w-5" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-sm font-black text-ink">{label}</span>
-                  <span className="block text-xs font-semibold text-ink-muted">{description}</span>
+                  <span className="block text-sm font-black text-ink">
+                    {label}
+                  </span>
+                  <span className="block text-xs font-semibold text-ink-muted">
+                    {description}
+                  </span>
                 </span>
               </Link>
             ))}
@@ -309,7 +348,12 @@ export function MobileTabBar({
           aria-label="Mais opções"
           className="mobile-create nav-item relative mx-auto mb-1 grid h-[58px] w-[64px] place-items-center rounded-2xl bg-brand-700 text-white shadow-[0_18px_36px_-18px_rgba(92,34,232,0.92)] focus-visible:ring-2 focus-visible:ring-white"
         >
-          <IconPlus className={"h-7 w-7 transition-transform duration-200 " + (menuOpen ? "rotate-45" : "")} />
+          <IconPlus
+            className={
+              "h-7 w-7 transition-transform duration-200 " +
+              (menuOpen ? "rotate-45" : "")
+            }
+          />
         </button>
         {rightItems.map(renderItem)}
       </div>

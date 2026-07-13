@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PageHeader, Tag } from "@/components/app-ui";
 import { PendingButton } from "@/components/PendingButton";
 import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
@@ -17,7 +18,12 @@ import {
   IconPlus,
   IconTrash,
 } from "../../icons";
-import { createTask, updateContact, deleteContact, createInteraction } from "../../actions";
+import {
+  createTask,
+  updateContact,
+  deleteContact,
+  createInteraction,
+} from "../../actions";
 import { PresetFields } from "../../PresetFields";
 import { MessageTemplates } from "./MessageTemplates";
 
@@ -28,16 +34,22 @@ export default async function ContactDetailPage({
 }) {
   const supabase = createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) notFound();
   const [{ data: profile }, orgId] = await Promise.all([
-    supabase.from("profiles").select("profession_type, name, is_admin").eq("id", user.id).maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("profession_type, name, is_admin")
+      .eq("id", user.id)
+      .maybeSingle(),
     getActiveOrgId(supabase, user.id),
   ]);
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
     user?.user_metadata?.profession_type,
-    profile?.is_admin ?? false
+    profile?.is_admin ?? false,
   );
   const preset = getProfessionPreset(workspaceKey);
   const { id } = await params;
@@ -49,7 +61,10 @@ export default async function ContactDetailPage({
     .eq("workspace_key", workspaceKey)
     .maybeSingle();
   const myName =
-    profile?.name || (typeof user?.user_metadata?.name === "string" ? user.user_metadata.name : "");
+    profile?.name ||
+    (typeof user?.user_metadata?.name === "string"
+      ? user.user_metadata.name
+      : "");
 
   if (!contact) notFound();
   const c = contact as Contact;
@@ -77,55 +92,67 @@ export default async function ContactDetailPage({
   const logs = (interactions ?? []) as Interaction[];
   const relatedTasks = (tasks ?? []) as Task[];
   const detailChips = preset.contactFields
-    .map((field) => (c.details?.[field.key] ? `${field.label}: ${c.details[field.key]}` : null))
+    .map((field) =>
+      c.details?.[field.key] ? `${field.label}: ${c.details[field.key]}` : null,
+    )
     .filter(Boolean) as string[];
-  const chips = [c.company, c.phone, c.email, c.source, ...detailChips].filter(Boolean) as string[];
+  const chips = [c.company, c.phone, c.email, c.source, ...detailChips].filter(
+    Boolean,
+  ) as string[];
 
   return (
     <div className="space-y-5">
-      <Link
-        href="/contacts"
-        className="nav-item inline-flex items-center gap-2 text-sm font-black text-ink-muted hover:text-brand-700"
-      >
-        <IconArrowRight className="h-4 w-4 rotate-180" />
-        {copy.backLabel}
-      </Link>
-
-      <header className="enter panel flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center gap-4">
-          <Avatar name={contactName} className="h-16 w-16 text-lg" />
-          <div className="min-w-0">
-            <p className="text-sm font-black text-brand-700">{copy.sectionSingular}</p>
-            <h1 className="text-safe text-[clamp(2rem,5vw,3.3rem)] font-black leading-[0.98] tracking-[-0.04em] text-ink">
-              {contactName}
-            </h1>
-            {(chips.length > 0 || c.instagram) && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {c.instagram && (
-                  <a
-                    href={`https://instagram.com/${c.instagram}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="tag bg-surface-2 text-ink-muted hover:text-brand-700"
-                  >
-                    @{c.instagram}
-                  </a>
-                )}
-                {chips.map((chip) => (
-                  <span key={chip} className="tag bg-surface-2 text-ink-muted">
-                    {chip}
-                  </span>
-                ))}
-              </div>
-            )}
+      <PageHeader
+        navigation={
+          <Link
+            href="/contacts"
+            className="nav-item inline-flex items-center gap-2 text-sm font-semibold text-ink-muted hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-600"
+          >
+            <IconArrowRight className="h-4 w-4 rotate-180" />
+            {copy.backLabel}
+          </Link>
+        }
+        eyebrow={copy.sectionSingular}
+        title={
+          <span className="flex min-w-0 items-center gap-3">
+            <Avatar name={contactName} className="h-12 w-12 text-base" />
+            <span className="text-safe">{contactName}</span>
+          </span>
+        }
+        actions={
+          <div className="enter grid grid-cols-2 gap-2 sm:w-64">
+            <MiniStat
+              label="Conversas"
+              value={String(logs.length)}
+              icon={IconMessage}
+            />
+            <MiniStat
+              label="Tarefas"
+              value={String(relatedTasks.length)}
+              icon={IconBell}
+              pink
+            />
           </div>
-        </div>
-
-        <div className="enter grid grid-cols-2 gap-2 sm:w-64">
-          <MiniStat label="Conversas" value={String(logs.length)} icon={IconMessage} />
-          <MiniStat label="Tarefas" value={String(relatedTasks.length)} icon={IconBell} pink />
-        </div>
-      </header>
+        }
+      >
+        {(chips.length > 0 || c.instagram) && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {c.instagram && (
+              <a
+                href={`https://instagram.com/${c.instagram}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="tag tag-muted hover:text-brand-700"
+              >
+                @{c.instagram}
+              </a>
+            )}
+            {chips.map((chip) => (
+              <Tag key={chip}>{chip}</Tag>
+            ))}
+          </div>
+        )}
+      </PageHeader>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <section className="panel overflow-hidden">
@@ -140,7 +167,14 @@ export default async function ContactDetailPage({
 
           <form action={updateContact} className="space-y-3.5 p-5">
             <input type="hidden" name="id" value={c.id} />
-            <Field name="name" label="Nome" defaultValue={contactName} required maxLength={120} autoComplete="name" />
+            <Field
+              name="name"
+              label="Nome"
+              defaultValue={contactName}
+              required
+              maxLength={120}
+              autoComplete="name"
+            />
             <Field
               name="phone"
               label={copy.phoneField}
@@ -149,10 +183,34 @@ export default async function ContactDetailPage({
               autoComplete="tel"
               inputMode="tel"
             />
-            <Field name="email" label="E-mail" type="email" defaultValue={c.email ?? ""} maxLength={160} autoComplete="email" />
-            <Field name="instagram" label="Instagram" defaultValue={c.instagram ?? ""} maxLength={60} placeholder="@usuario" />
-            <Field name="company" label={copy.companyField} defaultValue={c.company ?? ""} maxLength={120} autoComplete="organization" />
-            <Field name="source" label="Origem" defaultValue={c.source ?? ""} maxLength={120} />
+            <Field
+              name="email"
+              label="E-mail"
+              type="email"
+              defaultValue={c.email ?? ""}
+              maxLength={160}
+              autoComplete="email"
+            />
+            <Field
+              name="instagram"
+              label="Instagram"
+              defaultValue={c.instagram ?? ""}
+              maxLength={60}
+              placeholder="@usuario"
+            />
+            <Field
+              name="company"
+              label={copy.companyField}
+              defaultValue={c.company ?? ""}
+              maxLength={120}
+              autoComplete="organization"
+            />
+            <Field
+              name="source"
+              label="Origem"
+              defaultValue={c.source ?? ""}
+              maxLength={120}
+            />
             <PresetFields fields={preset.contactFields} values={c.details} />
             <div>
               <label className="label" htmlFor="notes">
@@ -217,12 +275,22 @@ export default async function ContactDetailPage({
                 {preset.followUpOffsets.map((offset) => (
                   <form key={offset.label} action={createTask}>
                     <input type="hidden" name="contact_id" value={c.id} />
-                    <input type="hidden" name="return_to" value={`/contacts/${c.id}`} />
-                    <input type="hidden" name="title" value={`Retornar para ${contactName}`} />
+                    <input
+                      type="hidden"
+                      name="return_to"
+                      value={`/contacts/${c.id}`}
+                    />
+                    <input
+                      type="hidden"
+                      name="title"
+                      value={`Retornar para ${contactName}`}
+                    />
                     <input
                       type="hidden"
                       name="due_at"
-                      value={new Date(now.getTime() + offset.days * 86_400_000).toISOString()}
+                      value={new Date(
+                        now.getTime() + offset.days * 86_400_000,
+                      ).toISOString()}
                     />
                     <PendingButton
                       className="press-sm min-h-9 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
@@ -246,7 +314,10 @@ export default async function ContactDetailPage({
               </p>
             </div>
             <div className="p-5">
-              <form action={createInteraction} className="flex flex-col gap-2 sm:flex-row">
+              <form
+                action={createInteraction}
+                className="flex flex-col gap-2 sm:flex-row"
+              >
                 <input type="hidden" name="contact_id" value={c.id} />
                 <input
                   name="body"
@@ -255,7 +326,11 @@ export default async function ContactDetailPage({
                   placeholder="Anote uma ligação, mensagem ou conversa..."
                   className="field flex-1"
                 />
-                <PendingButton className="btn shrink-0" aria-label="Salvar conversa" pendingLabel="Salvando">
+                <PendingButton
+                  className="btn shrink-0"
+                  aria-label="Salvar conversa"
+                  pendingLabel="Salvando"
+                >
                   <IconPlus className="h-4 w-4" />
                   Salvar
                 </PendingButton>
@@ -271,7 +346,10 @@ export default async function ContactDetailPage({
               ) : (
                 <ol className="enter mt-5 space-y-3">
                   {logs.map((log) => (
-                    <li key={log.id} className="rounded-lg border border-line bg-white p-4">
+                    <li
+                      key={log.id}
+                      className="rounded-lg border border-line bg-white p-4"
+                    >
                       <p className="text-safe text-sm font-medium leading-relaxed text-ink">
                         {log.body}
                       </p>
@@ -295,7 +373,10 @@ export default async function ContactDetailPage({
               {relatedTasks.length === 0 ? (
                 <p className="py-5 text-sm font-medium text-ink-muted">
                   Nenhum lembrete.{" "}
-                  <Link href="/tasks" className="nav-item font-black text-brand-700 hover:text-brand-900">
+                  <Link
+                    href="/tasks"
+                    className="nav-item font-black text-brand-700 hover:text-brand-900"
+                  >
                     Criar um
                   </Link>
                 </p>
@@ -306,7 +387,9 @@ export default async function ContactDetailPage({
                       <span
                         className={
                           "grid h-5 w-5 shrink-0 place-items-center rounded-full " +
-                          (task.done ? "bg-brand-700 text-white" : "border border-line bg-white")
+                          (task.done
+                            ? "bg-brand-700 text-white"
+                            : "border border-line bg-white")
                         }
                       >
                         {task.done && <IconCheck className="h-3 w-3" />}
@@ -314,7 +397,9 @@ export default async function ContactDetailPage({
                       <span
                         className={
                           "clip-2 min-w-0 flex-1 text-safe text-sm " +
-                          (task.done ? "text-ink-muted line-through" : "font-black text-ink")
+                          (task.done
+                            ? "text-ink-muted line-through"
+                            : "font-black text-ink")
                         }
                       >
                         {task.title}
@@ -352,7 +437,9 @@ function MiniStat({
       <span
         className={
           "grid h-9 w-9 place-items-center rounded-full " +
-          (pink ? "bg-warning-50 text-warning-700" : "bg-brand-50 text-brand-700")
+          (pink
+            ? "bg-warning-50 text-warning-700"
+            : "bg-brand-50 text-brand-700")
         }
       >
         <Icon className="h-4 w-4" />
