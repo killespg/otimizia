@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PendingButton } from "@/components/PendingButton";
+import { PropertyAddressFields } from "@/components/real-estate/PropertyAddressFields";
 import { getActiveOrgId } from "@/lib/org";
 import { isRealEstateV2Enabled, REAL_ESTATE_PROPERTY_TYPES } from "@/lib/real-estate";
 import { createClient } from "@/lib/supabase/server";
@@ -62,12 +63,18 @@ export default async function NovoImovelPage() {
           <Field name="bathrooms" label="Banheiros" type="number" />
           <Field name="parking_spots" label="Vagas" type="number" />
           <Field name="area_m2" label="Área (m²)" />
-          <Field name="address_street" label="Rua" />
-          <Field name="address_number" label="Número" />
-          <Field name="address_neighborhood" label="Bairro" />
-          <Field name="address_city" label="Cidade" />
-          <Field name="address_state" label="UF" placeholder="Ex.: SP" />
-          <Field name="address_zip" label="CEP" />
+          {v2Enabled ? (
+            <PropertyAddressFields defaultValues={{}} />
+          ) : (
+            <>
+              <Field name="address_street" label="Rua" />
+              <Field name="address_number" label="Número" />
+              <Field name="address_neighborhood" label="Bairro" />
+              <Field name="address_city" label="Cidade" />
+              <Field name="address_state" label="UF" placeholder="Ex.: SP" />
+              <Field name="address_zip" label="CEP" />
+            </>
+          )}
           {v2Enabled && (
             <>
               <label className="block">

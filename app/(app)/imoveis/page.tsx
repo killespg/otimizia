@@ -101,6 +101,9 @@ export default async function ImoveisPage({
               <Link href="/imoveis/visitas" className="btn-soft">
                 Visitas
               </Link>
+              <Link href="/imoveis/mapa" className="btn-soft">
+                Mapa
+              </Link>
               <Link href="/imoveis/dashboard" className="btn-soft">
                 Dashboard
               </Link>

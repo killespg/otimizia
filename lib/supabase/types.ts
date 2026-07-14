@@ -65,6 +65,8 @@ export type Organization = {
   current_period_end: string | null;
   trial_ends_at: string | null;
   real_estate_v2_enabled: boolean;
+  real_estate_public_page_enabled: boolean;
+  real_estate_public_page_token: string;
   created_at: string;
 };
 

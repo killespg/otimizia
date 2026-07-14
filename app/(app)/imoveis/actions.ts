@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { canManageRealEstate } from "@/lib/real-estate";
-import { decimalOrNull, intOrNull, moneyToCentsOrNull, optionalUuid, requiredText, text } from "@/lib/form-parse";
+import { decimalOrNull, intOrNull, moneyToCentsOrNull, optionalUuid, requiredText, signedDecimalOrNull, text } from "@/lib/form-parse";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { advancePropertiesToSent } from "@/lib/real-estate-deal-properties";
 import { createClient } from "@/lib/supabase/server";
@@ -99,6 +99,10 @@ function v2FieldsFromFormIfPresent(formData: FormData): Record<string, unknown> 
   const patch: Record<string, unknown> = {};
   if (formData.has("owner_contact_id")) patch.owner_contact_id = optionalUuid(formData.get("owner_contact_id"));
   if (formData.has("capture_source")) patch.capture_source = text(formData.get("capture_source"), MAX.short) || null;
+  // latitude/longitude (RE-7xx) só existem no form quando PropertyAddressFields
+  // renderiza (v2Enabled) — mesmo cuidado de não regredir campo ausente.
+  if (formData.has("latitude")) patch.latitude = signedDecimalOrNull(formData.get("latitude"));
+  if (formData.has("longitude")) patch.longitude = signedDecimalOrNull(formData.get("longitude"));
   return patch;
 }
 
@@ -115,6 +119,8 @@ export async function createProperty(formData: FormData) {
       assignee_id: assigneeId,
       owner_contact_id: optionalUuid(formData.get("owner_contact_id")),
       capture_source: text(formData.get("capture_source"), MAX.short) || null,
+      latitude: signedDecimalOrNull(formData.get("latitude")),
+      longitude: signedDecimalOrNull(formData.get("longitude")),
       // Quem cadastrou pela UI é quem captou — a IA (lib/ai/tools/properties.ts)
       // segue a mesma regra com o usuário que está na conversa.
       captured_by: user.id,

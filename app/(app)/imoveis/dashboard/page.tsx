@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { RealEstateCommission, RealEstateTarget } from "@/lib/supabase/types";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { IconPlus } from "../../icons";
+import { regeneratePublicPageToken, togglePublicPage } from "../advanced-actions";
 import { cancelCommission, createCommission, createTarget, recordCommissionPayment } from "../commission-actions";
 
 function centsToReais(cents: number): string {
@@ -43,7 +44,7 @@ export default async function RealEstateDashboardPage({
   const [orgRole, { data: membership }, { data: org }, members] = await Promise.all([
     getOrgRole(supabase, orgId, user!.id),
     supabase.from("organization_members").select("job_role").eq("org_id", orgId).eq("user_id", user!.id).maybeSingle(),
-    supabase.from("organizations").select("real_estate_v2_enabled").eq("id", orgId).maybeSingle(),
+    supabase.from("organizations").select("real_estate_v2_enabled, real_estate_public_page_enabled, real_estate_public_page_token").eq("id", orgId).maybeSingle(),
     getOrgMembers(supabase, orgId),
   ]);
   const isAdmin = orgRole === "admin";
@@ -253,6 +254,33 @@ export default async function RealEstateDashboardPage({
           </form>
         )}
       </section>
+
+      {canManage && org && (
+        <section className="panel p-5 sm:p-6">
+          <h2 className="text-base font-black text-ink">Página pública do corretor</h2>
+          <p className="mt-1 text-sm font-medium text-ink-muted">
+            Vitrine com todos os imóveis ativos, sem precisar montar uma seleção — módulo separado das vitrines por cliente.
+          </p>
+          <form action={togglePublicPage} className="mt-3 flex items-center gap-2">
+            <input type="hidden" name="enabled" value={org.real_estate_public_page_enabled ? "" : "on"} />
+            <PendingButton className="btn-soft" pendingLabel="...">
+              {org.real_estate_public_page_enabled ? "Desativar" : "Ativar"}
+            </PendingButton>
+            {org.real_estate_public_page_enabled && (
+              <a href={`/share/corretor/${org.real_estate_public_page_token}`} target="_blank" rel="noreferrer" className="nav-item text-sm font-black text-brand-700 hover:underline">
+                Ver página pública
+              </a>
+            )}
+          </form>
+          {org.real_estate_public_page_enabled && (
+            <form action={regeneratePublicPageToken} className="mt-2">
+              <PendingButton className="press-sm rounded-md border border-line bg-white px-2.5 py-1 text-xs font-bold text-ink-muted hover:bg-surface-2" pendingLabel="...">
+                Gerar novo link (revoga o atual)
+              </PendingButton>
+            </form>
+          )}
+        </section>
+      )}
 
       <Link href="/imoveis" className="nav-item inline-block text-sm font-black text-brand-700 hover:underline">
         Voltar para a carteira

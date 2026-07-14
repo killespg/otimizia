@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PendingButton } from "@/components/PendingButton";
+import { PropertyAddressFields } from "@/components/real-estate/PropertyAddressFields";
 import {
   canManageRealEstate,
   canViewRealEstate,
@@ -280,12 +281,29 @@ export default async function ImovelDetailPage({ params }: { params: { id: strin
             <Field name="bathrooms" label="Banheiros" defaultValue={property.bathrooms ?? ""} />
             <Field name="parking_spots" label="Vagas" defaultValue={property.parking_spots ?? ""} />
             <Field name="area_m2" label="Área (m²)" defaultValue={property.area_m2 ?? ""} />
-            <Field name="address_street" label="Rua" defaultValue={property.address_street ?? ""} />
-            <Field name="address_number" label="Número" defaultValue={property.address_number ?? ""} />
-            <Field name="address_neighborhood" label="Bairro" defaultValue={property.address_neighborhood ?? ""} />
-            <Field name="address_city" label="Cidade" defaultValue={property.address_city ?? ""} />
-            <Field name="address_state" label="UF" defaultValue={property.address_state ?? ""} />
-            <Field name="address_zip" label="CEP" defaultValue={property.address_zip ?? ""} />
+            {v2Enabled ? (
+              <PropertyAddressFields
+                defaultValues={{
+                  address_zip: property.address_zip ?? "",
+                  address_street: property.address_street ?? "",
+                  address_number: property.address_number ?? "",
+                  address_neighborhood: property.address_neighborhood ?? "",
+                  address_city: property.address_city ?? "",
+                  address_state: property.address_state ?? "",
+                  latitude: property.latitude !== null ? String(property.latitude) : "",
+                  longitude: property.longitude !== null ? String(property.longitude) : "",
+                }}
+              />
+            ) : (
+              <>
+                <Field name="address_street" label="Rua" defaultValue={property.address_street ?? ""} />
+                <Field name="address_number" label="Número" defaultValue={property.address_number ?? ""} />
+                <Field name="address_neighborhood" label="Bairro" defaultValue={property.address_neighborhood ?? ""} />
+                <Field name="address_city" label="Cidade" defaultValue={property.address_city ?? ""} />
+                <Field name="address_state" label="UF" defaultValue={property.address_state ?? ""} />
+                <Field name="address_zip" label="CEP" defaultValue={property.address_zip ?? ""} />
+              </>
+            )}
             {v2Enabled && (
               <>
                 <label className="block">

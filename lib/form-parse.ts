@@ -43,6 +43,16 @@ export function decimalOrNull(v: FormDataEntryValue | null): number | null {
   return value;
 }
 
+// Como decimalOrNull, mas aceita negativo — latitude/longitude (RE-7xx)
+// são negativas no Brasil inteiro (ex: -23.561684), decimalOrNull rejeitaria.
+export function signedDecimalOrNull(v: FormDataEntryValue | null): number | null {
+  const raw = text(v, 16);
+  if (!raw) return null;
+  const value = Number(raw.replace(",", "."));
+  if (!Number.isFinite(value)) throw new Error("Informe um número válido.");
+  return value;
+}
+
 // "a, b,  c" -> ["a", "b", "c"] — usado pros campos de lista em texto livre
 // (bairros/cidades) do formulário de preferências do cliente.
 export function stringListOrEmpty(v: FormDataEntryValue | null, maxItems = 20): string[] {
