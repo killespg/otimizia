@@ -628,4 +628,110 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
     await admin.from("real_estate_share_collections").delete().eq("id", collection!.id);
     await admin.from("deals").delete().eq("id", dealA!.id);
   });
+
+  // RE-3xx (Fase 3): real_estate_visits é tabela nova (0060) — RLS própria
+  // testada do zero, mesmo padrão das outras tabelas do vertical.
+  it("real_estate_visits: isolamento cross-org e FK composta rejeita contato/imóvel de outra organização", async () => {
+    const orgB = await getPersonalOrgId(admin, userB.userId);
+    const { data: contactA } = await userA.client
+      .from("contacts")
+      .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "real_estate_broker", name: "Cliente da visita" })
+      .select("id")
+      .single();
+    const { data: contactB } = await userB.client
+      .from("contacts")
+      .insert({ owner_id: userB.userId, org_id: orgB, workspace_key: "real_estate_broker", name: "Cliente de outra org" })
+      .select("id")
+      .single();
+
+    const { data: visit, error: insertError } = await userA.client
+      .from("real_estate_visits")
+      .insert({ org_id: orgA, contact_id: contactA!.id, property_id: propertyId, broker_id: userA.userId, status: "requested" })
+      .select("id")
+      .single();
+    expect(insertError).toBeNull();
+
+    const { data: seenByB } = await userB.client.from("real_estate_visits").select("*").eq("id", visit!.id).maybeSingle();
+    expect(seenByB).toBeNull();
+
+    // contact_id de outra organização — FK composta (org_id, contact_id) barra.
+    const { error: forgedContactError } = await userA.client
+      .from("real_estate_visits")
+      .insert({ org_id: orgA, contact_id: contactB!.id, property_id: propertyId, broker_id: userA.userId, status: "requested" });
+    expect(forgedContactError).not.toBeNull();
+
+    await admin.from("real_estate_visits").delete().eq("id", visit!.id);
+    await admin.from("contacts").delete().eq("id", contactA!.id);
+    await admin.from("contacts").delete().eq("id", contactB!.id);
+  });
+
+  it("reação 'quero_visitar' numa vitrine ligada a atendimento cria solicitação de visita + tarefa urgente automaticamente", async () => {
+    const { data: contactA } = await userA.client
+      .from("contacts")
+      .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "real_estate_broker", name: "Lead interessado em visitar" })
+      .select("id")
+      .single();
+    const { data: dealA } = await userA.client
+      .from("deals")
+      .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "real_estate_broker", contact_id: contactA!.id, title: "Atendimento pra visita automática" })
+      .select("id")
+      .single();
+    const { data: collection } = await userA.client
+      .from("real_estate_share_collections")
+      .insert({
+        org_id: orgA, workspace_key: "real_estate_broker", created_by: userA.userId,
+        title: "Vitrine pra teste de quero_visitar", deal_id: dealA!.id, client_contact_id: contactA!.id,
+      })
+      .select("id, token")
+      .single();
+    await userA.client.from("real_estate_share_collection_items").insert({ collection_id: collection!.id, org_id: orgA, property_id: propertyId });
+
+    const { error: reactionError } = await anon.rpc("record_property_reaction", {
+      p_token: collection!.token,
+      p_property_id: propertyId,
+      p_reaction: "quero_visitar",
+    });
+    expect(reactionError).toBeNull();
+
+    const { data: visit } = await admin
+      .from("real_estate_visits")
+      .select("*")
+      .eq("deal_id", dealA!.id)
+      .eq("property_id", propertyId)
+      .maybeSingle();
+    expect(visit).not.toBeNull();
+    expect(visit!.status).toEqual("requested");
+    expect(visit!.contact_id).toEqual(contactA!.id);
+
+    const { data: task } = await admin.from("tasks").select("*").eq("deal_id", dealA!.id).maybeSingle();
+    expect(task).not.toBeNull();
+    expect(task!.title).toContain("Cliente quer visitar");
+
+    const { data: event } = await admin
+      .from("crm_domain_events")
+      .select("*")
+      .eq("event_type", "visit_requested")
+      .eq("aggregate_id", visit!.id)
+      .maybeSingle();
+    expect(event).not.toBeNull();
+    expect(event!.processed_at).not.toBeNull();
+
+    // Reagir de novo (mesma coleção/imóvel) não deve duplicar a visita —
+    // já existe uma 'requested' pro mesmo par deal/property.
+    await anon.rpc("record_property_reaction", { p_token: collection!.token, p_property_id: propertyId, p_reaction: "quero_visitar" });
+    const { data: visitsAfterSecondReaction } = await admin
+      .from("real_estate_visits")
+      .select("id")
+      .eq("deal_id", dealA!.id)
+      .eq("property_id", propertyId);
+    expect(visitsAfterSecondReaction).toHaveLength(1);
+
+    await admin.from("crm_domain_events").delete().eq("aggregate_id", visit!.id);
+    await admin.from("tasks").delete().eq("deal_id", dealA!.id);
+    await admin.from("real_estate_visits").delete().eq("deal_id", dealA!.id);
+    await admin.from("real_estate_deal_properties").delete().eq("deal_id", dealA!.id);
+    await admin.from("real_estate_share_collections").delete().eq("id", collection!.id);
+    await admin.from("deals").delete().eq("id", dealA!.id);
+    await admin.from("contacts").delete().eq("id", contactA!.id);
+  });
 });

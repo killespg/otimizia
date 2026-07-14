@@ -17,6 +17,7 @@ import {
   updateClientPreferences,
 } from "./preferences";
 import type { ToolInput } from "./types";
+import { schedulePropertyVisit } from "./visits";
 import { str } from "./validation";
 import {
   createContact,
@@ -75,6 +76,8 @@ export async function executeTool(
       return attachPropertyToDeal(supabase, orgId, workspaceKey, input);
     case "create_property_showcase":
       return createPropertyShowcase(supabase, userId, orgId, workspaceKey, input);
+    case "schedule_property_visit":
+      return schedulePropertyVisit(supabase, userId, orgId, workspaceKey, input);
     case "create_contact":
       return createContact(supabase, userId, orgId, workspaceKey, input);
     case "update_contact":

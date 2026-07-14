@@ -341,6 +341,28 @@ export type RealEstateDealProperty = {
   updated_at: string;
 };
 
+export type RealEstateVisitStatus = "requested" | "scheduled" | "completed" | "no_show" | "cancelled";
+export type RealEstateVisitConfirmationStatus = "pending" | "confirmed" | "declined";
+
+export type RealEstateVisit = {
+  id: string;
+  org_id: string;
+  contact_id: string;
+  deal_id: string | null;
+  property_id: string;
+  broker_id: string;
+  scheduled_at: string | null;
+  duration_minutes: number;
+  status: RealEstateVisitStatus;
+  confirmation_status: RealEstateVisitConfirmationStatus;
+  client_feedback: string | null;
+  broker_notes: string | null;
+  reminder_sent_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Contact = {
   id: string;
   owner_id: string;
@@ -421,6 +443,7 @@ export type NotificationPreferences = {
   daily_push: boolean;
   daily_summary_email: boolean;
   stalled_deal_email: boolean;
+  visit_reminders_enabled: boolean;
   updated_at: string;
 };
 
@@ -447,7 +470,7 @@ export type WhatsappConversation = {
 
 export type WhatsappMessageDirection = "inbound" | "outbound";
 export type WhatsappMessageType = "text" | "image" | "audio" | "document" | "unsupported";
-export type WhatsappSentBy = "ai" | "human" | "contact";
+export type WhatsappSentBy = "ai" | "human" | "contact" | "system";
 export type WhatsappMessage = {
   id: string;
   conversation_id: string;

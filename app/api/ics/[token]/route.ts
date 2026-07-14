@@ -38,6 +38,21 @@ export async function GET(_request: Request, { params }: { params: { token: stri
     .eq("assigned_to", profile.id)
     .eq("status", "pending");
 
+  // RE-3xx: visitas agendadas do corretor entram no mesmo feed — mesmo
+  // padrão de tasks/legal_deadlines acima, só outra fonte de eventos.
+  const { data: visits } = await admin
+    .from("real_estate_visits")
+    .select("id, scheduled_at, property_id")
+    .eq("broker_id", profile.id)
+    .eq("status", "scheduled")
+    .not("scheduled_at", "is", null);
+  const visitPropertyIds = (visits ?? []).map((v) => v.property_id as string);
+  const { data: visitProperties } =
+    visitPropertyIds.length > 0
+      ? await admin.from("real_estate_properties").select("id, title").in("id", visitPropertyIds)
+      : { data: [] };
+  const visitPropertyTitle = new Map(((visitProperties ?? []) as { id: string; title: string }[]).map((p) => [p.id, p.title]));
+
   const events = [
     ...(tasks ?? []).map((task) => ({
       uid: `otimizia-task-${task.id}@useotimizia.com`,
@@ -48,6 +63,11 @@ export async function GET(_request: Request, { params }: { params: { token: stri
       uid: `otimizia-deadline-${deadline.id}@useotimizia.com`,
       title: `Prazo: ${deadline.title as string}`,
       start: new Date(deadline.due_at as string),
+    })),
+    ...(visits ?? []).map((visit) => ({
+      uid: `otimizia-visit-${visit.id}@useotimizia.com`,
+      title: `Visita: ${visitPropertyTitle.get(visit.property_id as string) ?? "Imóvel"}`,
+      start: new Date(visit.scheduled_at as string),
     })),
   ];
 

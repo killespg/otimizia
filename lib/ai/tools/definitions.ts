@@ -449,6 +449,23 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "schedule_property_visit",
+    description:
+      "Agenda uma visita a um imóvel para um cliente (workspace imobiliário). Sempre cria já como agendada — use quando o usuário (corretor) definir data/hora com o cliente.",
+    input_schema: {
+      type: "object",
+      properties: {
+        imovel_id: { type: "string" },
+        contato_id: { type: "string" },
+        atendimento_id: { type: "string", description: "Opcional — vincula a visita a um atendimento." },
+        data_hora: { type: "string", description: "Data e hora em ISO 8601, ex: 2026-07-20T14:30:00-03:00." },
+        duracao_minutos: { type: "integer", description: "Padrão: 45." },
+        observacoes: { type: "string" },
+      },
+      required: ["imovel_id", "contato_id", "data_hora"],
+    },
+  },
+  {
     name: "update_organization_context",
     description:
       "Atualiza contexto da empresa que alimenta a IA: nome, setor, região, prioridades, tom, instruções e observações. Use quando o usuário pedir para a IA conhecer melhor a empresa.",
@@ -524,6 +541,7 @@ const MUTATING_TOOLS = new Set([
   "update_client_preferences",
   "attach_property_to_deal",
   "create_property_showcase",
+  "schedule_property_visit",
   "delete_contact",
   "delete_deal",
   "delete_task",

@@ -64,3 +64,19 @@ export async function markSent(
     .insert({ user_id: userId, kind, sent_for_date: dateKey });
   return !error;
 }
+
+// Dedupe por EVENTO (não por dia) — usado pelos lembretes automáticos de
+// visita (RE-3xx): uma mesma visita só recebe cada tipo de lembrete uma
+// vez, não importa quantas vezes o cron rode dentro da janela. Índice
+// único parcial em (entity_id, kind) — ver 0060_real_estate_visits_and_events.sql.
+export async function markEventSent(
+  admin: SupabaseClient,
+  userId: string,
+  entityId: string,
+  kind: "visit_reminder_24h_whatsapp" | "visit_reminder_2h_push"
+): Promise<boolean> {
+  const { error } = await admin
+    .from("notification_log")
+    .insert({ user_id: userId, kind, entity_id: entityId });
+  return !error;
+}

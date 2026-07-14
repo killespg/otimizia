@@ -8,6 +8,7 @@ import type { RealEstateDealProperty, RealEstateLeadPreferences, RealEstatePrope
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { IconCheck, IconX } from "../../../icons";
 import { recalculateDealMatches, updateDealPropertyStatus } from "../../match-actions";
+import { scheduleVisit } from "../../visit-actions";
 
 function centsToReais(cents: number | null): string {
   if (cents === null) return "Sob consulta";
@@ -173,6 +174,21 @@ export default async function MatchPage({ params }: { params: { dealId: string }
                           </PendingButton>
                         </form>
                       </div>
+                    )}
+
+                    {canManage && dealRow.contact_id && (
+                      <form action={scheduleVisit} className="flex flex-wrap items-end gap-2 border-t border-line pt-3">
+                        <input type="hidden" name="contact_id" value={dealRow.contact_id} />
+                        <input type="hidden" name="deal_id" value={params.dealId} />
+                        <input type="hidden" name="property_id" value={property.id} />
+                        <label className="block">
+                          <span className="label">Agendar visita</span>
+                          <input type="datetime-local" name="scheduled_at" required className="field mt-1" />
+                        </label>
+                        <PendingButton className="btn-soft" pendingLabel="Agendando">
+                          Agendar
+                        </PendingButton>
+                      </form>
                     )}
                   </section>
                 );
