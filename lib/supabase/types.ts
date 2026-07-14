@@ -386,6 +386,20 @@ export type RealEstateOffer = {
   updated_at: string;
 };
 
+export type RealEstatePropertyDocumentStatus = "pending" | "received" | "waived";
+
+export type RealEstatePropertyDocument = {
+  id: string;
+  org_id: string;
+  property_id: string;
+  document_type: string;
+  status: RealEstatePropertyDocumentStatus;
+  notes: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Contact = {
   id: string;
   owner_id: string;

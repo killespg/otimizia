@@ -10,7 +10,13 @@ import {
 } from "@/lib/real-estate";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
-import type { AiSuggestedField, Contact, RealEstateProperty, RealEstatePropertyMedia } from "@/lib/supabase/types";
+import type {
+  AiSuggestedField,
+  Contact,
+  RealEstateProperty,
+  RealEstatePropertyDocument,
+  RealEstatePropertyMedia,
+} from "@/lib/supabase/types";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { IconCheck, IconPlus, IconTrash, IconX } from "../../icons";
 import {
@@ -23,6 +29,7 @@ import {
   updateProperty,
   uploadPropertyPhoto,
 } from "../actions";
+import { ListingQualitySection } from "./ListingQualitySection";
 
 const FIELD_LABELS: Record<string, string> = {
   title: "Título",
@@ -99,6 +106,11 @@ export default async function ImovelDetailPage({ params }: { params: { id: strin
   // RE-004: rollout progressivo por organização, mesmo flag de novo/page.tsx.
   const v2Enabled = isRealEstateV2Enabled(org);
 
+  const { data: documentRows } = v2Enabled
+    ? await supabase.from("real_estate_property_documents").select("*").eq("org_id", orgId).eq("property_id", params.id).order("created_at", { ascending: true })
+    : { data: [] };
+  const documents = (documentRows ?? []) as RealEstatePropertyDocument[];
+
   const photoUrls = media.map((item) => ({
     id: item.id,
     url: supabase.storage.from("property-photos").getPublicUrl(item.storage_path).data.publicUrl,
@@ -149,6 +161,8 @@ export default async function ImovelDetailPage({ params }: { params: { id: strin
           </dl>
         </section>
       )}
+
+      {v2Enabled && <ListingQualitySection property={property} documents={documents} canManage={canManage} />}
 
       {suggestions.length > 0 && (
         <section className="panel space-y-2 border-brand-200 bg-brand-50/40 p-5">

@@ -787,4 +787,31 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
     await admin.from("deals").delete().eq("id", dealB!.id);
     await admin.from("contacts").delete().eq("id", contactA!.id);
   });
+
+  // RE-5xx (Fase 5): real_estate_property_documents é tabela nova (0062).
+  it("real_estate_property_documents: isolamento cross-org e status só aceita os valores do enum", async () => {
+    const { data: doc, error: insertError } = await userA.client
+      .from("real_estate_property_documents")
+      .insert({ org_id: orgA, property_id: propertyId, document_type: "Matrícula atualizada", created_by: userA.userId })
+      .select("id")
+      .single();
+    expect(insertError).toBeNull();
+
+    const { data: seenByB } = await userB.client.from("real_estate_property_documents").select("*").eq("id", doc!.id).maybeSingle();
+    expect(seenByB).toBeNull();
+
+    const { error: invalidStatusError } = await userA.client
+      .from("real_estate_property_documents")
+      .update({ status: "nao-existe" })
+      .eq("id", doc!.id);
+    expect(invalidStatusError).not.toBeNull();
+
+    const { error: validStatusError } = await userA.client
+      .from("real_estate_property_documents")
+      .update({ status: "received" })
+      .eq("id", doc!.id);
+    expect(validStatusError).toBeNull();
+
+    await admin.from("real_estate_property_documents").delete().eq("id", doc!.id);
+  });
 });

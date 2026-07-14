@@ -486,6 +486,30 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "generate_listing_copy",
+    description:
+      "Busca os fatos de um imóvel formatados pra escrever título/descrição/textos por canal (workspace imobiliário) — não gera texto sozinha, devolve os dados reais pra você (a IA na conversa) escrever em cima, sem inventar nada que não esteja aqui.",
+    input_schema: {
+      type: "object",
+      properties: {
+        imovel_id: { type: "string" },
+        canal: { type: "string", description: "Ex: 'portal', 'whatsapp', 'instagram' — pra ajustar o tom/tamanho do texto." },
+      },
+      required: ["imovel_id"],
+    },
+  },
+  {
+    name: "detect_listing_gaps",
+    description: "Calcula o score de qualidade (0-100) do anúncio de um imóvel e lista o que falta pra melhorar (fotos, descrição, preço, endereço, matrícula etc). Só leitura, não altera o imóvel.",
+    input_schema: {
+      type: "object",
+      properties: {
+        imovel_id: { type: "string" },
+      },
+      required: ["imovel_id"],
+    },
+  },
+  {
     name: "update_organization_context",
     description:
       "Atualiza contexto da empresa que alimenta a IA: nome, setor, região, prioridades, tom, instruções e observações. Use quando o usuário pedir para a IA conhecer melhor a empresa.",

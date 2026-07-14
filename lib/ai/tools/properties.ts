@@ -1,4 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { computeListingQuality } from "@/lib/real-estate-listing-quality";
+import type { RealEstateProperty } from "@/lib/supabase/types";
 import type { ToolInput } from "./types";
 import {
   aiSuggestedFieldsObject,
@@ -109,6 +111,53 @@ export async function getProperty(supabase: SupabaseClient, orgId: string, works
 
   const fotos = await orderedPhotoUrls(supabase, id);
   return JSON.stringify({ imovel: property, fotos, campos_pendentes_de_confirmacao: property.ai_suggested_fields ?? {} });
+}
+
+// RE-5xx (Fase 5) — leitura pura, não escreve nada. "Gerar título/
+// descrição" não é o Node fazendo geração de texto: devolve os fatos do
+// imóvel bem estruturados pra quem está chamando (a própria IA na
+// conversa) escrever o texto em cima, sempre grounded no dado real —
+// "IA nunca inventa preço/metragem" (regra geral do plano) vale também
+// pra copywriting, não só pra preencher coluna.
+export async function generateListingCopy(supabase: SupabaseClient, orgId: string, workspaceKey: string, input: ToolInput) {
+  const id = str(input.imovel_id, "imovel_id");
+  const { data: property, error } = await supabase
+    .from("real_estate_properties")
+    .select(
+      "title, property_type, transaction_type, price_cents, rent_price_cents, bedrooms, bathrooms, parking_spots, area_m2, address_neighborhood, address_city, extra_features, description"
+    )
+    .eq("id", id)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey)
+    .maybeSingle();
+  ensureOk(error);
+  if (!property) return JSON.stringify({ erro: "Imóvel não encontrado." });
+
+  return JSON.stringify({
+    fatos_para_copywriting: property,
+    canal: optionalStr(input.canal, 40) ?? "geral",
+    instrucao: "Use só estes fatos pra escrever título/descrição — nada de inventar característica, preço ou metragem que não esteja aqui.",
+  });
+}
+
+// Leitura pura — mesmo cálculo de app/(app)/imoveis/quality-actions.ts
+// (recalculateListingQuality), sem gravar o score nem criar tarefa. Quem
+// decide recalcular/criar tarefas de verdade é o corretor, pela UI.
+export async function detectListingGaps(supabase: SupabaseClient, orgId: string, workspaceKey: string, input: ToolInput) {
+  const id = str(input.imovel_id, "imovel_id");
+  const { data: property, error } = await supabase
+    .from("real_estate_properties")
+    .select("*")
+    .eq("id", id)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey)
+    .maybeSingle();
+  ensureOk(error);
+  if (!property) return JSON.stringify({ erro: "Imóvel não encontrado." });
+
+  const { count } = await supabase.from("real_estate_property_media").select("id", { count: "exact", head: true }).eq("property_id", id);
+  const result = computeListingQuality(property as RealEstateProperty, count ?? 0);
+  return JSON.stringify({ score: result.score, lacunas: result.gaps });
 }
 
 export async function createProperty(

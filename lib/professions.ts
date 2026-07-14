@@ -239,6 +239,16 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
         type: "select",
         options: ["Apartamento", "Casa", "Terreno", "Comercial", "Rural"],
       },
+      {
+        // RE-5xx (Fase 5): "funil de captação/subtipo de atendimento pra
+        // proprietários" — reaproveita o campo genérico de detalhes por
+        // profissão (details jsonb) já usado por tipo_imovel acima, em vez
+        // de mexer no schema de deals ou no board genérico.
+        key: "subtipo_atendimento",
+        label: "Tipo de atendimento",
+        type: "select",
+        options: ["Comprador", "Captação/Proprietário", "Locatário", "Locador"],
+      },
     ],
     metrics: [
       { key: "open_value", label: "Valor em negociação" },
