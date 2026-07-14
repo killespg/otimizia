@@ -363,6 +363,29 @@ export type RealEstateVisit = {
   updated_at: string;
 };
 
+export type RealEstateOfferStatus = "draft" | "sent" | "viewed" | "countered" | "accepted" | "declined" | "expired";
+
+export type RealEstateOffer = {
+  id: string;
+  org_id: string;
+  contact_id: string;
+  deal_id: string;
+  property_id: string;
+  created_by: string;
+  amount_cents: number;
+  down_payment_cents: number | null;
+  financing_amount_cents: number | null;
+  payment_terms: string | null;
+  conditions: string | null;
+  expires_at: string | null;
+  status: RealEstateOfferStatus;
+  sent_at: string | null;
+  responded_at: string | null;
+  parent_offer_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Contact = {
   id: string;
   owner_id: string;

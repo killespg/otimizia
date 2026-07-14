@@ -16,6 +16,7 @@ import {
   matchPropertiesForClient,
   updateClientPreferences,
 } from "./preferences";
+import { createRealEstateOffer } from "./offers";
 import type { ToolInput } from "./types";
 import { schedulePropertyVisit } from "./visits";
 import { str } from "./validation";
@@ -78,6 +79,8 @@ export async function executeTool(
       return createPropertyShowcase(supabase, userId, orgId, workspaceKey, input);
     case "schedule_property_visit":
       return schedulePropertyVisit(supabase, userId, orgId, workspaceKey, input);
+    case "create_real_estate_offer":
+      return createRealEstateOffer(supabase, userId, orgId, workspaceKey, input);
     case "create_contact":
       return createContact(supabase, userId, orgId, workspaceKey, input);
     case "update_contact":

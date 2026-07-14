@@ -734,4 +734,57 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
     await admin.from("deals").delete().eq("id", dealA!.id);
     await admin.from("contacts").delete().eq("id", contactA!.id);
   });
+
+  // RE-4xx (Fase 4): real_estate_offers é tabela nova (0061) — RLS própria
+  // e a cadeia de contraproposta via parent_offer_id.
+  it("real_estate_offers: isolamento cross-org, FK composta e cadeia de contraproposta (parent_offer_id)", async () => {
+    const orgB = await getPersonalOrgId(admin, userB.userId);
+    const { data: contactA } = await userA.client
+      .from("contacts")
+      .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "real_estate_broker", name: "Cliente da proposta" })
+      .select("id")
+      .single();
+    const { data: dealA } = await userA.client
+      .from("deals")
+      .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "real_estate_broker", contact_id: contactA!.id, title: "Atendimento pra proposta" })
+      .select("id")
+      .single();
+    const { data: dealB } = await userB.client
+      .from("deals")
+      .insert({ owner_id: userB.userId, org_id: orgB, workspace_key: "real_estate_broker", title: "Atendimento de outra org" })
+      .select("id")
+      .single();
+
+    const { data: offer, error: insertError } = await userA.client
+      .from("real_estate_offers")
+      .insert({ org_id: orgA, contact_id: contactA!.id, deal_id: dealA!.id, property_id: propertyId, created_by: userA.userId, amount_cents: 85000000 })
+      .select("id")
+      .single();
+    expect(insertError).toBeNull();
+
+    const { data: seenByB } = await userB.client.from("real_estate_offers").select("*").eq("id", offer!.id).maybeSingle();
+    expect(seenByB).toBeNull();
+
+    // deal_id de outra organização — FK composta (org_id, deal_id) barra.
+    const { error: forgedDealError } = await userA.client.from("real_estate_offers").insert({
+      org_id: orgA, contact_id: contactA!.id, deal_id: dealB!.id, property_id: propertyId, created_by: userA.userId, amount_cents: 1000,
+    });
+    expect(forgedDealError).not.toBeNull();
+
+    const { data: counter, error: counterError } = await userA.client
+      .from("real_estate_offers")
+      .insert({
+        org_id: orgA, contact_id: contactA!.id, deal_id: dealA!.id, property_id: propertyId, created_by: userA.userId,
+        amount_cents: 82000000, parent_offer_id: offer!.id, status: "sent",
+      })
+      .select("id, parent_offer_id")
+      .single();
+    expect(counterError).toBeNull();
+    expect(counter!.parent_offer_id).toEqual(offer!.id);
+
+    await admin.from("real_estate_offers").delete().eq("deal_id", dealA!.id);
+    await admin.from("deals").delete().eq("id", dealA!.id);
+    await admin.from("deals").delete().eq("id", dealB!.id);
+    await admin.from("contacts").delete().eq("id", contactA!.id);
+  });
 });

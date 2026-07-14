@@ -3517,3 +3517,26 @@ label[class*="border-line"]::before,
   color: rgb(var(--color-ink));
   box-shadow: 0 22px 60px -42px color-mix(in srgb, var(--dashboard-accent) 62%, #000);
 }
+
+/* RE-4xx: "PDF simples da proposta" = imprimir/salvar como PDF a própria
+   página (/imoveis/propostas/[id]/pdf), sem depender de um gerador de PDF
+   no servidor. Esconde a moldura do app (sidebar, tab bar mobile, cabeçalho)
+   só na impressão — o conteúdo com .print-document vira a página inteira. */
+@media print {
+  .app-shell > aside,
+  .mobile-tabbar,
+  .mobile-app-header,
+  .print-hide {
+    display: none !important;
+  }
+  .app-frame,
+  .app-shell {
+    background: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  .print-document {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+}

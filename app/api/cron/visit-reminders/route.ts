@@ -8,10 +8,12 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 // Disparado pelo Vercel Cron (vercel.json) de hora em hora — mais frequente
-// que os outros crons (daily-*) de propósito, porque lembrete de visita é
-// por evento (2h/24h antes do horário marcado), não um resumo diário.
-// Mesma autenticação dos outros crons: Vercel injeta
-// "Authorization: Bearer <CRON_SECRET>".
+// que os outros crons (daily-*) de propósito, porque estes lembretes são
+// por EVENTO (2h/24h antes da visita, 24h antes da proposta expirar), não
+// um resumo diário. Cobre visita (RE-3xx) e expiração de proposta (RE-4xx)
+// no mesmo cron — mesma cadência, mesmo mecanismo de dedupe — em vez de
+// multiplicar rotas de cron quase idênticas. Mesma autenticação dos outros
+// crons: Vercel injeta "Authorization: Bearer <CRON_SECRET>".
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
   if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -22,12 +24,13 @@ export async function GET(request: Request) {
   const now = Date.now();
   const HOUR = 3_600_000;
 
-  const [whatsappResult, pushResult] = await Promise.all([
+  const [whatsappResult, pushResult, offerResult] = await Promise.all([
     sendWhatsappReminders(admin, now, HOUR),
     sendPushReminders(admin, now, HOUR),
+    sendOfferExpiryReminders(admin, now, HOUR),
   ]);
 
-  return Response.json({ whatsapp: whatsappResult, push: pushResult });
+  return Response.json({ whatsapp: whatsappResult, push: pushResult, offers: offerResult });
 }
 
 // Cadência horária = janela de 1h em torno do alvo (23h-24h / 1h-2h antes)
@@ -151,4 +154,44 @@ async function sendPushReminders(admin: ReturnType<typeof createAdminClient>, no
     }
   }
   return { checked: visits?.length ?? 0, sent };
+}
+
+// RE-4xx: "lembrete automático antes de expirar" — mesma janela horária
+// (23h-24h antes) e o mesmo princípio de dedupe por evento das visitas.
+// Vai pro criador da proposta (created_by), não pro assignee do imóvel —
+// quem negociou é quem precisa saber que está prestes a expirar.
+async function sendOfferExpiryReminders(admin: ReturnType<typeof createAdminClient>, now: number, hour: number) {
+  const windowStart = new Date(now + 23 * hour).toISOString();
+  const windowEnd = new Date(now + 24 * hour).toISOString();
+
+  const { data: offers } = await admin
+    .from("real_estate_offers")
+    .select("id, created_by, property_id, amount_cents, expires_at")
+    .in("status", ["sent", "viewed"])
+    .gte("expires_at", windowStart)
+    .lt("expires_at", windowEnd);
+
+  let sent = 0;
+  for (const offer of offers ?? []) {
+    try {
+      const { data: prefs } = await admin.from("notification_preferences").select("visit_reminders_enabled").eq("user_id", offer.created_by).maybeSingle();
+      if (prefs?.visit_reminders_enabled === false) continue;
+
+      const isNewSend = await markEventSent(admin, offer.created_by, offer.id, "offer_expiry_push");
+      if (!isNewSend) continue;
+
+      const { data: property } = await admin.from("real_estate_properties").select("title").eq("id", offer.property_id).maybeSingle();
+      const amount = offer.amount_cents !== null ? (offer.amount_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "";
+
+      const { sent: pushed } = await sendPushToUser(admin, offer.created_by, {
+        title: "Proposta expira em 24h",
+        body: `${property?.title ?? "Imóvel"}${amount ? ` — ${amount}` : ""}`,
+        url: "/imoveis",
+      });
+      if (pushed > 0) sent++;
+    } catch (err) {
+      logError("cron/visit-reminders.offer-expiry-failed", err, { offerId: offer.id });
+    }
+  }
+  return { checked: offers?.length ?? 0, sent };
 }

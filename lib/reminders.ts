@@ -73,7 +73,7 @@ export async function markEventSent(
   admin: SupabaseClient,
   userId: string,
   entityId: string,
-  kind: "visit_reminder_24h_whatsapp" | "visit_reminder_2h_push"
+  kind: "visit_reminder_24h_whatsapp" | "visit_reminder_2h_push" | "offer_expiry_push"
 ): Promise<boolean> {
   const { error } = await admin
     .from("notification_log")

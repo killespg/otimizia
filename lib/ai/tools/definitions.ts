@@ -466,6 +466,26 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "create_real_estate_offer",
+    description:
+      "Cria uma proposta de compra/negociação (workspace imobiliário), sempre como rascunho — só o corretor decide enviar pro cliente. Nunca invente valor não informado explicitamente pelo usuário.",
+    input_schema: {
+      type: "object",
+      properties: {
+        atendimento_id: { type: "string" },
+        imovel_id: { type: "string" },
+        contato_id: { type: "string" },
+        valor_reais: { type: "number" },
+        entrada_reais: { type: "number" },
+        valor_financiado_reais: { type: "number" },
+        condicoes_pagamento: { type: "string" },
+        condicoes: { type: "string" },
+        valida_ate: { type: "string", description: "Data (AAAA-MM-DD) de expiração da proposta." },
+      },
+      required: ["atendimento_id", "imovel_id", "contato_id", "valor_reais"],
+    },
+  },
+  {
     name: "update_organization_context",
     description:
       "Atualiza contexto da empresa que alimenta a IA: nome, setor, região, prioridades, tom, instruções e observações. Use quando o usuário pedir para a IA conhecer melhor a empresa.",
@@ -542,6 +562,7 @@ const MUTATING_TOOLS = new Set([
   "attach_property_to_deal",
   "create_property_showcase",
   "schedule_property_visit",
+  "create_real_estate_offer",
   "delete_contact",
   "delete_deal",
   "delete_task",

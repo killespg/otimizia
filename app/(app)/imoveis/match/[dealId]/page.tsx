@@ -4,11 +4,12 @@ import { PendingButton } from "@/components/PendingButton";
 import { canManageRealEstate, canViewRealEstate, isRealEstateV2Enabled, propertyTypeLabel } from "@/lib/real-estate";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
-import type { RealEstateDealProperty, RealEstateLeadPreferences, RealEstateProperty } from "@/lib/supabase/types";
+import type { RealEstateDealProperty, RealEstateLeadPreferences, RealEstateOffer, RealEstateProperty } from "@/lib/supabase/types";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { IconCheck, IconX } from "../../../icons";
 import { recalculateDealMatches, updateDealPropertyStatus } from "../../match-actions";
 import { scheduleVisit } from "../../visit-actions";
+import { OffersSection } from "./OffersSection";
 
 function centsToReais(cents: number | null): string {
   if (cents === null) return "Sob consulta";
@@ -48,7 +49,7 @@ export default async function MatchPage({ params }: { params: { dealId: string }
   if (!canViewRealEstate(membership?.job_role, isAdmin) || !isRealEstateV2Enabled(org)) notFound();
   const canManage = canManageRealEstate(membership?.job_role, isAdmin);
 
-  const [{ data: dealRow }, { data: preferencesRow }, { data: matchRows }, { data: collectionRows }] = await Promise.all([
+  const [{ data: dealRow }, { data: preferencesRow }, { data: matchRows }, { data: collectionRows }, { data: offerRows }] = await Promise.all([
     supabase.from("deals").select("id, title, contact_id").eq("id", params.dealId).eq("org_id", orgId).maybeSingle(),
     supabase.from("real_estate_lead_preferences").select("*").eq("org_id", orgId).eq("deal_id", params.dealId).maybeSingle(),
     supabase
@@ -63,11 +64,13 @@ export default async function MatchPage({ params }: { params: { dealId: string }
       .eq("org_id", orgId)
       .eq("deal_id", params.dealId)
       .order("created_at", { ascending: false }),
+    supabase.from("real_estate_offers").select("*").eq("org_id", orgId).eq("deal_id", params.dealId).order("created_at", { ascending: true }),
   ]);
   if (!dealRow) notFound();
   const preferences = preferencesRow as RealEstateLeadPreferences | null;
   const matches = (matchRows ?? []) as RealEstateDealProperty[];
   const collections = collectionRows ?? [];
+  const offers = (offerRows ?? []) as RealEstateOffer[];
 
   const propertyIds = matches.map((m) => m.property_id);
   const { data: propertyRows } =
@@ -197,6 +200,14 @@ export default async function MatchPage({ params }: { params: { dealId: string }
           )}
         </>
       )}
+
+      <OffersSection
+        dealId={params.dealId}
+        contactId={dealRow.contact_id}
+        properties={Array.from(propertyById.values()).map((p) => ({ id: p.id, title: p.title }))}
+        offers={offers}
+        canManage={canManage}
+      />
 
       {collections.length > 0 && (
         <section className="panel p-5 sm:p-6">
