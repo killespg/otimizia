@@ -177,6 +177,17 @@ export default async function ContactDetailPage({
               autoComplete="tel"
               inputMode="tel"
             />
+            {c.phone && (
+              <label className="flex items-center gap-2 text-sm font-bold text-ink">
+                <input
+                  type="checkbox"
+                  name="whatsapp_opt_out"
+                  defaultChecked={c.whatsapp_opt_out}
+                  className="h-4 w-4 rounded border-line"
+                />
+                Não mandar mensagens automáticas de WhatsApp pra este contato
+              </label>
+            )}
             <Field name="email" label="E-mail" type="email" defaultValue={c.email ?? ""} maxLength={160} autoComplete="email" />
             <Field name="instagram" label="Instagram" defaultValue={c.instagram ?? ""} maxLength={60} placeholder="@usuario" />
             <Field name="company" label={copy.companyField} defaultValue={c.company ?? ""} maxLength={120} autoComplete="organization" />

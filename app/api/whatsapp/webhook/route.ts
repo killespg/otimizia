@@ -5,6 +5,7 @@ import { checkRateLimit } from "@/lib/ai/rate-limit";
 import { logError } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createDealIfNeeded, findOrCreateContact } from "@/lib/whatsapp-contacts";
+import { isOptOutKeyword, markWhatsappOptOut, OPT_OUT_CONFIRMATION_TEXT } from "@/lib/whatsapp-opt-out";
 import { extractMessageText, resolveWhatsappPhone } from "@/lib/whatsapp-jid";
 
 export const runtime = "nodejs";
@@ -139,8 +140,44 @@ export async function POST(request: Request) {
       sent_by: "contact",
     });
 
+    // "PARAR"/"SAIR"/"CANCELAR" (etc.) na própria mensagem: marca opt-out
+    // permanente e responde confirmando, sem passar pelo resto do fluxo
+    // (nem detecção de intenção, nem resposta da IA) — é uma confirmação
+    // fixa de compliance, não uma resposta gerada, e vale mais que qualquer
+    // outra automação nesta mesma mensagem.
+    if (messageType === "text" && contactId && isOptOutKeyword(content)) {
+      await markWhatsappOptOut(admin, contactId);
+      try {
+        await sendEvolutionText(instanceName, phoneNumber, OPT_OUT_CONFIRMATION_TEXT);
+        await admin.from("whatsapp_messages").insert({
+          conversation_id: conversationId,
+          org_id: orgId,
+          direction: "outbound",
+          message_type: "text",
+          content: OPT_OUT_CONFIRMATION_TEXT,
+          sent_by: "system",
+        });
+        await admin
+          .from("whatsapp_conversations")
+          .update({ last_message_at: new Date().toISOString() })
+          .eq("id", conversationId);
+      } catch (error) {
+        logError("api/whatsapp/webhook.opt-out-confirmation-failed", error, { orgId, conversationId });
+      }
+      return Response.json({ received: true });
+    }
+
     const contactName = existingConversation?.contact_name ?? pushName;
     const history = messageType === "text" ? await fetchWhatsappHistory(admin, conversationId) : [];
+
+    // Contato que já optou por sair antes: nenhuma automação por WhatsApp
+    // (detecção de intenção, resposta da IA) segue daqui em diante — envio
+    // manual pelo corretor (api/whatsapp/send) continua funcionando normal,
+    // opt-out é só sobre automação.
+    const { data: contactOptOut } = contactId
+      ? await admin.from("contacts").select("whatsapp_opt_out").eq("id", contactId).maybeSingle()
+      : { data: null };
+    const optedOut = contactOptOut?.whatsapp_opt_out === true;
 
     // Rate limit por organização (não tem usuário autenticado num webhook) —
     // protege contra flood de mensagens inbound (real ou forjado direto no
@@ -156,7 +193,7 @@ export async function POST(request: Request) {
       });
     }
 
-    if (rateLimit.allowed && messageType === "text" && contactId) {
+    if (rateLimit.allowed && !optedOut && messageType === "text" && contactId) {
       try {
         const intent = await detectPurchaseIntent(history, contactName);
         if (intent?.hasIntent) {
@@ -169,7 +206,7 @@ export async function POST(request: Request) {
       }
     }
 
-    if (rateLimit.allowed && iaActive && messageType === "text") {
+    if (rateLimit.allowed && !optedOut && iaActive && messageType === "text") {
       try {
         const reply = await generateWhatsappReply(admin, orgId, history, contactName);
         if (reply) {

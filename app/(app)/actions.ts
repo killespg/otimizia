@@ -215,7 +215,7 @@ export async function updateContact(formData: FormData) {
   const id = requiredText(formData.get("id"), "Contato", 80);
   const { data: existing } = await supabase
     .from("contacts")
-    .select("details")
+    .select("details, whatsapp_opt_out")
     .eq("id", id)
     .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey)
@@ -224,6 +224,16 @@ export async function updateContact(formData: FormData) {
     ...(existing?.details ?? {}),
     ...collectDetails(formData, preset.contactFields),
   };
+  // whatsapp_opt_out_at só muda quando o estado realmente vira (marcando ou
+  // desmarcando) — resalvar o form sem tocar no checkbox não deve reescrever
+  // a data em que o contato pediu pra sair.
+  const whatsappOptOut = formData.get("whatsapp_opt_out") === "on";
+  const optOutTimestamp =
+    whatsappOptOut === (existing?.whatsapp_opt_out ?? false)
+      ? undefined
+      : whatsappOptOut
+        ? new Date().toISOString()
+        : null;
   const { error } = await supabase
     .from("contacts")
     .update({
@@ -235,6 +245,8 @@ export async function updateContact(formData: FormData) {
       source: emptyToNull(formData.get("source"), LIMIT.source),
       notes: emptyToNull(formData.get("notes"), LIMIT.notes),
       details,
+      whatsapp_opt_out: whatsappOptOut,
+      ...(optOutTimestamp !== undefined ? { whatsapp_opt_out_at: optOutTimestamp } : {}),
     })
     .eq("id", id)
     .eq("org_id", orgId)

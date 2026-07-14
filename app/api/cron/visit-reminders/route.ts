@@ -79,12 +79,13 @@ async function sendVisitWhatsappReminder(
   // notification_preferences, essa tabela é só pra usuários do app.
   const [{ data: prefs }, { data: contact }, { data: property }, { data: instance }] = await Promise.all([
     admin.from("notification_preferences").select("visit_reminders_enabled").eq("user_id", visit.broker_id).maybeSingle(),
-    admin.from("contacts").select("phone, name").eq("id", visit.contact_id).maybeSingle(),
+    admin.from("contacts").select("phone, name, whatsapp_opt_out").eq("id", visit.contact_id).maybeSingle(),
     admin.from("real_estate_properties").select("title, address_street, address_number, address_neighborhood").eq("id", visit.property_id).maybeSingle(),
     admin.from("whatsapp_instances").select("instance_name, status").eq("org_id", visit.org_id).maybeSingle(),
   ]);
   if (prefs?.visit_reminders_enabled === false) return false;
   if (!contact?.phone || !property) return false;
+  if (contact.whatsapp_opt_out) return false;
   if (!instance || instance.status !== "conectado") return false;
 
   // notification_log.user_id referencia auth.users — usa o corretor (é

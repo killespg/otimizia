@@ -446,6 +446,8 @@ export type Contact = {
   source: string | null;
   notes: string | null;
   details: Record<string, string>;
+  whatsapp_opt_out: boolean;
+  whatsapp_opt_out_at: string | null;
   created_at: string;
 };
 
