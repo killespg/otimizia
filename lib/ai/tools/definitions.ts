@@ -80,6 +80,42 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
       "Mostra como o CRM e o painel do usuário estão personalizados agora: estilo, cor, widgets, métricas, nomes dos blocos e labels do workspace. Use antes de mudar aparência, dashboard ou preferências.",
     input_schema: { type: "object", properties: {} },
   },
+  {
+    name: "search_properties",
+    description:
+      "Busca imóveis da carteira (só disponível no workspace imobiliário). Filtre por bairro, tipo, transação, preço máximo e quartos mínimos. Por padrão retorna só imóveis com status 'ativo'.",
+    input_schema: {
+      type: "object",
+      properties: {
+        bairro: { type: "string", description: "Filtrar por bairro (busca parcial)" },
+        tipo_imovel: {
+          type: "string",
+          enum: ["apartamento", "casa", "cobertura", "terreno", "comercial", "sala", "galpao", "rural", "outro"],
+        },
+        tipo_transacao: { type: "string", enum: ["venda", "aluguel", "venda_aluguel"] },
+        preco_max_reais: { type: "number", description: "Preço máximo em reais" },
+        quartos_min: { type: "integer", description: "Mínimo de quartos" },
+        status: {
+          type: "string",
+          enum: ["rascunho", "ativo", "reservado", "vendido", "alugado", "inativo"],
+          description: "Padrão: ativo",
+        },
+        limite: { type: "integer", description: "Máximo de resultados (padrão 20)" },
+      },
+    },
+  },
+  {
+    name: "get_property",
+    description:
+      "Retorna os detalhes completos de um imóvel: dados, fotos (em ordem) e campos que a IA sugeriu e ainda aguardam confirmação humana.",
+    input_schema: {
+      type: "object",
+      properties: {
+        imovel_id: { type: "string", description: "ID do imóvel" },
+      },
+      required: ["imovel_id"],
+    },
+  },
 
   // ---------- Escrita ----------
   {
@@ -241,6 +277,79 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "create_property",
+    description:
+      "Cria um imóvel na carteira (só disponível no workspace imobiliário). 'titulo', 'tipo_imovel' e 'tipo_transacao' são obrigatórios. Use 'sugestoes' apenas para campos que você está inferindo de uma foto, PDF ou mensagem (não algo que o usuário te disse diretamente) — eles ficam pendentes de confirmação humana, nunca preenchem a coluna real automaticamente.",
+    input_schema: {
+      type: "object",
+      properties: {
+        titulo: { type: "string" },
+        tipo_imovel: {
+          type: "string",
+          enum: ["apartamento", "casa", "cobertura", "terreno", "comercial", "sala", "galpao", "rural", "outro"],
+        },
+        tipo_transacao: { type: "string", enum: ["venda", "aluguel", "venda_aluguel"] },
+        status: {
+          type: "string",
+          enum: ["rascunho", "ativo", "reservado", "vendido", "alugado", "inativo"],
+          description: "Padrão: ativo",
+        },
+        preco_reais: { type: "number" },
+        preco_aluguel_reais: { type: "number" },
+        quartos: { type: "integer" },
+        banheiros: { type: "integer" },
+        vagas: { type: "integer" },
+        area_m2: { type: "number" },
+        bairro: { type: "string" },
+        cidade: { type: "string" },
+        uf: { type: "string" },
+        descricao: { type: "string" },
+        contato_id: { type: "string", description: "ID do contato proprietário/interessado (opcional)" },
+        sugestoes: {
+          type: "object",
+          description:
+            "Valores inferidos (não confirmados) por nome da coluna, ex: {\"quartos\": \"3\"}. Ficam pendentes até um humano confirmar.",
+          additionalProperties: { type: "string" },
+        },
+      },
+      required: ["titulo", "tipo_imovel", "tipo_transacao"],
+    },
+  },
+  {
+    name: "update_property",
+    description:
+      "Atualiza campos de um imóvel existente (só disponível no workspace imobiliário). Envie apenas os campos que devem mudar. Use 'sugestoes' para inferências não confirmadas, nunca para o que o usuário afirmou com certeza.",
+    input_schema: {
+      type: "object",
+      properties: {
+        imovel_id: { type: "string" },
+        titulo: { type: "string" },
+        tipo_imovel: {
+          type: "string",
+          enum: ["apartamento", "casa", "cobertura", "terreno", "comercial", "sala", "galpao", "rural", "outro"],
+        },
+        tipo_transacao: { type: "string", enum: ["venda", "aluguel", "venda_aluguel"] },
+        status: { type: "string", enum: ["rascunho", "ativo", "reservado", "vendido", "alugado", "inativo"] },
+        preco_reais: { type: "number" },
+        preco_aluguel_reais: { type: "number" },
+        quartos: { type: "integer" },
+        banheiros: { type: "integer" },
+        vagas: { type: "integer" },
+        area_m2: { type: "number" },
+        bairro: { type: "string" },
+        cidade: { type: "string" },
+        uf: { type: "string" },
+        descricao: { type: "string" },
+        sugestoes: {
+          type: "object",
+          description: "Valores inferidos (não confirmados) por nome da coluna, mescla com os já existentes.",
+          additionalProperties: { type: "string" },
+        },
+      },
+      required: ["imovel_id"],
+    },
+  },
+  {
     name: "update_organization_context",
     description:
       "Atualiza contexto da empresa que alimenta a IA: nome, setor, região, prioridades, tom, instruções e observações. Use quando o usuário pedir para a IA conhecer melhor a empresa.",
@@ -311,6 +420,8 @@ const MUTATING_TOOLS = new Set([
   "update_dashboard_preferences",
   "update_workspace_labels",
   "update_organization_context",
+  "create_property",
+  "update_property",
   "delete_contact",
   "delete_deal",
   "delete_task",

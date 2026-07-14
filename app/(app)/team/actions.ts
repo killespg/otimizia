@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { LAW_JOB_ROLES } from "@/lib/law-office";
+import { ALL_KNOWN_JOB_ROLES } from "@/lib/job-roles";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -34,7 +34,7 @@ function text(v: FormDataEntryValue | null, max: number): string {
 
 function jobRoleField(v: FormDataEntryValue | null): JobRole {
   const role = typeof v === "string" ? v : "";
-  return LAW_JOB_ROLES.some((item) => item.value === role) ? (role as JobRole) : "staff";
+  return ALL_KNOWN_JOB_ROLES.some((item) => item.value === role) ? (role as JobRole) : "staff";
 }
 
 function requiredText(v: FormDataEntryValue | null, label: string, max: number): string {

@@ -8,6 +8,7 @@ import {
   listDeals,
   listTasks,
 } from "./read";
+import { createProperty, getProperty, searchProperties, updateProperty } from "./properties";
 import type { ToolInput } from "./types";
 import { str } from "./validation";
 import {
@@ -49,6 +50,14 @@ export async function executeTool(
       return getBusinessSummary(supabase, orgId, workspaceKey);
     case "get_workspace_customization":
       return getWorkspaceCustomization(supabase, userId, orgId, workspaceKey);
+    case "search_properties":
+      return searchProperties(supabase, orgId, workspaceKey, input);
+    case "get_property":
+      return getProperty(supabase, orgId, workspaceKey, input);
+    case "create_property":
+      return createProperty(supabase, userId, orgId, workspaceKey, input);
+    case "update_property":
+      return updateProperty(supabase, orgId, workspaceKey, input);
     case "create_contact":
       return createContact(supabase, userId, orgId, workspaceKey, input);
     case "update_contact":

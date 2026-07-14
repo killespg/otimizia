@@ -34,11 +34,18 @@ export function DashboardWidgetGrid({
   const itemIds = useMemo(() => items.map((item) => item.id), [items]);
   const [widgets, setWidgets] = useState(() => normalizeWidgets(preferences.widgets, itemIds));
   const [draggingId, setDraggingId] = useState<DashboardWidgetKey | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<DashboardWidgetKey | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [isSaving, startSaving] = useTransition();
 
   const listRef = useRef<HTMLDivElement | null>(null);
-  const drag = useRef<{ id: DashboardWidgetKey; pointerStartY: number } | null>(null);
+  const drag = useRef<{
+    id: DashboardWidgetKey;
+    pointerStartX: number;
+    pointerStartY: number;
+    targetId: DashboardWidgetKey | null;
+  } | null>(null);
+  const widgetsRef = useRef(widgets);
 
   const sortedItems = [...items].sort(
     (a, b) => widgets.indexOf(a.id) - widgets.indexOf(b.id)
@@ -74,12 +81,21 @@ export function DashboardWidgetGrid({
     });
   }
 
-  function swap(i: number, j: number) {
-    setWidgets((prev) => {
-      const next = [...prev];
-      [next[i], next[j]] = [next[j], next[i]];
-      return next;
-    });
+  function saveWidgets(next: DashboardWidgetKey[]) {
+    widgetsRef.current = next;
+    setWidgets(next);
+    persist(next);
+  }
+
+  function moveWidget(id: DashboardWidgetKey, delta: number) {
+    const current = widgetsRef.current;
+    const fromIndex = current.indexOf(id);
+    const toIndex = fromIndex + delta;
+    if (fromIndex < 0 || toIndex < 0 || toIndex >= current.length) return;
+    const next = [...current];
+    next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, id);
+    saveWidgets(next);
   }
 
   // Arraste por pointer events (não HTML5 drag-and-drop) porque HTML5 DnD
@@ -89,10 +105,18 @@ export function DashboardWidgetGrid({
     if (!editMode) return;
     const handle = event.currentTarget;
     handle.setPointerCapture(event.pointerId);
-    drag.current = { id, pointerStartY: event.clientY };
+    drag.current = {
+      id,
+      pointerStartX: event.clientX,
+      pointerStartY: event.clientY,
+      targetId: null,
+    };
     setDraggingId(id);
     const item = getItemEl(id);
-    if (item) item.style.setProperty("--drag-y", "0px");
+    if (item) {
+      item.style.setProperty("--drag-x", "0px");
+      item.style.setProperty("--drag-y", "0px");
+    }
   }
 
   function handlePointerMove(event: PointerEvent<HTMLButtonElement>) {
@@ -101,43 +125,27 @@ export function DashboardWidgetGrid({
     const draggedEl = getItemEl(state.id);
     if (!draggedEl) return;
 
-    let deltaY = event.clientY - state.pointerStartY;
+    const deltaX = event.clientX - state.pointerStartX;
+    const deltaY = event.clientY - state.pointerStartY;
+    draggedEl.style.setProperty("--drag-x", `${deltaX}px`);
     draggedEl.style.setProperty("--drag-y", `${deltaY}px`);
 
-    const index = widgets.indexOf(state.id);
-    if (index === -1) return;
+    const targetId = widgetsRef.current.find((id) => {
+      if (id === state.id) return false;
+      const target = getItemEl(id);
+      if (!target) return false;
+      const rect = target.getBoundingClientRect();
+      return (
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom
+      );
+    }) ?? null;
 
-    if (index < widgets.length - 1) {
-      const nextEl = getItemEl(widgets[index + 1]);
-      if (nextEl) {
-        const draggedRect = draggedEl.getBoundingClientRect();
-        const nextRect = nextEl.getBoundingClientRect();
-        const draggedCenter = draggedRect.top + draggedRect.height / 2;
-        const nextCenter = nextRect.top + nextRect.height / 2;
-        if (draggedCenter > nextCenter) {
-          state.pointerStartY += nextRect.height;
-          deltaY = event.clientY - state.pointerStartY;
-          draggedEl.style.setProperty("--drag-y", `${deltaY}px`);
-          swap(index, index + 1);
-          return;
-        }
-      }
-    }
-
-    if (index > 0) {
-      const prevEl = getItemEl(widgets[index - 1]);
-      if (prevEl) {
-        const draggedRect = draggedEl.getBoundingClientRect();
-        const prevRect = prevEl.getBoundingClientRect();
-        const draggedCenter = draggedRect.top + draggedRect.height / 2;
-        const prevCenter = prevRect.top + prevRect.height / 2;
-        if (draggedCenter < prevCenter) {
-          state.pointerStartY -= prevRect.height;
-          deltaY = event.clientY - state.pointerStartY;
-          draggedEl.style.setProperty("--drag-y", `${deltaY}px`);
-          swap(index, index - 1);
-        }
-      }
+    if (targetId !== state.targetId) {
+      state.targetId = targetId;
+      setDropTargetId(targetId);
     }
   }
 
@@ -148,16 +156,29 @@ export function DashboardWidgetGrid({
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
     const item = getItemEl(state.id);
-    if (item) item.style.removeProperty("--drag-y");
+    if (item) {
+      item.style.removeProperty("--drag-x");
+      item.style.removeProperty("--drag-y");
+    }
     drag.current = null;
     setDraggingId(null);
-    persist(widgets);
+    setDropTargetId(null);
+
+    if (!state.targetId) return;
+    const current = widgetsRef.current;
+    const fromIndex = current.indexOf(state.id);
+    const targetIndex = current.indexOf(state.targetId);
+    if (fromIndex < 0 || targetIndex < 0 || fromIndex === targetIndex) return;
+    const next = [...current];
+    next.splice(fromIndex, 1);
+    next.splice(targetIndex, 0, state.id);
+    saveWidgets(next);
   }
 
   return (
     <section
       ref={listRef}
-      className="dashboard-widget-grid grid gap-4 sm:gap-5 xl:grid-cols-12"
+      className="dashboard-widget-grid grid items-start gap-4 sm:gap-5 xl:grid-cols-12"
       data-editing={editMode ? "true" : undefined}
       data-saving={isSaving ? "true" : undefined}
     >
@@ -165,7 +186,8 @@ export function DashboardWidgetGrid({
         <div
           key={item.id}
           data-dashboard-widget={item.id}
-          className={`${item.className} widget-item dashboard-widget-shell ${
+          data-drop-target={dropTargetId === item.id ? "true" : undefined}
+          className={`${item.className} self-start widget-item dashboard-widget-shell ${
             draggingId === item.id ? "widget-dragging dashboard-widget-dragging" : ""
           }`}
         >
@@ -183,6 +205,10 @@ export function DashboardWidgetGrid({
                 <IconGrip className="h-4 w-4" />
               </button>
               <span className="dashboard-widget-drag-label">{DASHBOARD_WIDGET_LABELS[item.id]}</span>
+              <div className="dashboard-widget-order-actions" aria-label={`Alterar posição de ${DASHBOARD_WIDGET_LABELS[item.id]}`}>
+                <button type="button" onClick={() => moveWidget(item.id, -1)} disabled={widgets[0] === item.id}>Subir</button>
+                <button type="button" onClick={() => moveWidget(item.id, 1)} disabled={widgets[widgets.length - 1] === item.id}>Descer</button>
+              </div>
             </div>
           )}
           <div className={editMode ? "pointer-events-none" : undefined}>{item.node}</div>

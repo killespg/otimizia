@@ -277,6 +277,15 @@ export function IconCalendar({ className }: IconProps) {
   );
 }
 
+export function IconBuilding({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="5" y="3.5" width="10" height="17" rx="1.4" {...stroke} />
+      <path d="M15 9.5h4.5v11H15M8 7.5h.01M11.5 7.5h.01M8 11h.01M11.5 11h.01M8 14.5h.01M11.5 14.5h.01" {...stroke} />
+    </svg>
+  );
+}
+
 export function IconImage({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

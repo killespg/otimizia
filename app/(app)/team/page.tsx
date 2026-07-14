@@ -1,11 +1,21 @@
 import { redirect } from "next/navigation";
 import { PendingButton } from "@/components/PendingButton";
-import { LAW_JOB_ROLES, jobRoleLabel } from "@/lib/law-office";
+import { jobRoleLabel } from "@/lib/law-office";
+import { jobRoleLabelRealEstate } from "@/lib/real-estate";
+import { jobRolesFor } from "@/lib/job-roles";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Organization } from "@/lib/supabase/types";
+import { normalizeProfession } from "@/lib/professions";
+import type { JobRole } from "@/lib/supabase/types";
 import { IconPlus, IconTrash, IconUsers } from "../icons";
 import { inviteMember, removeMember, updateMemberJobRole, updateMemberRole, updateOrganizationContext } from "./actions";
+
+function memberJobRoleLabel(role: JobRole, professionType: string) {
+  return normalizeProfession(professionType) === "real_estate_broker"
+    ? jobRoleLabelRealEstate(role)
+    : jobRoleLabel(role);
+}
 
 export default async function TeamPage({
   searchParams,
@@ -28,6 +38,8 @@ export default async function TeamPage({
   const isAdmin = role === "admin";
   const adminCount = members.filter((m) => m.role === "admin").length;
   const isSolo = members.length <= 1;
+  const selfMember = members.find((m) => m.user_id === user.id);
+  const inviteJobRoles = jobRolesFor(normalizeProfession(selfMember?.profession_type));
 
   return (
     <div className="max-w-2xl space-y-4 sm:space-y-5">
@@ -169,8 +181,8 @@ export default async function TeamPage({
               placeholder="email@escritorio.com"
               className="field"
             />
-            <select name="job_role" defaultValue="lawyer" className="field">
-              {LAW_JOB_ROLES.map((item) => (
+            <select name="job_role" defaultValue={inviteJobRoles[0]?.value} className="field">
+              {inviteJobRoles.map((item) => (
                 <option key={item.value} value={item.value}>
                   {item.label}
                 </option>
@@ -209,7 +221,7 @@ export default async function TeamPage({
                     {isSelf && <span className="ml-1.5 font-medium text-ink-muted">(você)</span>}
                   </p>
                   <p className="text-xs font-bold text-ink-muted">
-                    {jobRoleLabel(member.job_role)}
+                    {memberJobRoleLabel(member.job_role, member.profession_type)}
                     {member.role === "admin" ? " - Admin da organização" : ""}
                   </p>
                 </div>
@@ -224,7 +236,7 @@ export default async function TeamPage({
                         className="field h-9 min-w-[12rem] py-1.5 text-xs font-bold"
                         aria-label={`Cargo de ${member.name ?? "membro"}`}
                       >
-                        {LAW_JOB_ROLES.map((item) => (
+                        {jobRolesFor(normalizeProfession(member.profession_type)).map((item) => (
                           <option key={item.value} value={item.value}>
                             {item.label}
                           </option>

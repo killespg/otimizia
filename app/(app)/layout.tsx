@@ -5,6 +5,7 @@ import { BrandName } from "@/components/BrandName";
 import { PendingButton } from "@/components/PendingButton";
 import { AssistantChatProvider } from "@/lib/ai/AssistantChatProvider";
 import { canViewFinance, canViewLegal } from "@/lib/law-office";
+import { canManageRealEstate } from "@/lib/real-estate";
 import { getActiveOrgId } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset } from "@/lib/professions";
@@ -99,6 +100,10 @@ export default async function AppLayout({
     canViewLegal: canViewLegal(membership?.job_role, isOrgAdmin),
     canViewFinance: canViewFinance(membership?.job_role, isOrgAdmin),
   };
+  const realEstateAccess = {
+    enabled: preset.key === "real_estate_broker",
+    canManage: canManageRealEstate(membership?.job_role, isOrgAdmin),
+  };
   const workspaceLabels = getWorkspaceLabels(
     preset,
     org?.workspace_preferences,
@@ -136,6 +141,7 @@ export default async function AppLayout({
               labels={workspaceLabels}
               isAdmin={isAdmin}
               lawOfficeAccess={lawOfficeAccess}
+              realEstateAccess={realEstateAccess}
             />
           </div>
 
@@ -237,6 +243,7 @@ export default async function AppLayout({
 
         <MobileTabBar
           lawOfficeAccess={lawOfficeAccess}
+          realEstateAccess={realEstateAccess}
           labels={{
             contacts: workspaceLabels.contacts,
             pipeline: workspaceLabels.pipeline,

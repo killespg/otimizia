@@ -433,9 +433,13 @@ export default async function DashboardPage() {
       />
     ) : undefined,
   };
-
   return (
-    <div className={`dashboard-board dashboard-board-${dashboardPreferences.style} dashboard-accent-${dashboardPreferences.accent} space-y-4 sm:space-y-5`}>
+    <div
+      className={`dashboard-reference dashboard-board dashboard-board-${dashboardPreferences.style} dashboard-accent-${dashboardPreferences.accent} space-y-4 sm:space-y-5`}
+      data-dashboard-style={dashboardPreferences.style}
+      data-dashboard-accent={dashboardPreferences.accent}
+      data-dashboard-metrics={dashboardPreferences.metrics.join(",")}
+    >
       <header className="dashboard-header enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-start justify-between gap-3 max-w-2xl">
           <div>
@@ -634,34 +638,34 @@ function MetricCard({
   const toneClass =
     tone === "pink"
       ? {
-          icon: "dashboard-metric-icon-secondary",
-          badge: "dashboard-metric-badge-secondary",
+          icon: "bg-[#fff7e6] text-[#8a6500]",
+          badge: "bg-[#fff7e6] text-[#8a6500]",
         }
       : {
-          icon: "dashboard-metric-icon",
-          badge: "dashboard-metric-badge",
+          icon: "bg-brand-100 text-brand-700",
+          badge: "bg-brand-100 text-brand-800",
         };
 
   return (
     <article
       data-dashboard-metric={metricKey}
-      className="enter dashboard-card relative min-h-[96px] overflow-hidden rounded-lg border border-line bg-white p-3 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:min-h-[150px] sm:p-5"
+      className="enter relative min-h-[96px] overflow-hidden rounded-lg border border-line bg-white p-3 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.75)] sm:min-h-[150px] sm:p-5"
       style={{ display: visible ? undefined : "none", order }}
     >
       <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div className="min-w-0">
           <p
             data-dashboard-metric-label={metricKey}
-            className="truncate text-[11px] font-bold uppercase tracking-[0.06em] text-ink-muted sm:text-xs"
+            className="text-xs font-semibold text-ink-soft sm:text-sm"
           >
             {label}
           </p>
-          <p className="dashboard-metric-value text-safe mt-2 text-2xl font-black leading-none tracking-[-0.035em] tabular-nums text-ink sm:mt-3 sm:text-[2rem]">
+          <p className="text-safe mt-2 text-xl font-black leading-none tracking-[-0.03em] text-ink sm:mt-3 sm:text-2xl">
             {value}
           </p>
         </div>
-        <span className={`hidden h-8 w-8 shrink-0 place-items-center rounded-full sm:grid sm:h-9 sm:w-9 ${toneClass.icon}`}>
-          <Icon className="h-4 w-4" />
+        <span className={`hidden h-9 w-9 shrink-0 place-items-center rounded-full sm:grid sm:h-11 sm:w-11 ${toneClass.icon}`}>
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </span>
       </div>
 

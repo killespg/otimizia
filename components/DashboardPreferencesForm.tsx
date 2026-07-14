@@ -98,6 +98,7 @@ export function DashboardPreferencesForm({
         try {
           await action(formData);
           setSaveStatus("saved");
+          router.push(returnTo === "/settings" ? "/dashboard?customized=1" : returnTo);
           router.refresh();
         } catch {
           setSaveStatus("error");
@@ -242,7 +243,9 @@ export function DashboardPreferencesForm({
             ? "Personalização salva."
             : saveStatus === "error"
               ? "Não deu para salvar. Tente novamente."
-              : "As mudanças aparecem no painel antes de você salvar."}
+              : returnTo === "/settings"
+                ? "Ao salvar, você vai direto ao painel para conferir o resultado."
+                : "As mudanças aparecem no painel antes de você salvar."}
         </p>
         <PendingButton
           className={compact ? "btn-soft" : "btn"}

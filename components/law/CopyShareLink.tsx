@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 
-export function CopyShareLink({ token }: { token: string }) {
+export function CopyShareLink({ token, basePath = "/share" }: { token: string; basePath?: string }) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
-    const url = `${window.location.origin}/share/${token}`;
+    const url = `${window.location.origin}${basePath}/${token}`;
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);

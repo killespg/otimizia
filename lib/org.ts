@@ -8,6 +8,7 @@ export type OrgMember = {
   role: OrgRole;
   job_role: JobRole;
   name: string | null;
+  profession_type: string;
 };
 
 // Resolve a organização ativa do usuário: usa profiles.active_org_id se ele
@@ -83,15 +84,18 @@ export async function getOrgMembers(
 
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("id, name")
+    .select("id, name, profession_type")
     .in("id", ids);
 
-  const nameById = new Map((profiles ?? []).map((p) => [p.id as string, p.name as string | null]));
+  const profileById = new Map(
+    (profiles ?? []).map((p) => [p.id as string, p as { name: string | null; profession_type: string }])
+  );
 
   return rows.map((m) => ({
     user_id: m.user_id as string,
     role: m.role as OrgRole,
     job_role: (m.job_role as JobRole | null) ?? "staff",
-    name: nameById.get(m.user_id as string) ?? null,
+    name: profileById.get(m.user_id as string)?.name ?? null,
+    profession_type: profileById.get(m.user_id as string)?.profession_type ?? "autonomous_seller",
   }));
 }

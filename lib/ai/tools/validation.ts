@@ -66,6 +66,57 @@ export async function requireVisibleContactId(
   return id;
 }
 
+export async function visiblePropertyIdOrNull(
+  supabase: SupabaseClient,
+  orgId: string,
+  workspaceKey: string,
+  v: unknown
+): Promise<string | null> {
+  const id = optionalStr(v, 80);
+  if (!id) return null;
+  const { data, error } = await supabase
+    .from("real_estate_properties")
+    .select("id")
+    .eq("id", id)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey)
+    .maybeSingle();
+  ensureOk(error);
+  if (!data) throw new Error("Imóvel não encontrado.");
+  return id;
+}
+
+export async function requireVisiblePropertyId(
+  supabase: SupabaseClient,
+  orgId: string,
+  workspaceKey: string,
+  v: unknown
+): Promise<string> {
+  const id = await visiblePropertyIdOrNull(supabase, orgId, workspaceKey, v);
+  if (!id) throw new Error("Campo obrigatório: imovel_id.");
+  return id;
+}
+
+// Campos que a IA está inferindo (não confirmando), ex: extraídos de uma
+// foto ou mensagem — nunca viram valor de coluna tipada direto, ficam
+// pendurados aqui até confirmação humana (ver confirmPropertyAiField em
+// app/(app)/imoveis/actions.ts). Mesmo princípio de sanitização de
+// detailsObject(), formato diferente (guarda origem/confiança, não só valor).
+export function aiSuggestedFieldsObject(v: unknown): Record<string, { value: string; source: string; suggested_at: string }> {
+  if (!v || typeof v !== "object") return {};
+  const result: Record<string, { value: string; source: string; suggested_at: string }> = {};
+  for (const [key, value] of Object.entries(v as Record<string, unknown>)) {
+    if (typeof value === "string" && value.trim()) {
+      result[key.slice(0, 60)] = {
+        value: value.trim().slice(0, 200),
+        source: "assistant",
+        suggested_at: new Date().toISOString(),
+      };
+    }
+  }
+  return result;
+}
+
 export function clampInt(v: unknown, min: number, max: number, fallback: number): number {
   const n = Number(v);
   if (!Number.isFinite(n)) return fallback;

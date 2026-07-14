@@ -39,7 +39,10 @@ export type JobRole =
   | "finance"
   | "receptionist"
   | "intern"
-  | "staff";
+  | "staff"
+  | "broker"
+  | "agent"
+  | "assistant";
 
 export type Organization = {
   id: string;
@@ -191,6 +194,91 @@ export type LegalDocumentSignature = {
   status: "pending" | "viewed" | "signed" | "rejected" | "delivery_failed";
   signer_name: string; signer_email: string; signed_file_url: string | null;
   sent_by: string; created_at: string; updated_at: string;
+};
+
+export type RealEstatePropertyType =
+  | "apartamento" | "casa" | "cobertura" | "terreno" | "comercial" | "sala" | "galpao" | "rural" | "outro";
+export type RealEstateTransactionType = "venda" | "aluguel" | "venda_aluguel";
+export type RealEstatePropertyStatus = "rascunho" | "ativo" | "reservado" | "vendido" | "alugado" | "inativo";
+
+export type AiSuggestedField = { value: string; source: string; confidence?: number; suggested_at?: string };
+
+export type RealEstateProperty = {
+  id: string;
+  org_id: string;
+  workspace_key: "real_estate_broker";
+  created_by: string;
+  assignee_id: string | null;
+  title: string;
+  property_type: RealEstatePropertyType;
+  transaction_type: RealEstateTransactionType;
+  status: RealEstatePropertyStatus;
+  price_cents: number | null;
+  rent_price_cents: number | null;
+  condo_fee_cents: number | null;
+  iptu_cents: number | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  parking_spots: number | null;
+  area_m2: number | null;
+  address_street: string | null;
+  address_number: string | null;
+  address_neighborhood: string | null;
+  address_city: string | null;
+  address_state: string | null;
+  address_zip: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  description: string | null;
+  ai_suggested_fields: Record<string, AiSuggestedField>;
+  extra_features: Record<string, string>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type RealEstatePropertyMedia = {
+  id: string;
+  org_id: string;
+  property_id: string;
+  storage_path: string;
+  position: number;
+  created_by: string;
+  created_at: string;
+};
+
+export type RealEstateShareCollection = {
+  id: string;
+  org_id: string;
+  workspace_key: "real_estate_broker";
+  token: string;
+  created_by: string;
+  title: string;
+  client_contact_id: string | null;
+  revoked_at: string | null;
+  expires_at: string | null;
+  last_accessed_at: string | null;
+  view_count: number;
+  created_at: string;
+};
+
+export type RealEstateShareCollectionItem = {
+  id: string;
+  collection_id: string;
+  org_id: string;
+  property_id: string;
+  position: number;
+  created_at: string;
+};
+
+export type RealEstatePropertyReaction = "interessado" | "sem_interesse" | "quero_visitar";
+export type RealEstatePropertyReactionRow = {
+  id: string;
+  org_id: string;
+  collection_id: string;
+  property_id: string;
+  reaction: RealEstatePropertyReaction;
+  created_at: string;
+  updated_at: string;
 };
 
 export type Contact = {

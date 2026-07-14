@@ -6,10 +6,12 @@ import { usePathname } from "next/navigation";
 import {
   IconBell,
   IconBot,
+  IconBuilding,
   IconCalendar,
   IconChartBar,
   IconColumns,
   IconGauge,
+  IconImage,
   IconMessage,
   IconPhone,
   IconPlus,
@@ -40,6 +42,11 @@ type LawOfficeAccess = {
   canViewFinance: boolean;
 };
 
+type RealEstateAccess = {
+  enabled: boolean;
+  canManage: boolean;
+};
+
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "Painel", icon: IconGauge, mobile: true },
   { href: "/contacts", label: "Contatos", icon: IconUsers, mobile: true },
@@ -66,6 +73,19 @@ const LAW_NAV: NavItem[] = [
   { href: "/team", label: "Equipe", icon: IconUsers },
 ];
 
+const REAL_ESTATE_NAV: NavItem[] = [
+  { href: "/dashboard", label: "Painel", icon: IconGauge, mobile: true },
+  { href: "/contacts", label: "Clientes", icon: IconUsers, mobile: true },
+  { href: "/pipeline", label: "Atendimentos", icon: IconPhone, mobile: true },
+  { href: "/imoveis", label: "Imóveis", icon: IconBuilding, mobile: true },
+  { href: "/imoveis/colecoes", label: "Vitrines", icon: IconImage },
+  { href: "/calendar", label: "Calendário", icon: IconCalendar },
+  { href: "/whatsapp", label: "WhatsApp", icon: IconMessage },
+  { href: "/tasks", label: "Tarefas", icon: IconBell },
+  { href: "/assistant", label: "Assistente IA", icon: IconBot },
+  { href: "/team", label: "Equipe", icon: IconUsers },
+];
+
 function useActive() {
   const pathname = usePathname();
   return (href: string) => pathname === href || pathname.startsWith(href + "/");
@@ -83,10 +103,12 @@ export function SidebarNav({
   labels,
   isAdmin = false,
   lawOfficeAccess,
+  realEstateAccess,
 }: {
   labels?: NavLabels;
   isAdmin?: boolean;
   lawOfficeAccess?: LawOfficeAccess;
+  realEstateAccess?: RealEstateAccess;
 }) {
   const isActive = useActive();
   const text = labels ?? {
@@ -112,6 +134,9 @@ export function SidebarNav({
       ];
     }
     if (isAdmin) items = [...items, { href: "/dev", label: "MÃ©tricas", icon: IconChartBar }];
+  } else if (realEstateAccess?.enabled) {
+    items = REAL_ESTATE_NAV.filter((item) => item.href !== "/imoveis/colecoes" || realEstateAccess.canManage);
+    if (isAdmin) items = [...items, { href: "/dev", label: "Métricas", icon: IconChartBar }];
   }
 
   return (
@@ -125,7 +150,7 @@ export function SidebarNav({
             href={href}
             aria-current={active ? "page" : undefined}
             className={
-              "nav-item group flex min-h-11 items-center gap-3 rounded-lg px-3 text-[15px] font-semibold focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-600 " +
+              "sidebar-nav-item nav-item group flex min-h-11 items-center gap-3 rounded-lg px-3 text-[15px] font-semibold focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-600 " +
               (active
                 ? "bg-brand-50 text-brand-800 shadow-[inset_0_0_0_1px_rgba(123,63,242,0.06)] dark:bg-brand-700 dark:text-white"
                 : "text-ink-soft hover:bg-surface-2 hover:text-ink")
@@ -137,7 +162,7 @@ export function SidebarNav({
                 (active ? "text-brand-700 dark:text-white" : "text-ink-muted group-hover:text-brand-700")
               }
             />
-            {displayLabel}
+            <span className="relative z-[1]">{displayLabel}</span>
           </Link>
         );
       })}
@@ -148,9 +173,11 @@ export function SidebarNav({
 export function MobileTabBar({
   labels,
   lawOfficeAccess,
+  realEstateAccess,
 }: {
   labels?: Pick<NavLabels, "contacts" | "pipeline" | "dealSingular">;
   lawOfficeAccess?: LawOfficeAccess;
+  realEstateAccess?: RealEstateAccess;
 }) {
   const isActive = useActive();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -160,6 +187,8 @@ export function MobileTabBar({
   const contactSingular = contactsLabel === "Sujeitos" ? "sujeito" : "contato";
   const mobileItems = lawOfficeAccess?.enabled
     ? LAW_NAV.filter((item) => item.mobile).filter((item) => item.href !== "/law" || lawOfficeAccess.canViewLegal)
+    : realEstateAccess?.enabled
+    ? REAL_ESTATE_NAV.filter((item) => item.mobile)
     : [
         ...NAV.filter((item) => item.mobile && item.href !== "/tasks"),
         { href: "/assistant", label: "IA", icon: IconBot, mobile: true },
@@ -225,6 +254,27 @@ export function MobileTabBar({
           href: "/assistant",
           label: "Assistente IA",
           description: "Tire dúvidas e gere rascunhos",
+          icon: IconBot,
+        }]
+      : []),
+    ...(realEstateAccess?.enabled && realEstateAccess.canManage
+      ? [{
+          href: "/imoveis/novo",
+          label: "Imóvel",
+          description: "Cadastrar um novo imóvel",
+          icon: IconBuilding,
+        }, {
+          href: "/imoveis/colecoes/nova",
+          label: "Vitrine",
+          description: "Selecionar imóveis para compartilhar",
+          icon: IconImage,
+        }]
+      : []),
+    ...(realEstateAccess?.enabled
+      ? [{
+          href: "/assistant",
+          label: "Assistente IA",
+          description: "Tire dúvidas e ajude a cadastrar imóveis",
           icon: IconBot,
         }]
       : []),

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
-import { E2E_EMAIL, E2E_PASSWORD } from "./fixtures";
+import { E2E_EMAIL, E2E_PASSWORD, E2E_REALESTATE_EMAIL, E2E_REALESTATE_PASSWORD } from "./fixtures";
 
 function loadEnvLocal() {
   let content: string;
@@ -49,5 +49,16 @@ export default async function globalSetup() {
       email_confirm: true,
     });
     if (error) throw new Error(`Falha ao criar usuário de e2e: ${error.message}`);
+  }
+
+  const realEstateExists = existing?.users.some((u) => u.email === E2E_REALESTATE_EMAIL);
+  if (!realEstateExists) {
+    const { error } = await admin.auth.admin.createUser({
+      email: E2E_REALESTATE_EMAIL,
+      password: E2E_REALESTATE_PASSWORD,
+      email_confirm: true,
+      user_metadata: { profession_type: "real_estate_broker", profession_types: ["real_estate_broker"] },
+    });
+    if (error) throw new Error(`Falha ao criar usuário imobiliário de e2e: ${error.message}`);
   }
 }

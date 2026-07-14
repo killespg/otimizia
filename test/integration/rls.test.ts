@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
   adminClient,
   createTestUser,
@@ -146,5 +146,220 @@ describe.skipIf(!config)("RLS multi-tenancy (contra Supabase local)", () => {
     // sempre devolve vazio, seja lá o que exista na tabela.
     expect(error).toBeNull();
     expect(data).toEqual([]);
+  });
+});
+
+describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", () => {
+  let admin: SupabaseClient;
+  let anon: SupabaseClient;
+  let userA: Awaited<ReturnType<typeof createTestUser>>;
+  let userB: Awaited<ReturnType<typeof createTestUser>>;
+  let orgA: string;
+  let propertyId: string;
+
+  beforeAll(async () => {
+    admin = adminClient(config!);
+    anon = createClient(config!.apiUrl, config!.anonKey, { auth: { autoRefreshToken: false, persistSession: false } });
+    userA = await createTestUser(config!, admin);
+    userB = await createTestUser(config!, admin);
+    orgA = await getPersonalOrgId(admin, userA.userId);
+
+    const { data: property } = await userA.client
+      .from("real_estate_properties")
+      .insert({
+        org_id: orgA,
+        workspace_key: "real_estate_broker",
+        created_by: userA.userId,
+        title: "Apartamento de teste",
+        property_type: "apartamento",
+        transaction_type: "venda",
+      })
+      .select("id")
+      .single();
+    propertyId = property!.id;
+  });
+
+  afterAll(async () => {
+    await deleteTestUser(admin, userA.userId);
+    await deleteTestUser(admin, userB.userId);
+  });
+
+  it("impede membro de outra organização ler ou inserir imóveis", async () => {
+    const { data: seenByB } = await userB.client
+      .from("real_estate_properties")
+      .select("*")
+      .eq("id", propertyId)
+      .maybeSingle();
+    expect(seenByB).toBeNull();
+
+    const { error } = await userB.client.from("real_estate_properties").insert({
+      org_id: orgA,
+      workspace_key: "real_estate_broker",
+      created_by: userB.userId,
+      title: "Tentativa de invasão",
+      property_type: "casa",
+      transaction_type: "venda",
+    });
+    expect(error).not.toBeNull();
+  });
+
+  it("job_role check aceita broker/agent/assistant e rejeita valor arbitrário", async () => {
+    await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "assistant" });
+    const { error: invalidError } = await admin
+      .from("organization_members")
+      .update({ job_role: "corretor-chefe-supremo" })
+      .eq("org_id", orgA)
+      .eq("user_id", userB.userId);
+    expect(invalidError).not.toBeNull();
+    await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+  });
+
+  it("job_role=assistant lê mas não escreve; job_role=agent lê e escreve", async () => {
+    await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "assistant" });
+
+    const { data: seenAsAssistant } = await userB.client
+      .from("real_estate_properties")
+      .select("*")
+      .eq("id", propertyId)
+      .maybeSingle();
+    expect(seenAsAssistant?.id).toEqual(propertyId);
+
+    // RLS bloqueando um UPDATE não gera erro — o Postgres só casa 0 linhas
+    // com a cláusula USING e o PostgREST devolve sucesso vazio. Por isso o
+    // jeito certo de detectar o bloqueio é pedir .select() de volta e
+    // conferir que veio vazio (ou reler com o client admin), não checar
+    // "error" (que só aparece em INSERT/violação de FK/check).
+    const { data: updateAsAssistant, error: updateAsAssistantError } = await userB.client
+      .from("real_estate_properties")
+      .update({ title: "Editado pelo assistente" })
+      .eq("id", propertyId)
+      .select();
+    expect(updateAsAssistantError).toBeNull();
+    expect(updateAsAssistant).toEqual([]);
+
+    await admin.from("organization_members").update({ job_role: "agent" }).eq("org_id", orgA).eq("user_id", userB.userId);
+
+    const { error: updateAsAgent } = await userB.client
+      .from("real_estate_properties")
+      .update({ title: "Editado pelo corretor associado" })
+      .eq("id", propertyId);
+    expect(updateAsAgent).toBeNull();
+
+    await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+  });
+
+  it("rejeita media/item de coleção cujo property_id pertence a outra organização mesmo com org_id falsificado", async () => {
+    const orgB = await getPersonalOrgId(admin, userB.userId);
+    const { data: propertyB } = await userB.client
+      .from("real_estate_properties")
+      .insert({
+        org_id: orgB,
+        workspace_key: "real_estate_broker",
+        created_by: userB.userId,
+        title: "Imóvel da organização B",
+        property_type: "casa",
+        transaction_type: "venda",
+      })
+      .select("id")
+      .single();
+
+    // org_id aponta pra própria org do atacante, mas property_id é de outra
+    // organização — a FK composta (org_id, property_id) barra isso mesmo com
+    // o org_id "certo" do ponto de vista de quem está inserindo.
+    const { error: mediaError } = await userB.client.from("real_estate_property_media").insert({
+      org_id: orgB,
+      property_id: propertyId,
+      storage_path: `${orgB}/invasao.jpg`,
+      created_by: userB.userId,
+    });
+    expect(mediaError).not.toBeNull();
+
+    const { data: collection } = await userA.client
+      .from("real_estate_share_collections")
+      .insert({ org_id: orgA, workspace_key: "real_estate_broker", created_by: userA.userId, title: "Vitrine de teste" })
+      .select("id, token")
+      .single();
+
+    const { error: itemError } = await userB.client.from("real_estate_share_collection_items").insert({
+      collection_id: collection!.id,
+      org_id: orgB,
+      property_id: propertyB!.id,
+    });
+    expect(itemError).not.toBeNull();
+
+    await userA.client.from("real_estate_share_collection_items").insert({
+      collection_id: collection!.id,
+      org_id: orgA,
+      property_id: propertyId,
+    });
+
+    await admin.from("real_estate_properties").delete().eq("id", propertyB!.id);
+  });
+
+  it("insert/update direto em real_estate_property_reactions falha para authenticated e anon; só a função RPC funciona", async () => {
+    const { data: collection } = await userA.client
+      .from("real_estate_share_collections")
+      .select("id, token")
+      .eq("org_id", orgA)
+      .limit(1)
+      .single();
+
+    const { error: directInsertError } = await userA.client.from("real_estate_property_reactions").insert({
+      org_id: orgA,
+      collection_id: collection!.id,
+      property_id: propertyId,
+      reaction: "interessado",
+    });
+    expect(directInsertError).not.toBeNull();
+
+    const { error: anonDirectInsertError } = await anon.from("real_estate_property_reactions").insert({
+      org_id: orgA,
+      collection_id: collection!.id,
+      property_id: propertyId,
+      reaction: "interessado",
+    });
+    expect(anonDirectInsertError).not.toBeNull();
+
+    const { error: rpcError } = await anon.rpc("record_property_reaction", {
+      p_token: collection!.token,
+      p_property_id: propertyId,
+      p_reaction: "quero_visitar",
+    });
+    expect(rpcError).toBeNull();
+
+    // Trocar de reação no mesmo (collection, property) deve fazer upsert —
+    // uma linha só, não acumular.
+    await anon.rpc("record_property_reaction", {
+      p_token: collection!.token,
+      p_property_id: propertyId,
+      p_reaction: "interessado",
+    });
+    const { data: reactions } = await admin
+      .from("real_estate_property_reactions")
+      .select("*")
+      .eq("collection_id", collection!.id)
+      .eq("property_id", propertyId);
+    expect(reactions).toHaveLength(1);
+    expect(reactions?.[0].reaction).toEqual("interessado");
+  });
+
+  it("get_shared_property_collection via client anônimo: token válido retorna dado, revogado/expirado/inexistente retorna null", async () => {
+    const { data: collection } = await userA.client
+      .from("real_estate_share_collections")
+      .select("id, token")
+      .eq("org_id", orgA)
+      .limit(1)
+      .single();
+
+    const { data: shared, error: sharedError } = await anon.rpc("get_shared_property_collection", { p_token: collection!.token });
+    expect(sharedError).toBeNull();
+    expect(shared).not.toBeNull();
+
+    const { data: nonExistent } = await anon.rpc("get_shared_property_collection", { p_token: "00000000-0000-0000-0000-000000000000" });
+    expect(nonExistent).toBeNull();
+
+    await userA.client.from("real_estate_share_collections").update({ revoked_at: new Date().toISOString() }).eq("id", collection!.id);
+    const { data: revoked } = await anon.rpc("get_shared_property_collection", { p_token: collection!.token });
+    expect(revoked).toBeNull();
   });
 });

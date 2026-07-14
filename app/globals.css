@@ -30,12 +30,13 @@
     --color-ink: 250 248 255;
     --color-ink-soft: 218 211 235;
     --color-ink-muted: 170 161 194;
-    --color-canvas: 15 13 25;
-    --color-surface: 24 20 40;
-    --color-surface-2: 32 27 53;
-    --color-line: 68 59 102;
-    --color-line-strong: 138 122 188;
+    --color-canvas: 10 9 17;
+    --color-surface: 18 16 27;
+    --color-surface-2: 24 21 36;
+    --color-line: 52 47 74;
+    --color-line-strong: 116 103 160;
   }
+
 
   body {
     @apply bg-canvas text-ink antialiased;
@@ -2615,8 +2616,9 @@ label[class*="border-line"]::before,
 
 .dark .dashboard-board .dashboard-metrics-grid .dashboard-card:hover {
   border-color: color-mix(in srgb, var(--dashboard-accent) 42%, var(--dashboard-line));
-  background: linear-gradient(145deg, #453d65, #3a3457);
+  background: var(--dashboard-panel-strong);
 }
+
 
 .dark .dashboard-board-glow .enter,
 .dark .dashboard-board-glow .panel,
@@ -2935,9 +2937,59 @@ label[class*="border-line"]::before,
   color: var(--dashboard-text);
 }
 
+.dashboard-widget-order-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.25rem;
+}
+
+.dashboard-widget-order-actions button {
+  min-height: 2.25rem;
+  border-radius: 6px;
+  border: 1px solid var(--dashboard-line);
+  padding: 0.35rem 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--dashboard-text);
+  background: var(--dashboard-panel);
+}
+
+.dashboard-widget-order-actions button:hover:not(:disabled) {
+  border-color: var(--dashboard-accent);
+  color: var(--dashboard-accent);
+}
+
+.dashboard-widget-order-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
 .dashboard-widget-dragging {
+  position: relative;
+  z-index: 20;
   opacity: 0.58;
-  transform: scale(0.985);
+  transform: translate3d(var(--drag-x, 0), var(--drag-y, 0), 0) scale(0.985);
+  transition: opacity var(--motion-fast) var(--ease-ui-out);
+}
+
+.dashboard-widget-shell[data-drop-target="true"] {
+  outline: 2px solid var(--dashboard-accent);
+  outline-offset: 4px;
+  background: var(--dashboard-accent-faint);
+}
+
+@media (max-width: 639px) {
+  .dashboard-widget-drag-bar {
+    flex-wrap: wrap;
+  }
+
+  .dashboard-widget-order-actions {
+    width: 100%;
+  }
+
+  .dashboard-widget-order-actions button {
+    flex: 1;
+  }
 }
 
 /* Estrutura do dashboard não é card: mantém cabeçalho e grade integrados ao fundo. */
@@ -3102,17 +3154,18 @@ label[class*="border-line"]::before,
 }
 
 .dark .dashboard-board {
-  --dashboard-panel: #34314d;
-  --dashboard-panel-strong: #3a3655;
-  --dashboard-line: #504a6d;
+  --dashboard-panel: #17151f;
+  --dashboard-panel-strong: #1e1b28;
+  --dashboard-line: #2c2836;
 }
 
 .dark .dashboard-board .dashboard-card,
 .dark .dashboard-board section.enter:not(.dashboard-metrics-grid),
 .dark .dashboard-board .panel {
-  background: linear-gradient(155deg, rgba(62,57,88,.98), rgba(52,49,77,.98));
-  box-shadow: 0 18px 38px -34px rgba(8,6,22,.82), inset 0 1px 0 rgba(255,255,255,.045);
+  background: var(--dashboard-panel);
+  box-shadow: 0 18px 38px -34px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.025);
 }
+
 
 .dark .dashboard-board #valor > div[class*="linear-gradient"] {
   border: 1px solid rgba(145,132,184,.18);
@@ -3128,4 +3181,329 @@ label[class*="border-line"]::before,
 
 @media (min-width: 1024px) {
   .dashboard-board { padding: 1.25rem; }
+}
+
+/* Dashboard de referência (deployment `saas`, 04/07/2026).
+   Mantém os recursos atuais, mas recupera a hierarquia visual clara,
+   os cartões e os tokens usados naquele frontend. */
+.app-shell:has(.dashboard-reference) {
+  --color-ink: 38 27 43;
+  --color-ink-soft: 79 65 82;
+  --color-ink-muted: 116 99 116;
+  --color-canvas: 241 236 232;
+  --color-surface: 250 247 242;
+  --color-surface-2: 234 226 220;
+  --color-line: 216 204 197;
+  --color-line-strong: 187 168 160;
+}
+
+.dark .app-shell:has(.dashboard-reference) {
+  --color-ink: 250 248 255;
+  --color-ink-soft: 218 211 235;
+  --color-ink-muted: 160 151 182;
+  --color-canvas: 27 26 44;
+  --color-surface: 20 21 34;
+  --color-surface-2: 31 32 48;
+  --color-line: 58 56 78;
+  --color-line-strong: 112 100 148;
+}
+
+.dashboard-reference {
+  --dashboard-panel: rgb(var(--color-surface));
+  --dashboard-panel-strong: rgb(var(--color-surface));
+  --dashboard-line: rgb(var(--color-line));
+  --dashboard-text: rgb(var(--color-ink));
+  --dashboard-muted: rgb(var(--color-ink-muted));
+  --dashboard-bg: rgb(var(--color-canvas));
+  padding: 0;
+  background: transparent;
+}
+
+.dashboard-reference .bg-white {
+  background-color: rgb(var(--color-surface));
+}
+
+.dashboard-reference .dashboard-context-line,
+.dashboard-reference .dashboard-header > div > div > p {
+  display: none;
+}
+
+.dashboard-reference .dashboard-header h1 {
+  margin-top: 0;
+  font-size: 1.375rem;
+  letter-spacing: -0.02em;
+}
+
+.dashboard-reference .dashboard-metrics-grid {
+  gap: 0.75rem;
+}
+
+.dashboard-reference .dashboard-metrics-grid article,
+.dashboard-reference .panel,
+.dashboard-reference section.enter:not(.dashboard-metrics-grid) {
+  border-color: rgb(var(--color-line));
+  background-color: rgb(var(--color-surface));
+  box-shadow: 0 18px 44px -34px rgba(21, 19, 46, 0.72);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.dashboard-reference .dashboard-metrics-grid article::before,
+.dashboard-reference .dashboard-metrics-grid article::after,
+.dashboard-reference .panel::before,
+.dashboard-reference .panel::after,
+.dashboard-reference section.enter:not(.dashboard-metrics-grid)::before,
+.dashboard-reference section.enter:not(.dashboard-metrics-grid)::after {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(139, 61, 255, 0.1), transparent 0 34%),
+    linear-gradient(115deg, transparent 0 36%, rgba(255, 255, 255, 0.42) 45%, transparent 56% 100%);
+}
+
+.dark .dashboard-reference .panel,
+.dark .dashboard-reference section.enter:not(.dashboard-metrics-grid) {
+  border-color: rgba(90, 88, 116, 0.48);
+  box-shadow:
+    0 28px 70px -48px rgba(0, 0, 0, 0.95),
+    0 0 32px -28px rgba(155, 113, 255, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.dark .dashboard-reference .dashboard-metrics-grid article::before,
+.dark .dashboard-reference .panel::before,
+.dark .dashboard-reference section.enter:not(.dashboard-metrics-grid)::before {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(199, 168, 255, 0.17), transparent 0 34%),
+    linear-gradient(115deg, transparent 0 36%, rgba(255, 255, 255, 0.07) 45%, transparent 56% 100%);
+}
+
+.dark .dashboard-reference .field,
+.dark .dashboard-reference .glass-input {
+  background-color: rgb(15 16 27);
+  border-color: rgba(110, 103, 143, 0.62);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dashboard-reference article[class*="border-line"]:hover,
+  .dashboard-reference section[class*="border-line"]:hover,
+  .dashboard-reference form[class*="border-line"]:hover {
+    border-color: rgba(139, 61, 255, 0.28);
+    box-shadow:
+      0 24px 54px -46px rgba(54, 35, 92, 0.54),
+      0 0 38px -32px rgba(139, 61, 255, 0.68),
+      inset 0 1px 0 rgba(255, 255, 255, 0.76);
+  }
+
+  .dark .dashboard-reference article[class*="border-line"]:hover,
+  .dark .dashboard-reference section[class*="border-line"]:hover,
+  .dark .dashboard-reference form[class*="border-line"]:hover {
+    border-color: rgba(158, 136, 216, 0.68);
+    box-shadow:
+      0 24px 60px -44px rgba(0, 0, 0, 0.98),
+      0 0 42px -32px rgba(155, 113, 255, 0.95),
+      inset 0 1px 0 rgba(255, 255, 255, 0.065);
+  }
+}
+
+.dashboard-reference .dashboard-customize-trigger,
+.dashboard-reference .dashboard-customize-panel {
+  border-color: rgb(var(--color-line));
+  background: rgb(var(--color-surface));
+}
+
+@media (min-width: 640px) {
+  .dashboard-reference .dashboard-metrics-grid {
+    gap: 1rem;
+  }
+
+  .dashboard-reference .dashboard-header h1 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .dashboard-reference .dashboard-header > div > div:last-child,
+  .dashboard-reference .dashboard-header > form {
+    display: none;
+  }
+}
+
+/* Sidebar com o mesmo reflexo e contorno dos widgets do dashboard. */
+.sidebar-nav-item {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid transparent;
+  transition:
+    border-color 190ms var(--ease-ui-out),
+    box-shadow 220ms var(--ease-ui-out),
+    background-color 190ms var(--ease-ui-out),
+    color 170ms var(--ease-ui-out),
+    transform 190ms var(--ease-ui-out);
+}
+
+.sidebar-nav-item > svg {
+  position: relative;
+  z-index: 1;
+}
+
+.sidebar-nav-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(-22%, -18%, 0) scale(0.92);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(139, 61, 255, 0.1), transparent 0 34%),
+    linear-gradient(115deg, transparent 0 36%, rgba(255, 255, 255, 0.42) 45%, transparent 56% 100%);
+  transition:
+    opacity 220ms var(--ease-ui-out),
+    transform 420ms var(--ease-ui-out);
+}
+
+.dark .sidebar-nav-item::before {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(199, 168, 255, 0.17), transparent 0 34%),
+    linear-gradient(115deg, transparent 0 36%, rgba(255, 255, 255, 0.07) 45%, transparent 56% 100%);
+}
+
+.sidebar-nav-item[aria-current="page"] {
+  border-color: rgba(139, 61, 255, 0.28);
+  animation: none;
+  box-shadow:
+    0 24px 54px -46px rgba(54, 35, 92, 0.54),
+    0 0 38px -32px rgba(139, 61, 255, 0.68),
+    inset 0 1px 0 rgba(255, 255, 255, 0.76);
+}
+
+.dark .sidebar-nav-item[aria-current="page"] {
+  border-color: rgba(158, 136, 216, 0.68);
+  animation: none;
+  box-shadow:
+    0 24px 60px -44px rgba(0, 0, 0, 0.98),
+    0 0 42px -32px rgba(155, 113, 255, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.065);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sidebar-nav-item:hover {
+    border-color: rgba(139, 61, 255, 0.28);
+    box-shadow:
+      0 24px 54px -46px rgba(54, 35, 92, 0.54),
+      0 0 38px -32px rgba(139, 61, 255, 0.68),
+      inset 0 1px 0 rgba(255, 255, 255, 0.76);
+  }
+
+  .dark .sidebar-nav-item:hover {
+    border-color: rgba(158, 136, 216, 0.68);
+    box-shadow:
+      0 24px 60px -44px rgba(0, 0, 0, 0.98),
+      0 0 42px -32px rgba(155, 113, 255, 0.95),
+      inset 0 1px 0 rgba(255, 255, 255, 0.065);
+  }
+
+  .sidebar-nav-item:hover::before {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* As variações salvas em Configurações partem do layout de referência,
+   mas continuam visualmente distintas e funcionais. */
+.dashboard-reference.dashboard-board-glow .dashboard-metrics-grid article,
+.dashboard-reference.dashboard-board-glow .panel,
+.dashboard-reference.dashboard-board-glow section.enter:not(.dashboard-metrics-grid) {
+  border-color: color-mix(in srgb, var(--dashboard-accent) 28%, rgb(var(--color-line)));
+  box-shadow:
+    0 18px 48px -38px rgba(80, 59, 71, 0.38),
+    0 0 28px -26px color-mix(in srgb, var(--dashboard-accent) 48%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.dark .dashboard-reference.dashboard-board-glow .dashboard-metrics-grid article,
+.dark .dashboard-reference.dashboard-board-glow .panel,
+.dark .dashboard-reference.dashboard-board-glow section.enter:not(.dashboard-metrics-grid) {
+  box-shadow:
+    0 28px 70px -48px rgba(0, 0, 0, 0.95),
+    0 0 32px -28px color-mix(in srgb, var(--dashboard-accent) 72%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.dashboard-reference.dashboard-board-clean .dashboard-metrics-grid article,
+.dashboard-reference.dashboard-board-clean .panel,
+.dashboard-reference.dashboard-board-clean section.enter:not(.dashboard-metrics-grid) {
+  border-color: color-mix(in srgb, var(--dashboard-accent) 14%, rgb(var(--color-line)));
+  background-image: none;
+  box-shadow: none;
+}
+
+/* "Claro e limpo" precisa ser claro mesmo quando o app está em dark mode;
+   :has() leva os tokens do estilo escolhido para todo o shell. */
+.dark .app-shell:has(.dashboard-reference.dashboard-board-clean) {
+  color-scheme: light;
+  --color-ink: 38 27 43;
+  --color-ink-soft: 79 65 82;
+  --color-ink-muted: 116 99 116;
+  --color-canvas: 241 236 232;
+  --color-surface: 250 247 242;
+  --color-surface-2: 234 226 220;
+  --color-line: 216 204 197;
+  --color-line-strong: 187 168 160;
+}
+
+.dark .dashboard-reference.dashboard-board-clean {
+  --dashboard-panel: rgb(var(--color-surface));
+  --dashboard-panel-strong: rgb(var(--color-surface));
+  --dashboard-line: rgb(var(--color-line));
+  --dashboard-text: rgb(var(--color-ink));
+  --dashboard-muted: rgb(var(--color-ink-muted));
+}
+
+.dark .dashboard-reference.dashboard-board-clean .text-ink {
+  color: rgb(var(--color-ink));
+}
+
+.dark .dashboard-reference.dashboard-board-clean .text-ink-soft,
+.dark .dashboard-reference.dashboard-board-clean .text-ink-muted {
+  color: rgb(var(--color-ink-muted));
+}
+
+.dashboard-reference.dashboard-board-clean .dashboard-metrics-grid article::before,
+.dashboard-reference.dashboard-board-clean .panel::before,
+.dashboard-reference.dashboard-board-clean section.enter:not(.dashboard-metrics-grid)::before {
+  display: none;
+}
+
+.dashboard-reference.dashboard-board-compact .dashboard-widget-grid {
+  gap: 0.75rem;
+}
+
+.dashboard-reference.dashboard-board-compact .dashboard-metrics-grid article,
+.dashboard-reference.dashboard-board-compact .panel,
+.dashboard-reference.dashboard-board-compact section.enter:not(.dashboard-metrics-grid) {
+  min-height: 0;
+  padding: 0.85rem;
+  box-shadow: none;
+}
+
+.dashboard-reference.dashboard-board-executive {
+  --color-ink: 250 248 255;
+  --color-ink-soft: 218 211 235;
+  --color-ink-muted: 178 167 202;
+  --color-surface: 52 48 79;
+  --color-surface-2: 61 55 91;
+  --color-line: 87 80 115;
+  --dashboard-panel: rgb(var(--color-surface));
+  --dashboard-panel-strong: rgb(var(--color-surface-2));
+  --dashboard-line: rgb(var(--color-line));
+}
+
+.dashboard-reference.dashboard-board-executive .dashboard-metrics-grid article,
+.dashboard-reference.dashboard-board-executive .panel,
+.dashboard-reference.dashboard-board-executive section.enter:not(.dashboard-metrics-grid) {
+  border-color: color-mix(in srgb, var(--dashboard-accent) 32%, rgb(var(--color-line)));
+  background-color: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
+  box-shadow: 0 22px 60px -42px color-mix(in srgb, var(--dashboard-accent) 62%, #000);
 }
