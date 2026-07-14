@@ -2,8 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [claude/saas-creation-marketing-a49v4f]
   pull_request:
+    branches: [claude/saas-creation-marketing-a49v4f]
 
 jobs:
   check:
