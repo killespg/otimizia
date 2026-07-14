@@ -814,4 +814,58 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
 
     await admin.from("real_estate_property_documents").delete().eq("id", doc!.id);
   });
+
+  // RE-6xx (Fase 6): real_estate_commissions e real_estate_targets são
+  // tabelas novas (0063).
+  it("real_estate_commissions: isolamento cross-org e FK composta rejeita atendimento de outra organização", async () => {
+    const orgB = await getPersonalOrgId(admin, userB.userId);
+    const { data: dealA } = await userA.client
+      .from("deals")
+      .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "real_estate_broker", title: "Atendimento pra comissão" })
+      .select("id")
+      .single();
+    const { data: dealB } = await userB.client
+      .from("deals")
+      .insert({ owner_id: userB.userId, org_id: orgB, workspace_key: "real_estate_broker", title: "Atendimento de B" })
+      .select("id")
+      .single();
+
+    const { data: commission, error: insertError } = await userA.client
+      .from("real_estate_commissions")
+      .insert({
+        org_id: orgA, deal_id: dealA!.id, property_id: propertyId, broker_id: userA.userId,
+        gross_sale_value_cents: 85000000, commission_percent: 6, expected_amount_cents: 5100000,
+      })
+      .select("id")
+      .single();
+    expect(insertError).toBeNull();
+
+    const { data: seenByB } = await userB.client.from("real_estate_commissions").select("*").eq("id", commission!.id).maybeSingle();
+    expect(seenByB).toBeNull();
+
+    const { error: forgedDealError } = await userA.client.from("real_estate_commissions").insert({
+      org_id: orgA, deal_id: dealB!.id, property_id: propertyId, broker_id: userA.userId,
+      gross_sale_value_cents: 1000, commission_percent: 6, expected_amount_cents: 60,
+    });
+    expect(forgedDealError).not.toBeNull();
+
+    await admin.from("real_estate_commissions").delete().eq("id", commission!.id);
+    await admin.from("deals").delete().eq("id", dealA!.id);
+    await admin.from("deals").delete().eq("id", dealB!.id);
+  });
+
+  it("real_estate_targets: broker_id nulo (meta de equipe) funciona e isolamento cross-org vale", async () => {
+    const { data: target, error: insertError } = await userA.client
+      .from("real_estate_targets")
+      .insert({ org_id: orgA, broker_id: null, period_start: "2026-01-01", period_end: "2026-01-31", target_amount_cents: 100000000, created_by: userA.userId })
+      .select("id, broker_id")
+      .single();
+    expect(insertError).toBeNull();
+    expect(target!.broker_id).toBeNull();
+
+    const { data: seenByB } = await userB.client.from("real_estate_targets").select("*").eq("id", target!.id).maybeSingle();
+    expect(seenByB).toBeNull();
+
+    await admin.from("real_estate_targets").delete().eq("id", target!.id);
+  });
 });

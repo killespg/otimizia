@@ -17,6 +17,7 @@ import {
   updateClientPreferences,
 } from "./preferences";
 import { createRealEstateOffer } from "./offers";
+import { getRealEstatePipelineSummary } from "./pipeline-summary";
 import type { ToolInput } from "./types";
 import { schedulePropertyVisit } from "./visits";
 import { str } from "./validation";
@@ -85,6 +86,8 @@ export async function executeTool(
       return generateListingCopy(supabase, orgId, workspaceKey, input);
     case "detect_listing_gaps":
       return detectListingGaps(supabase, orgId, workspaceKey, input);
+    case "get_real_estate_pipeline_summary":
+      return getRealEstatePipelineSummary(supabase, orgId, workspaceKey, input);
     case "create_contact":
       return createContact(supabase, userId, orgId, workspaceKey, input);
     case "update_contact":

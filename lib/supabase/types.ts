@@ -400,6 +400,37 @@ export type RealEstatePropertyDocument = {
   updated_at: string;
 };
 
+export type RealEstateCommissionStatus = "expected" | "partial" | "received" | "cancelled";
+
+export type RealEstateCommission = {
+  id: string;
+  org_id: string;
+  deal_id: string;
+  property_id: string;
+  broker_id: string;
+  gross_sale_value_cents: number;
+  commission_percent: number;
+  expected_amount_cents: number;
+  received_amount_cents: number;
+  status: RealEstateCommissionStatus;
+  due_at: string | null;
+  received_at: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type RealEstateTarget = {
+  id: string;
+  org_id: string;
+  broker_id: string | null;
+  period_start: string;
+  period_end: string;
+  target_amount_cents: number;
+  created_by: string;
+  created_at: string;
+};
+
 export type Contact = {
   id: string;
   owner_id: string;

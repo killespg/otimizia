@@ -510,6 +510,16 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "get_real_estate_pipeline_summary",
+    description: "Resumo do pipeline imobiliário num período: imóveis captados, vitrines enviadas, visitas, propostas e comissão prevista/recebida. Só leitura.",
+    input_schema: {
+      type: "object",
+      properties: {
+        dias: { type: "integer", description: "Janela em dias pra trás. Padrão: 30." },
+      },
+    },
+  },
+  {
     name: "update_organization_context",
     description:
       "Atualiza contexto da empresa que alimenta a IA: nome, setor, região, prioridades, tom, instruções e observações. Use quando o usuário pedir para a IA conhecer melhor a empresa.",

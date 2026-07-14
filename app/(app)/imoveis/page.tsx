@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   canViewRealEstate,
+  isRealEstateV2Enabled,
   propertyStatusLabel,
   propertyTypeLabel,
   REAL_ESTATE_PROPERTY_STATUSES,
@@ -46,12 +47,14 @@ export default async function ImoveisPage({
   const workspaceKey = getWorkspaceKey(profile?.profession_type, user?.user_metadata?.profession_type, profile?.is_admin);
   if (workspaceKey !== "real_estate_broker") return <NotRealEstate />;
 
-  const [orgRole, { data: membership }] = await Promise.all([
+  const [orgRole, { data: membership }, { data: org }] = await Promise.all([
     getOrgRole(supabase, orgId, user!.id),
     supabase.from("organization_members").select("job_role").eq("org_id", orgId).eq("user_id", user!.id).maybeSingle(),
+    supabase.from("organizations").select("real_estate_v2_enabled").eq("id", orgId).maybeSingle(),
   ]);
   const isAdmin = orgRole === "admin";
   if (!canViewRealEstate(membership?.job_role, isAdmin)) return <AccessDenied />;
+  const v2Enabled = isRealEstateV2Enabled(org);
 
   // Desvio deliberado do padrão de contacts/pipeline (buscar tudo e filtrar
   // em useMemo no cliente): preço/quartos/bairro em centenas de imóveis não
@@ -92,10 +95,22 @@ export default async function ImoveisPage({
             Cadastre, filtre e monte vitrines com os imóveis da sua carteira.
           </p>
         </div>
-        <Link href="/imoveis/novo" className="btn shrink-0">
-          <IconPlus className="h-4 w-4" />
-          Novo imóvel
-        </Link>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          {v2Enabled && (
+            <>
+              <Link href="/imoveis/visitas" className="btn-soft">
+                Visitas
+              </Link>
+              <Link href="/imoveis/dashboard" className="btn-soft">
+                Dashboard
+              </Link>
+            </>
+          )}
+          <Link href="/imoveis/novo" className="btn">
+            <IconPlus className="h-4 w-4" />
+            Novo imóvel
+          </Link>
+        </div>
       </header>
 
       <section className="panel p-4 sm:p-5">
