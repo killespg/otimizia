@@ -7,13 +7,21 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-// Disparado pelo Vercel Cron (vercel.json) de hora em hora — mais frequente
-// que os outros crons (daily-*) de propósito, porque estes lembretes são
-// por EVENTO (2h/24h antes da visita, 24h antes da proposta expirar), não
-// um resumo diário. Cobre visita (RE-3xx) e expiração de proposta (RE-4xx)
-// no mesmo cron — mesma cadência, mesmo mecanismo de dedupe — em vez de
-// multiplicar rotas de cron quase idênticas. Mesma autenticação dos outros
-// crons: Vercel injeta "Authorization: Bearer <CRON_SECRET>".
+// Disparado 1x/dia pelo Vercel Cron (vercel.json, 09:00 UTC) — o plano
+// Hobby da Vercel não permite cron mais frequente que diário (era "0 * * * *"
+// originalmente, o que travava TODO o deploy de produção, não só essa rota;
+// corrigido junto com este arquivo). Cobre visita (RE-3xx) e expiração de
+// proposta (RE-4xx) no mesmo cron — mesma cadência, mesmo mecanismo de
+// dedupe — em vez de multiplicar rotas de cron quase idênticas. Mesma
+// autenticação dos outros crons: Vercel injeta "Authorization: Bearer
+// <CRON_SECRET>".
+//
+// Como só há UMA execução por dia, as janelas de "X antes do evento" abaixo
+// foram alargadas para cobrir um dia inteiro (em vez da janela de 1h que
+// fazia sentido com cron horário). O dedupe em markEventSent (unique por
+// entity_id+kind) garante que cada visita/proposta recebe o lembrete uma
+// única vez, não importa em qual dia a janela alargada primeiro a alcança —
+// então alargar a janela é seguro e não duplica envios.
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
   if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -33,14 +41,15 @@ export async function GET(request: Request) {
   return Response.json({ whatsapp: whatsappResult, push: pushResult, offers: offerResult });
 }
 
-// Cadência horária = janela de 1h em torno do alvo (23h-24h / 1h-2h antes)
-// garante exatamente uma chance de disparo por visita, sem depender de um
-// cron mais granular que talvez não esteja disponível no plano da Vercel
-// em uso — se o produto crescer e precisar de precisão maior, trocar pra
-// */15 * * * * e estreitar a janela é a mudança, não a lógica.
+// Janela alargada para 0-48h à frente (era 23h-24h, calibrada pra cron
+// horário) — com execução 1x/dia isso garante que toda visita marcada para
+// "amanhã" caia na janela em pelo menos uma das execuções diárias antes de
+// acontecer. O texto da mensagem já diz "amanhã", então não dispara pra
+// visitas de hoje mesmo (dia 0) — se o produto crescer e precisar de cron
+// mais granular (plano Pro), voltar a janela pra 23h-24h é a mudança certa.
 async function sendWhatsappReminders(admin: ReturnType<typeof createAdminClient>, now: number, hour: number) {
-  const windowStart = new Date(now + 23 * hour).toISOString();
-  const windowEnd = new Date(now + 24 * hour).toISOString();
+  const windowStart = new Date(now + 24 * hour).toISOString();
+  const windowEnd = new Date(now + 48 * hour).toISOString();
 
   const { data: visits } = await admin
     .from("real_estate_visits")
@@ -112,9 +121,15 @@ async function sendVisitWhatsappReminder(
   return true;
 }
 
+// Era lembrete "2h antes" (janela hour..2*hour), impossível de manter preciso
+// com cron 1x/dia. Virou lembrete "visita hoje", enviado uma vez pela manhã
+// (09:00 UTC, ~06h em São Paulo) cobrindo as próximas 24h — trade-off
+// documentado aqui em vez de silencioso: perde a precisão de "daqui a 2h",
+// ganha "não esquecer a agenda do dia". Dedupe por visita+kind garante envio
+// único mesmo com a janela alargada.
 async function sendPushReminders(admin: ReturnType<typeof createAdminClient>, now: number, hour: number) {
-  const windowStart = new Date(now + hour).toISOString();
-  const windowEnd = new Date(now + 2 * hour).toISOString();
+  const windowStart = new Date(now).toISOString();
+  const windowEnd = new Date(now + 24 * hour).toISOString();
 
   const { data: visits } = await admin
     .from("real_estate_visits")
@@ -133,6 +148,9 @@ async function sendPushReminders(admin: ReturnType<typeof createAdminClient>, no
         .maybeSingle();
       if (prefs?.visit_reminders_enabled === false) continue;
 
+      // Nome do kind ficou de "2h" por compat com o check constraint do DB
+      // (0060_real_estate_visits_and_events.sql) — renomear exigiria nova
+      // migration só por cosmética; a janela/texto abaixo é o que importa.
       const isNewSend = await markEventSent(admin, visit.broker_id, visit.id, "visit_reminder_2h_push");
       if (!isNewSend) continue;
 
@@ -142,10 +160,11 @@ async function sendPushReminders(admin: ReturnType<typeof createAdminClient>, no
         .eq("id", visit.property_id)
         .maybeSingle();
       const address = property ? [property.address_street, property.address_number, property.address_neighborhood].filter(Boolean).join(", ") : "";
+      const when = new Date(visit.scheduled_at).toLocaleString("pt-BR", { timeStyle: "short", timeZone: "America/Sao_Paulo" });
 
       const { sent: pushed } = await sendPushToUser(admin, visit.broker_id, {
-        title: "Visita em 2h",
-        body: `${property?.title ?? "Imóvel"}${address ? ` — ${address}` : ""}`,
+        title: "Visita hoje",
+        body: `${when} — ${property?.title ?? "Imóvel"}${address ? ` — ${address}` : ""}`,
         url: "/imoveis/visitas",
       });
       if (pushed > 0) sent++;
@@ -156,13 +175,14 @@ async function sendPushReminders(admin: ReturnType<typeof createAdminClient>, no
   return { checked: visits?.length ?? 0, sent };
 }
 
-// RE-4xx: "lembrete automático antes de expirar" — mesma janela horária
-// (23h-24h antes) e o mesmo princípio de dedupe por evento das visitas.
-// Vai pro criador da proposta (created_by), não pro assignee do imóvel —
-// quem negociou é quem precisa saber que está prestes a expirar.
+// RE-4xx: "lembrete automático antes de expirar" — mesma janela alargada
+// (0-48h, ver comentário em sendWhatsappReminders) e o mesmo princípio de
+// dedupe por evento das visitas. Vai pro criador da proposta (created_by),
+// não pro assignee do imóvel — quem negociou é quem precisa saber que está
+// prestes a expirar.
 async function sendOfferExpiryReminders(admin: ReturnType<typeof createAdminClient>, now: number, hour: number) {
-  const windowStart = new Date(now + 23 * hour).toISOString();
-  const windowEnd = new Date(now + 24 * hour).toISOString();
+  const windowStart = new Date(now).toISOString();
+  const windowEnd = new Date(now + 48 * hour).toISOString();
 
   const { data: offers } = await admin
     .from("real_estate_offers")
@@ -182,10 +202,11 @@ async function sendOfferExpiryReminders(admin: ReturnType<typeof createAdminClie
 
       const { data: property } = await admin.from("real_estate_properties").select("title").eq("id", offer.property_id).maybeSingle();
       const amount = offer.amount_cents !== null ? (offer.amount_cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "";
+      const expiresWhen = new Date(offer.expires_at).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" });
 
       const { sent: pushed } = await sendPushToUser(admin, offer.created_by, {
-        title: "Proposta expira em 24h",
-        body: `${property?.title ?? "Imóvel"}${amount ? ` — ${amount}` : ""}`,
+        title: "Proposta expirando em breve",
+        body: `${property?.title ?? "Imóvel"}${amount ? ` — ${amount}` : ""} — expira ${expiresWhen}`,
         url: "/imoveis",
       });
       if (pushed > 0) sent++;
