@@ -1067,6 +1067,16 @@ export async function dismissChecklist() {
   revalidatePath("/dashboard");
 }
 
+export async function dismissRealEstateV2Intro() {
+  const { supabase, user } = await requireUser();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ real_estate_v2_intro_dismissed_at: new Date().toISOString() })
+    .eq("id", user.id);
+  ensureOk(error, "Não deu para fechar o painel.");
+  revalidatePath("/dashboard");
+}
+
 function collectDetails(formData: FormData, fields: FieldSpec[]): Record<string, string> {
   const details: Record<string, string> = {};
   for (const field of fields) {

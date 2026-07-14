@@ -18,6 +18,7 @@ import { canManageLegal } from "@/lib/law-office";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { DatajudSearchForm } from "../law/consulta/DatajudSearchForm";
 import { getProfessionPreset, type MetricKey, type ProfessionPreset } from "@/lib/professions";
+import { isRealEstateV2Enabled } from "@/lib/real-estate";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -31,7 +32,7 @@ import {
 } from "@/lib/supabase/types";
 import { formatBRL, formatDate } from "@/lib/format";
 import { getWorkspaceKey } from "@/lib/workspaces";
-import { claimDeal, claimTask, createTask, dismissChecklist } from "../actions";
+import { claimDeal, claimTask, createTask, dismissChecklist, dismissRealEstateV2Intro } from "../actions";
 import { updateDashboardPreferences } from "./actions";
 import { ReminderModal as ReminderModalClient } from "./ReminderModal";
 import { RevenueLineChart } from "./RevenueLineChart";
@@ -39,6 +40,8 @@ import {
   IconArrowRight,
   IconBell,
   IconBot,
+  IconBuilding,
+  IconCalendar,
   IconCheckCircle,
   IconColumns,
   IconMessage,
@@ -95,7 +98,9 @@ export default async function DashboardPage() {
     supabase.auth.getUser(),
     supabase
       .from("profiles")
-      .select("profession_type, is_admin, checklist_dismissed_at, dashboard_preferences, favorite_tribunals")
+      .select(
+        "profession_type, is_admin, checklist_dismissed_at, dashboard_preferences, favorite_tribunals, real_estate_v2_intro_dismissed_at"
+      )
       .maybeSingle(),
   ]);
   const orgId = await getActiveOrgId(supabase, user!.id);
@@ -203,7 +208,7 @@ export default async function DashboardPage() {
       .eq("workspace_key", workspaceKey),
     supabase
       .from("organizations")
-      .select("business_context")
+      .select("business_context, real_estate_v2_enabled")
       .eq("id", orgId)
       .maybeSingle(),
     supabase
@@ -534,6 +539,10 @@ export default async function DashboardPage() {
           </div>
         </div>
       </header>
+
+      {workspaceKey === "real_estate_broker" &&
+        isRealEstateV2Enabled(orgContext) &&
+        !profile?.real_estate_v2_intro_dismissed_at && <RealEstateV2IntroCard />}
 
       {workspaceKey === "law_office" && (
         <section className="law-docket-strip" aria-label="Expediente do escritório">
@@ -1369,6 +1378,60 @@ function OnboardingChecklist({
               <p className="mt-1 text-sm font-medium leading-relaxed text-ink-muted">
                 {step.desc}
               </p>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+const REAL_ESTATE_V2_HIGHLIGHTS = [
+  { title: "Match de clientes", desc: "A carteira já sugere o imóvel certo pra cada perfil de busca.", href: "/imoveis", icon: IconUsers },
+  { title: "Visitas", desc: "Agende, confirme e registre o feedback de cada visita num só lugar.", href: "/imoveis/visitas", icon: IconCalendar },
+  { title: "Propostas", desc: "Monte, envie e acompanhe o status de cada proposta até fechar.", href: "/imoveis", icon: IconBuilding },
+  { title: "Comissão", desc: "Veja o previsto, o recebido e o que já está vencido.", href: "/imoveis/dashboard", icon: IconWallet },
+  { title: "Chat de filtro", desc: "Descreva o que o cliente procura e a IA já filtra a carteira.", href: "/imoveis", icon: IconBot },
+];
+
+// Card único de "o que mudou" quando a v2 imobiliária liga pro workspace —
+// não é o checklist genérico de primeiros passos (OnboardingChecklist,
+// aparece pra todo profissional), é um anúncio pontual desta leva de
+// funcionalidades específica. Dispensa permanente por usuário (mesmo padrão
+// de dismissChecklist/checklist_dismissed_at), não por organização — cada
+// corretor da equipe vê e dispensa a própria vez.
+function RealEstateV2IntroCard() {
+  return (
+    <section className="enter relative rounded-lg border border-brand-200 bg-brand-50 p-5">
+      <form action={dismissRealEstateV2Intro} className="absolute right-3 top-3">
+        <PendingButton
+          className="nav-item grid h-8 w-8 place-items-center rounded-md text-ink-muted hover:bg-white/60 hover:text-ink"
+          aria-label="Fechar novidades da carteira de imóveis"
+          iconOnly
+          pendingLabel="Fechando"
+        >
+          <IconX className="h-4 w-4" />
+          <span className="sr-only">Fechar</span>
+        </PendingButton>
+      </form>
+
+      <p className="text-sm font-black text-brand-800">Novidades na carteira de imóveis</p>
+      <h2 className="mt-2 max-w-lg text-2xl font-black tracking-[-0.03em] text-ink">
+        Sua carteira ganhou match, visitas, propostas e comissão.
+      </h2>
+
+      <div className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        {REAL_ESTATE_V2_HIGHLIGHTS.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.title}
+              href={item.href}
+              className="row-link relative rounded-lg border border-brand-200 bg-white p-4 hover:border-brand-400"
+            >
+              <Icon className="h-6 w-6 text-brand-700" />
+              <p className="mt-4 text-sm font-black text-ink">{item.title}</p>
+              <p className="mt-1 text-sm font-medium leading-relaxed text-ink-muted">{item.desc}</p>
             </Link>
           );
         })}
