@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { canManageRealEstate } from "@/lib/real-estate";
 import { decimalOrNull, intOrNull, moneyToCentsOrNull, optionalUuid, requiredText, text } from "@/lib/form-parse";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { advancePropertiesToSent } from "@/lib/real-estate-deal-properties";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getWorkspaceKey } from "@/lib/workspaces";
@@ -340,12 +341,20 @@ export async function createShareCollection(formData: FormData) {
   const { supabase, user, orgId } = await requireRealEstate();
   const title = requiredText(formData.get("title"), "Título da vitrine", MAX.title);
   const clientContactId = optionalUuid(formData.get("client_contact_id"));
+  const dealId = optionalUuid(formData.get("deal_id"));
   const propertyIds = formData.getAll("property_ids").map(String).filter(Boolean);
   if (propertyIds.length === 0) throw new Error("Selecione pelo menos um imóvel.");
 
   const { data: collection, error } = await supabase
     .from("real_estate_share_collections")
-    .insert({ org_id: orgId, workspace_key: "real_estate_broker", created_by: user.id, title, client_contact_id: clientContactId })
+    .insert({
+      org_id: orgId,
+      workspace_key: "real_estate_broker",
+      created_by: user.id,
+      title,
+      client_contact_id: clientContactId,
+      deal_id: dealId,
+    })
     .select("id")
     .single();
   if (error || !collection) throw new Error("Não foi possível criar a vitrine.");
@@ -362,6 +371,7 @@ export async function createShareCollection(formData: FormData) {
     throw new Error("Não foi possível adicionar os imóveis à vitrine.");
   }
 
+  await advancePropertiesToSent(supabase, orgId, dealId, propertyIds);
   revalidatePath("/imoveis/colecoes");
   redirect("/imoveis/colecoes");
 }
@@ -371,13 +381,16 @@ export async function addPropertyToCollection(formData: FormData) {
   const collectionId = requiredText(formData.get("collection_id"), "Vitrine", 80);
   const propertyId = requiredText(formData.get("property_id"), "Imóvel", 80);
 
-  const { data: lastItem } = await supabase
-    .from("real_estate_share_collection_items")
-    .select("position")
-    .eq("collection_id", collectionId)
-    .order("position", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const [{ data: lastItem }, { data: collection }] = await Promise.all([
+    supabase
+      .from("real_estate_share_collection_items")
+      .select("position")
+      .eq("collection_id", collectionId)
+      .order("position", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase.from("real_estate_share_collections").select("deal_id").eq("id", collectionId).eq("org_id", orgId).maybeSingle(),
+  ]);
   const nextPosition = (lastItem?.position ?? -1) + 1;
 
   const { error } = await supabase.from("real_estate_share_collection_items").insert({
@@ -387,6 +400,7 @@ export async function addPropertyToCollection(formData: FormData) {
     position: nextPosition,
   });
   if (error) throw new Error("Não foi possível adicionar o imóvel à vitrine (confira se já não está nela).");
+  await advancePropertiesToSent(supabase, orgId, (collection?.deal_id as string | null) ?? null, [propertyId]);
   revalidatePath("/imoveis/colecoes");
 }
 

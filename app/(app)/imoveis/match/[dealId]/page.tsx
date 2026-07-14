@@ -47,7 +47,7 @@ export default async function MatchPage({ params }: { params: { dealId: string }
   if (!canViewRealEstate(membership?.job_role, isAdmin) || !isRealEstateV2Enabled(org)) notFound();
   const canManage = canManageRealEstate(membership?.job_role, isAdmin);
 
-  const [{ data: dealRow }, { data: preferencesRow }, { data: matchRows }] = await Promise.all([
+  const [{ data: dealRow }, { data: preferencesRow }, { data: matchRows }, { data: collectionRows }] = await Promise.all([
     supabase.from("deals").select("id, title, contact_id").eq("id", params.dealId).eq("org_id", orgId).maybeSingle(),
     supabase.from("real_estate_lead_preferences").select("*").eq("org_id", orgId).eq("deal_id", params.dealId).maybeSingle(),
     supabase
@@ -56,10 +56,17 @@ export default async function MatchPage({ params }: { params: { dealId: string }
       .eq("org_id", orgId)
       .eq("deal_id", params.dealId)
       .order("match_score", { ascending: false, nullsFirst: false }),
+    supabase
+      .from("real_estate_share_collections")
+      .select("id, title, token, view_count, revoked_at")
+      .eq("org_id", orgId)
+      .eq("deal_id", params.dealId)
+      .order("created_at", { ascending: false }),
   ]);
   if (!dealRow) notFound();
   const preferences = preferencesRow as RealEstateLeadPreferences | null;
   const matches = (matchRows ?? []) as RealEstateDealProperty[];
+  const collections = collectionRows ?? [];
 
   const propertyIds = matches.map((m) => m.property_id);
   const { data: propertyRows } =
@@ -73,10 +80,11 @@ export default async function MatchPage({ params }: { params: { dealId: string }
       <header className="enter">
         <p className="text-sm font-black text-brand-700">Atendimento</p>
         <h1 className="mt-2 text-[clamp(1.55rem,6vw,2.6rem)] font-black leading-[1.02] tracking-[-0.04em] text-ink">
-          Imóveis compatíveis com {dealRow.title}
+          Imóveis de {dealRow.title}
         </h1>
         <p className="mt-2 text-sm font-medium leading-relaxed text-ink-soft">
-          Score determinístico contra a carteira ativa — cada critério mostra o motivo, não só o número.
+          Matches sugeridos e a jornada de cada imóvel neste atendimento (sugerido → enviado → visto → interessado/descartado → visita → proposta) — score
+          determinístico, cada critério mostra o motivo, não só o número.
         </p>
       </header>
 
@@ -172,6 +180,22 @@ export default async function MatchPage({ params }: { params: { dealId: string }
             </div>
           )}
         </>
+      )}
+
+      {collections.length > 0 && (
+        <section className="panel p-5 sm:p-6">
+          <h2 className="mb-3 text-base font-black text-ink">Vitrines deste atendimento</h2>
+          <ul className="space-y-2">
+            {collections.map((collection) => (
+              <li key={collection.id} className="flex items-center justify-between gap-3 text-sm">
+                <span className="font-bold text-ink">{collection.title}</span>
+                <span className="text-xs font-bold text-ink-muted">
+                  {collection.revoked_at ? "Revogada" : `${collection.view_count} visualizações`}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       <Link href={`/contacts/${dealRow.contact_id}`} className="nav-item inline-block text-sm font-black text-brand-700 hover:underline">

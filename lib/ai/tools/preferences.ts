@@ -1,8 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { advancePropertiesToSent } from "@/lib/real-estate-deal-properties";
 import { computeMatchScore } from "@/lib/real-estate-match";
 import type { RealEstateLeadPreferences, RealEstateProperty } from "@/lib/supabase/types";
 import type { ToolInput } from "./types";
-import { clampInt, detailsObject, ensureOk, optionalStr, str, visibleContactIdOrNull } from "./validation";
+import { clampInt, detailsObject, ensureOk, optionalStr, requireVisiblePropertyId, str, visibleContactIdOrNull } from "./validation";
 
 const TRANSACTION_TYPES = ["venda", "aluguel", "venda_aluguel"];
 const PROPERTY_TYPES = ["apartamento", "casa", "cobertura", "terreno", "comercial", "sala", "galpao", "rural", "outro"];
@@ -124,4 +125,95 @@ export async function matchPropertiesForClient(supabase: SupabaseClient, orgId: 
     }));
 
   return JSON.stringify({ total_avaliado: properties.length, matches });
+}
+
+const DEAL_PROPERTY_STATUSES = [
+  "suggested", "selected", "sent", "viewed", "interested", "rejected", "visit_scheduled", "offer", "won",
+];
+
+// RE-2xx (Fase 2) — anexa manualmente um imóvel a um atendimento, fora do
+// fluxo de match/vitrine. Se o vínculo já existe, só troca o status quando
+// a IA recebeu um status explícito do usuário — sem isso, não regride (nem
+// avança) uma jornada que já está em andamento só por ter sido chamada de
+// novo.
+export async function attachPropertyToDeal(supabase: SupabaseClient, orgId: string, workspaceKey: string, input: ToolInput) {
+  const dealId = await requireVisibleDealId(supabase, orgId, workspaceKey, input.atendimento_id);
+  const propertyId = await requireVisiblePropertyId(supabase, orgId, workspaceKey, input.imovel_id);
+  const status = optionalStr(input.status, 24);
+  if (status && !DEAL_PROPERTY_STATUSES.includes(status)) throw new Error(`status inválido: ${status}`);
+
+  const { data: existing } = await supabase
+    .from("real_estate_deal_properties")
+    .select("id, status")
+    .eq("org_id", orgId)
+    .eq("deal_id", dealId)
+    .eq("property_id", propertyId)
+    .maybeSingle();
+
+  if (existing) {
+    if (!status) return JSON.stringify({ ok: true, vinculo: existing, info: "Já vinculado, status mantido." });
+    const { data, error } = await supabase
+      .from("real_estate_deal_properties")
+      .update({ status })
+      .eq("id", existing.id)
+      .select("id, status")
+      .single();
+    ensureOk(error);
+    return JSON.stringify({ ok: true, vinculo: data });
+  }
+
+  const { data, error } = await supabase
+    .from("real_estate_deal_properties")
+    .insert({ org_id: orgId, deal_id: dealId, property_id: propertyId, status: status || "selected", source: "manual" })
+    .select("id, status")
+    .single();
+  ensureOk(error);
+  return JSON.stringify({ ok: true, vinculo: data });
+}
+
+// RE-2xx (Fase 2) — equivalente por IA de createShareCollection
+// (app/(app)/imoveis/actions.ts). Quando atendimento_id é informado, os
+// imóveis da vitrine entram/avançam como 'sent' no atendimento (mesma
+// regra de advancePropertiesToSent — nunca regride status já adiantado).
+export async function createPropertyShowcase(
+  supabase: SupabaseClient,
+  userId: string,
+  orgId: string,
+  workspaceKey: string,
+  input: ToolInput
+) {
+  const title = str(input.titulo, "titulo", 180);
+  const propertyIds = Array.isArray(input.imoveis)
+    ? input.imoveis.filter((v): v is string => typeof v === "string" && v.trim().length > 0)
+    : [];
+  if (propertyIds.length === 0) throw new Error("Informe pelo menos um imóvel (imoveis).");
+
+  const dealId = input.atendimento_id ? await requireVisibleDealId(supabase, orgId, workspaceKey, input.atendimento_id) : null;
+  const contactId = await visibleContactIdOrNull(supabase, orgId, workspaceKey, input.contato_id);
+
+  const { data: collection, error } = await supabase
+    .from("real_estate_share_collections")
+    .insert({
+      org_id: orgId,
+      workspace_key: workspaceKey,
+      created_by: userId,
+      title,
+      client_contact_id: contactId,
+      deal_id: dealId,
+    })
+    .select("id, token")
+    .single();
+  ensureOk(error);
+  if (!collection) throw new Error("Não foi possível criar a vitrine.");
+
+  const { error: itemsError } = await supabase.from("real_estate_share_collection_items").insert(
+    propertyIds.map((propertyId, index) => ({ collection_id: collection.id, org_id: orgId, property_id: propertyId, position: index }))
+  );
+  if (itemsError) {
+    await supabase.from("real_estate_share_collections").delete().eq("id", collection.id);
+    ensureOk(itemsError);
+  }
+
+  await advancePropertiesToSent(supabase, orgId, dealId, propertyIds);
+  return JSON.stringify({ ok: true, vitrine_id: collection.id, link: `/share/imoveis/${collection.token}` });
 }

@@ -416,6 +416,39 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "attach_property_to_deal",
+    description:
+      "Vincula um imóvel específico a um atendimento (workspace imobiliário), fora do cálculo de match. Use quando o usuário pedir explicitamente pra adicionar/enviar um imóvel a um atendimento. Se o vínculo já existir e nenhum status for informado, não mexe na jornada já em andamento.",
+    input_schema: {
+      type: "object",
+      properties: {
+        atendimento_id: { type: "string" },
+        imovel_id: { type: "string" },
+        status: {
+          type: "string",
+          enum: ["suggested", "selected", "sent", "viewed", "interested", "rejected", "visit_scheduled", "offer", "won"],
+          description: "Opcional. Sem isso, um vínculo novo nasce como 'selected' e um já existente não muda de status.",
+        },
+      },
+      required: ["atendimento_id", "imovel_id"],
+    },
+  },
+  {
+    name: "create_property_showcase",
+    description:
+      "Cria uma vitrine (link público) com uma seleção de imóveis (workspace imobiliário). Se atendimento_id for informado, os imóveis entram na jornada daquele atendimento como 'enviados'.",
+    input_schema: {
+      type: "object",
+      properties: {
+        titulo: { type: "string" },
+        imoveis: { type: "array", items: { type: "string" }, description: "IDs dos imóveis a incluir." },
+        atendimento_id: { type: "string" },
+        contato_id: { type: "string", description: "Cliente pra quem a vitrine é (opcional)." },
+      },
+      required: ["titulo", "imoveis"],
+    },
+  },
+  {
     name: "update_organization_context",
     description:
       "Atualiza contexto da empresa que alimenta a IA: nome, setor, região, prioridades, tom, instruções e observações. Use quando o usuário pedir para a IA conhecer melhor a empresa.",
@@ -489,6 +522,8 @@ const MUTATING_TOOLS = new Set([
   "create_property",
   "update_property",
   "update_client_preferences",
+  "attach_property_to_deal",
+  "create_property_showcase",
   "delete_contact",
   "delete_deal",
   "delete_task",

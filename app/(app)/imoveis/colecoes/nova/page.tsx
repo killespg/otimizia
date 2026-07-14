@@ -4,7 +4,7 @@ import { PendingButton } from "@/components/PendingButton";
 import { canManageRealEstate } from "@/lib/real-estate";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
-import type { Contact, RealEstateProperty } from "@/lib/supabase/types";
+import type { Contact, Deal, RealEstateProperty } from "@/lib/supabase/types";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { IconPlus } from "../../../icons";
 import { createShareCollection } from "../../actions";
@@ -27,7 +27,7 @@ export default async function NovaColecaoPage() {
   ]);
   if (!canManageRealEstate(membership?.job_role, orgRole === "admin")) notFound();
 
-  const [{ data: properties }, { data: contacts }] = await Promise.all([
+  const [{ data: properties }, { data: contacts }, { data: deals }] = await Promise.all([
     supabase
       .from("real_estate_properties")
       .select("id, title, property_type, price_cents")
@@ -41,9 +41,17 @@ export default async function NovaColecaoPage() {
       .eq("org_id", orgId)
       .eq("workspace_key", "real_estate_broker")
       .order("name"),
+    supabase
+      .from("deals")
+      .select("id, title, contact_id")
+      .eq("org_id", orgId)
+      .eq("workspace_key", "real_estate_broker")
+      .order("created_at", { ascending: false }),
   ]);
   const propertyList = (properties ?? []) as Pick<RealEstateProperty, "id" | "title" | "property_type" | "price_cents">[];
   const contactList = (contacts ?? []) as Pick<Contact, "id" | "name">[];
+  const dealRows = (deals ?? []) as Pick<Deal, "id" | "title" | "contact_id">[];
+  const contactNameById = new Map(contactList.map((c) => [c.id, c.name]));
 
   return (
     <div className="max-w-2xl space-y-4 sm:space-y-5">
@@ -76,6 +84,24 @@ export default async function NovaColecaoPage() {
                 </option>
               ))}
             </select>
+          </label>
+
+          <label className="block">
+            <span className="label">Atendimento (opcional)</span>
+            <select name="deal_id" defaultValue="" className="field mt-1.5">
+              <option value="">Sem vincular</option>
+              {dealRows.map((deal) => {
+                const contactName = deal.contact_id ? contactNameById.get(deal.contact_id) : null;
+                return (
+                  <option key={deal.id} value={deal.id}>
+                    {contactName ? `${contactName} — ${deal.title}` : deal.title}
+                  </option>
+                );
+              })}
+            </select>
+            <p className="mt-1 text-xs font-medium text-ink-muted">
+              Vincular a um atendimento registra os imóveis como &quot;enviados&quot; nele e atualiza a jornada quando o cliente abrir o link.
+            </p>
           </label>
 
           <div>

@@ -9,7 +9,13 @@ import {
   listTasks,
 } from "./read";
 import { createProperty, getProperty, searchProperties, updateProperty } from "./properties";
-import { getClientPreferences, matchPropertiesForClient, updateClientPreferences } from "./preferences";
+import {
+  attachPropertyToDeal,
+  createPropertyShowcase,
+  getClientPreferences,
+  matchPropertiesForClient,
+  updateClientPreferences,
+} from "./preferences";
 import type { ToolInput } from "./types";
 import { str } from "./validation";
 import {
@@ -65,6 +71,10 @@ export async function executeTool(
       return updateClientPreferences(supabase, orgId, workspaceKey, input);
     case "match_properties_for_client":
       return matchPropertiesForClient(supabase, orgId, workspaceKey, input);
+    case "attach_property_to_deal":
+      return attachPropertyToDeal(supabase, orgId, workspaceKey, input);
+    case "create_property_showcase":
+      return createPropertyShowcase(supabase, userId, orgId, workspaceKey, input);
     case "create_contact":
       return createContact(supabase, userId, orgId, workspaceKey, input);
     case "update_contact":

@@ -544,4 +544,88 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
     await admin.from("deals").delete().eq("id", dealA!.id);
     await admin.from("deals").delete().eq("id", dealB!.id);
   });
+
+  // RE-2xx (Fase 2): vitrine vinculada a atendimento (0059) — FK composta
+  // de deal_id e o efeito colateral das RPCs públicas (get_shared_property_collection
+  // avança 'viewed', record_property_reaction avança 'interested'/'rejected')
+  // sobre real_estate_deal_properties.
+  it("real_estate_share_collections.deal_id: FK composta rejeita deal de outra organização", async () => {
+    const orgB = await getPersonalOrgId(admin, userB.userId);
+    const { data: dealB } = await userB.client
+      .from("deals")
+      .insert({ owner_id: userB.userId, org_id: orgB, workspace_key: "real_estate_broker", title: "Atendimento de B" })
+      .select("id")
+      .single();
+
+    const { error: forgedError } = await userA.client.from("real_estate_share_collections").insert({
+      org_id: orgA,
+      workspace_key: "real_estate_broker",
+      created_by: userA.userId,
+      title: "Vitrine com deal forjado",
+      deal_id: dealB!.id,
+    });
+    expect(forgedError).not.toBeNull();
+
+    await admin.from("deals").delete().eq("id", dealB!.id);
+  });
+
+  it("abrir a vitrine pública avança 'viewed' e reagir avança 'interested'/'rejected' no atendimento vinculado, de forma idempotente", async () => {
+    const { data: dealA } = await userA.client
+      .from("deals")
+      .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "real_estate_broker", title: "Atendimento pra vitrine" })
+      .select("id")
+      .single();
+    const { data: collection } = await userA.client
+      .from("real_estate_share_collections")
+      .insert({ org_id: orgA, workspace_key: "real_estate_broker", created_by: userA.userId, title: "Vitrine com atendimento", deal_id: dealA!.id })
+      .select("id, token")
+      .single();
+    await userA.client.from("real_estate_share_collection_items").insert({ collection_id: collection!.id, org_id: orgA, property_id: propertyId });
+    await admin
+      .from("real_estate_deal_properties")
+      .upsert({ org_id: orgA, deal_id: dealA!.id, property_id: propertyId, status: "sent" }, { onConflict: "deal_id,property_id" });
+
+    const { error: viewError } = await anon.rpc("get_shared_property_collection", { p_token: collection!.token });
+    expect(viewError).toBeNull();
+
+    const { data: afterView } = await admin
+      .from("real_estate_deal_properties")
+      .select("status, viewed_at")
+      .eq("deal_id", dealA!.id)
+      .eq("property_id", propertyId)
+      .single();
+    expect(afterView!.status).toEqual("viewed");
+    const firstViewedAt = afterView!.viewed_at;
+    expect(firstViewedAt).not.toBeNull();
+
+    // Reabrir não deve trocar o timestamp da primeira visualização.
+    await anon.rpc("get_shared_property_collection", { p_token: collection!.token });
+    const { data: afterSecondView } = await admin
+      .from("real_estate_deal_properties")
+      .select("viewed_at")
+      .eq("deal_id", dealA!.id)
+      .eq("property_id", propertyId)
+      .single();
+    expect(afterSecondView!.viewed_at).toEqual(firstViewedAt);
+
+    const { error: reactionError } = await anon.rpc("record_property_reaction", {
+      p_token: collection!.token,
+      p_property_id: propertyId,
+      p_reaction: "interessado",
+    });
+    expect(reactionError).toBeNull();
+
+    const { data: afterReaction } = await admin
+      .from("real_estate_deal_properties")
+      .select("status, reaction")
+      .eq("deal_id", dealA!.id)
+      .eq("property_id", propertyId)
+      .single();
+    expect(afterReaction!.status).toEqual("interested");
+    expect(afterReaction!.reaction).toEqual("interessado");
+
+    await admin.from("real_estate_deal_properties").delete().eq("deal_id", dealA!.id);
+    await admin.from("real_estate_share_collections").delete().eq("id", collection!.id);
+    await admin.from("deals").delete().eq("id", dealA!.id);
+  });
 });

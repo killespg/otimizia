@@ -265,6 +265,7 @@ export type RealEstateShareCollection = {
   created_by: string;
   title: string;
   client_contact_id: string | null;
+  deal_id: string | null;
   revoked_at: string | null;
   expires_at: string | null;
   last_accessed_at: string | null;
