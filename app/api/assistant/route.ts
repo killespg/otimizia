@@ -6,6 +6,7 @@ import { logError } from "@/lib/logger";
 import { getActiveOrgId } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset, type ProfessionPreset } from "@/lib/professions";
+import { checkRateLimit } from "@/lib/ai/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { CRM_TOOLS, executeTool, isMutatingTool } from "@/lib/ai/tools";
@@ -89,6 +90,13 @@ export async function POST(req: Request) {
   const access = await getUserPlanAccess(supabase, user.id);
   if (!access.hasAccess) {
     return Response.json({ error: "Seu teste gratis acabou." }, { status: 402 });
+  }
+  const rateLimit = await checkRateLimit(createAdminClient(), "assistant_chat", user.id);
+  if (!rateLimit.allowed) {
+    return Response.json(
+      { error: "Muitas mensagens em pouco tempo. Espere um pouco e tente de novo." },
+      { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } }
+    );
   }
   const orgId = await getActiveOrgId(supabase, user.id);
   if (!process.env.ANTHROPIC_API_KEY) {

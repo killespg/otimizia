@@ -1,6 +1,7 @@
 import { EvolutionApiError, sendEvolutionText } from "@/lib/evolution";
 import { fetchWhatsappHistory, generateWhatsappReply } from "@/lib/ai/whatsapp-reply";
 import { detectPurchaseIntent } from "@/lib/ai/whatsapp-intent";
+import { checkRateLimit } from "@/lib/ai/rate-limit";
 import { logError } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createDealIfNeeded, findOrCreateContact } from "@/lib/whatsapp-contacts";
@@ -141,7 +142,21 @@ export async function POST(request: Request) {
     const contactName = existingConversation?.contact_name ?? pushName;
     const history = messageType === "text" ? await fetchWhatsappHistory(admin, conversationId) : [];
 
-    if (messageType === "text" && contactId) {
+    // Rate limit por organização (não tem usuário autenticado num webhook) —
+    // protege contra flood de mensagens inbound (real ou forjado direto no
+    // endpoint) estourando custo de IA. A mensagem em si já foi salva acima
+    // independente disso; só a detecção de intenção e a resposta automática
+    // são puladas quando estourado — o webhook sempre responde 200 pra
+    // Evolution API (padrão já estabelecido, ver catch no fim do arquivo).
+    const rateLimit = await checkRateLimit(admin, "whatsapp_ai_reply", orgId);
+    if (!rateLimit.allowed) {
+      logError("api/whatsapp/webhook.rate-limited", new Error("limite de IA por organização estourado"), {
+        orgId,
+        conversationId,
+      });
+    }
+
+    if (rateLimit.allowed && messageType === "text" && contactId) {
       try {
         const intent = await detectPurchaseIntent(history, contactName);
         if (intent?.hasIntent) {
@@ -154,7 +169,7 @@ export async function POST(request: Request) {
       }
     }
 
-    if (iaActive && messageType === "text") {
+    if (rateLimit.allowed && iaActive && messageType === "text") {
       try {
         const reply = await generateWhatsappReply(admin, orgId, history, contactName);
         if (reply) {

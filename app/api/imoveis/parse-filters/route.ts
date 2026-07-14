@@ -2,7 +2,9 @@ import { logError } from "@/lib/logger";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { type FilterChatTurn, parsePropertyFilters } from "@/lib/ai/property-filter-chat";
+import { checkRateLimit } from "@/lib/ai/rate-limit";
 import { canViewRealEstate } from "@/lib/real-estate";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getWorkspaceKey } from "@/lib/workspaces";
 
@@ -40,6 +42,14 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser();
   if (!user) {
     return Response.json({ error: "Não autorizado." }, { status: 401 });
+  }
+
+  const rateLimit = await checkRateLimit(createAdminClient(), "parse_property_filters", user.id);
+  if (!rateLimit.allowed) {
+    return Response.json(
+      { error: "Muitas buscas em pouco tempo. Espere um pouco e tente de novo." },
+      { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } }
+    );
   }
 
   const access = await getUserPlanAccess(supabase, user.id);
