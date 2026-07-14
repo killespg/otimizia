@@ -133,7 +133,7 @@ export function SidebarNav({
         ...items.slice(5),
       ];
     }
-    if (isAdmin) items = [...items, { href: "/dev", label: "MÃ©tricas", icon: IconChartBar }];
+    if (isAdmin) items = [...items, { href: "/dev", label: "Métricas", icon: IconChartBar }];
   } else if (realEstateAccess?.enabled) {
     items = REAL_ESTATE_NAV.filter((item) => item.href !== "/imoveis/colecoes" || realEstateAccess.canManage);
     if (isAdmin) items = [...items, { href: "/dev", label: "Métricas", icon: IconChartBar }];

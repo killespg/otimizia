@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { cleanDashboardText, getDashboardPreferences, isDashboardAccent, isDashboardStyle, isDashboardWidgetKey, isMetricKey } from "@/lib/dashboard-preferences";
+import { cleanDashboardText, getDashboardPreferences, isDashboardAccent, isDashboardStyle, isDashboardWidgetKey, isMetricKey, mergeScopedPreferences } from "@/lib/dashboard-preferences";
 import { getProfessionPreset } from "@/lib/professions";
 import { cleanWorkspaceLabel, parseWorkspacePreferences } from "@/lib/workspace-preferences";
 import type { ToolInput } from "./types";
@@ -217,7 +217,7 @@ export async function updateDashboardPreferencesByAi(
     .maybeSingle();
   ensureOk(readError);
 
-  const current = getDashboardPreferences(profile?.dashboard_preferences, preset);
+  const current = getDashboardPreferences(profile?.dashboard_preferences, preset, workspaceKey);
   const widgets = Array.isArray(input.widgets)
     ? input.widgets.filter(isDashboardWidgetKey)
     : current.widgets;
@@ -249,7 +249,13 @@ export async function updateDashboardPreferencesByAi(
 
   const { error } = await supabase
     .from("profiles")
-    .update({ dashboard_preferences: dashboardPreferences })
+    .update({
+      dashboard_preferences: mergeScopedPreferences(
+        profile?.dashboard_preferences,
+        workspaceKey,
+        dashboardPreferences
+      ),
+    })
     .eq("id", userId);
   ensureOk(error);
   return JSON.stringify({ ok: true, mensagem: "Painel personalizado.", dashboard: dashboardPreferences });

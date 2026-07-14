@@ -228,7 +228,8 @@ export default async function DashboardPage() {
   const preset = getProfessionPreset(workspaceKey);
   const dashboardPreferences = getDashboardPreferences(
     profile?.dashboard_preferences,
-    preset
+    preset,
+    workspaceKey
   );
 
   const displayName =

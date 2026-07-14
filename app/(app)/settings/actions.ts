@@ -81,7 +81,7 @@ export async function updateWorkspaceLabels(formData: FormData) {
   );
   const requestedWorkspace = text(formData.get("workspace_key"), 80) as WorkspaceKey;
   if (requestedWorkspace !== workspaceKey) {
-    throw new Error("Workspace invÃ¡lido.");
+    throw new Error("Workspace inválido.");
   }
 
   const { data: org } = await supabase
@@ -111,7 +111,7 @@ export async function updateWorkspaceLabels(formData: FormData) {
     .from("organizations")
     .update({ workspace_preferences: nextPreferences })
     .eq("id", orgId);
-  ensureOk(error, "NÃ£o deu para salvar a personalizaÃ§Ã£o.");
+  ensureOk(error, "Não deu para salvar a personalização.");
 
   revalidatePath("/", "layout");
   revalidatePath("/settings");

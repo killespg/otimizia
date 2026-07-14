@@ -179,7 +179,7 @@ export async function updateMemberJobRole(formData: FormData) {
   const { supabase, orgId } = await requireOrgAdmin();
   const targetUserId = String(formData.get("user_id") ?? "");
   const jobRole = jobRoleField(formData.get("job_role"));
-  if (!targetUserId) throw new Error("Membro invÃ¡lido.");
+  if (!targetUserId) throw new Error("Membro inválido.");
 
   const { error } = await supabase
     .from("organization_members")
@@ -188,7 +188,7 @@ export async function updateMemberJobRole(formData: FormData) {
     .eq("user_id", targetUserId);
   if (error) {
     console.error("[team/update-job-role]", error);
-    throw new Error("NÃ£o deu para atualizar o cargo.");
+    throw new Error("Não deu para atualizar o cargo.");
   }
 
   revalidatePath("/", "layout");

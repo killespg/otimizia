@@ -6,6 +6,7 @@ import {
   isDashboardAccent,
   isDashboardStyle,
   isMetricKey,
+  mergeScopedPreferences,
   metricLabel,
 } from "./dashboard-preferences";
 import type { ProfessionPreset } from "./professions";
@@ -48,6 +49,39 @@ describe("getDashboardPreferences", () => {
     const prefs = getDashboardPreferences("not an object", preset);
     expect(prefs.style).toBe("glow");
     expect(prefs.metrics).toEqual(["open_value", "contacts"]);
+  });
+
+  it("reads preferences scoped to the given workspace key", () => {
+    const stored = {
+      law_office: { style: "compact", accent: "cyan" },
+      autonomous_seller: { style: "executive", accent: "pink" },
+    };
+    expect(getDashboardPreferences(stored, preset, "law_office").style).toBe("compact");
+    expect(getDashboardPreferences(stored, preset, "autonomous_seller").style).toBe("executive");
+    // Área ainda não personalizada cai nos defaults, não na config de outra área.
+    expect(getDashboardPreferences(stored, preset, "consultant").style).toBe("glow");
+  });
+
+  it("uses legacy flat preferences as a fallback for every workspace", () => {
+    const legacy = { style: "compact", accent: "cyan" };
+    expect(getDashboardPreferences(legacy, preset, "law_office").style).toBe("compact");
+    expect(getDashboardPreferences(legacy, preset, "autonomous_seller").style).toBe("compact");
+  });
+});
+
+describe("mergeScopedPreferences", () => {
+  it("writes one workspace without touching the others", () => {
+    const existing = { law_office: { style: "compact" } };
+    const merged = mergeScopedPreferences(existing, "autonomous_seller", {
+      style: "clean",
+      accent: "purple",
+      metrics: ["open_value"],
+      metricLabels: {},
+      widgets: ["metrics"],
+    });
+    expect(merged.law_office).toEqual({ style: "compact" });
+    expect(getDashboardPreferences(merged, preset, "autonomous_seller").style).toBe("clean");
+    expect(getDashboardPreferences(merged, preset, "law_office").style).toBe("compact");
   });
 });
 

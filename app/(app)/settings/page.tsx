@@ -68,7 +68,8 @@ export default async function SettingsPage({
   );
   const dashboardPreferences = getDashboardPreferences(
     profile?.dashboard_preferences,
-    preset
+    preset,
+    workspaceKey
   );
   const displayName =
     typeof user.user_metadata?.name === "string" ? user.user_metadata.name : "";

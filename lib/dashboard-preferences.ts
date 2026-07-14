@@ -52,12 +52,46 @@ export type DashboardPreferences = {
   widgets: DashboardWidgetKey[];
 };
 
+// Campos da forma "achatada" (legada), guardados direto na raiz do JSON antes
+// de as preferências passarem a ser separadas por workspace.
+const LEGACY_PREFERENCE_FIELDS = ["style", "accent", "metrics", "metricLabels", "widgets"];
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+// Cada área de atuação tem seu próprio painel. As preferências ficam separadas
+// por workspace_key no mesmo JSON: `{ [workspaceKey]: { style, metrics... } }`.
+// Contas antigas guardam a config achatada na raiz — nesse caso ela vale como
+// fallback para todas as áreas até a pessoa salvar o painel de cada uma.
+export function resolveScopedPreferenceValue(value: unknown, workspaceKey?: string): unknown {
+  if (!isPlainObject(value)) return {};
+  if (!workspaceKey) return value;
+  const scoped = value[workspaceKey];
+  if (isPlainObject(scoped)) return scoped;
+  if (LEGACY_PREFERENCE_FIELDS.some((field) => field in value)) return value;
+  return {};
+}
+
+// Grava a config de um workspace sem perder as dos outros (nem o fallback
+// legado da raiz), preservando a separação por área.
+export function mergeScopedPreferences(
+  value: unknown,
+  workspaceKey: string,
+  preferences: DashboardPreferences
+): Record<string, unknown> {
+  const base = isPlainObject(value) ? value : {};
+  return { ...base, [workspaceKey]: preferences };
+}
+
 export function getDashboardPreferences(
   value: unknown,
-  preset: ProfessionPreset
+  preset: ProfessionPreset,
+  workspaceKey?: string
 ): DashboardPreferences {
-  const raw = value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Partial<DashboardPreferences>)
+  const scoped = resolveScopedPreferenceValue(value, workspaceKey);
+  const raw = isPlainObject(scoped)
+    ? (scoped as Partial<DashboardPreferences>)
     : {};
   const presetMetrics = preset.metrics.map((metric) => metric.key);
 

@@ -213,7 +213,7 @@ export async function getWorkspaceCustomization(
       .maybeSingle(),
   ]);
   ensureOk(null);
-  const preferences = getDashboardPreferences(profile?.dashboard_preferences, preset);
+  const preferences = getDashboardPreferences(profile?.dashboard_preferences, preset, workspaceKey);
   const workspacePreferences = parseWorkspacePreferences(org?.workspace_preferences);
   const workspaceRecord = workspacePreferences as Record<string, { labels?: unknown }>;
   return JSON.stringify({

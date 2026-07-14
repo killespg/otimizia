@@ -613,7 +613,7 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
       {
         key: "abordagem_inicial",
         label: "Abordagem inicial",
-        body: "Oi {{primeiro_nome}}, vi que você é {{profissao}}. Tô desenvolvendo um app pra ajudar quem vende pelo WhatsApp a não perder cliente e lembrete — queria muito seu feedback sincero. Topa dar uma olhada?",
+        body: "Oi {{primeiro_nome}}, tudo bem? Tô desenvolvendo um app pra ajudar quem vende pelo WhatsApp a não perder cliente e lembrete — queria muito seu feedback sincero. Topa dar uma olhada?",
       },
       {
         key: "follow_up_video",

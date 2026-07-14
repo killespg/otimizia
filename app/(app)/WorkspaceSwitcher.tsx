@@ -21,6 +21,14 @@ export function WorkspaceSwitcher({
   const formRef = useRef<HTMLFormElement>(null);
   const pathname = usePathname();
   const returnTo = useMemo(() => {
+    // Páginas específicas de uma profissão (advocacia, imóveis, financeiro
+    // jurídico e métricas de fundador). Trocar de área a partir delas
+    // deixaria o usuário numa tela "indisponível neste workspace" — volta
+    // pro painel, que existe em todas as áreas.
+    const professionSpecific = ["/law", "/finance", "/imoveis", "/dev"];
+    if (professionSpecific.some((prefix) => pathname === prefix || pathname.startsWith(prefix + "/"))) {
+      return "/dashboard";
+    }
     if (pathname.startsWith("/contacts/")) return "/contacts";
     return pathname || "/dashboard";
   }, [pathname]);
