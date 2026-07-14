@@ -12,6 +12,7 @@ import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import type { RealEstateProperty } from "@/lib/supabase/types";
 import { getWorkspaceKey } from "@/lib/workspaces";
+import { PropertyFilterChat } from "@/components/real-estate/PropertyFilterChat";
 import { IconBuilding, IconPlus } from "../icons";
 
 const PAGE_SIZE = 24;
@@ -116,8 +117,13 @@ export default async function ImoveisPage({
         </div>
       </header>
 
-      <section className="panel p-4 sm:p-5">
-        <form className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6" method="get">
+      <section className="panel space-y-4 p-4 sm:p-5">
+        <PropertyFilterChat />
+        {/* key força remontagem quando a IA muda a URL via router.push (client-side),
+            senão os defaultValue destes campos não-controlados ficam desatualizados —
+            uma navegação GET normal (submit manual) já recarrega a página inteira e
+            não precisa disso, mas a key não atrapalha esse caso. */}
+        <form key={JSON.stringify(searchParams)} className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6" method="get">
           <select name="status" defaultValue={searchParams.status ?? ""} className="field">
             <option value="">Status: todos</option>
             {REAL_ESTATE_PROPERTY_STATUSES.map((item) => (
