@@ -22,7 +22,10 @@ alter table public.real_estate_share_collections
 update public.real_estate_share_collections c
 set deal_id = only_deal.id
 from (
-  select d.contact_id, d.org_id, min(d.id) as id
+  -- uuid não tem agregado min()/max() nativo no Postgres — como o having
+  -- abaixo já garante exatamente 1 linha por grupo, min() sobre o texto
+  -- só precisa devolver "o" id (não importa ordenação, é o único valor).
+  select d.contact_id, d.org_id, min(d.id::text)::uuid as id
   from public.deals d
   where d.workspace_key = 'real_estate_broker' and d.contact_id is not null
   group by d.contact_id, d.org_id
