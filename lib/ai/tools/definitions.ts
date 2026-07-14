@@ -353,6 +353,69 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "get_client_preferences",
+    description:
+      "Lê o perfil de busca (preferências) de um cliente num atendimento específico do workspace imobiliário — tipo de transação, faixa de preço, bairros, quartos mínimos etc.",
+    input_schema: {
+      type: "object",
+      properties: {
+        atendimento_id: { type: "string", description: "ID do atendimento (deal) — a preferência é por atendimento, não só por contato." },
+      },
+      required: ["atendimento_id"],
+    },
+  },
+  {
+    name: "update_client_preferences",
+    description:
+      "Grava/atualiza o perfil de busca do cliente para um atendimento (workspace imobiliário). Envie só os campos que o usuário de fato informou — nunca invente faixa de preço, bairro ou característica que a pessoa não disse.",
+    input_schema: {
+      type: "object",
+      properties: {
+        atendimento_id: { type: "string" },
+        contato_id: { type: "string", description: "Só precisa informar se o atendimento ainda não tiver contato vinculado." },
+        tipo_transacao: { type: "string", enum: ["venda", "aluguel", "venda_aluguel"] },
+        tipos_imovel: {
+          type: "array",
+          items: { type: "string", enum: ["apartamento", "casa", "cobertura", "terreno", "comercial", "sala", "galpao", "rural", "outro"] },
+        },
+        preco_min_reais: { type: "number" },
+        preco_max_reais: { type: "number" },
+        bairros: { type: "array", items: { type: "string" } },
+        cidades: { type: "array", items: { type: "string" } },
+        quartos_min: { type: "integer" },
+        vagas_min: { type: "integer" },
+        area_min_m2: { type: "number" },
+        caracteristicas_obrigatorias: {
+          type: "object",
+          description: "Ex: {\"piscina\": \"sim\"}. Imóvel que não atender bloqueia o match inteiro.",
+          additionalProperties: { type: "string" },
+        },
+        caracteristicas_desejadas: {
+          type: "object",
+          description: "Como caracteristicas_obrigatorias, mas não eliminatórias — só um extra.",
+          additionalProperties: { type: "string" },
+        },
+        financiamento_necessario: { type: "boolean" },
+        prazo_mudanca: { type: "string", description: "Data (AAAA-MM-DD) em que o cliente precisa se mudar." },
+        observacoes: { type: "string" },
+      },
+      required: ["atendimento_id"],
+    },
+  },
+  {
+    name: "match_properties_for_client",
+    description:
+      "Calcula (sem gravar nada) o quanto cada imóvel ativo da carteira combina com o perfil de busca do cliente num atendimento — score 0-100 explicado por critério. Requer que o perfil já tenha sido definido (update_client_preferences).",
+    input_schema: {
+      type: "object",
+      properties: {
+        atendimento_id: { type: "string" },
+        limite: { type: "integer", description: "Quantos imóveis retornar, no máximo. Padrão: 5." },
+      },
+      required: ["atendimento_id"],
+    },
+  },
+  {
     name: "update_organization_context",
     description:
       "Atualiza contexto da empresa que alimenta a IA: nome, setor, região, prioridades, tom, instruções e observações. Use quando o usuário pedir para a IA conhecer melhor a empresa.",
@@ -425,6 +488,7 @@ const MUTATING_TOOLS = new Set([
   "update_organization_context",
   "create_property",
   "update_property",
+  "update_client_preferences",
   "delete_contact",
   "delete_deal",
   "delete_task",

@@ -292,6 +292,54 @@ export type RealEstatePropertyReactionRow = {
   updated_at: string;
 };
 
+export type RealEstateMatchCriterion = { points: number; max: number; reason: string };
+export type RealEstateMatchExplanation = Record<string, RealEstateMatchCriterion>;
+
+export type RealEstateLeadPreferences = {
+  id: string;
+  org_id: string;
+  contact_id: string;
+  deal_id: string | null;
+  transaction_type: RealEstateTransactionType | null;
+  property_types: RealEstatePropertyType[];
+  min_price_cents: number | null;
+  max_price_cents: number | null;
+  neighborhoods: string[];
+  cities: string[];
+  min_bedrooms: number | null;
+  min_bathrooms: number | null;
+  min_parking_spots: number | null;
+  min_area_m2: number | null;
+  required_features: Record<string, string>;
+  desired_features: Record<string, string>;
+  financing_needed: boolean | null;
+  move_deadline: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type RealEstateDealPropertyStatus =
+  | "suggested" | "selected" | "sent" | "viewed" | "interested" | "rejected" | "visit_scheduled" | "offer" | "won";
+export type RealEstateDealPropertySource = "manual" | "ai_match" | "share_collection";
+
+export type RealEstateDealProperty = {
+  id: string;
+  org_id: string;
+  deal_id: string;
+  property_id: string;
+  match_score: number | null;
+  match_explanation: RealEstateMatchExplanation;
+  status: RealEstateDealPropertyStatus;
+  source: RealEstateDealPropertySource;
+  sent_at: string | null;
+  viewed_at: string | null;
+  reaction: string | null;
+  rejected_reason: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Contact = {
   id: string;
   owner_id: string;

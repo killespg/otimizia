@@ -9,6 +9,7 @@ import {
   listTasks,
 } from "./read";
 import { createProperty, getProperty, searchProperties, updateProperty } from "./properties";
+import { getClientPreferences, matchPropertiesForClient, updateClientPreferences } from "./preferences";
 import type { ToolInput } from "./types";
 import { str } from "./validation";
 import {
@@ -58,6 +59,12 @@ export async function executeTool(
       return createProperty(supabase, userId, orgId, workspaceKey, input);
     case "update_property":
       return updateProperty(supabase, orgId, workspaceKey, input);
+    case "get_client_preferences":
+      return getClientPreferences(supabase, orgId, workspaceKey, input);
+    case "update_client_preferences":
+      return updateClientPreferences(supabase, orgId, workspaceKey, input);
+    case "match_properties_for_client":
+      return matchPropertiesForClient(supabase, orgId, workspaceKey, input);
     case "create_contact":
       return createContact(supabase, userId, orgId, workspaceKey, input);
     case "update_contact":

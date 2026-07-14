@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { canManageRealEstate } from "@/lib/real-estate";
+import { decimalOrNull, intOrNull, moneyToCentsOrNull, optionalUuid, requiredText, text } from "@/lib/form-parse";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -24,7 +25,7 @@ const PROPERTY_TYPES = ["apartamento", "casa", "cobertura", "terreno", "comercia
 const TRANSACTION_TYPES = ["venda", "aluguel", "venda_aluguel"];
 const STATUSES = ["rascunho", "ativo", "reservado", "vendido", "alugado", "inativo"];
 
-async function requireRealEstate() {
+export async function requireRealEstate() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -44,47 +45,6 @@ async function requireRealEstate() {
     throw new Error("Seu cargo não pode gerenciar imóveis.");
   }
   return { supabase, user, orgId, isAdmin, jobRole };
-}
-
-function text(v: FormDataEntryValue | null, max: number): string {
-  const s = typeof v === "string" ? v.trim() : "";
-  return s.length > max ? s.slice(0, max) : s;
-}
-
-function requiredText(v: FormDataEntryValue | null, label: string, max: number): string {
-  const s = text(v, max);
-  if (!s) throw new Error(`${label} obrigatório.`);
-  return s;
-}
-
-function optionalUuid(v: FormDataEntryValue | null): string | null {
-  const s = text(v, 80);
-  return /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(s) ? s : null;
-}
-
-function moneyToCentsOrNull(v: FormDataEntryValue | null): number | null {
-  const raw = text(v, 32).replace(/R\$|\s/g, "");
-  if (!raw) return null;
-  const normalized = raw.includes(",") ? raw.replace(/\./g, "").replace(",", ".") : raw;
-  const amount = Number(normalized);
-  if (!Number.isFinite(amount) || amount < 0) throw new Error("Informe um valor válido.");
-  return Math.round(amount * 100);
-}
-
-function intOrNull(v: FormDataEntryValue | null): number | null {
-  const raw = text(v, 8);
-  if (!raw) return null;
-  const value = Number(raw);
-  if (!Number.isInteger(value) || value < 0) throw new Error("Informe um número válido.");
-  return value;
-}
-
-function decimalOrNull(v: FormDataEntryValue | null): number | null {
-  const raw = text(v, 16);
-  if (!raw) return null;
-  const value = Number(raw.replace(",", "."));
-  if (!Number.isFinite(value) || value < 0) throw new Error("Informe um número válido.");
-  return value;
 }
 
 function validPropertyType(v: FormDataEntryValue | null): RealEstatePropertyType {

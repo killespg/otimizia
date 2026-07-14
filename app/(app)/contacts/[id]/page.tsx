@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PendingButton } from "@/components/PendingButton";
 import { getProfessionPreset } from "@/lib/professions";
+import { isRealEstateV2Enabled } from "@/lib/real-estate";
 import { createClient } from "@/lib/supabase/server";
-import type { Contact, Interaction, Task } from "@/lib/supabase/types";
+import type { Contact, Deal, Interaction, RealEstateLeadPreferences, Task } from "@/lib/supabase/types";
 import { formatDateTime } from "@/lib/format";
 import { getActiveOrgId } from "@/lib/org";
 import { getWorkspaceKey } from "@/lib/workspaces";
@@ -18,7 +19,9 @@ import {
   IconTrash,
 } from "../../icons";
 import { createTask, updateContact, deleteContact, createInteraction } from "../../actions";
+import { saveLeadPreferences } from "../../imoveis/match-actions";
 import { PresetFields } from "../../PresetFields";
+import { LeadPreferencesForm } from "./LeadPreferencesForm";
 import { MessageTemplates } from "./MessageTemplates";
 
 export default async function ContactDetailPage({
@@ -60,7 +63,8 @@ export default async function ContactDetailPage({
   const now = new Date();
   const copy = contactDetailCopy(preset.key === "livestock_producer");
 
-  const [{ data: interactions }, { data: tasks }] = await Promise.all([
+  const isRealEstate = workspaceKey === "real_estate_broker";
+  const [{ data: interactions }, { data: tasks }, { data: dealRows }, { data: org }] = await Promise.all([
     supabase
       .from("interactions")
       .select("*")
@@ -75,10 +79,31 @@ export default async function ContactDetailPage({
       .eq("org_id", orgId)
       .eq("workspace_key", workspaceKey)
       .order("due_at", { ascending: true }),
+    isRealEstate
+      ? supabase
+          .from("deals")
+          .select("id, title, stage")
+          .eq("contact_id", c.id)
+          .eq("org_id", orgId)
+          .eq("workspace_key", workspaceKey)
+          .order("created_at", { ascending: false })
+      : Promise.resolve({ data: [] as Pick<Deal, "id" | "title" | "stage">[] }),
+    isRealEstate
+      ? supabase.from("organizations").select("real_estate_v2_enabled").eq("id", orgId).maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   const logs = (interactions ?? []) as Interaction[];
   const relatedTasks = (tasks ?? []) as Task[];
+  const contactDeals = (dealRows ?? []) as Pick<Deal, "id" | "title" | "stage">[];
+  const showLeadPreferences = isRealEstate && isRealEstateV2Enabled(org) && contactDeals.length > 0;
+  const dealIds = contactDeals.map((d) => d.id);
+  const { data: preferenceRows } = showLeadPreferences
+    ? await supabase.from("real_estate_lead_preferences").select("*").eq("org_id", orgId).in("deal_id", dealIds)
+    : { data: [] as RealEstateLeadPreferences[] };
+  const preferencesByDeal = new Map(
+    ((preferenceRows ?? []) as RealEstateLeadPreferences[]).map((p) => [p.deal_id, p])
+  );
   const detailChips = preset.contactFields
     .map((field) => (c.details?.[field.key] ? `${field.label}: ${c.details[field.key]}` : null))
     .filter(Boolean) as string[];
@@ -198,6 +223,27 @@ export default async function ContactDetailPage({
         </section>
 
         <div className="space-y-5">
+          {showLeadPreferences && (
+            <section className="panel overflow-hidden">
+              <div className="border-b border-line px-5 py-4">
+                <h2 className="text-lg font-black tracking-[-0.02em] text-ink">Perfil de busca do cliente</h2>
+                <p className="mt-1 text-sm font-medium text-ink-muted">
+                  Uma preferência por atendimento — usada pra encontrar imóveis compatíveis na carteira.
+                </p>
+              </div>
+              <div className="space-y-3 p-5">
+                {contactDeals.map((deal) => (
+                  <LeadPreferencesForm
+                    key={deal.id}
+                    deal={deal}
+                    contactId={c.id}
+                    preferences={preferencesByDeal.get(deal.id) ?? null}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
           <MessageTemplates
             templates={preset.messageTemplates}
             contactName={contactName}

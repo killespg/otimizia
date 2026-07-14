@@ -446,4 +446,102 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
       .eq("id", propertyId);
     expect(scoreError).not.toBeNull();
   });
+
+  // RE-1xx (Fase 1): real_estate_lead_preferences e real_estate_deal_properties
+  // são tabelas novas (0058) — RLS própria (can_view_realestate/can_manage_realestate,
+  // mesmo padrão de 0052), testada aqui do zero em vez de só herdar da
+  // real_estate_properties como as colunas da Fase 0.
+  it("real_estate_lead_preferences: isolamento cross-org e um preferência por atendimento", async () => {
+    const { data: dealA } = await userA.client
+      .from("deals")
+      .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "real_estate_broker", title: "Atendimento de teste" })
+      .select("id")
+      .single();
+
+    const { data: contactA } = await userA.client
+      .from("contacts")
+      .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "real_estate_broker", name: "Lead de teste" })
+      .select("id")
+      .single();
+    const { data: prefRow, error: insertError } = await userA.client
+      .from("real_estate_lead_preferences")
+      .insert({ org_id: orgA, contact_id: contactA!.id, deal_id: dealA!.id, transaction_type: "venda" })
+      .select("id")
+      .single();
+    expect(insertError).toBeNull();
+
+    // Segunda preferência pro MESMO deal_id: índice único parcial barra.
+    const { error: duplicateError } = await userA.client
+      .from("real_estate_lead_preferences")
+      .insert({ org_id: orgA, contact_id: contactA!.id, deal_id: dealA!.id, transaction_type: "aluguel" });
+    expect(duplicateError).not.toBeNull();
+
+    const { data: seenByB } = await userB.client
+      .from("real_estate_lead_preferences")
+      .select("*")
+      .eq("id", prefRow!.id)
+      .maybeSingle();
+    expect(seenByB).toBeNull();
+
+    const { error: crossOrgInsertError } = await userB.client
+      .from("real_estate_lead_preferences")
+      .insert({ org_id: orgA, contact_id: contactA!.id, deal_id: dealA!.id, transaction_type: "aluguel" });
+    expect(crossOrgInsertError).not.toBeNull();
+
+    await admin.from("real_estate_lead_preferences").delete().eq("id", prefRow!.id);
+    await admin.from("contacts").delete().eq("id", contactA!.id);
+    await admin.from("deals").delete().eq("id", dealA!.id);
+  });
+
+  it("real_estate_deal_properties: isolamento cross-org e FK composta rejeita deal/imóvel de outra organização", async () => {
+    const orgB = await getPersonalOrgId(admin, userB.userId);
+    const { data: dealA } = await userA.client
+      .from("deals")
+      .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "real_estate_broker", title: "Atendimento pra match" })
+      .select("id")
+      .single();
+    const { data: dealB } = await userB.client
+      .from("deals")
+      .insert({ owner_id: userB.userId, org_id: orgB, workspace_key: "real_estate_broker", title: "Atendimento de outra org" })
+      .select("id")
+      .single();
+
+    const { data: linkRow, error: insertError } = await userA.client
+      .from("real_estate_deal_properties")
+      .insert({ org_id: orgA, deal_id: dealA!.id, property_id: propertyId, match_score: 80, match_explanation: { total: { points: 80, max: 100, reason: "teste" } } })
+      .select("id")
+      .single();
+    expect(insertError).toBeNull();
+    expect(linkRow!.id).toBeDefined();
+
+    // org_id da própria org do atacante (orgB), mas deal_id pertence à
+    // organização A — a FK composta (org_id, deal_id) -> deals(org_id, id) barra.
+    const { error: forgedDealError } = await userB.client.from("real_estate_deal_properties").insert({
+      org_id: orgB,
+      deal_id: dealA!.id,
+      property_id: propertyId,
+      match_score: 50,
+    });
+    expect(forgedDealError).not.toBeNull();
+
+    // Mesmo teste pro lado do property_id: deal de B, imóvel de A.
+    const { error: forgedPropertyError } = await userB.client.from("real_estate_deal_properties").insert({
+      org_id: orgB,
+      deal_id: dealB!.id,
+      property_id: propertyId,
+      match_score: 50,
+    });
+    expect(forgedPropertyError).not.toBeNull();
+
+    const { data: seenByB } = await userB.client
+      .from("real_estate_deal_properties")
+      .select("*")
+      .eq("id", linkRow!.id)
+      .maybeSingle();
+    expect(seenByB).toBeNull();
+
+    await admin.from("real_estate_deal_properties").delete().eq("id", linkRow!.id);
+    await admin.from("deals").delete().eq("id", dealA!.id);
+    await admin.from("deals").delete().eq("id", dealB!.id);
+  });
 });
