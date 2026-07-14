@@ -91,7 +91,15 @@ function useActive() {
   return (href: string) => pathname === href || pathname.startsWith(href + "/");
 }
 
-function displayLabelFor(href: string, label: string, labels: NavLabels) {
+// A substituição dinâmica (labels.pipeline/labels.contacts) só faz sentido
+// pro NAV genérico, cujos rótulos ("Vendas"/"Contatos") são placeholder pra
+// cada profissão renomear. LAW_NAV e REAL_ESTATE_NAV já vêm com o rótulo
+// final e correto por item — aplicar a substituição neles de qualquer jeito
+// sobrescrevia "/pipeline" (Atendimentos) com labels.pipeline, que pro preset
+// imobiliário é "Imóveis" (mesmo texto da aba dedicada "/imoveis"), gerando
+// duas abas "Imóveis" na navegação.
+function displayLabelFor(href: string, label: string, labels: NavLabels, dynamic: boolean) {
+  if (!dynamic) return label;
   if (href === "/pipeline") return labels.pipeline;
   if (href === "/contacts") return labels.contacts;
   if (label === "Valor aberto") return labels.value;
@@ -121,6 +129,7 @@ export function SidebarNav({
   let items = isAdmin
     ? [...NAV, { href: "/dev", label: "Métricas", icon: IconChartBar }]
     : NAV;
+  let useDynamicLabels = true;
   if (lawOfficeAccess?.enabled) {
     items = LAW_NAV.filter((item) => {
       if ((item.href === "/law" || item.href === "/law/deadlines") && !lawOfficeAccess.canViewLegal) return false;
@@ -134,16 +143,18 @@ export function SidebarNav({
       ];
     }
     if (isAdmin) items = [...items, { href: "/dev", label: "Métricas", icon: IconChartBar }];
+    useDynamicLabels = false;
   } else if (realEstateAccess?.enabled) {
     items = REAL_ESTATE_NAV.filter((item) => item.href !== "/imoveis/colecoes" || realEstateAccess.canManage);
     if (isAdmin) items = [...items, { href: "/dev", label: "Métricas", icon: IconChartBar }];
+    useDynamicLabels = false;
   }
 
   return (
     <nav className="flex flex-col gap-1" aria-label="Navegação principal">
       {items.map(({ href, label, icon: Icon, passive }) => {
         const active = !passive && isActive(href);
-        const displayLabel = displayLabelFor(href, label, text);
+        const displayLabel = displayLabelFor(href, label, text, useDynamicLabels);
         return (
           <Link
             key={`${href}-${label}`}
@@ -185,6 +196,10 @@ export function MobileTabBar({
   const pipelineLabel = labels?.pipeline ?? "Vendas";
   const dealSingular = labels?.dealSingular ?? "venda";
   const contactSingular = contactsLabel === "Sujeitos" ? "sujeito" : "contato";
+  // Mesmo motivo do SidebarNav: LAW_NAV/REAL_ESTATE_NAV já trazem o rótulo
+  // final por item, então a renomeação dinâmica de "/pipeline"/"/contacts"
+  // só se aplica ao NAV genérico (senão duplica "Imóveis" no tab bar também).
+  const useDynamicLabels = !lawOfficeAccess?.enabled && !realEstateAccess?.enabled;
   const mobileItems = lawOfficeAccess?.enabled
     ? LAW_NAV.filter((item) => item.mobile).filter((item) => item.href !== "/law" || lawOfficeAccess.canViewLegal)
     : realEstateAccess?.enabled
@@ -288,8 +303,13 @@ export function MobileTabBar({
 
   const renderItem = ({ href, label, icon: Icon }: NavItem) => {
     const active = isActive(href);
-    const displayLabel =
-      href === "/pipeline" ? pipelineLabel : href === "/contacts" ? contactsLabel : label;
+    const displayLabel = !useDynamicLabels
+      ? label
+      : href === "/pipeline"
+      ? pipelineLabel
+      : href === "/contacts"
+      ? contactsLabel
+      : label;
     return (
       <Link
         key={href}
