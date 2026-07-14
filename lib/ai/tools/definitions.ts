@@ -304,7 +304,10 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
         cidade: { type: "string" },
         uf: { type: "string" },
         descricao: { type: "string" },
-        contato_id: { type: "string", description: "ID do contato proprietário/interessado (opcional)" },
+        contato_id: {
+          type: "string",
+          description: "ID do contato dono do imóvel (opcional) — vira owner_contact_id, precisa já existir como contato desta organização.",
+        },
         sugestoes: {
           type: "object",
           description:

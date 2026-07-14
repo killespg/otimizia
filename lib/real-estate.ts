@@ -51,6 +51,13 @@ export function canManageRealEstate(role: JobRole | null | undefined, isAdmin = 
   return isAdmin || ["owner", "broker", "agent"].includes(role ?? "");
 }
 
+// Feature flag simples do plano de evolução do CRM imobiliário (RE-004):
+// liga por organização via UPDATE direto (service role/admin), sem infra de
+// flag dedicada. Ver supabase/migrations/0057_real_estate_v2_feature_flag.sql.
+export function isRealEstateV2Enabled(org: { real_estate_v2_enabled?: boolean | null } | null | undefined) {
+  return Boolean(org?.real_estate_v2_enabled);
+}
+
 export function propertyTypeLabel(type: RealEstatePropertyType) {
   return REAL_ESTATE_PROPERTY_TYPES.find((item) => item.value === type)?.label ?? type;
 }

@@ -128,6 +128,19 @@ function propertyFieldsFromForm(formData: FormData) {
   };
 }
 
+// owner_contact_id/capture_source só aparecem no formulário quando
+// real_estate_v2_enabled está ligado pra essa org (RE-004). Em create isso
+// não importa (linha nova, sem nada a preservar), mas em update um campo
+// ausente do form NÃO pode virar null — senão desligar/religar a flag, ou
+// só não ter os campos no form ainda, apagaria valor gravado pela IA
+// (lib/ai/tools/properties.ts, que não é gateada pela flag).
+function v2FieldsFromFormIfPresent(formData: FormData): Record<string, unknown> {
+  const patch: Record<string, unknown> = {};
+  if (formData.has("owner_contact_id")) patch.owner_contact_id = optionalUuid(formData.get("owner_contact_id"));
+  if (formData.has("capture_source")) patch.capture_source = text(formData.get("capture_source"), MAX.short) || null;
+  return patch;
+}
+
 export async function createProperty(formData: FormData) {
   const { supabase, user, orgId } = await requireRealEstate();
   const fields = propertyFieldsFromForm(formData);
@@ -139,6 +152,11 @@ export async function createProperty(formData: FormData) {
       workspace_key: "real_estate_broker",
       created_by: user.id,
       assignee_id: assigneeId,
+      owner_contact_id: optionalUuid(formData.get("owner_contact_id")),
+      capture_source: text(formData.get("capture_source"), MAX.short) || null,
+      // Quem cadastrou pela UI é quem captou — a IA (lib/ai/tools/properties.ts)
+      // segue a mesma regra com o usuário que está na conversa.
+      captured_by: user.id,
       ...fields,
     })
     .select("id")
@@ -153,9 +171,11 @@ export async function updateProperty(formData: FormData) {
   const id = requiredText(formData.get("id"), "Imóvel", 80);
   const fields = propertyFieldsFromForm(formData);
   const assigneeId = optionalUuid(formData.get("assignee_id"));
+  // captured_by não é reeditável aqui de propósito — é um fato histórico de
+  // quem trouxe o imóvel pra carteira, igual created_by/created_at.
   const { error } = await supabase
     .from("real_estate_properties")
-    .update({ ...fields, assignee_id: assigneeId })
+    .update({ ...fields, assignee_id: assigneeId, ...v2FieldsFromFormIfPresent(formData) })
     .eq("id", id)
     .eq("org_id", orgId);
   if (error) throw new Error("Não foi possível atualizar o imóvel.");

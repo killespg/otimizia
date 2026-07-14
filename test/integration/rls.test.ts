@@ -362,4 +362,88 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
     const { data: revoked } = await anon.rpc("get_shared_property_collection", { p_token: collection!.token });
     expect(revoked).toBeNull();
   });
+
+  // RE-001 (Fase 0): owner_contact_id, captured_by, capture_source e afins
+  // (0056_real_estate_capture_fields.sql) não têm policy própria — são
+  // colunas na mesma linha de real_estate_properties, então já herdam o
+  // isolamento por org das policies de 0052 (RLS é por linha, não por
+  // coluna). Estes dois testes provam isso na prática em vez de confiar só
+  // na leitura do schema.
+  it("owner_contact_id só aceita contato da mesma organização do imóvel (FK composta)", async () => {
+    const orgB = await getPersonalOrgId(admin, userB.userId);
+
+    const { data: contactA } = await userA.client
+      .from("contacts")
+      .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "real_estate_broker", name: "Proprietário de teste" })
+      .select("id")
+      .single();
+    const { data: contactB } = await userB.client
+      .from("contacts")
+      .insert({ owner_id: userB.userId, org_id: orgB, workspace_key: "real_estate_broker", name: "Proprietário de outra org" })
+      .select("id")
+      .single();
+
+    // Contato da mesma organização do imóvel: aceito.
+    const { error: sameOrgError } = await userA.client
+      .from("real_estate_properties")
+      .update({ owner_contact_id: contactA!.id })
+      .eq("id", propertyId);
+    expect(sameOrgError).toBeNull();
+
+    // owner_contact_id apontando pra contato de outra organização: a FK
+    // composta (org_id, owner_contact_id) -> contacts(org_id, id) barra,
+    // mesmo sendo o próprio dono do imóvel fazendo o update — não é um caso
+    // de RLS cross-org, é integridade referencial dentro da própria org.
+    const { error: crossOrgError } = await userA.client
+      .from("real_estate_properties")
+      .update({ owner_contact_id: contactB!.id })
+      .eq("id", propertyId);
+    expect(crossOrgError).not.toBeNull();
+
+    await admin.from("real_estate_properties").update({ owner_contact_id: null }).eq("id", propertyId);
+    await admin.from("contacts").delete().eq("id", contactB!.id);
+    await admin.from("contacts").delete().eq("id", contactA!.id);
+  });
+
+  it("captured_by/capture_source/exclusive_listing/commission_percent seguem o mesmo isolamento por org do resto da tabela", async () => {
+    const { error: updateError } = await userA.client
+      .from("real_estate_properties")
+      .update({
+        captured_by: userA.userId,
+        capture_source: "Indicação",
+        exclusive_listing: true,
+        commission_percent: 6,
+      })
+      .eq("id", propertyId);
+    expect(updateError).toBeNull();
+
+    const { data: seenByB } = await userB.client
+      .from("real_estate_properties")
+      .select("captured_by, capture_source, exclusive_listing, commission_percent")
+      .eq("id", propertyId)
+      .maybeSingle();
+    expect(seenByB).toBeNull();
+
+    const { data: seenByA } = await userA.client
+      .from("real_estate_properties")
+      .select("captured_by, capture_source, exclusive_listing, commission_percent")
+      .eq("id", propertyId)
+      .maybeSingle();
+    expect(seenByA?.capture_source).toEqual("Indicação");
+    expect(seenByA?.exclusive_listing).toEqual(true);
+  });
+
+  it("commission_percent e listing_quality_score rejeitam valores fora do intervalo 0-100", async () => {
+    const { error: commissionError } = await userA.client
+      .from("real_estate_properties")
+      .update({ commission_percent: 150 })
+      .eq("id", propertyId);
+    expect(commissionError).not.toBeNull();
+
+    const { error: scoreError } = await userA.client
+      .from("real_estate_properties")
+      .update({ listing_quality_score: -1 })
+      .eq("id", propertyId);
+    expect(scoreError).not.toBeNull();
+  });
 });

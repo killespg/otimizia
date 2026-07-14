@@ -1,10 +1,32 @@
 import Link from "next/link";
 import { PendingButton } from "@/components/PendingButton";
-import { REAL_ESTATE_PROPERTY_TYPES } from "@/lib/real-estate";
+import { getActiveOrgId } from "@/lib/org";
+import { isRealEstateV2Enabled, REAL_ESTATE_PROPERTY_TYPES } from "@/lib/real-estate";
+import { createClient } from "@/lib/supabase/server";
+import type { Contact } from "@/lib/supabase/types";
 import { IconPlus } from "../../icons";
 import { createProperty } from "../actions";
 
-export default function NovoImovelPage() {
+export default async function NovoImovelPage() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const orgId = await getActiveOrgId(supabase, user!.id);
+  const [{ data: contacts }, { data: org }] = await Promise.all([
+    supabase
+      .from("contacts")
+      .select("id, name")
+      .eq("org_id", orgId)
+      .eq("workspace_key", "real_estate_broker")
+      .order("name"),
+    supabase.from("organizations").select("real_estate_v2_enabled").eq("id", orgId).maybeSingle(),
+  ]);
+  const contactList = (contacts ?? []) as Pick<Contact, "id" | "name">[];
+  // RE-004: campos de proprietário/captação (Fase 0) só aparecem pra quem
+  // já foi liberado — rollout progressivo por organização.
+  const v2Enabled = isRealEstateV2Enabled(org);
+
   return (
     <div className="max-w-3xl space-y-4 sm:space-y-5">
       <header className="enter">
@@ -46,6 +68,22 @@ export default function NovoImovelPage() {
           <Field name="address_city" label="Cidade" />
           <Field name="address_state" label="UF" placeholder="Ex.: SP" />
           <Field name="address_zip" label="CEP" />
+          {v2Enabled && (
+            <>
+              <label className="block">
+                <span className="label">Proprietário (opcional)</span>
+                <select name="owner_contact_id" defaultValue="" className="field mt-1.5">
+                  <option value="">Sem vincular</option>
+                  {contactList.map((contact) => (
+                    <option key={contact.id} value={contact.id}>
+                      {contact.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Field name="capture_source" label="Origem da captação" placeholder="Ex.: Indicação, portal, prospecção" />
+            </>
+          )}
           <div className="md:col-span-2">
             <label className="label" htmlFor="description">
               Descrição

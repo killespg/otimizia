@@ -64,6 +64,7 @@ export type Organization = {
   plan_status: string | null;
   current_period_end: string | null;
   trial_ends_at: string | null;
+  real_estate_v2_enabled: boolean;
   created_at: string;
 };
 
@@ -209,6 +210,16 @@ export type RealEstateProperty = {
   workspace_key: "real_estate_broker";
   created_by: string;
   assignee_id: string | null;
+  owner_contact_id: string | null;
+  captured_by: string | null;
+  capture_source: string | null;
+  exclusive_listing: boolean;
+  exclusive_until: string | null;
+  commission_percent: number | null;
+  registration_number: string | null;
+  occupancy_status: string | null;
+  key_location: string | null;
+  listing_quality_score: number | null;
   title: string;
   property_type: RealEstatePropertyType;
   transaction_type: RealEstateTransactionType;

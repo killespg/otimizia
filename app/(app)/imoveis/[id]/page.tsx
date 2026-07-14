@@ -4,12 +4,13 @@ import { PendingButton } from "@/components/PendingButton";
 import {
   canManageRealEstate,
   canViewRealEstate,
+  isRealEstateV2Enabled,
   REAL_ESTATE_PROPERTY_STATUSES,
   REAL_ESTATE_PROPERTY_TYPES,
 } from "@/lib/real-estate";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
-import type { AiSuggestedField, RealEstateProperty, RealEstatePropertyMedia } from "@/lib/supabase/types";
+import type { AiSuggestedField, Contact, RealEstateProperty, RealEstatePropertyMedia } from "@/lib/supabase/types";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { IconCheck, IconPlus, IconTrash, IconX } from "../../icons";
 import {
@@ -65,24 +66,38 @@ export default async function ImovelDetailPage({ params }: { params: { id: strin
   if (!canViewRealEstate(membership?.job_role, isAdmin)) notFound();
   const canManage = canManageRealEstate(membership?.job_role, isAdmin);
 
-  const [{ data: propertyRow }, { data: mediaRows }, { data: collectionRows }] = await Promise.all([
-    supabase.from("real_estate_properties").select("*").eq("id", params.id).eq("org_id", orgId).maybeSingle(),
-    supabase
-      .from("real_estate_property_media")
-      .select("*")
-      .eq("property_id", params.id)
-      .order("position", { ascending: true }),
-    supabase
-      .from("real_estate_share_collections")
-      .select("id, title")
-      .eq("org_id", orgId)
-      .is("revoked_at", null)
-      .order("created_at", { ascending: false }),
-  ]);
+  const [{ data: propertyRow }, { data: mediaRows }, { data: collectionRows }, { data: contactRows }, members, { data: org }] =
+    await Promise.all([
+      supabase.from("real_estate_properties").select("*").eq("id", params.id).eq("org_id", orgId).maybeSingle(),
+      supabase
+        .from("real_estate_property_media")
+        .select("*")
+        .eq("property_id", params.id)
+        .order("position", { ascending: true }),
+      supabase
+        .from("real_estate_share_collections")
+        .select("id, title")
+        .eq("org_id", orgId)
+        .is("revoked_at", null)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("contacts")
+        .select("id, name")
+        .eq("org_id", orgId)
+        .eq("workspace_key", "real_estate_broker")
+        .order("name"),
+      getOrgMembers(supabase, orgId),
+      supabase.from("organizations").select("real_estate_v2_enabled").eq("id", orgId).maybeSingle(),
+    ]);
   if (!propertyRow) notFound();
   const property = propertyRow as RealEstateProperty;
   const media = (mediaRows ?? []) as RealEstatePropertyMedia[];
   const collections = collectionRows ?? [];
+  const contactList = (contactRows ?? []) as Pick<Contact, "id" | "name">[];
+  const memberNames = new Map(members.map((m) => [m.user_id, m.name ?? "Sem nome"]));
+  const ownerContact = property.owner_contact_id ? contactList.find((c) => c.id === property.owner_contact_id) : null;
+  // RE-004: rollout progressivo por organização, mesmo flag de novo/page.tsx.
+  const v2Enabled = isRealEstateV2Enabled(org);
 
   const photoUrls = media.map((item) => ({
     id: item.id,
@@ -113,6 +128,27 @@ export default async function ImovelDetailPage({ params }: { params: { id: strin
           </form>
         )}
       </header>
+
+      {v2Enabled && (
+        <section className="panel p-5 sm:p-6">
+          <dl className="grid gap-4 sm:grid-cols-3">
+            <Info
+              label="Proprietário"
+              value={
+                ownerContact ? (
+                  <Link href={`/contacts/${ownerContact.id}`} className="nav-item text-brand-700 hover:underline">
+                    {ownerContact.name}
+                  </Link>
+                ) : (
+                  "Não informado"
+                )
+              }
+            />
+            <Info label="Captado por" value={property.captured_by ? memberNames.get(property.captured_by) ?? "Sem nome" : "Não informado"} />
+            <Info label="Origem da captação" value={property.capture_source ?? "Não informada"} />
+          </dl>
+        </section>
+      )}
 
       {suggestions.length > 0 && (
         <section className="panel space-y-2 border-brand-200 bg-brand-50/40 p-5">
@@ -236,6 +272,22 @@ export default async function ImovelDetailPage({ params }: { params: { id: strin
             <Field name="address_city" label="Cidade" defaultValue={property.address_city ?? ""} />
             <Field name="address_state" label="UF" defaultValue={property.address_state ?? ""} />
             <Field name="address_zip" label="CEP" defaultValue={property.address_zip ?? ""} />
+            {v2Enabled && (
+              <>
+                <label className="block">
+                  <span className="label">Proprietário (opcional)</span>
+                  <select name="owner_contact_id" defaultValue={property.owner_contact_id ?? ""} className="field mt-1.5">
+                    <option value="">Sem vincular</option>
+                    {contactList.map((contact) => (
+                      <option key={contact.id} value={contact.id}>
+                        {contact.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <Field name="capture_source" label="Origem da captação" defaultValue={property.capture_source ?? ""} />
+              </>
+            )}
             <div className="md:col-span-2">
               <label className="label" htmlFor="description">
                 Descrição
@@ -281,6 +333,15 @@ export default async function ImovelDetailPage({ params }: { params: { id: strin
       <Link href="/imoveis" className="nav-item inline-block text-sm font-black text-brand-700 hover:underline">
         Voltar para a carteira
       </Link>
+    </div>
+  );
+}
+
+function Info({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div>
+      <dt className="label">{label}</dt>
+      <dd className="mt-1 text-sm font-bold text-ink">{value}</dd>
     </div>
   );
 }

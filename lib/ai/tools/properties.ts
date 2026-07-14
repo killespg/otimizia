@@ -138,6 +138,8 @@ export async function createProperty(
         return value;
       })(),
       status: optionalStatus(input.status) ?? "ativo",
+      owner_contact_id: contactId,
+      captured_by: userId,
       price_cents: optionalCents(input.preco_reais) ?? null,
       rent_price_cents: optionalCents(input.preco_aluguel_reais) ?? null,
       bedrooms: optionalInt(input.quartos) ?? null,
