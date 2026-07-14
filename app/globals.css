@@ -88,6 +88,11 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     touch-action: manipulation;
+    /* Sem isso, o body tem cor de fundo mas o <html> fica transparente — no
+       bounce/rubber-band do Safari/Chrome mobile (arrastar além do topo/
+       fundo), é o fundo do <html> que aparece, então virava uma barra preta
+       em vez do canvas do app. */
+    background-color: rgb(var(--color-canvas));
   }
 
   strong,
@@ -1110,6 +1115,11 @@
 @media (max-width: 639px) {
   html {
     scroll-padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
+    /* O body já tinha overscroll-behavior-y: none, mas quem faz o bounce no
+       mobile é o <html> (scroller raiz do documento) — só desabilitar no
+       body não travava o rubber-band, então a barra preta continuava
+       aparecendo ao puxar além do topo/fundo. */
+    overscroll-behavior-y: none;
   }
 
   body {
