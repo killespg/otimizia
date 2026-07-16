@@ -8,6 +8,7 @@ import type { Contact, Deal, Interaction, RealEstateLeadPreferences, Task } from
 import { formatDateTime } from "@/lib/format";
 import { getActiveOrgId } from "@/lib/org";
 import { getWorkspaceKey } from "@/lib/workspaces";
+import { buildContactTimeline, filterTimeline, type TimelineEntryKind } from "@/lib/timeline";
 import { Avatar } from "../../Avatar";
 import {
   IconArrowRight,
@@ -26,8 +27,10 @@ import { MessageTemplates } from "./MessageTemplates";
 
 export default async function ContactDetailPage({
   params,
+  searchParams,
 }: {
   params: { id: string };
+  searchParams: { feed?: string };
 }) {
   const supabase = createClient();
 
@@ -64,34 +67,49 @@ export default async function ContactDetailPage({
   const copy = contactDetailCopy(preset.key === "livestock_producer");
 
   const isRealEstate = workspaceKey === "real_estate_broker";
-  const [{ data: interactions }, { data: tasks }, { data: dealRows }, { data: org }] = await Promise.all([
-    supabase
-      .from("interactions")
-      .select("*")
-      .eq("contact_id", c.id)
-      .eq("org_id", orgId)
-      .eq("workspace_key", workspaceKey)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("tasks")
-      .select("*")
-      .eq("contact_id", c.id)
-      .eq("org_id", orgId)
-      .eq("workspace_key", workspaceKey)
-      .order("due_at", { ascending: true }),
-    isRealEstate
-      ? supabase
-          .from("deals")
-          .select("id, title, stage")
-          .eq("contact_id", c.id)
-          .eq("org_id", orgId)
-          .eq("workspace_key", workspaceKey)
-          .order("created_at", { ascending: false })
-      : Promise.resolve({ data: [] as Pick<Deal, "id" | "title" | "stage">[] }),
-    isRealEstate
-      ? supabase.from("organizations").select("real_estate_v2_enabled").eq("id", orgId).maybeSingle()
-      : Promise.resolve({ data: null }),
-  ]);
+  const [{ data: interactions }, { data: tasks }, { data: dealRows }, { data: org }, { data: visits }, { data: offers }] =
+    await Promise.all([
+      supabase
+        .from("interactions")
+        .select("*")
+        .eq("contact_id", c.id)
+        .eq("org_id", orgId)
+        .eq("workspace_key", workspaceKey)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("tasks")
+        .select("*")
+        .eq("contact_id", c.id)
+        .eq("org_id", orgId)
+        .eq("workspace_key", workspaceKey)
+        .order("due_at", { ascending: true }),
+      isRealEstate
+        ? supabase
+            .from("deals")
+            .select("id, title, stage")
+            .eq("contact_id", c.id)
+            .eq("org_id", orgId)
+            .eq("workspace_key", workspaceKey)
+            .order("created_at", { ascending: false })
+        : Promise.resolve({ data: [] as Pick<Deal, "id" | "title" | "stage">[] }),
+      isRealEstate
+        ? supabase.from("organizations").select("real_estate_v2_enabled").eq("id", orgId).maybeSingle()
+        : Promise.resolve({ data: null }),
+      isRealEstate
+        ? supabase
+            .from("real_estate_visits")
+            .select("id, status, scheduled_at, completed_at, created_at")
+            .eq("contact_id", c.id)
+            .eq("org_id", orgId)
+        : Promise.resolve({ data: [] as { id: string; status: string; scheduled_at: string | null; completed_at: string | null; created_at: string }[] }),
+      isRealEstate
+        ? supabase
+            .from("real_estate_offers")
+            .select("id, status, amount_cents, sent_at, created_at")
+            .eq("contact_id", c.id)
+            .eq("org_id", orgId)
+        : Promise.resolve({ data: [] as { id: string; status: string; amount_cents: number; sent_at: string | null; created_at: string }[] }),
+    ]);
 
   const logs = (interactions ?? []) as Interaction[];
   const relatedTasks = (tasks ?? []) as Task[];
@@ -104,6 +122,22 @@ export default async function ContactDetailPage({
   const preferencesByDeal = new Map(
     ((preferenceRows ?? []) as RealEstateLeadPreferences[]).map((p) => [p.deal_id, p])
   );
+
+  const fullTimeline = buildContactTimeline({ interactions: logs, tasks: relatedTasks, visits: visits ?? [], offers: offers ?? [] });
+  const feedFilter = (searchParams.feed ?? "all") as TimelineEntryKind | "all";
+  const timeline = filterTimeline(fullTimeline, feedFilter);
+  const timelineTabs: { key: TimelineEntryKind | "all"; label: string }[] = [
+    { key: "all", label: "Tudo" },
+    { key: "interaction", label: "Conversas" },
+    { key: "task", label: "Tarefas" },
+    ...(isRealEstate ? [{ key: "visit" as const, label: "Visitas" }, { key: "offer" as const, label: "Propostas" }] : []),
+  ];
+  const timelineIcon: Record<TimelineEntryKind, (props: { className?: string }) => JSX.Element> = {
+    interaction: IconMessage,
+    task: IconBell,
+    visit: IconPhone,
+    offer: IconCheck,
+  };
   const detailChips = preset.contactFields
     .map((field) => (c.details?.[field.key] ? `${field.label}: ${c.details[field.key]}` : null))
     .filter(Boolean) as string[];
@@ -295,6 +329,62 @@ export default async function ContactDetailPage({
               </div>
             </section>
           )}
+
+          <section className="panel overflow-hidden">
+            <div className="border-b border-line px-5 py-4">
+              <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
+                Linha do tempo
+              </h2>
+              <p className="mt-1 text-sm font-medium text-ink-muted">
+                Tudo o que aconteceu com {contactName}, em ordem — o que já foi feito e o que falta.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {timelineTabs.map((tab) => (
+                  <Link
+                    key={tab.key}
+                    href={`/contacts/${c.id}${tab.key === "all" ? "" : `?feed=${tab.key}`}`}
+                    className={
+                      "tag " + (feedFilter === tab.key ? "bg-brand-700 text-white" : "bg-surface-2 text-ink-muted")
+                    }
+                  >
+                    {tab.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+            <div className="p-5">
+              {timeline.length === 0 ? (
+                <p className="rounded-lg border border-dashed border-line bg-[#f8fbff] p-5 text-center text-sm font-medium text-ink-muted">
+                  Nada por aqui ainda.
+                </p>
+              ) : (
+                <ol className="enter space-y-3">
+                  {timeline.map((entry) => {
+                    const Icon = timelineIcon[entry.kind];
+                    return (
+                      <li key={`${entry.kind}-${entry.id}`} className="flex items-start gap-3 rounded-lg border border-line bg-white p-4">
+                        <span
+                          className={
+                            "grid h-8 w-8 shrink-0 place-items-center rounded-full " +
+                            (entry.done ? "bg-brand-50 text-brand-700" : "bg-warning-50 text-warning-700")
+                          }
+                        >
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className={"text-safe text-sm leading-relaxed " + (entry.done ? "text-ink" : "font-black text-ink")}>
+                            {entry.title}
+                          </p>
+                          {entry.detail && <p className="mt-1 text-xs font-semibold text-ink-muted">{entry.detail}</p>}
+                          <p className="mt-1 text-xs font-bold text-ink-muted">{formatDateTime(entry.at)}</p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              )}
+            </div>
+          </section>
 
           <section className="panel overflow-hidden">
             <div className="border-b border-line px-5 py-4">
