@@ -9,6 +9,7 @@ import {
   IconBuilding,
   IconCalendar,
   IconChartBar,
+  IconClock,
   IconColumns,
   IconGauge,
   IconImage,
@@ -49,6 +50,7 @@ type RealEstateAccess = {
 
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "Painel", icon: IconGauge, mobile: true },
+  { href: "/hoje", label: "Hoje", icon: IconClock },
   { href: "/contacts", label: "Contatos", icon: IconUsers, mobile: true },
   { href: "/pipeline", label: "Vendas", icon: IconColumns, mobile: true },
   { href: "/whatsapp", label: "WhatsApp", icon: IconMessage },
@@ -62,6 +64,7 @@ const NAV: NavItem[] = [
 
 const LAW_NAV: NavItem[] = [
   { href: "/dashboard", label: "Painel", icon: IconGauge, mobile: true },
+  { href: "/hoje", label: "Hoje", icon: IconClock },
   { href: "/contacts", label: "Clientes", icon: IconUsers, mobile: true },
   { href: "/pipeline", label: "Atendimentos", icon: IconPhone, mobile: true },
   { href: "/law", label: "Casos", icon: IconColumns, mobile: true },
@@ -75,6 +78,7 @@ const LAW_NAV: NavItem[] = [
 
 const REAL_ESTATE_NAV: NavItem[] = [
   { href: "/dashboard", label: "Painel", icon: IconGauge, mobile: true },
+  { href: "/hoje", label: "Hoje", icon: IconClock },
   { href: "/contacts", label: "Clientes", icon: IconUsers, mobile: true },
   { href: "/pipeline", label: "Atendimentos", icon: IconPhone, mobile: true },
   { href: "/imoveis", label: "Imóveis", icon: IconBuilding, mobile: true },
