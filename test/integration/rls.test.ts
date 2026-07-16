@@ -868,4 +868,102 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
 
     await admin.from("real_estate_targets").delete().eq("id", target!.id);
   });
+
+  // 0.3 (Fase 0): audit_log de mudanças em organization_members
+  // (0068_audit_log.sql) — a classe de risco priorizada é vazamento entre
+  // membros da MESMA organização, então o teste central aqui não é
+  // isolamento cross-org (já coberto acima), é: só admin lê o próprio log,
+  // e ninguém escreve nele por fora do trigger.
+  describe("audit_log (0.3)", () => {
+    it("registra member_added e member_role_changed com before/after em organization_members", async () => {
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "assistant" });
+
+      const { data: addedEntries } = await admin
+        .from("audit_log")
+        .select("*")
+        .eq("org_id", orgA)
+        .eq("resource_id", userB.userId)
+        .eq("action", "member_added");
+      expect(addedEntries).toHaveLength(1);
+      expect(addedEntries![0].after).toMatchObject({ job_role: "assistant" });
+      expect(addedEntries![0].before).toBeNull();
+
+      await admin.from("organization_members").update({ job_role: "agent" }).eq("org_id", orgA).eq("user_id", userB.userId);
+
+      const { data: changedEntries } = await admin
+        .from("audit_log")
+        .select("*")
+        .eq("org_id", orgA)
+        .eq("resource_id", userB.userId)
+        .eq("action", "member_role_changed");
+      expect(changedEntries).toHaveLength(1);
+      expect(changedEntries![0].before).toMatchObject({ job_role: "assistant" });
+      expect(changedEntries![0].after).toMatchObject({ job_role: "agent" });
+
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+
+      const { data: removedEntries } = await admin
+        .from("audit_log")
+        .select("*")
+        .eq("org_id", orgA)
+        .eq("resource_id", userB.userId)
+        .eq("action", "member_removed");
+      expect(removedEntries).toHaveLength(1);
+    });
+
+    it("não registra entrada quando um UPDATE não muda role nem job_role", async () => {
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "staff" });
+      await admin.from("audit_log").delete().eq("org_id", orgA).eq("resource_id", userB.userId);
+
+      // created_at não é role/job_role — não deve gerar member_role_changed.
+      await admin
+        .from("organization_members")
+        .update({ created_at: new Date().toISOString() })
+        .eq("org_id", orgA)
+        .eq("user_id", userB.userId);
+
+      const { data: entries } = await admin.from("audit_log").select("*").eq("org_id", orgA).eq("resource_id", userB.userId);
+      expect(entries).toHaveLength(0);
+
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+    });
+
+    it("só admin da organização lê o audit_log; membro comum não vê nada", async () => {
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "staff" });
+
+      const { data: seenByMember } = await userB.client.from("audit_log").select("*").eq("org_id", orgA);
+      expect(seenByMember).toEqual([]);
+
+      const { data: seenByAdmin } = await userA.client.from("audit_log").select("*").eq("org_id", orgA).limit(1);
+      expect(seenByAdmin!.length).toBeGreaterThan(0);
+
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+    });
+
+    it("rejeita insert/update/delete direto em audit_log por qualquer client autenticado", async () => {
+      const { error: insertError } = await userA.client.from("audit_log").insert({
+        org_id: orgA,
+        action: "forjado",
+        resource_table: "organization_members",
+      });
+      expect(insertError).not.toBeNull();
+
+      const { data: anyRow } = await admin.from("audit_log").select("id").eq("org_id", orgA).limit(1).single();
+      const { error: updateError, data: updateData } = await userA.client
+        .from("audit_log")
+        .update({ action: "adulterado" })
+        .eq("id", anyRow!.id)
+        .select();
+      expect(updateError).toBeNull();
+      expect(updateData).toEqual([]);
+
+      const { error: deleteError, data: deleteData } = await userA.client
+        .from("audit_log")
+        .delete()
+        .eq("id", anyRow!.id)
+        .select();
+      expect(deleteError).toBeNull();
+      expect(deleteData).toEqual([]);
+    });
+  });
 });
