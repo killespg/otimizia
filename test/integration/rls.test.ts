@@ -1055,4 +1055,24 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
       await admin.from("deals").delete().eq("org_id", orgA).eq("workspace_key", "consultant");
     });
   });
+
+  // 1.4 (Fase 1): deal_followup_rules (0070_deal_followup_rules.sql).
+  describe("deal_followup_rules (1.4)", () => {
+    it("isola regras entre organizações e todo membro da org pode gerenciar", async () => {
+      const { data: ruleRow, error } = await userA.client
+        .from("deal_followup_rules")
+        .insert({ org_id: orgA, workspace_key: "autonomous_seller", inactivity_days: 3 })
+        .select("id")
+        .single();
+      expect(error).toBeNull();
+
+      const { data: seenByB } = await userB.client.from("deal_followup_rules").select("*").eq("id", ruleRow!.id).maybeSingle();
+      expect(seenByB).toBeNull();
+
+      const { data: seenByA } = await userA.client.from("deal_followup_rules").select("*").eq("id", ruleRow!.id).maybeSingle();
+      expect(seenByA?.inactivity_days).toEqual(3);
+
+      await admin.from("deal_followup_rules").delete().eq("id", ruleRow!.id);
+    });
+  });
 });

@@ -517,6 +517,11 @@ export type Task = {
   done: boolean;
   recurrence: "none" | "daily" | "weekly" | "monthly";
   recurrence_spawned: boolean;
+  // 1.4 (Fase 1): marca tarefas criadas automaticamente por
+  // deal_followup_rules (0070_deal_followup_rules.sql), não preenchido em
+  // tarefas criadas manualmente.
+  source: "followup_rule" | null;
+  source_rule_id: string | null;
   created_at: string;
 };
 
