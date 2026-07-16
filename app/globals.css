@@ -277,6 +277,24 @@
   .row-link:active {
     transform: scale(0.975);
   }
+  .filter-details summary::-webkit-details-marker {
+    display: none;
+  }
+  .filter-details summary::marker {
+    content: "";
+  }
+  .filter-chevron {
+    transition: transform var(--motion-fast) var(--ease-ui-out);
+  }
+  .filter-details[open] .filter-chevron {
+    transform: rotate(180deg);
+  }
+  .collapsible-details summary::-webkit-details-marker {
+    display: none;
+  }
+  .collapsible-details summary::marker {
+    content: "";
+  }
   .icon-button {
     cursor: pointer;
     transition:

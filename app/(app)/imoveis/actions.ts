@@ -245,31 +245,33 @@ export async function deletePropertyMedia(formData: FormData) {
   revalidatePath(`/imoveis/${propertyId}`);
 }
 
-// Reordenação por troca de posição com o vizinho (sem biblioteca de
-// drag-and-drop no projeto) — mesmo espírito de "mover pra cima/baixo" já
-// usado em listas ordenáveis simples no app.
-export async function movePropertyMedia(formData: FormData) {
+// Reordenação por arrastar: o cliente manda a lista inteira de ids na nova
+// ordem (posição = índice no array) em vez de trocar com o vizinho — um
+// único drop já resolve qualquer distância, não só "um passo por clique".
+// Valida que o conjunto recebido é exatamente o conjunto de fotos do imóvel
+// (mesmo tamanho, mesmos ids) antes de gravar, pra um id de outro imóvel
+// nunca conseguir roubar uma posição aqui.
+export async function reorderPropertyMedia(formData: FormData) {
   const { supabase, orgId } = await requireRealEstate();
-  const id = requiredText(formData.get("id"), "Foto", 80);
   const propertyId = requiredText(formData.get("property_id"), "Imóvel", 80);
-  const direction = text(formData.get("direction"), 4);
-  if (direction !== "up" && direction !== "down") throw new Error("Direção inválida.");
+  const mediaIds = formData.getAll("media_ids").map(String).filter(Boolean);
+  if (mediaIds.length === 0) return;
 
-  const { data: photos } = await supabase
+  const { data: existing } = await supabase
     .from("real_estate_property_media")
-    .select("id, position")
+    .select("id")
     .eq("property_id", propertyId)
-    .eq("org_id", orgId)
-    .order("position", { ascending: true });
-  const list = photos ?? [];
-  const index = list.findIndex((p) => p.id === id);
-  const swapIndex = direction === "up" ? index - 1 : index + 1;
-  if (index === -1 || swapIndex < 0 || swapIndex >= list.length) return;
+    .eq("org_id", orgId);
+  const existingIds = new Set((existing ?? []).map((m) => m.id as string));
+  if (mediaIds.length !== existingIds.size || mediaIds.some((id) => !existingIds.has(id))) {
+    throw new Error("Lista de fotos inválida.");
+  }
 
-  const current = list[index];
-  const swap = list[swapIndex];
-  await supabase.from("real_estate_property_media").update({ position: swap.position }).eq("id", current.id).eq("org_id", orgId);
-  await supabase.from("real_estate_property_media").update({ position: current.position }).eq("id", swap.id).eq("org_id", orgId);
+  await Promise.all(
+    mediaIds.map((id, index) =>
+      supabase.from("real_estate_property_media").update({ position: index }).eq("id", id).eq("org_id", orgId)
+    )
+  );
   revalidatePath(`/imoveis/${propertyId}`);
 }
 

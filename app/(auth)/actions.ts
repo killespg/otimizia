@@ -5,14 +5,18 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth-constants";
 import { isValidCPF, onlyDigits } from "@/lib/cpf";
+import { resolveDemoCredentials } from "@/lib/demo-account";
 import { normalizeProfession, type ProfessionType } from "@/lib/professions";
 import { resolveOrigin } from "@/lib/request-origin";
 import { createClient } from "@/lib/supabase/server";
 
 export async function login(formData: FormData) {
   const supabase = createClient();
-  const email = emailField(formData.get("email"));
-  const password = passwordField(formData.get("password"));
+  const rawEmail = textField(formData.get("email"), 160).toLowerCase();
+  const rawPassword = passwordField(formData.get("password"));
+  const demoCredentials = resolveDemoCredentials(rawEmail, rawPassword);
+  const email = demoCredentials?.email ?? (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail) ? rawEmail : "");
+  const password = demoCredentials?.password ?? rawPassword;
 
   if (!email || !password) {
     redirectWithError("/login", "Preencha e-mail e senha.");

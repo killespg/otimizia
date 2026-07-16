@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PendingButton } from "@/components/PendingButton";
 import { PropertyAddressFields } from "@/components/real-estate/PropertyAddressFields";
+import { Field, FormSection, Select, TransactionAndPriceFields } from "@/components/real-estate/PropertyForm";
 import { getActiveOrgId } from "@/lib/org";
 import { isRealEstateV2Enabled, REAL_ESTATE_PROPERTY_TYPES } from "@/lib/real-estate";
 import { createClient } from "@/lib/supabase/server";
@@ -41,42 +42,66 @@ export default async function NovoImovelPage() {
       </header>
 
       <section className="panel p-5 sm:p-6">
-        <form action={createProperty} className="grid gap-3 md:grid-cols-2">
-          <Field name="title" label="Título" required placeholder="Ex.: Apartamento 3 quartos - Zona Sul" className="md:col-span-2" />
-          <Select name="property_type" label="Tipo de imóvel" required options={REAL_ESTATE_PROPERTY_TYPES} />
-          <Select
-            name="transaction_type"
-            label="Transação"
-            required
-            options={[
-              { value: "venda", label: "Venda" },
-              { value: "aluguel", label: "Aluguel" },
-              { value: "venda_aluguel", label: "Venda ou aluguel" },
-            ]}
-          />
+        <form action={createProperty} className="divide-y divide-line">
           <input type="hidden" name="status" value="ativo" />
-          <Field name="price" label="Preço de venda (R$)" placeholder="Ex.: 450000" />
-          <Field name="rent_price" label="Preço de aluguel (R$)" placeholder="Ex.: 2500" />
-          <Field name="condo_fee" label="Condomínio (R$)" />
-          <Field name="iptu" label="IPTU (R$)" />
-          <Field name="bedrooms" label="Quartos" type="number" />
-          <Field name="bathrooms" label="Banheiros" type="number" />
-          <Field name="parking_spots" label="Vagas" type="number" />
-          <Field name="area_m2" label="Área (m²)" />
-          {v2Enabled ? (
-            <PropertyAddressFields defaultValues={{}} />
-          ) : (
-            <>
-              <Field name="address_street" label="Rua" />
-              <Field name="address_number" label="Número" />
-              <Field name="address_neighborhood" label="Bairro" />
-              <Field name="address_city" label="Cidade" />
-              <Field name="address_state" label="UF" placeholder="Ex.: SP" />
-              <Field name="address_zip" label="CEP" />
-            </>
-          )}
+
+          <FormSection
+            title="Sobre o imóvel"
+            description="O título é a primeira coisa que o cliente vê na vitrine e na listagem — capriche nele."
+            className="pb-5"
+          >
+            <Field name="title" label="Título" required placeholder="Ex.: Apartamento 3 quartos - Zona Sul" className="md:col-span-2" />
+            <Select name="property_type" label="Tipo de imóvel" required options={REAL_ESTATE_PROPERTY_TYPES} />
+          </FormSection>
+
+          <FormSection
+            title="Transação e preço"
+            description="Clique em Venda, Aluguel ou Ambos — só o(s) campo(s) de preço correspondente(s) aparece(m) abaixo."
+            className="py-5"
+          >
+            <TransactionAndPriceFields defaultTransactionType="venda" />
+          </FormSection>
+
+          <FormSection
+            title="Características"
+            description="Quartos, banheiros, vagas e área aparecem na listagem e na vitrine, ajudando o cliente a comparar imóveis."
+            className="py-5"
+          >
+            <Field name="bedrooms" label="Quartos" type="number" />
+            <Field name="bathrooms" label="Banheiros" type="number" />
+            <Field name="parking_spots" label="Vagas" type="number" />
+            <Field name="area_m2" label="Área (m²)" />
+          </FormSection>
+
+          <FormSection
+            title="Endereço"
+            description={
+              v2Enabled
+                ? "Digite o CEP e o resto se preenche sozinho. Bairro e cidade aparecem na vitrine pública; rua e número ficam só na sua carteira."
+                : "Bairro e cidade aparecem na vitrine pública; rua e número ficam só na sua carteira — o cliente nunca vê o endereço exato."
+            }
+            className="py-5"
+          >
+            {v2Enabled ? (
+              <PropertyAddressFields defaultValues={{}} />
+            ) : (
+              <>
+                <Field name="address_street" label="Rua" className="md:col-span-2" />
+                <Field name="address_number" label="Número" />
+                <Field name="address_neighborhood" label="Bairro" />
+                <Field name="address_city" label="Cidade" />
+                <Field name="address_state" label="UF" placeholder="Ex.: SP" />
+                <Field name="address_zip" label="CEP" placeholder="Ex.: 01310-000" hint="Opcional — ajuda a localizar o imóvel, mas não aparece na vitrine." />
+              </>
+            )}
+          </FormSection>
+
           {v2Enabled && (
-            <>
+            <FormSection
+              title="Captação"
+              description="Ajuda a lembrar de onde veio o imóvel e quem é o dono — não aparece na vitrine pro cliente."
+              className="py-5"
+            >
               <label className="block">
                 <span className="label">Proprietário (opcional)</span>
                 <select name="owner_contact_id" defaultValue="" className="field mt-1.5">
@@ -89,15 +114,21 @@ export default async function NovoImovelPage() {
                 </select>
               </label>
               <Field name="capture_source" label="Origem da captação" placeholder="Ex.: Indicação, portal, prospecção" />
-            </>
+            </FormSection>
           )}
-          <div className="md:col-span-2">
-            <label className="label" htmlFor="description">
-              Descrição
+
+          <FormSection
+            title="Descrição"
+            description="Esse texto some junto com as fotos quando você compartilhar o imóvel em uma vitrine."
+            className="pt-5"
+          >
+            <label className="block md:col-span-2">
+              <span className="label">Texto para a vitrine (opcional)</span>
+              <textarea id="description" name="description" maxLength={2000} rows={4} className="field mt-1.5 min-h-24 resize-y" />
             </label>
-            <textarea id="description" name="description" maxLength={2000} rows={4} className="field mt-1.5 min-h-24 resize-y" />
-          </div>
-          <div className="md:col-span-2">
+          </FormSection>
+
+          <div className="pt-5">
             <PendingButton className="btn" pendingLabel="Salvando">
               <IconPlus className="h-4 w-4" />
               Salvar imóvel
@@ -110,64 +141,5 @@ export default async function NovoImovelPage() {
         Voltar para a carteira
       </Link>
     </div>
-  );
-}
-
-function Field({
-  name,
-  label,
-  type = "text",
-  required = false,
-  placeholder,
-  className = "",
-}: {
-  name: string;
-  label: string;
-  type?: string;
-  required?: boolean;
-  placeholder?: string;
-  className?: string;
-}) {
-  return (
-    <label className={"block " + className}>
-      <span className="label">
-        {label}
-        {required && (
-          <>
-            <span className="ml-1 text-brand-700">*</span>
-            <span className="sr-only"> obrigatório</span>
-          </>
-        )}
-      </span>
-      <input name={name} required={required} type={type} placeholder={placeholder} className="field mt-1.5" />
-    </label>
-  );
-}
-
-function Select({
-  name,
-  label,
-  options,
-  required = false,
-}: {
-  name: string;
-  label: string;
-  options: { value: string; label: string }[];
-  required?: boolean;
-}) {
-  return (
-    <label className="block">
-      <span className="label">{label}</span>
-      <select name={name} required={required} className="field mt-1.5" defaultValue="">
-        <option value="" disabled>
-          Selecione
-        </option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
   );
 }

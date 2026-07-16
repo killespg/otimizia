@@ -69,3 +69,21 @@ export function transactionTypeLabel(type: RealEstateTransactionType) {
 export function propertyStatusLabel(status: RealEstatePropertyStatus) {
   return REAL_ESTATE_PROPERTY_STATUSES.find((item) => item.value === status)?.label ?? status;
 }
+
+const STATUS_TAG_CLASS: Record<RealEstatePropertyStatus, string> = {
+  rascunho: "tag-muted",
+  ativo: "tag-brand",
+  reservado: "tag-honey",
+  vendido: "tag-brand",
+  alugado: "tag-brand",
+  inativo: "tag-danger",
+};
+
+export function propertyStatusTagClass(status: RealEstatePropertyStatus) {
+  return STATUS_TAG_CLASS[status] ?? "tag-muted";
+}
+
+export function centsToReais(cents: number | null): string {
+  if (cents === null) return "Sob consulta";
+  return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+}

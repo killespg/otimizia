@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { PropertyReactionButtons } from "@/components/real-estate/PropertyReactionButtons";
+import { centsToReais } from "@/lib/real-estate";
 
 // Fora do grupo (app): não cai em nenhum prefixo protegido de
 // lib/supabase/middleware.ts, então é público por padrão — sem sessão, sem
@@ -42,11 +43,6 @@ type SharedCollection = {
   properties: SharedProperty[];
 };
 
-function centsToReais(cents: number | null): string | null {
-  if (cents === null) return null;
-  return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-}
-
 export default async function SharedPropertyCollectionPage({ params }: { params: { token: string } }) {
   if (!/^[0-9a-f-]{36}$/i.test(params.token)) notFound();
 
@@ -73,8 +69,8 @@ export default async function SharedPropertyCollectionPage({ params }: { params:
       ) : (
         <div className="space-y-4">
           {shared.properties.map((property) => {
-            const price = centsToReais(property.price_cents);
-            const rent = centsToReais(property.rent_price_cents);
+            const price = property.price_cents !== null ? centsToReais(property.price_cents) : null;
+            const rent = property.rent_price_cents !== null ? centsToReais(property.rent_price_cents) : null;
             return (
               <section key={property.id} className="panel overflow-hidden">
                 {property.photos.length > 0 && (

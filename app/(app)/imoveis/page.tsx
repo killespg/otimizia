@@ -1,8 +1,13 @@
 import Link from "next/link";
+import { PropertyFilterChat } from "@/components/real-estate/PropertyFilterChat";
+import { PropertySelectableList, type PropertyListRow } from "@/components/real-estate/PropertySelectableList";
 import {
+  canManageRealEstate,
   canViewRealEstate,
+  centsToReais,
   isRealEstateV2Enabled,
   propertyStatusLabel,
+  propertyStatusTagClass,
   propertyTypeLabel,
   REAL_ESTATE_PROPERTY_STATUSES,
   REAL_ESTATE_PROPERTY_TYPES,
@@ -12,20 +17,21 @@ import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import type { RealEstateProperty } from "@/lib/supabase/types";
 import { getWorkspaceKey } from "@/lib/workspaces";
-import { PropertyFilterChat } from "@/components/real-estate/PropertyFilterChat";
-import { IconBuilding, IconPlus } from "../icons";
+import { IconBuilding, IconPlus, IconSearch } from "../icons";
 
 const PAGE_SIZE = 24;
 
-function centsToReais(cents: number | null): string {
-  if (cents === null) return "Sob consulta";
-  return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+function propertyPriceLabel(property: Pick<RealEstateProperty, "price_cents" | "rent_price_cents">): string {
+  if (property.price_cents !== null) return centsToReais(property.price_cents);
+  if (property.rent_price_cents !== null) return `${centsToReais(property.rent_price_cents)}/mês`;
+  return "Sob consulta";
 }
 
 export default async function ImoveisPage({
   searchParams,
 }: {
   searchParams: {
+    q?: string;
     status?: string;
     property_type?: string;
     transaction_type?: string;
@@ -56,6 +62,7 @@ export default async function ImoveisPage({
   const isAdmin = orgRole === "admin";
   if (!canViewRealEstate(membership?.job_role, isAdmin)) return <AccessDenied />;
   const v2Enabled = isRealEstateV2Enabled(org);
+  const canManage = canManageRealEstate(membership?.job_role, isAdmin);
 
   // Desvio deliberado do padrão de contacts/pipeline (buscar tudo e filtrar
   // em useMemo no cliente): preço/quartos/bairro em centenas de imóveis não
@@ -72,6 +79,7 @@ export default async function ImoveisPage({
     .order("created_at", { ascending: false })
     .range(from, to);
 
+  if (searchParams.q) query = query.ilike("title", `%${searchParams.q}%`);
   if (searchParams.status) query = query.eq("status", searchParams.status);
   if (searchParams.property_type) query = query.eq("property_type", searchParams.property_type);
   if (searchParams.transaction_type) query = query.eq("transaction_type", searchParams.transaction_type);
@@ -83,6 +91,50 @@ export default async function ImoveisPage({
   const { data: properties, count } = await query;
   const list = (properties ?? []) as RealEstateProperty[];
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
+
+  // Uma foto por imóvel (a de position 0) só para as linhas visíveis nesta
+  // página — não a galeria inteira, que só importa dentro do imóvel.
+  const coverByPropertyId = new Map<string, string>();
+  if (list.length > 0) {
+    const { data: coverRows } = await supabase
+      .from("real_estate_property_media")
+      .select("property_id, storage_path")
+      .in("property_id", list.map((p) => p.id))
+      .eq("position", 0);
+    for (const row of coverRows ?? []) {
+      coverByPropertyId.set(
+        row.property_id as string,
+        supabase.storage.from("property-photos").getPublicUrl(row.storage_path as string).data.publicUrl
+      );
+    }
+  }
+
+  const rows: PropertyListRow[] = list.map((property) => ({
+    id: property.id,
+    title: property.title,
+    statusLabel: propertyStatusLabel(property.status),
+    statusTagClass: propertyStatusTagClass(property.status),
+    subtitle: [
+      propertyTypeLabel(property.property_type),
+      transactionTypeLabel(property.transaction_type),
+      property.address_neighborhood,
+    ]
+      .filter(Boolean)
+      .join(" · "),
+    facts: `${property.bedrooms ?? "-"} qts · ${property.parking_spots ?? "-"} vagas`,
+    priceLabel: propertyPriceLabel(property),
+    coverUrl: coverByPropertyId.get(property.id),
+  }));
+
+  const advancedFilterCount = [
+    searchParams.status,
+    searchParams.property_type,
+    searchParams.transaction_type,
+    searchParams.price_min,
+    searchParams.price_max,
+    searchParams.bedrooms_min,
+    searchParams.neighborhood,
+  ].filter(Boolean).length;
 
   return (
     <div className="space-y-4 sm:space-y-5">
@@ -119,44 +171,76 @@ export default async function ImoveisPage({
 
       <section className="panel space-y-4 p-4 sm:p-5">
         <PropertyFilterChat />
-        {/* key força remontagem quando a IA muda a URL via router.push (client-side),
-            senão os defaultValue destes campos não-controlados ficam desatualizados —
-            uma navegação GET normal (submit manual) já recarrega a página inteira e
-            não precisa disso, mas a key não atrapalha esse caso. */}
-        <form key={JSON.stringify(searchParams)} className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6" method="get">
-          <select name="status" defaultValue={searchParams.status ?? ""} className="field">
-            <option value="">Status: todos</option>
-            {REAL_ESTATE_PROPERTY_STATUSES.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-          <select name="property_type" defaultValue={searchParams.property_type ?? ""} className="field">
-            <option value="">Tipo: todos</option>
-            {REAL_ESTATE_PROPERTY_TYPES.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-          <select name="transaction_type" defaultValue={searchParams.transaction_type ?? ""} className="field">
-            <option value="">Transação: todas</option>
-            <option value="venda">Venda</option>
-            <option value="aluguel">Aluguel</option>
-            <option value="venda_aluguel">Venda ou aluguel</option>
-          </select>
-          <input name="price_min" type="number" placeholder="Preço mín." defaultValue={searchParams.price_min ?? ""} className="field" />
-          <input name="price_max" type="number" placeholder="Preço máx." defaultValue={searchParams.price_max ?? ""} className="field" />
-          <input name="neighborhood" placeholder="Bairro" defaultValue={searchParams.neighborhood ?? ""} className="field" />
-          <input name="bedrooms_min" type="number" placeholder="Quartos (mín.)" defaultValue={searchParams.bedrooms_min ?? ""} className="field" />
-          <button type="submit" className="btn-soft">
-            Filtrar
-          </button>
-          <Link href="/imoveis" className="nav-item rounded-md border border-line bg-white px-3 py-2 text-center text-xs font-black text-ink-soft hover:bg-surface-2">
-            Limpar
-          </Link>
-        </form>
+        <div>
+          <p className="mb-3 text-xs font-medium text-ink-muted">
+            Busque pelo título do imóvel ou abra os filtros avançados para refinar por status, tipo, preço, bairro ou
+            quartos.
+          </p>
+          {/* key força remontagem quando a IA muda a URL via router.push (client-side),
+              senão os defaultValue destes campos não-controlados ficam desatualizados —
+              uma navegação GET normal (submit manual) já recarrega a página inteira e
+              não precisa disso, mas a key não atrapalha esse caso. */}
+          <form key={JSON.stringify(searchParams)} method="get" className="space-y-3">
+            <div className="flex gap-2">
+              <label className="relative flex-1">
+                <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+                <input
+                  name="q"
+                  placeholder="Buscar por título..."
+                  defaultValue={searchParams.q ?? ""}
+                  className="field pl-9"
+                />
+              </label>
+              <button type="submit" className="btn-soft shrink-0">
+                Buscar
+              </button>
+            </div>
+
+            <details className="filter-details" open={advancedFilterCount > 0}>
+              <summary className="flex w-fit cursor-pointer list-none items-center gap-1.5 text-xs font-black text-ink-soft hover:text-brand-700">
+                <span>Filtros avançados</span>
+                {advancedFilterCount > 0 && <span className="tag tag-brand">{advancedFilterCount}</span>}
+                <svg viewBox="0 0 24 24" className="filter-chevron h-3.5 w-3.5" aria-hidden>
+                  <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </summary>
+              <div className="mt-3 grid gap-2 border-t border-line pt-3 sm:grid-cols-3 lg:grid-cols-6">
+                <select name="status" defaultValue={searchParams.status ?? ""} className="field">
+                  <option value="">Status: todos</option>
+                  {REAL_ESTATE_PROPERTY_STATUSES.map((item) => (
+                    <option key={item.value} value={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+                <select name="property_type" defaultValue={searchParams.property_type ?? ""} className="field">
+                  <option value="">Tipo: todos</option>
+                  {REAL_ESTATE_PROPERTY_TYPES.map((item) => (
+                    <option key={item.value} value={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+                <select name="transaction_type" defaultValue={searchParams.transaction_type ?? ""} className="field">
+                  <option value="">Transação: todas</option>
+                  <option value="venda">Venda</option>
+                  <option value="aluguel">Aluguel</option>
+                  <option value="venda_aluguel">Venda ou aluguel</option>
+                </select>
+                <input name="price_min" type="number" placeholder="Preço mín." defaultValue={searchParams.price_min ?? ""} className="field" />
+                <input name="price_max" type="number" placeholder="Preço máx." defaultValue={searchParams.price_max ?? ""} className="field" />
+                <input name="neighborhood" placeholder="Bairro" defaultValue={searchParams.neighborhood ?? ""} className="field" />
+                <input name="bedrooms_min" type="number" placeholder="Quartos (mín.)" defaultValue={searchParams.bedrooms_min ?? ""} className="field" />
+                <button type="submit" className="btn-soft">
+                  Aplicar filtros
+                </button>
+                <Link href="/imoveis" className="nav-item rounded-md border border-line bg-white px-3 py-2 text-center text-xs font-black text-ink-soft hover:bg-surface-2">
+                  Limpar tudo
+                </Link>
+              </div>
+            </details>
+          </form>
+        </div>
       </section>
 
       <section className="panel overflow-hidden">
@@ -164,34 +248,7 @@ export default async function ImoveisPage({
           <h2 className="text-lg font-black text-ink">Resultado</h2>
           <span className="tag bg-surface-2 text-ink-muted">{count ?? 0} no total</span>
         </div>
-        {list.length === 0 ? (
-          <EmptyProperties />
-        ) : (
-          <div className="divide-y divide-line">
-            {list.map((property) => (
-              <Link
-                key={property.id}
-                href={`/imoveis/${property.id}`}
-                className="nav-item grid gap-3 px-5 py-4 hover:bg-brand-50 sm:grid-cols-[minmax(0,1fr)_9rem_9rem_9rem] sm:items-center"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-black text-ink">{property.title}</p>
-                  <p className="mt-1 truncate text-xs font-bold text-ink-muted">
-                    {propertyTypeLabel(property.property_type)} · {transactionTypeLabel(property.transaction_type)}
-                    {property.address_neighborhood ? ` · ${property.address_neighborhood}` : ""}
-                  </p>
-                </div>
-                <span className="w-fit rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-black text-ink-soft">
-                  {propertyStatusLabel(property.status)}
-                </span>
-                <span className="text-xs font-black text-ink">{centsToReais(property.price_cents)}</span>
-                <span className="text-xs font-bold text-ink-muted">
-                  {property.bedrooms ?? "-"} qts · {property.parking_spots ?? "-"} vagas
-                </span>
-              </Link>
-            ))}
-          </div>
-        )}
+        {list.length === 0 ? <EmptyProperties /> : <PropertySelectableList rows={rows} selectable={canManage} />}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 border-t border-line px-5 py-4 text-xs font-bold text-ink-muted">
             Página {page} de {totalPages}

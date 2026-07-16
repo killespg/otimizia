@@ -12,6 +12,7 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:e2e": "playwright test",
     "import:trello": "node scripts/import-trello.mjs",
+    "seed:broker-demo": "node scripts/seed-real-estate-demo.mjs",
     "android:sync": "cap sync android",
     "android:open": "cap open android",
     "android:apk": "cd android && gradlew.bat assembleDebug"

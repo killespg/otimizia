@@ -2,12 +2,19 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PendingButton } from "@/components/PendingButton";
 import { PropertyAddressFields } from "@/components/real-estate/PropertyAddressFields";
+import { Field, FormSection, Select, TransactionAndPriceFields } from "@/components/real-estate/PropertyForm";
+import { PropertyPhotoManager } from "@/components/real-estate/PropertyPhotoManager";
 import {
   canManageRealEstate,
   canViewRealEstate,
+  centsToReais,
   isRealEstateV2Enabled,
+  propertyStatusLabel,
+  propertyStatusTagClass,
+  propertyTypeLabel,
   REAL_ESTATE_PROPERTY_STATUSES,
   REAL_ESTATE_PROPERTY_TYPES,
+  transactionTypeLabel,
 } from "@/lib/real-estate";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
@@ -24,9 +31,7 @@ import {
   addPropertyToCollection,
   confirmPropertyAiField,
   deleteProperty,
-  deletePropertyMedia,
   discardPropertyAiField,
-  movePropertyMedia,
   updateProperty,
   uploadPropertyPhoto,
 } from "../actions";
@@ -119,6 +124,16 @@ export default async function ImovelDetailPage({ params }: { params: { id: strin
 
   const suggestions = Object.entries(property.ai_suggested_fields ?? {}) as [string, AiSuggestedField][];
 
+  const priceLine = (() => {
+    const sale = property.price_cents !== null ? centsToReais(property.price_cents) : null;
+    const rent = property.rent_price_cents !== null ? `${centsToReais(property.rent_price_cents)}/mês` : null;
+    if (sale && rent) return `${sale} · ${rent}`;
+    return sale ?? rent ?? "Sob consulta";
+  })();
+  const addressLine =
+    [property.address_neighborhood, property.address_city, property.address_state].filter(Boolean).join(" · ") ||
+    "Endereço não informado";
+
   return (
     <div className="max-w-3xl space-y-4 sm:space-y-5">
       <header className="enter flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -142,9 +157,25 @@ export default async function ImovelDetailPage({ params }: { params: { id: strin
         )}
       </header>
 
-      {v2Enabled && (
-        <section className="panel p-5 sm:p-6">
-          <dl className="grid gap-4 sm:grid-cols-3">
+      <section className="panel p-5 sm:p-6">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={"tag " + propertyStatusTagClass(property.status)}>{propertyStatusLabel(property.status)}</span>
+          <span className="tag tag-muted">{propertyTypeLabel(property.property_type)}</span>
+          <span className="tag tag-muted">{transactionTypeLabel(property.transaction_type)}</span>
+        </div>
+        <p className="mt-3 text-2xl font-black tracking-tight text-ink">{priceLine}</p>
+        <p className="mt-1 text-sm font-bold text-ink-muted">{addressLine}</p>
+        <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5 text-sm font-bold text-ink-soft">
+          <span>{property.bedrooms ?? "-"} quartos</span>
+          <span>{property.bathrooms ?? "-"} banheiros</span>
+          <span>{property.parking_spots ?? "-"} vagas</span>
+          {property.area_m2 !== null && <span>{property.area_m2} m²</span>}
+        </div>
+        {property.description && (
+          <p className="mt-4 text-sm font-medium leading-relaxed text-ink-soft">{property.description}</p>
+        )}
+        {v2Enabled && (
+          <dl className="mt-5 grid gap-4 border-t border-line pt-4 sm:grid-cols-3">
             <Info
               label="Proprietário"
               value={
@@ -160,14 +191,20 @@ export default async function ImovelDetailPage({ params }: { params: { id: strin
             <Info label="Captado por" value={property.captured_by ? memberNames.get(property.captured_by) ?? "Sem nome" : "Não informado"} />
             <Info label="Origem da captação" value={property.capture_source ?? "Não informada"} />
           </dl>
-        </section>
-      )}
+        )}
+      </section>
 
       {v2Enabled && <ListingQualitySection property={property} documents={documents} canManage={canManage} />}
 
       {suggestions.length > 0 && (
         <section className="panel space-y-2 border-brand-200 bg-brand-50/40 p-5">
-          <h2 className="text-sm font-black text-brand-700">IA sugere — confirme antes de publicar</h2>
+          <div>
+            <h2 className="text-sm font-black text-brand-700">IA sugere — confirme antes de publicar</h2>
+            <p className="mt-0.5 text-xs font-medium text-ink-muted">
+              A IA leu o que você mandou (foto, áudio ou texto) e sugeriu estes valores. Nada muda no imóvel até você
+              confirmar ou descartar cada sugestão.
+            </p>
+          </div>
           <div className="space-y-2">
             {suggestions.map(([field, suggestion]) => (
               <div key={field} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-line bg-white px-3 py-2">
@@ -199,51 +236,26 @@ export default async function ImovelDetailPage({ params }: { params: { id: strin
       )}
 
       <section className="panel overflow-hidden">
-        <h2 className="border-b border-line px-5 py-4 text-base font-black text-ink">Fotos</h2>
-        <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3">
-          {photoUrls.map((photo, index) => (
-            <div key={photo.id} className="relative overflow-hidden rounded-lg border border-line">
-              <img src={photo.url} alt="" className="aspect-square w-full object-cover" />
-              {canManage && (
-                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-black/50 p-1.5">
-                  <form action={movePropertyMedia}>
-                    <input type="hidden" name="id" value={photo.id} />
-                    <input type="hidden" name="property_id" value={property.id} />
-                    <input type="hidden" name="direction" value="up" />
-                    <button
-                      type="submit"
-                      disabled={index === 0}
-                      aria-label={`Mover foto ${index + 1} para trás`}
-                      className="rounded px-1.5 py-0.5 text-xs font-black text-white disabled:opacity-30"
-                    >
-                      ◀
-                    </button>
-                  </form>
-                  <form action={deletePropertyMedia}>
-                    <input type="hidden" name="id" value={photo.id} />
-                    <input type="hidden" name="property_id" value={property.id} />
-                    <button type="submit" aria-label={`Excluir foto ${index + 1}`} className="rounded px-1.5 py-0.5 text-xs font-black text-white">
-                      <IconTrash className="h-3.5 w-3.5" />
-                    </button>
-                  </form>
-                  <form action={movePropertyMedia}>
-                    <input type="hidden" name="id" value={photo.id} />
-                    <input type="hidden" name="property_id" value={property.id} />
-                    <input type="hidden" name="direction" value="down" />
-                    <button
-                      type="submit"
-                      disabled={index === photoUrls.length - 1}
-                      aria-label={`Mover foto ${index + 1} para frente`}
-                      className="rounded px-1.5 py-0.5 text-xs font-black text-white disabled:opacity-30"
-                    >
-                      ▶
-                    </button>
-                  </form>
-                </div>
-              )}
-            </div>
-          ))}
+        <div className="border-b border-line px-5 py-4">
+          <h2 className="text-base font-black text-ink">Fotos</h2>
+          <p className="mt-0.5 text-xs font-medium text-ink-muted">
+            A ordem aqui é a ordem que o cliente vê na vitrine. JPG, PNG, WEBP ou GIF, até 6 MB cada.
+          </p>
         </div>
+        {photoUrls.length === 0 ? (
+          <p className="p-5 text-center text-sm font-medium text-ink-muted">
+            Nenhuma foto ainda — a vitrine fica bem mais atraente com pelo menos uma.
+          </p>
+        ) : canManage ? (
+          <PropertyPhotoManager propertyId={property.id} photos={photoUrls} />
+        ) : (
+          <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3">
+            {photoUrls.map((photo) => (
+              // eslint-disable-next-line @next/next/no-img-element -- vem de storage público, sem next/image configurado
+              <img key={photo.id} src={photo.url} alt="" className="aspect-square w-full rounded-lg border border-line object-cover" />
+            ))}
+          </div>
+        )}
         {canManage && (
           <form action={uploadPropertyPhoto} encType="multipart/form-data" className="flex flex-wrap items-center gap-2 border-t border-line p-5">
             <input type="hidden" name="property_id" value={property.id} />
@@ -256,56 +268,108 @@ export default async function ImovelDetailPage({ params }: { params: { id: strin
       </section>
 
       {canManage && (
-        <section className="panel p-5 sm:p-6">
-          <h2 className="mb-4 text-base font-black text-ink">Editar dados</h2>
-          <form action={updateProperty} className="grid gap-3 md:grid-cols-2">
+        <details className="collapsible-details panel overflow-hidden">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 hover:bg-surface-2">
+            <span>
+              <span className="block text-base font-black text-ink">Editar dados do imóvel</span>
+              <span className="block text-xs font-medium text-ink-muted">
+                Mesmos campos do cadastro, já preenchidos — altere só o que mudou.
+              </span>
+            </span>
+            <svg viewBox="0 0 24 24" className="filter-chevron h-4 w-4 shrink-0 text-ink-muted" aria-hidden>
+              <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </summary>
+          <form action={updateProperty} className="divide-y divide-line border-t border-line p-5 sm:p-6">
             <input type="hidden" name="id" value={property.id} />
-            <Field name="title" label="Título" defaultValue={property.title} required className="md:col-span-2" />
-            <Select name="property_type" label="Tipo de imóvel" defaultValue={property.property_type} options={REAL_ESTATE_PROPERTY_TYPES} />
-            <Select
-              name="transaction_type"
-              label="Transação"
-              defaultValue={property.transaction_type}
-              options={[
-                { value: "venda", label: "Venda" },
-                { value: "aluguel", label: "Aluguel" },
-                { value: "venda_aluguel", label: "Venda ou aluguel" },
-              ]}
-            />
-            <Select name="status" label="Status" defaultValue={property.status} options={REAL_ESTATE_PROPERTY_STATUSES} />
-            <Field name="price" label="Preço de venda (R$)" defaultValue={property.price_cents !== null ? String(property.price_cents / 100) : ""} />
-            <Field name="rent_price" label="Preço de aluguel (R$)" defaultValue={property.rent_price_cents !== null ? String(property.rent_price_cents / 100) : ""} />
-            <Field name="condo_fee" label="Condomínio (R$)" defaultValue={property.condo_fee_cents !== null ? String(property.condo_fee_cents / 100) : ""} />
-            <Field name="iptu" label="IPTU (R$)" defaultValue={property.iptu_cents !== null ? String(property.iptu_cents / 100) : ""} />
-            <Field name="bedrooms" label="Quartos" defaultValue={property.bedrooms ?? ""} />
-            <Field name="bathrooms" label="Banheiros" defaultValue={property.bathrooms ?? ""} />
-            <Field name="parking_spots" label="Vagas" defaultValue={property.parking_spots ?? ""} />
-            <Field name="area_m2" label="Área (m²)" defaultValue={property.area_m2 ?? ""} />
-            {v2Enabled ? (
-              <PropertyAddressFields
-                defaultValues={{
-                  address_zip: property.address_zip ?? "",
-                  address_street: property.address_street ?? "",
-                  address_number: property.address_number ?? "",
-                  address_neighborhood: property.address_neighborhood ?? "",
-                  address_city: property.address_city ?? "",
-                  address_state: property.address_state ?? "",
-                  latitude: property.latitude !== null ? String(property.latitude) : "",
-                  longitude: property.longitude !== null ? String(property.longitude) : "",
-                }}
+
+            <FormSection
+              title="Sobre o imóvel"
+              description="O título é a primeira coisa que o cliente vê na vitrine e na listagem. Status controla se o imóvel aparece como ativo, reservado, vendido, etc."
+              className="pb-5"
+            >
+              <Field name="title" label="Título" defaultValue={property.title} required className="md:col-span-2" />
+              <Select name="property_type" label="Tipo de imóvel" defaultValue={property.property_type} options={REAL_ESTATE_PROPERTY_TYPES} />
+              <Select
+                name="status"
+                label="Status"
+                defaultValue={property.status}
+                options={REAL_ESTATE_PROPERTY_STATUSES}
+                hint="Só imóveis Ativos entram na lista de escolha ao criar uma vitrine nova. Um imóvel já numa vitrine existente continua visível pro cliente mesmo se o status mudar depois."
               />
-            ) : (
-              <>
-                <Field name="address_street" label="Rua" defaultValue={property.address_street ?? ""} />
-                <Field name="address_number" label="Número" defaultValue={property.address_number ?? ""} />
-                <Field name="address_neighborhood" label="Bairro" defaultValue={property.address_neighborhood ?? ""} />
-                <Field name="address_city" label="Cidade" defaultValue={property.address_city ?? ""} />
-                <Field name="address_state" label="UF" defaultValue={property.address_state ?? ""} />
-                <Field name="address_zip" label="CEP" defaultValue={property.address_zip ?? ""} />
-              </>
-            )}
+            </FormSection>
+
+            <FormSection
+              title="Transação e preço"
+              description="Clique em Venda, Aluguel ou Ambos — só o(s) campo(s) de preço correspondente(s) aparece(m) abaixo."
+              className="py-5"
+            >
+              <TransactionAndPriceFields
+                defaultTransactionType={property.transaction_type}
+                defaultPrice={property.price_cents !== null ? String(property.price_cents / 100) : ""}
+                defaultRentPrice={property.rent_price_cents !== null ? String(property.rent_price_cents / 100) : ""}
+                defaultCondoFee={property.condo_fee_cents !== null ? String(property.condo_fee_cents / 100) : ""}
+                defaultIptu={property.iptu_cents !== null ? String(property.iptu_cents / 100) : ""}
+              />
+            </FormSection>
+
+            <FormSection
+              title="Características"
+              description="Quartos, banheiros, vagas e área aparecem na listagem e na vitrine, ajudando o cliente a comparar imóveis."
+              className="py-5"
+            >
+              <Field name="bedrooms" label="Quartos" defaultValue={property.bedrooms ?? ""} />
+              <Field name="bathrooms" label="Banheiros" defaultValue={property.bathrooms ?? ""} />
+              <Field name="parking_spots" label="Vagas" defaultValue={property.parking_spots ?? ""} />
+              <Field name="area_m2" label="Área (m²)" defaultValue={property.area_m2 ?? ""} />
+            </FormSection>
+
+            <FormSection
+              title="Endereço"
+              description={
+                v2Enabled
+                  ? "Digite o CEP e o resto se preenche sozinho. Bairro e cidade aparecem na vitrine pública; rua e número ficam só na sua carteira."
+                  : "Bairro e cidade aparecem na vitrine pública; rua e número ficam só na sua carteira — o cliente nunca vê o endereço exato."
+              }
+              className="py-5"
+            >
+              {v2Enabled ? (
+                <PropertyAddressFields
+                  defaultValues={{
+                    address_zip: property.address_zip ?? "",
+                    address_street: property.address_street ?? "",
+                    address_number: property.address_number ?? "",
+                    address_neighborhood: property.address_neighborhood ?? "",
+                    address_city: property.address_city ?? "",
+                    address_state: property.address_state ?? "",
+                    latitude: property.latitude !== null ? String(property.latitude) : "",
+                    longitude: property.longitude !== null ? String(property.longitude) : "",
+                  }}
+                />
+              ) : (
+                <>
+                  <Field name="address_street" label="Rua" defaultValue={property.address_street ?? ""} className="md:col-span-2" />
+                  <Field name="address_number" label="Número" defaultValue={property.address_number ?? ""} />
+                  <Field name="address_neighborhood" label="Bairro" defaultValue={property.address_neighborhood ?? ""} />
+                  <Field name="address_city" label="Cidade" defaultValue={property.address_city ?? ""} />
+                  <Field name="address_state" label="UF" defaultValue={property.address_state ?? ""} />
+                  <Field
+                    name="address_zip"
+                    label="CEP"
+                    defaultValue={property.address_zip ?? ""}
+                    placeholder="Ex.: 01310-000"
+                    hint="Opcional — ajuda a localizar o imóvel, mas não aparece na vitrine."
+                  />
+                </>
+              )}
+            </FormSection>
+
             {v2Enabled && (
-              <>
+              <FormSection
+                title="Captação"
+                description="Ajuda a lembrar de onde veio o imóvel e quem é o dono — não aparece na vitrine pro cliente."
+                className="py-5"
+              >
                 <label className="block">
                   <span className="label">Proprietário (opcional)</span>
                   <select name="owner_contact_id" defaultValue={property.owner_contact_id ?? ""} className="field mt-1.5">
@@ -318,33 +382,45 @@ export default async function ImovelDetailPage({ params }: { params: { id: strin
                   </select>
                 </label>
                 <Field name="capture_source" label="Origem da captação" defaultValue={property.capture_source ?? ""} />
-              </>
+              </FormSection>
             )}
-            <div className="md:col-span-2">
-              <label className="label" htmlFor="description">
-                Descrição
+
+            <FormSection
+              title="Descrição"
+              description="Esse texto some junto com as fotos quando você compartilhar o imóvel em uma vitrine."
+              className="pt-5"
+            >
+              <label className="block md:col-span-2">
+                <span className="label">Texto para a vitrine</span>
+                <textarea
+                  id="description"
+                  name="description"
+                  defaultValue={property.description ?? ""}
+                  maxLength={2000}
+                  rows={4}
+                  className="field mt-1.5 min-h-24 resize-y"
+                />
               </label>
-              <textarea
-                id="description"
-                name="description"
-                defaultValue={property.description ?? ""}
-                maxLength={2000}
-                rows={4}
-                className="field mt-1.5 min-h-24 resize-y"
-              />
-            </div>
-            <div className="md:col-span-2">
+            </FormSection>
+
+            <div className="pt-5">
               <PendingButton className="btn" pendingLabel="Salvando">
                 Salvar alterações
               </PendingButton>
             </div>
           </form>
-        </section>
+        </details>
       )}
 
       {canManage && collections.length > 0 && (
         <section className="panel space-y-3 p-5 sm:p-6">
-          <h2 className="text-base font-black text-ink">Adicionar a uma vitrine</h2>
+          <div>
+            <h2 className="text-base font-black text-ink">Adicionar a uma vitrine</h2>
+            <p className="mt-0.5 text-xs font-medium text-ink-muted">
+              Escolha uma vitrine já criada para incluir este imóvel nela — o link não muda, o cliente só vê o imóvel
+              novo aparecer.
+            </p>
+          </div>
           <form action={addPropertyToCollection} className="flex flex-wrap gap-2">
             <input type="hidden" name="property_id" value={property.id} />
             <select name="collection_id" required className="field flex-1">
@@ -375,51 +451,5 @@ function Info({ label, value }: { label: string; value: React.ReactNode }) {
       <dt className="label">{label}</dt>
       <dd className="mt-1 text-sm font-bold text-ink">{value}</dd>
     </div>
-  );
-}
-
-function Field({
-  name,
-  label,
-  defaultValue,
-  required = false,
-  className = "",
-}: {
-  name: string;
-  label: string;
-  defaultValue?: string | number;
-  required?: boolean;
-  className?: string;
-}) {
-  return (
-    <label className={"block " + className}>
-      <span className="label">{label}</span>
-      <input name={name} defaultValue={defaultValue} required={required} className="field mt-1.5" />
-    </label>
-  );
-}
-
-function Select({
-  name,
-  label,
-  defaultValue,
-  options,
-}: {
-  name: string;
-  label: string;
-  defaultValue: string;
-  options: { value: string; label: string }[];
-}) {
-  return (
-    <label className="block">
-      <span className="label">{label}</span>
-      <select name={name} defaultValue={defaultValue} className="field mt-1.5">
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
   );
 }

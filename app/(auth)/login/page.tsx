@@ -30,7 +30,7 @@ export default function LoginPage({
         <AuthField
           name="email"
           label="E-mail"
-          type="email"
+          type="text"
           required
           maxLength={160}
           autoComplete="email"
