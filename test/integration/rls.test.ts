@@ -966,4 +966,93 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
       expect(deleteData).toEqual([]);
     });
   });
+
+  // 1.1 (Fase 1): schema de pipelines/pipeline_stages (0069_pipelines.sql).
+  // Aditivo — a etapa mais importante a provar não é comportamento novo de
+  // produto (não existe ainda), é que o trigger de auto-provisionamento não
+  // regride o isolamento por organização que já vale pra deals/contacts.
+  describe("pipelines (1.1)", () => {
+    it("todo negócio novo nasce com um pipeline_id válido e etapas seedadas", async () => {
+      const { data: deal, error } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "real_estate_broker", title: "Negócio de teste 1.1" })
+        .select("id, pipeline_id")
+        .single();
+      expect(error).toBeNull();
+      expect(deal!.pipeline_id).not.toBeNull();
+
+      const { data: pipeline } = await userA.client
+        .from("pipelines")
+        .select("id, org_id, workspace_key, is_default")
+        .eq("id", deal!.pipeline_id)
+        .single();
+      expect(pipeline?.org_id).toEqual(orgA);
+      expect(pipeline?.workspace_key).toEqual("real_estate_broker");
+      expect(pipeline?.is_default).toEqual(true);
+
+      const { data: stages } = await userA.client
+        .from("pipeline_stages")
+        .select("key, stage_type, is_deletable")
+        .eq("pipeline_id", deal!.pipeline_id)
+        .order("position");
+      expect(stages?.map((s) => s.key)).toEqual(["novo", "em_contato", "negociacao", "ganho", "perdido"]);
+      expect(stages?.every((s) => s.is_deletable === false)).toEqual(true);
+      expect(stages?.find((s) => s.key === "ganho")?.stage_type).toEqual("ganho");
+      expect(stages?.find((s) => s.key === "perdido")?.stage_type).toEqual("perdido");
+
+      // Um segundo negócio no mesmo org+workspace reaproveita o mesmo
+      // pipeline padrão, não cria um novo a cada insert.
+      const { data: deal2 } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "real_estate_broker", title: "Negócio de teste 1.1 (b)" })
+        .select("id, pipeline_id")
+        .single();
+      expect(deal2!.pipeline_id).toEqual(deal!.pipeline_id);
+
+      await admin.from("deals").delete().eq("id", deal!.id);
+      await admin.from("deals").delete().eq("id", deal2!.id);
+    });
+
+    it("isola pipelines e pipeline_stages entre organizações", async () => {
+      const { data: dealA } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", title: "Negócio A" })
+        .select("pipeline_id")
+        .single();
+
+      const { data: seenByB } = await userB.client
+        .from("pipelines")
+        .select("*")
+        .eq("id", dealA!.pipeline_id)
+        .maybeSingle();
+      expect(seenByB).toBeNull();
+
+      const { data: stagesSeenByB } = await userB.client
+        .from("pipeline_stages")
+        .select("*")
+        .eq("pipeline_id", dealA!.pipeline_id);
+      expect(stagesSeenByB).toEqual([]);
+
+      await admin.from("deals").delete().eq("org_id", orgA).eq("workspace_key", "autonomous_seller");
+    });
+
+    it("rejeita pipeline_stages forjado com org_id de uma organização e pipeline_id de outra", async () => {
+      const { data: dealB } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "consultant", title: "Negócio para forjar" })
+        .select("pipeline_id")
+        .single();
+      const orgB = await getPersonalOrgId(admin, userB.userId);
+
+      const { error } = await userB.client.from("pipeline_stages").insert({
+        org_id: orgB,
+        pipeline_id: dealB!.pipeline_id,
+        key: "invasao",
+        label: "Invasão",
+      });
+      expect(error).not.toBeNull();
+
+      await admin.from("deals").delete().eq("org_id", orgA).eq("workspace_key", "consultant");
+    });
+  });
 });

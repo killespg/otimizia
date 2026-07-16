@@ -462,10 +462,40 @@ export type Deal = {
   title: string;
   value_cents: number | null;
   stage: DealStage;
+  // Schema da 1.1 (Fase 1): preenchido automaticamente por um trigger no
+  // insert (ensure_default_pipeline, 0069_pipelines.sql). Nenhuma leitura
+  // hoje depende disso — deal.stage continua a fonte de verdade até a 3.3
+  // liberar múltiplos funis de verdade na UI.
+  pipeline_id: string | null;
   position: number;
   details: Record<string, string>;
   created_at: string;
   closed_at: string | null;
+};
+
+export type PipelineStageType = "aberto" | "ganho" | "perdido";
+
+export type Pipeline = {
+  id: string;
+  org_id: string;
+  workspace_key: string;
+  name: string;
+  is_default: boolean;
+  position: number;
+  created_at: string;
+};
+
+export type PipelineStage = {
+  id: string;
+  org_id: string;
+  pipeline_id: string;
+  key: string;
+  label: string;
+  stage_type: PipelineStageType;
+  color: string | null;
+  position: number;
+  is_deletable: boolean;
+  created_at: string;
 };
 
 export type Task = {

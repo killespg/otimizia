@@ -14,6 +14,7 @@ function deal(overrides: Partial<Deal>): Deal {
     title: "Negócio",
     value_cents: 10000,
     stage: "novo",
+    pipeline_id: null,
     position: 0,
     details: {},
     created_at: "2026-01-10T12:00:00.000Z",
