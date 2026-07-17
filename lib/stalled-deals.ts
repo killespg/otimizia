@@ -11,6 +11,9 @@ export type StalledDeal = {
   contactName: string | null;
   assigneeId: string;
   lastActivityAt: string;
+  // 4.3 (Fase 4): usado por lib/lead-scoring.ts pra explicar a pontuação
+  // (etapa é um dos fatores do score, sem depender de valor do negócio).
+  stage: string;
 };
 
 // Uma venda é "parada" quando não tem registro de interação (nem foi criada)
@@ -26,7 +29,7 @@ export async function computeStalledDeals(
 
   let query = admin
     .from("deals")
-    .select("id, title, contact_id, assignee_id, owner_id, created_at")
+    .select("id, title, contact_id, assignee_id, owner_id, created_at, stage")
     .not("stage", "in", "(ganho,perdido)")
     .lte("created_at", staleBefore);
   if (filters?.orgId) query = query.eq("org_id", filters.orgId);
@@ -72,6 +75,7 @@ export async function computeStalledDeals(
       contactName: contactId ? contactNames.get(contactId) ?? null : null,
       assigneeId: (deal.assignee_id as string | null) ?? (deal.owner_id as string),
       lastActivityAt: lastActivity,
+      stage: deal.stage as string,
     });
   }
   return stalled;

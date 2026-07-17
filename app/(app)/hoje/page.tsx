@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { computeLeadScore } from "@/lib/lead-scoring";
 import { getActiveOrgId } from "@/lib/org";
 import { getProfessionPreset } from "@/lib/professions";
 import { computeStalledDeals } from "@/lib/stalled-deals";
@@ -98,6 +99,23 @@ export default async function TodayPage() {
     dealsWithoutNextAction,
   });
 
+  // 4.3 (Fase 4): lead score (fallback por regra, sem calibração — ver
+  // docs/roadmap-imobiliario/4.3-lead-scoring.md) anexado só aos negócios
+  // parados, que já trazem etapa e dias de inatividade prontos. Prioridade
+  // maior no score não muda a ordem da fila (isso já é 1.3b, bloqueado) —
+  // só ajuda o corretor a calibrar o próprio julgamento.
+  const stalledDealById = new Map(stalledDeals.map((d) => [d.id, d]));
+  const stageForScore = (stage: string): "novo" | "em_contato" | "negociacao" =>
+    stage === "em_contato" || stage === "negociacao" ? stage : "novo";
+  const queueWithScore = queue.map((item) => {
+    if (item.kind !== "deal_inactive") return item;
+    const deal = stalledDealById.get(item.id);
+    if (!deal) return item;
+    const daysSince = Math.round((now.getTime() - new Date(deal.lastActivityAt).getTime()) / 86_400_000);
+    const leadScore = computeLeadScore({ daysSinceLastActivity: daysSince, hasOpenNextAction: false, stage: stageForScore(deal.stage) });
+    return { ...item, reason: `${item.reason} · Lead score: ${leadScore.score} (confiança baixa)` };
+  });
+
   return (
     <div className="space-y-4 sm:space-y-5">
       <header className="enter">
@@ -110,7 +128,7 @@ export default async function TodayPage() {
         </p>
       </header>
 
-      {queue.length === 0 ? (
+      {queueWithScore.length === 0 ? (
         <div className="enter rounded-lg border border-dashed border-line bg-[#f8fbff] p-8 text-center">
           <IconCheck className="mx-auto h-8 w-8 text-brand-700" />
           <p className="mt-3 text-base font-black text-ink">Tudo em dia por aqui.</p>
@@ -120,7 +138,7 @@ export default async function TodayPage() {
         </div>
       ) : (
         <ol className="enter space-y-2">
-          {queue.map((item) => {
+          {queueWithScore.map((item) => {
             const meta = KIND_META[item.kind];
             const Icon = meta.icon;
             return (
