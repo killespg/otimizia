@@ -9,6 +9,7 @@ import { formatDateTime } from "@/lib/format";
 import { getActiveOrgId } from "@/lib/org";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { buildContactTimeline, filterTimeline, type TimelineEntryKind } from "@/lib/timeline";
+import { computeContactCompleteness } from "@/lib/contact-quality";
 import { Avatar } from "../../Avatar";
 import {
   IconArrowRight,
@@ -157,6 +158,7 @@ export default async function ContactDetailPage({
     .map((field) => (c.details?.[field.key] ? `${field.label}: ${c.details[field.key]}` : null))
     .filter(Boolean) as string[];
   const chips = [c.company, c.phone, c.email, c.source, ...detailChips].filter(Boolean) as string[];
+  const completeness = computeContactCompleteness(c, preset.contactFields);
 
   return (
     <div className="space-y-5">
@@ -198,9 +200,10 @@ export default async function ContactDetailPage({
           </div>
         </div>
 
-        <div className="enter grid grid-cols-2 gap-2 sm:w-64">
+        <div className="enter grid grid-cols-3 gap-2 sm:w-80">
           <MiniStat label="Conversas" value={String(logs.length)} icon={IconMessage} />
           <MiniStat label="Tarefas" value={String(relatedTasks.length)} icon={IconBell} pink />
+          <MiniStat label="Completo" value={`${completeness}%`} icon={IconCheck} />
         </div>
       </header>
 

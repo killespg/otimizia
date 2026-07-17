@@ -276,6 +276,40 @@ export async function deleteContact(formData: FormData) {
   redirect("/contacts");
 }
 
+// 2.3 (Fase 2): merge seguro de contatos duplicados. Reatribui os
+// registros que têm contact_id nas tabelas centrais do CRM pro contato
+// escolhido, depois apaga o duplicado. Não cobre as tabelas específicas do
+// vertical imobiliário (real_estate_visits/offers/lead_preferences) —
+// documentado como lacuna conhecida em
+// docs/roadmap-imobiliario/2.3-importacao-dedup-qualidade.md.
+export async function mergeContacts(formData: FormData) {
+  const { supabase, orgId, workspaceKey } = await requireUserWithPreset();
+  const keepId = requiredText(formData.get("keep_id"), "Contato a manter", 80);
+  const mergeId = requiredText(formData.get("merge_id"), "Contato a mesclar", 80);
+  if (keepId === mergeId) throw new Error("Selecione dois contatos diferentes para mesclar.");
+
+  for (const table of ["deals", "tasks", "interactions", "call_logs"] as const) {
+    const { error } = await supabase
+      .from(table)
+      .update({ contact_id: keepId })
+      .eq("contact_id", mergeId)
+      .eq("org_id", orgId)
+      .eq("workspace_key", workspaceKey);
+    ensureOk(error, "Não deu para mesclar os contatos.");
+  }
+
+  const { error } = await supabase
+    .from("contacts")
+    .delete()
+    .eq("id", mergeId)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey);
+  ensureOk(error, "Não deu para concluir a mesclagem.");
+  revalidatePath("/contacts");
+  revalidatePath("/contacts/duplicidades");
+  revalidatePath(`/contacts/${keepId}`);
+}
+
 // ---------- Interactions ----------
 export async function createInteraction(formData: FormData) {
   const { supabase, user, orgId, workspaceKey } = await requireUserWithPreset();
