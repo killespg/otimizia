@@ -1056,23 +1056,96 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
     });
   });
 
-  // 1.4 (Fase 1): deal_followup_rules (0070_deal_followup_rules.sql).
-  describe("deal_followup_rules (1.4)", () => {
+  // 3.1 (Fase 3): automation_rules/automation_executions
+  // (0075_automation_engine.sql) — substitui deal_followup_rules (1.4).
+  describe("automation_rules e automation_executions (3.1)", () => {
     it("isola regras entre organizações e todo membro da org pode gerenciar", async () => {
       const { data: ruleRow, error } = await userA.client
-        .from("deal_followup_rules")
-        .insert({ org_id: orgA, workspace_key: "autonomous_seller", inactivity_days: 3 })
+        .from("automation_rules")
+        .insert({
+          org_id: orgA,
+          workspace_key: "autonomous_seller",
+          trigger_kind: "deal_inactive",
+          trigger_params: { inactivity_days: 3 },
+          action_type: "create_task",
+          action_params: { title_template: "Retomar contato — {{deal.title}}" },
+        })
         .select("id")
         .single();
       expect(error).toBeNull();
 
-      const { data: seenByB } = await userB.client.from("deal_followup_rules").select("*").eq("id", ruleRow!.id).maybeSingle();
+      const { data: seenByB } = await userB.client.from("automation_rules").select("*").eq("id", ruleRow!.id).maybeSingle();
       expect(seenByB).toBeNull();
 
-      const { data: seenByA } = await userA.client.from("deal_followup_rules").select("*").eq("id", ruleRow!.id).maybeSingle();
-      expect(seenByA?.inactivity_days).toEqual(3);
+      const { data: seenByA } = await userA.client.from("automation_rules").select("*").eq("id", ruleRow!.id).maybeSingle();
+      expect(seenByA?.trigger_params).toMatchObject({ inactivity_days: 3 });
 
-      await admin.from("deal_followup_rules").delete().eq("id", ruleRow!.id);
+      await admin.from("automation_rules").delete().eq("id", ruleRow!.id);
+    });
+
+    it("só admin lê automation_executions da própria organização", async () => {
+      const { data: rule } = await admin
+        .from("automation_rules")
+        .insert({
+          org_id: orgA,
+          workspace_key: "autonomous_seller",
+          trigger_kind: "deal_inactive",
+          trigger_params: { inactivity_days: 3 },
+          action_type: "create_task",
+          action_params: {},
+        })
+        .select("id")
+        .single();
+      const { data: execution } = await admin
+        .from("automation_executions")
+        .insert({ org_id: orgA, rule_id: rule!.id, status: "success" })
+        .select("id")
+        .single();
+
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "staff" });
+      const { data: seenByMember } = await userB.client.from("automation_executions").select("*").eq("id", execution!.id);
+      expect(seenByMember).toEqual([]);
+
+      const { data: seenByAdmin } = await userA.client.from("automation_executions").select("*").eq("id", execution!.id).maybeSingle();
+      expect(seenByAdmin?.status).toEqual("success");
+
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+      await admin.from("automation_executions").delete().eq("id", execution!.id);
+      await admin.from("automation_rules").delete().eq("id", rule!.id);
+    });
+
+    it("mudança de etapa emite deal.stage_changed em crm_domain_events (o cron do motor consome isso à parte, não testado aqui)", async () => {
+      const { data: rule } = await admin
+        .from("automation_rules")
+        .insert({
+          org_id: orgA,
+          workspace_key: "autonomous_seller",
+          trigger_kind: "deal_stage_changed",
+          stage_key: "ganho",
+          action_type: "create_task",
+          action_params: { title_template: "Comemorar — {{deal.title}}" },
+        })
+        .select("id")
+        .single();
+
+      const { data: deal } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", title: "Negócio 3.1" })
+        .select("id")
+        .single();
+      await userA.client.from("deals").update({ stage: "ganho" }).eq("id", deal!.id);
+
+      const { data: event } = await admin
+        .from("crm_domain_events")
+        .select("id")
+        .eq("event_type", "deal.stage_changed")
+        .eq("aggregate_id", deal!.id)
+        .maybeSingle();
+      expect(event).not.toBeNull();
+
+      await admin.from("crm_domain_events").delete().eq("aggregate_id", deal!.id);
+      await admin.from("deals").delete().eq("id", deal!.id);
+      await admin.from("automation_rules").delete().eq("id", rule!.id);
     });
   });
 
