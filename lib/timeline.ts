@@ -8,7 +8,7 @@ import type { Interaction, Task } from "@/lib/supabase/types";
 // de etapa ficam como lacuna conhecida — não há tabela de histórico de
 // stage_changed nem de documentos hoje (ver
 // docs/roadmap-imobiliario/1.2-timeline-unificada.md).
-export type TimelineEntryKind = "interaction" | "task" | "visit" | "offer";
+export type TimelineEntryKind = "interaction" | "task" | "visit" | "offer" | "call";
 
 export type TimelineEntry = {
   kind: TimelineEntryKind;
@@ -32,6 +32,14 @@ export type TimelineOfferInput = {
   status: string;
   amount_cents: number;
   sent_at: string | null;
+  created_at: string;
+};
+
+export type TimelineCallInput = {
+  id: string;
+  duration_minutes: number | null;
+  outcome: string | null;
+  next_step: string | null;
   created_at: string;
 };
 
@@ -72,6 +80,7 @@ export function buildContactTimeline(input: {
   tasks: Pick<Task, "id" | "title" | "due_at" | "done" | "created_at">[];
   visits?: TimelineVisitInput[];
   offers?: TimelineOfferInput[];
+  calls?: TimelineCallInput[];
 }): TimelineEntry[] {
   const entries: TimelineEntry[] = [];
 
@@ -109,6 +118,18 @@ export function buildContactTimeline(input: {
       title: offerTitle(offer.status),
       detail: null,
       done: ["accepted", "declined", "expired"].includes(offer.status),
+    });
+  }
+
+  for (const call of input.calls ?? []) {
+    const durationLabel = call.duration_minutes ? `${call.duration_minutes} min` : null;
+    entries.push({
+      kind: "call",
+      id: call.id,
+      at: call.created_at,
+      title: call.outcome ? `Ligação — ${call.outcome}` : "Ligação registrada",
+      detail: [durationLabel, call.next_step ? `Próximo passo: ${call.next_step}` : null].filter(Boolean).join(" · ") || null,
+      done: true,
     });
   }
 

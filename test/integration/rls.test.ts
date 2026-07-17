@@ -1075,4 +1075,45 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
       await admin.from("deal_followup_rules").delete().eq("id", ruleRow!.id);
     });
   });
+
+  // 2.6 (Fase 2): call_logs (0071_call_logs.sql).
+  describe("call_logs (2.6)", () => {
+    it("isola registros de ligação entre organizações e valida a FK composta de contact_id", async () => {
+      const { data: contactA } = await userA.client
+        .from("contacts")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", name: "Cliente da ligação" })
+        .select("id")
+        .single();
+
+      const { data: callLog, error } = await userA.client
+        .from("call_logs")
+        .insert({
+          org_id: orgA,
+          workspace_key: "autonomous_seller",
+          contact_id: contactA!.id,
+          created_by: userA.userId,
+          duration_minutes: 5,
+          outcome: "Vai pensar",
+        })
+        .select("id")
+        .single();
+      expect(error).toBeNull();
+
+      const { data: seenByB } = await userB.client.from("call_logs").select("*").eq("id", callLog!.id).maybeSingle();
+      expect(seenByB).toBeNull();
+
+      const orgB = await getPersonalOrgId(admin, userB.userId);
+      const { error: forgedError } = await userB.client.from("call_logs").insert({
+        org_id: orgB,
+        workspace_key: "autonomous_seller",
+        contact_id: contactA!.id,
+        created_by: userB.userId,
+        outcome: "Tentativa de invasão",
+      });
+      expect(forgedError).not.toBeNull();
+
+      await admin.from("call_logs").delete().eq("id", callLog!.id);
+      await admin.from("contacts").delete().eq("id", contactA!.id);
+    });
+  });
 });

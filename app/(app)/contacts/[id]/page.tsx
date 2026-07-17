@@ -13,13 +13,14 @@ import { Avatar } from "../../Avatar";
 import {
   IconArrowRight,
   IconBell,
+  IconCalendar,
   IconCheck,
   IconMessage,
   IconPhone,
   IconPlus,
   IconTrash,
 } from "../../icons";
-import { createTask, updateContact, deleteContact, createInteraction } from "../../actions";
+import { createTask, updateContact, deleteContact, createInteraction, createCallLog } from "../../actions";
 import { saveLeadPreferences } from "../../imoveis/match-actions";
 import { PresetFields } from "../../PresetFields";
 import { LeadPreferencesForm } from "./LeadPreferencesForm";
@@ -67,7 +68,7 @@ export default async function ContactDetailPage({
   const copy = contactDetailCopy(preset.key === "livestock_producer");
 
   const isRealEstate = workspaceKey === "real_estate_broker";
-  const [{ data: interactions }, { data: tasks }, { data: dealRows }, { data: org }, { data: visits }, { data: offers }] =
+  const [{ data: interactions }, { data: tasks }, { data: dealRows }, { data: org }, { data: visits }, { data: offers }, { data: callLogs }] =
     await Promise.all([
       supabase
         .from("interactions")
@@ -109,6 +110,12 @@ export default async function ContactDetailPage({
             .eq("contact_id", c.id)
             .eq("org_id", orgId)
         : Promise.resolve({ data: [] as { id: string; status: string; amount_cents: number; sent_at: string | null; created_at: string }[] }),
+      supabase
+        .from("call_logs")
+        .select("id, duration_minutes, outcome, next_step, created_at")
+        .eq("contact_id", c.id)
+        .eq("org_id", orgId)
+        .eq("workspace_key", workspaceKey),
     ]);
 
   const logs = (interactions ?? []) as Interaction[];
@@ -123,20 +130,28 @@ export default async function ContactDetailPage({
     ((preferenceRows ?? []) as RealEstateLeadPreferences[]).map((p) => [p.deal_id, p])
   );
 
-  const fullTimeline = buildContactTimeline({ interactions: logs, tasks: relatedTasks, visits: visits ?? [], offers: offers ?? [] });
+  const fullTimeline = buildContactTimeline({
+    interactions: logs,
+    tasks: relatedTasks,
+    visits: visits ?? [],
+    offers: offers ?? [],
+    calls: callLogs ?? [],
+  });
   const feedFilter = (searchParams.feed ?? "all") as TimelineEntryKind | "all";
   const timeline = filterTimeline(fullTimeline, feedFilter);
   const timelineTabs: { key: TimelineEntryKind | "all"; label: string }[] = [
     { key: "all", label: "Tudo" },
     { key: "interaction", label: "Conversas" },
     { key: "task", label: "Tarefas" },
+    { key: "call", label: "Ligações" },
     ...(isRealEstate ? [{ key: "visit" as const, label: "Visitas" }, { key: "offer" as const, label: "Propostas" }] : []),
   ];
   const timelineIcon: Record<TimelineEntryKind, (props: { className?: string }) => JSX.Element> = {
     interaction: IconMessage,
     task: IconBell,
-    visit: IconPhone,
+    visit: IconCalendar,
     offer: IconCheck,
+    call: IconPhone,
   };
   const detailChips = preset.contactFields
     .map((field) => (c.details?.[field.key] ? `${field.label}: ${c.details[field.key]}` : null))
@@ -432,6 +447,46 @@ export default async function ContactDetailPage({
                   ))}
                 </ol>
               )}
+            </div>
+          </section>
+
+          <section className="panel overflow-hidden">
+            <div className="border-b border-line px-5 py-4">
+              <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
+                Registrar ligação
+              </h2>
+              <p className="mt-1 text-sm font-medium text-ink-muted">
+                Duração, resultado e próximo passo — sem gravação, direto na linha do tempo.
+              </p>
+            </div>
+            <div className="p-5">
+              <form action={createCallLog} className="grid gap-2 sm:grid-cols-[5rem_1fr_1fr_auto]">
+                <input type="hidden" name="contact_id" value={c.id} />
+                <input
+                  name="duration_minutes"
+                  type="number"
+                  min={1}
+                  placeholder="Min."
+                  aria-label="Duração em minutos"
+                  className="field"
+                />
+                <input
+                  name="outcome"
+                  maxLength={200}
+                  placeholder="Resultado (ex: vai pensar)"
+                  className="field"
+                />
+                <input
+                  name="next_step"
+                  maxLength={200}
+                  placeholder="Próximo passo (ex: retornar em 3 dias)"
+                  className="field"
+                />
+                <PendingButton className="btn shrink-0" aria-label="Salvar ligação" pendingLabel="Salvando">
+                  <IconPlus className="h-4 w-4" />
+                  Salvar
+                </PendingButton>
+              </form>
             </div>
           </section>
 

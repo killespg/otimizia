@@ -42,6 +42,26 @@ describe("buildContactTimeline", () => {
     });
     expect(timeline).toHaveLength(1);
   });
+
+  it("monta título e detalhe de ligação a partir de resultado/duração/próximo passo (2.6)", () => {
+    const timeline = buildContactTimeline({
+      interactions: [],
+      tasks: [],
+      calls: [{ id: "c1", duration_minutes: 8, outcome: "Vai pensar", next_step: "Retornar em 3 dias", created_at: "2026-01-01T00:00:00.000Z" }],
+    });
+    expect(timeline[0].title).toEqual("Ligação — Vai pensar");
+    expect(timeline[0].detail).toEqual("8 min · Próximo passo: Retornar em 3 dias");
+  });
+
+  it("usa título genérico de ligação quando não há resultado registrado", () => {
+    const timeline = buildContactTimeline({
+      interactions: [],
+      tasks: [],
+      calls: [{ id: "c1", duration_minutes: null, outcome: null, next_step: null, created_at: "2026-01-01T00:00:00.000Z" }],
+    });
+    expect(timeline[0].title).toEqual("Ligação registrada");
+    expect(timeline[0].detail).toBeNull();
+  });
 });
 
 describe("filterTimeline", () => {

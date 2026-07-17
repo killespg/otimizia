@@ -535,6 +535,19 @@ export type Interaction = {
   created_at: string;
 };
 
+export type CallLog = {
+  id: string;
+  org_id: string;
+  workspace_key: string;
+  contact_id: string;
+  deal_id: string | null;
+  created_by: string;
+  duration_minutes: number | null;
+  outcome: string | null;
+  next_step: string | null;
+  created_at: string;
+};
+
 export type PushSubscriptionRow = {
   id: string;
   user_id: string;

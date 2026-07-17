@@ -27,6 +27,8 @@ const LIMIT = {
   notes: 1200,
   title: 160,
   interaction: 1200,
+  callOutcome: 200,
+  callNextStep: 200,
 };
 const DEAL_PHOTOS_BUCKET = "deal-photos";
 const DEAL_PHOTO_MAX_BYTES = 6 * 1024 * 1024;
@@ -291,6 +293,33 @@ export async function createInteraction(formData: FormData) {
     body: requiredText(formData.get("body"), "Conversa", LIMIT.interaction),
   });
   ensureOk(error, "Não deu para salvar a conversa.");
+  revalidatePath(`/contacts/${contactId}`);
+}
+
+// ---------- Call logs (2.6, Fase 2) ----------
+export async function createCallLog(formData: FormData) {
+  const { supabase, user, orgId, workspaceKey } = await requireUserWithPreset();
+  const contactId = await requireVisibleContactId(
+    supabase,
+    orgId,
+    workspaceKey,
+    formData.get("contact_id")
+  );
+  const dealId = emptyToNull(formData.get("deal_id"), 64);
+  const rawDuration = text(formData.get("duration_minutes"), 8);
+  const durationMinutes = rawDuration ? Math.max(1, Math.round(Number(rawDuration))) : null;
+
+  const { error } = await supabase.from("call_logs").insert({
+    org_id: orgId,
+    workspace_key: workspaceKey,
+    contact_id: contactId,
+    deal_id: dealId,
+    created_by: user.id,
+    duration_minutes: Number.isFinite(durationMinutes) ? durationMinutes : null,
+    outcome: emptyToNull(formData.get("outcome"), LIMIT.callOutcome),
+    next_step: emptyToNull(formData.get("next_step"), LIMIT.callNextStep),
+  });
+  ensureOk(error, "Não deu para registrar a ligação.");
   revalidatePath(`/contacts/${contactId}`);
 }
 
