@@ -1,7 +1,12 @@
 import Link from "next/link";
-import { buildMonthlyDealStats } from "@/lib/deals-report";
+import {
+  buildMonthlyDealStats,
+  buildOriginBreakdown,
+  buildOwnerBreakdown,
+  buildStageBreakdown,
+} from "@/lib/deals-report";
 import { formatBRL } from "@/lib/format";
-import { getActiveOrgId } from "@/lib/org";
+import { getActiveOrgId, getOrgMembers } from "@/lib/org";
 import { getProfessionPreset } from "@/lib/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Deal } from "@/lib/supabase/types";
@@ -38,15 +43,26 @@ export default async function PipelineReportPage({
   const from = new Date(now.getFullYear(), now.getMonth() - (monthsBack - 1), 1);
   const to = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const { data } = await supabase
-    .from("deals")
-    .select("*")
-    .eq("org_id", orgId)
-    .eq("workspace_key", workspaceKey)
-    .or(`created_at.gte.${from.toISOString()},closed_at.gte.${from.toISOString()}`);
+  const [{ data }, { data: contactRows }, members] = await Promise.all([
+    supabase
+      .from("deals")
+      .select("*")
+      .eq("org_id", orgId)
+      .eq("workspace_key", workspaceKey)
+      .or(`created_at.gte.${from.toISOString()},closed_at.gte.${from.toISOString()}`),
+    supabase.from("contacts").select("id, name, source").eq("org_id", orgId).eq("workspace_key", workspaceKey),
+    getOrgMembers(supabase, orgId),
+  ]);
   const deals = (data ?? []) as Deal[];
+  const contactNameById = new Map((contactRows ?? []).map((c) => [c.id as string, c.name as string | null]));
+  const contactSourceById = new Map((contactRows ?? []).map((c) => [c.id as string, c.source as string | null]));
+  const memberNameById = new Map(members.map((m) => [m.user_id, m.name]));
+  const dealLabel = (deal: Deal) => (deal.contact_id && contactNameById.get(deal.contact_id)) || deal.title;
 
   const stats = buildMonthlyDealStats(deals, from, to);
+  const stageBreakdown = buildStageBreakdown(deals);
+  const originBreakdown = buildOriginBreakdown(deals, contactSourceById);
+  const ownerBreakdown = buildOwnerBreakdown(deals);
   const totals = stats.reduce(
     (acc, m) => ({
       created: acc.created + m.created,
@@ -145,7 +161,99 @@ export default async function PipelineReportPage({
           </tbody>
         </table>
       </section>
+
+      <section className="panel p-5 sm:p-6">
+        <h2 className="text-base font-black tracking-[-0.02em] text-ink">
+          Tempo em aberto por etapa
+        </h2>
+        <p className="mt-1 text-xs font-semibold text-ink-muted">
+          Dias em aberto contados a partir da criação do negócio — não é o tempo nesta etapa específica
+          (isso exige histórico de mudança de etapa, que ainda não existe).
+        </p>
+        <div className="mt-4 space-y-2">
+          {stageBreakdown.map((row) => (
+            <details key={row.stage} className="rounded-lg border border-line bg-white p-3">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                <span className="text-sm font-black text-ink">{preset.stages[row.stage].label}</span>
+                <span className="shrink-0 text-xs font-bold text-ink-muted">
+                  {row.deals.length} · {formatBRL(row.openValueCents)}
+                  {row.avgDaysOpen !== null && ` · ${row.avgDaysOpen}d em média`}
+                </span>
+              </summary>
+              <DealDrilldown deals={row.deals} dealLabel={dealLabel} />
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <section className="panel p-5 sm:p-6">
+          <h2 className="text-base font-black tracking-[-0.02em] text-ink">Conversão por origem</h2>
+          <div className="mt-4 space-y-2">
+            {originBreakdown.length === 0 ? (
+              <p className="text-sm font-medium text-ink-muted">Sem negócios fechados no período.</p>
+            ) : (
+              originBreakdown.map((row) => (
+                <details key={row.key} className="rounded-lg border border-line bg-white p-3">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                    <span className="text-sm font-black text-ink">{row.key}</span>
+                    <span className="shrink-0 text-xs font-bold text-ink-muted">
+                      {row.won}/{row.deals.length} · {row.conversionRate}%
+                    </span>
+                  </summary>
+                  <DealDrilldown deals={row.deals} dealLabel={dealLabel} />
+                </details>
+              ))
+            )}
+          </div>
+        </section>
+
+        <section className="panel p-5 sm:p-6">
+          <h2 className="text-base font-black tracking-[-0.02em] text-ink">Conversão por responsável</h2>
+          <div className="mt-4 space-y-2">
+            {ownerBreakdown.length === 0 ? (
+              <p className="text-sm font-medium text-ink-muted">Sem negócios fechados no período.</p>
+            ) : (
+              ownerBreakdown.map((row) => (
+                <details key={row.key} className="rounded-lg border border-line bg-white p-3">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                    <span className="text-sm font-black text-ink">{memberNameById.get(row.key) || "Sem nome"}</span>
+                    <span className="shrink-0 text-xs font-bold text-ink-muted">
+                      {row.won}/{row.deals.length} · {row.conversionRate}%
+                    </span>
+                  </summary>
+                  <DealDrilldown deals={row.deals} dealLabel={dealLabel} />
+                </details>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
     </div>
+  );
+}
+
+function DealDrilldown({ deals, dealLabel }: { deals: Deal[]; dealLabel: (deal: Deal) => string }) {
+  if (deals.length === 0) {
+    return <p className="mt-2 text-xs font-medium text-ink-muted">Nenhum negócio.</p>;
+  }
+  return (
+    <ul className="mt-2 space-y-1 border-t border-line pt-2">
+      {deals.map((deal) => (
+        <li key={deal.id} className="flex items-center justify-between gap-2 text-xs">
+          <span className="text-safe truncate font-semibold text-ink-soft">
+            {deal.contact_id ? (
+              <Link href={`/contacts/${deal.contact_id}`} className="hover:text-brand-700 hover:underline">
+                {dealLabel(deal)}
+              </Link>
+            ) : (
+              dealLabel(deal)
+            )}
+          </span>
+          <span className="shrink-0 font-bold text-ink-muted">{formatBRL(deal.value_cents ?? 0)}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
