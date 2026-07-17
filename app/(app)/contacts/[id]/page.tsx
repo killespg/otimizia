@@ -27,6 +27,7 @@ import { saveLeadPreferences } from "../../imoveis/match-actions";
 import { PresetFields } from "../../PresetFields";
 import { LeadPreferencesForm } from "./LeadPreferencesForm";
 import { MessageTemplates } from "./MessageTemplates";
+import { ContactSummaryPanel } from "./ContactSummaryPanel";
 
 export default async function ContactDetailPage({
   params,
@@ -335,6 +336,8 @@ export default async function ContactDetailPage({
               </div>
             </section>
           )}
+
+          <ContactSummaryPanel contactId={c.id} />
 
           <MessageTemplates
             templates={preset.messageTemplates}

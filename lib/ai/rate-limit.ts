@@ -10,6 +10,7 @@ export const RATE_LIMITS = {
   parse_property_filters: { max: 20, windowSeconds: 60 },
   assistant_chat: { max: 30, windowSeconds: 60 },
   whatsapp_ai_reply: { max: 60, windowSeconds: 60 },
+  contact_summary: { max: 20, windowSeconds: 60 },
 } as const;
 
 export type RateLimitRoute = keyof typeof RATE_LIMITS;
