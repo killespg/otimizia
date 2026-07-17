@@ -1416,4 +1416,47 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
       await admin.from("organizations").update({ granular_rbac_enabled: false }).eq("id", orgA);
     });
   });
+
+  // 4.4 (Fase 4): log_ai_confirmed_delete (0077_ai_confirmed_delete_log.sql)
+  // — usado por lib/ai/tools/write.ts (deleteRow) depois de uma exclusão
+  // confirmada pelo copiloto.
+  describe("log_ai_confirmed_delete (4.4)", () => {
+    it("registra a exclusão confirmada em audit_log, visível só pro admin da própria org", async () => {
+      const { error } = await userA.client.rpc("log_ai_confirmed_delete", {
+        p_org_id: orgA,
+        p_resource_table: "deals",
+        p_resource_id: "00000000-0000-0000-0000-000000000000",
+      });
+      expect(error).toBeNull();
+
+      const { data: entry } = await admin
+        .from("audit_log")
+        .select("*")
+        .eq("org_id", orgA)
+        .eq("action", "ai_confirmed_delete")
+        .eq("resource_id", "00000000-0000-0000-0000-000000000000")
+        .maybeSingle();
+      expect(entry?.actor_id).toEqual(userA.userId);
+
+      await admin.from("audit_log").delete().eq("id", entry!.id);
+    });
+
+    it("rejeita chamada de quem não é membro da organização", async () => {
+      const { error } = await userB.client.rpc("log_ai_confirmed_delete", {
+        p_org_id: orgA,
+        p_resource_table: "deals",
+        p_resource_id: "00000000-0000-0000-0000-000000000000",
+      });
+      expect(error).not.toBeNull();
+    });
+
+    it("rejeita nome de tabela fora da lista permitida", async () => {
+      const { error } = await userA.client.rpc("log_ai_confirmed_delete", {
+        p_org_id: orgA,
+        p_resource_table: "organizations",
+        p_resource_id: "00000000-0000-0000-0000-000000000000",
+      });
+      expect(error).not.toBeNull();
+    });
+  });
 });

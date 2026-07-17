@@ -340,14 +340,28 @@ export async function updateOrganizationContextByAi(
   });
 }
 
+// 4.4 (Fase 4): "toda mutação sensível exige confirmação" — não é só uma
+// instrução no system prompt (isso o modelo pode ignorar ou interpretar
+// mal), é um portão de código: sem confirmed=true, a exclusão nem chega a
+// ser tentada. Quando confirmada e executada, grava em audit_log (0.3) —
+// é o "confirmação registrada" que a porta de saída do item pede.
 export async function deleteRow(
   supabase: SupabaseClient,
   orgId: string,
   workspaceKey: string,
   table: "contacts" | "deals" | "tasks",
   id: string,
-  message: string
+  message: string,
+  confirmed: boolean
 ) {
+  if (!confirmed) {
+    return JSON.stringify({
+      ok: false,
+      precisa_confirmacao: true,
+      mensagem: "Antes de excluir, pergunte ao usuário se ele tem certeza. Só chame esta ferramenta de novo com confirmado=true depois que ele confirmar explicitamente.",
+    });
+  }
+
   const { error, count } = await supabase
     .from(table)
     .delete({ count: "exact" })
@@ -356,5 +370,8 @@ export async function deleteRow(
     .eq("workspace_key", workspaceKey);
   ensureOk(error);
   if (!count) throw new Error("Registro não encontrado.");
+
+  await supabase.rpc("log_ai_confirmed_delete", { p_org_id: orgId, p_resource_table: table, p_resource_id: id });
+
   return JSON.stringify({ ok: true, mensagem: message });
 }

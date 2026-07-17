@@ -544,11 +544,12 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
   {
     name: "delete_contact",
     description:
-      "Exclui um contato permanentemente (vendas e lembretes vinculados perdem o vínculo). Só chame depois que o usuário confirmar explicitamente a exclusão na conversa.",
+      "Exclui um contato permanentemente (vendas e lembretes vinculados perdem o vínculo). Chame primeiro SEM confirmado (ou confirmado=false): a ferramenta não exclui nada e devolve um aviso pra você perguntar ao usuário se tem certeza. Só chame de novo com confirmado=true depois que o usuário confirmar explicitamente na conversa.",
     input_schema: {
       type: "object",
       properties: {
         contato_id: { type: "string", description: "ID do contato" },
+        confirmado: { type: "boolean", description: "true só depois que o usuário confirmou explicitamente a exclusão nesta conversa." },
       },
       required: ["contato_id"],
     },
@@ -556,11 +557,12 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
   {
     name: "delete_deal",
     description:
-      "Exclui uma venda permanentemente. Só chame depois que o usuário confirmar explicitamente a exclusão na conversa.",
+      "Exclui uma venda permanentemente. Chame primeiro SEM confirmado (ou confirmado=false): a ferramenta não exclui nada e devolve um aviso pra você perguntar ao usuário se tem certeza. Só chame de novo com confirmado=true depois que o usuário confirmar explicitamente na conversa.",
     input_schema: {
       type: "object",
       properties: {
         venda_id: { type: "string", description: "ID da venda" },
+        confirmado: { type: "boolean", description: "true só depois que o usuário confirmou explicitamente a exclusão nesta conversa." },
       },
       required: ["venda_id"],
     },
@@ -568,11 +570,12 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
   {
     name: "delete_task",
     description:
-      "Exclui um lembrete permanentemente. Só chame depois que o usuário confirmar explicitamente a exclusão na conversa.",
+      "Exclui um lembrete permanentemente. Chame primeiro SEM confirmado (ou confirmado=false): a ferramenta não exclui nada e devolve um aviso pra você perguntar ao usuário se tem certeza. Só chame de novo com confirmado=true depois que o usuário confirmar explicitamente na conversa.",
     input_schema: {
       type: "object",
       properties: {
         lembrete_id: { type: "string", description: "ID do lembrete" },
+        confirmado: { type: "boolean", description: "true só depois que o usuário confirmou explicitamente a exclusão nesta conversa." },
       },
       required: ["lembrete_id"],
     },
