@@ -17,6 +17,59 @@ const ACTION_LABELS: Record<string, string> = {
   change_stage: "Mudar etapa",
 };
 
+// 5.3 (Fase 5): marketplace de automações — galeria de modelos prontos.
+// Versionados aqui no código (não em tabela) porque ainda não existem
+// modelos de terceiros nem necessidade de curadoria dinâmica; instalar é
+// só preencher o mesmo formulário de "Nova regra" com valores prontos via
+// inputs ocultos, reaproveitando createAutomationRule sem nenhum código
+// novo de persistência. Desinstalar é o botão de excluir que já existe.
+type AutomationTemplate = {
+  key: string;
+  name: string;
+  description: string;
+  fields: Record<string, string>;
+};
+
+const AUTOMATION_TEMPLATES: AutomationTemplate[] = [
+  {
+    key: "followup-5-dias",
+    name: "Follow-up de 5 dias sem contato",
+    description:
+      "Quando um negócio ficar 5 dias sem atividade, cria uma tarefa para retomar o contato.",
+    fields: {
+      name: "Follow-up de 5 dias sem contato",
+      trigger_kind: "deal_inactive",
+      inactivity_days: "5",
+      action_type: "create_task",
+      title_template: "Retomar contato — {{deal.title}}",
+    },
+  },
+  {
+    key: "comemorar-fechamento",
+    name: "Comemorar fechamento",
+    description: "Quando um negócio for ganho, cria uma tarefa para pedir indicação ao cliente.",
+    fields: {
+      name: "Comemorar fechamento",
+      trigger_kind: "deal_stage_changed",
+      stage_key: "ganho",
+      action_type: "create_task",
+      title_template: "Pedir indicação — {{deal.title}}",
+    },
+  },
+  {
+    key: "boas-vindas-email",
+    name: "E-mail de boas-vindas ao criar negócio",
+    description: "Quando um negócio for criado, envia um e-mail de boas-vindas automático.",
+    fields: {
+      name: "E-mail de boas-vindas ao criar negócio",
+      trigger_kind: "deal_created",
+      action_type: "send_email",
+      subject_template: "Bem-vindo(a)!",
+      body_template: "Oi! Recebemos seu interesse em {{deal.title}} e já estamos cuidando disso.",
+    },
+  },
+];
+
 export default async function AutomationRulesPage() {
   const supabase = createClient();
   const {
@@ -53,6 +106,35 @@ export default async function AutomationRulesPage() {
           ainda — crie a regra e acompanhe o histórico de execuções abaixo.
         </p>
       </header>
+
+      <section className="panel p-5 sm:p-6">
+        <h2 className="text-base font-black tracking-[-0.02em] text-ink">Modelos prontos</h2>
+        <p className="mt-1 text-sm font-medium text-ink-muted">
+          Instale um modelo com um clique. Ele vira uma regra normal — pode editar o gatilho na
+          lista abaixo depois, ou excluir a qualquer momento.
+        </p>
+        <ul className="mt-4 grid gap-3 sm:grid-cols-3">
+          {AUTOMATION_TEMPLATES.map((template) => (
+            <li key={template.key} className="flex flex-col rounded-lg border border-line bg-white p-3">
+              <p className="text-sm font-black text-ink">{template.name}</p>
+              <p className="mt-1 flex-1 text-xs font-medium leading-relaxed text-ink-muted">
+                {template.description}
+              </p>
+              <p className="mt-2 text-[11px] font-bold uppercase tracking-wide text-ink-muted/70">
+                {TRIGGER_LABELS[template.fields.trigger_kind]} → {ACTION_LABELS[template.fields.action_type]}
+              </p>
+              <form action={createAutomationRule} className="mt-3">
+                {Object.entries(template.fields).map(([field, value]) => (
+                  <input key={field} type="hidden" name={field} value={value} />
+                ))}
+                <PendingButton className="btn-soft w-full" pendingLabel="Instalando">
+                  Instalar
+                </PendingButton>
+              </form>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <section className="panel p-5 sm:p-6">
         <h2 className="text-base font-black tracking-[-0.02em] text-ink">Nova regra</h2>

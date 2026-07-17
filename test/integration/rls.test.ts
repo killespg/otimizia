@@ -1459,4 +1459,33 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
       expect(error).not.toBeNull();
     });
   });
+
+  // 5.2 (Fase 5): get_network_benchmark (0078_multiunidade.sql). O ponto
+  // central a provar é que isso nunca vaza dado bruto — só quem é admin
+  // da matriz recebe contagens, nunca linha de contato/negócio, e nunca
+  // pra quem não é admin da matriz.
+  describe("get_network_benchmark (5.2)", () => {
+    it("admin da matriz recebe contagens agregadas da própria org e das unidades vinculadas", async () => {
+      const orgB = await getPersonalOrgId(admin, userB.userId);
+      await admin.from("organizations").update({ parent_org_id: orgA }).eq("id", orgB);
+
+      await userA.client
+        .from("contacts")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", name: "Contato da matriz" });
+
+      const { data, error } = await userA.client.rpc("get_network_benchmark", { p_parent_org_id: orgA });
+      expect(error).toBeNull();
+      expect(data!.length).toBeGreaterThanOrEqual(2);
+      expect(data!.some((row: { org_id: string }) => row.org_id === orgA)).toBe(true);
+      expect(data!.some((row: { org_id: string }) => row.org_id === orgB)).toBe(true);
+
+      await admin.from("organizations").update({ parent_org_id: null }).eq("id", orgB);
+      await admin.from("contacts").delete().eq("org_id", orgA).eq("name", "Contato da matriz");
+    });
+
+    it("rejeita chamada de quem não é admin da organização matriz", async () => {
+      const { error } = await userB.client.rpc("get_network_benchmark", { p_parent_org_id: orgA });
+      expect(error).not.toBeNull();
+    });
+  });
 });

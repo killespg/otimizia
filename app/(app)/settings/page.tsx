@@ -166,6 +166,16 @@ export default async function SettingsPage({
             </Link>
           )}
 
+          {isOrgAdmin && (
+            <Link
+              href="/settings/rede"
+              className="row-link flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3 text-sm font-bold text-ink-soft hover:border-brand-400 hover:text-brand-700"
+            >
+              Comparativo entre unidades fica em Rede
+              <span aria-hidden="true">→</span>
+            </Link>
+          )}
+
           <SectionCard
             title="Notificações"
             description="Como e quando você quer ser avisado de quem precisa de retorno."

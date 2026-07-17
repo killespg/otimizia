@@ -71,7 +71,19 @@ export type Organization = {
   // Sem policy de UPDATE pra authenticated — mesmo padrão de
   // real_estate_v2_enabled, controlado só pela operação via service role.
   granular_rbac_enabled: boolean;
+  // 5.2 (Fase 5): vínculo de rede/multiunidade (0078_multiunidade.sql).
+  // Vincular é ação de operação (service role), não self-service.
+  parent_org_id: string | null;
   created_at: string;
+};
+
+export type NetworkBenchmarkRow = {
+  org_id: string;
+  org_name: string;
+  total_contacts: number;
+  total_deals: number;
+  open_deals: number;
+  won_deals_30d: number;
 };
 
 export type OrganizationMember = {
