@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { ConversationSla } from "@/lib/inbox-sla";
 import type { WhatsappConversation, WhatsappMessage } from "@/lib/supabase/types";
 import { IconArrowRight, IconBot, IconChevronRight, IconMessage, IconUsers } from "../icons";
 
@@ -9,14 +10,20 @@ export function WhatsappInbox({
   orgId,
   initialConversations,
   initialUnreadCounts,
+  initialSla,
+  members,
 }: {
   orgId: string;
   initialConversations: WhatsappConversation[];
   initialUnreadCounts: Record<string, number>;
+  initialSla: Record<string, ConversationSla>;
+  members: { id: string; name: string | null }[];
 }) {
   const supabase = useMemo(() => createClient(), []);
   const [conversations, setConversations] = useState(initialConversations);
   const [unreadCounts, setUnreadCounts] = useState(initialUnreadCounts);
+  const [sla] = useState(initialSla);
+  const [assigning, setAssigning] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(
     initialConversations[0]?.id ?? null
   );
@@ -179,6 +186,24 @@ export function WhatsappInbox({
     }
   }
 
+  async function assignConversation(assigneeId: string) {
+    if (!selected || assigning) return;
+    setAssigning(true);
+    const nextAssignee = assigneeId || null;
+    setConversations((prev) =>
+      prev.map((c) => (c.id === selected.id ? { ...c, assignee_id: nextAssignee } : c))
+    );
+    try {
+      await fetch("/api/whatsapp/assign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversationId: selected.id, assigneeId: nextAssignee }),
+      });
+    } finally {
+      setAssigning(false);
+    }
+  }
+
   return (
     <div className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
       <section
@@ -218,6 +243,8 @@ export function WhatsappInbox({
           ) : (
             conversations.map((conversation) => {
               const unread = unreadCounts[conversation.id] ?? 0;
+              const conversationSla = sla[conversation.id];
+              const assigneeName = members.find((m) => m.id === conversation.assignee_id)?.name;
               return (
                 <li key={conversation.id}>
                   <button
@@ -242,8 +269,23 @@ export function WhatsappInbox({
                           </span>
                         )}
                       </span>
-                      <span className="block truncate text-xs font-medium text-ink-muted">
-                        {conversation.phone_number}
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="block truncate text-xs font-medium text-ink-muted">
+                          {conversation.phone_number}
+                          {assigneeName ? ` · ${assigneeName}` : ""}
+                        </span>
+                        {conversationSla?.waitingReply && (
+                          <span
+                            className={
+                              "shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black " +
+                              (conversationSla.breached
+                                ? "bg-danger-50 text-danger-700"
+                                : "bg-warning-50 text-warning-700")
+                            }
+                          >
+                            {conversationSla.breached ? "SLA estourado" : "Aguardando"}
+                          </span>
+                        )}
                       </span>
                     </span>
                     <IconChevronRight className="h-4 w-4 shrink-0 text-ink-muted" />
@@ -290,20 +332,39 @@ export function WhatsappInbox({
                   <p className="truncate text-xs font-medium text-ink-muted">{selected.phone_number}</p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={toggleIa}
-                disabled={toggling}
-                className={
-                  "flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-black " +
-                  (selected.ia_active
-                    ? "bg-success-50 text-success-700"
-                    : "bg-surface-2 text-ink-muted")
-                }
-              >
-                <IconBot className="h-3.5 w-3.5" />
-                IA {selected.ia_active ? "ativa" : "pausada"}
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                <label className="sr-only" htmlFor="conversation-assignee">
+                  Atribuído a
+                </label>
+                <select
+                  id="conversation-assignee"
+                  value={selected.assignee_id ?? ""}
+                  disabled={assigning}
+                  onChange={(e) => assignConversation(e.target.value)}
+                  className="rounded-md border border-line bg-white px-2 py-1.5 text-xs font-bold text-ink-soft"
+                >
+                  <option value="">Sem responsável</option>
+                  {members.map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.name || "Sem nome"}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={toggleIa}
+                  disabled={toggling}
+                  className={
+                    "flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-black " +
+                    (selected.ia_active
+                      ? "bg-success-50 text-success-700"
+                      : "bg-surface-2 text-ink-muted")
+                  }
+                >
+                  <IconBot className="h-3.5 w-3.5" />
+                  IA {selected.ia_active ? "ativa" : "pausada"}
+                </button>
+              </div>
             </div>
 
             <div ref={scrollRef} className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 py-4">

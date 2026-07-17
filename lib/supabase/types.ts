@@ -588,6 +588,8 @@ export type WhatsappConversation = {
   phone_number: string;
   contact_name: string | null;
   ia_active: boolean;
+  // 2.2 (Fase 2): atribuição manual do inbox comercial (0073_whatsapp_inbox_assignment.sql).
+  assignee_id: string | null;
   last_message_at: string;
   created_at: string;
 };
