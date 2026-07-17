@@ -1327,4 +1327,93 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
       await admin.from("api_keys").delete().eq("id", key!.id);
     });
   });
+
+  // 3.4 (Fase 3): RBAC granular por flag (0076_granular_rbac.sql). O ponto
+  // central a provar não é "a restrição funciona" isoladamente — é que ela
+  // é zero-regressão com o flag desligado (comportamento de hoje, toda
+  // organização existente) e só passa a restringir com o flag ligado.
+  describe("RBAC granular por flag (3.4)", () => {
+    it("com o flag desligado (padrão), staff continua editando negócio de outro dono — comportamento inalterado", async () => {
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "staff" });
+
+      const { data: deal } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", title: "Negócio de A" })
+        .select("id")
+        .single();
+
+      const { data: updated, error } = await userB.client
+        .from("deals")
+        .update({ title: "Editado por staff sem RBAC granular" })
+        .eq("id", deal!.id)
+        .select();
+      expect(error).toBeNull();
+      expect(updated).toHaveLength(1);
+
+      await admin.from("deals").delete().eq("id", deal!.id);
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+    });
+
+    it("com o flag ligado, staff só edita negócio próprio; broker continua editando qualquer um", async () => {
+      await admin.from("organizations").update({ granular_rbac_enabled: true }).eq("id", orgA);
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "staff" });
+
+      const { data: dealOfA } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", title: "Negócio de A (RBAC ligado)" })
+        .select("id")
+        .single();
+
+      const { data: blockedUpdate, error: blockedError } = await userB.client
+        .from("deals")
+        .update({ title: "Tentativa de staff" })
+        .eq("id", dealOfA!.id)
+        .select();
+      expect(blockedError).toBeNull();
+      expect(blockedUpdate).toEqual([]);
+
+      const { data: dealOfB } = await userB.client
+        .from("deals")
+        .insert({ owner_id: userB.userId, org_id: orgA, workspace_key: "autonomous_seller", title: "Negócio do próprio staff" })
+        .select("id")
+        .single();
+      const { error: ownUpdateError } = await userB.client
+        .from("deals")
+        .update({ title: "Staff editando o próprio" })
+        .eq("id", dealOfB!.id);
+      expect(ownUpdateError).toBeNull();
+
+      await admin.from("organization_members").update({ job_role: "broker" }).eq("org_id", orgA).eq("user_id", userB.userId);
+      const { data: brokerUpdate, error: brokerError } = await userB.client
+        .from("deals")
+        .update({ title: "Broker edita qualquer um" })
+        .eq("id", dealOfA!.id)
+        .select();
+      expect(brokerError).toBeNull();
+      expect(brokerUpdate).toHaveLength(1);
+
+      await admin.from("deals").delete().eq("id", dealOfA!.id);
+      await admin.from("deals").delete().eq("id", dealOfB!.id);
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+      await admin.from("organizations").update({ granular_rbac_enabled: false }).eq("id", orgA);
+    });
+
+    it("visualização continua liberada pra todo membro com o flag ligado (só 'gerenciar' é restrito)", async () => {
+      await admin.from("organizations").update({ granular_rbac_enabled: true }).eq("id", orgA);
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "staff" });
+
+      const { data: deal } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", title: "Negócio visível" })
+        .select("id")
+        .single();
+
+      const { data: seenByStaff } = await userB.client.from("deals").select("*").eq("id", deal!.id).maybeSingle();
+      expect(seenByStaff?.id).toEqual(deal!.id);
+
+      await admin.from("deals").delete().eq("id", deal!.id);
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+      await admin.from("organizations").update({ granular_rbac_enabled: false }).eq("id", orgA);
+    });
+  });
 });

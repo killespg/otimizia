@@ -67,6 +67,10 @@ export type Organization = {
   real_estate_v2_enabled: boolean;
   real_estate_public_page_enabled: boolean;
   real_estate_public_page_token: string;
+  // 3.4 (Fase 3): rollout por flag do RBAC granular (0076_granular_rbac.sql).
+  // Sem policy de UPDATE pra authenticated — mesmo padrão de
+  // real_estate_v2_enabled, controlado só pela operação via service role.
+  granular_rbac_enabled: boolean;
   created_at: string;
 };
 
