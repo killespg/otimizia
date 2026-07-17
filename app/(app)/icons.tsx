@@ -100,6 +100,15 @@ export function IconMessage({ className }: IconProps) {
   );
 }
 
+export function IconMail({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M4.5 6.5A1.5 1.5 0 0 1 6 5h12a1.5 1.5 0 0 1 1.5 1.5v11A1.5 1.5 0 0 1 18 19H6a1.5 1.5 0 0 1-1.5-1.5v-11Z" {...stroke} />
+      <path d="m4.8 6.3 6.6 5.4a1 1 0 0 0 1.2 0l6.6-5.4" {...stroke} />
+    </svg>
+  );
+}
+
 export function IconPaperclip({ className }: IconProps) {
   return (
     <svg {...base} className={className}>

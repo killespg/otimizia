@@ -448,6 +448,10 @@ export type Contact = {
   details: Record<string, string>;
   whatsapp_opt_out: boolean;
   whatsapp_opt_out_at: string | null;
+  // 2.1 (Fase 2): mesmo padrão do opt-out de WhatsApp acima, aplicado a
+  // e-mail (0072_email_contact.sql).
+  email_opt_out: boolean;
+  email_opt_out_at: string | null;
   created_at: string;
 };
 

@@ -16,12 +16,13 @@ import {
   IconBell,
   IconCalendar,
   IconCheck,
+  IconMail,
   IconMessage,
   IconPhone,
   IconPlus,
   IconTrash,
 } from "../../icons";
-import { createTask, updateContact, deleteContact, createInteraction, createCallLog } from "../../actions";
+import { createTask, updateContact, deleteContact, createInteraction, createCallLog, sendContactEmail } from "../../actions";
 import { saveLeadPreferences } from "../../imoveis/match-actions";
 import { PresetFields } from "../../PresetFields";
 import { LeadPreferencesForm } from "./LeadPreferencesForm";
@@ -69,8 +70,16 @@ export default async function ContactDetailPage({
   const copy = contactDetailCopy(preset.key === "livestock_producer");
 
   const isRealEstate = workspaceKey === "real_estate_broker";
-  const [{ data: interactions }, { data: tasks }, { data: dealRows }, { data: org }, { data: visits }, { data: offers }, { data: callLogs }] =
-    await Promise.all([
+  const [
+    { data: interactions },
+    { data: tasks },
+    { data: dealRows },
+    { data: org },
+    { data: visits },
+    { data: offers },
+    { data: callLogs },
+    { data: emailLogs },
+  ] = await Promise.all([
       supabase
         .from("interactions")
         .select("*")
@@ -117,6 +126,12 @@ export default async function ContactDetailPage({
         .eq("contact_id", c.id)
         .eq("org_id", orgId)
         .eq("workspace_key", workspaceKey),
+      supabase
+        .from("email_logs")
+        .select("id, subject, status, created_at")
+        .eq("contact_id", c.id)
+        .eq("org_id", orgId)
+        .eq("workspace_key", workspaceKey),
     ]);
 
   const logs = (interactions ?? []) as Interaction[];
@@ -137,6 +152,7 @@ export default async function ContactDetailPage({
     visits: visits ?? [],
     offers: offers ?? [],
     calls: callLogs ?? [],
+    emails: emailLogs ?? [],
   });
   const feedFilter = (searchParams.feed ?? "all") as TimelineEntryKind | "all";
   const timeline = filterTimeline(fullTimeline, feedFilter);
@@ -145,6 +161,7 @@ export default async function ContactDetailPage({
     { key: "interaction", label: "Conversas" },
     { key: "task", label: "Tarefas" },
     { key: "call", label: "Ligações" },
+    { key: "email", label: "E-mails" },
     ...(isRealEstate ? [{ key: "visit" as const, label: "Visitas" }, { key: "offer" as const, label: "Propostas" }] : []),
   ];
   const timelineIcon: Record<TimelineEntryKind, (props: { className?: string }) => JSX.Element> = {
@@ -153,6 +170,7 @@ export default async function ContactDetailPage({
     visit: IconCalendar,
     offer: IconCheck,
     call: IconPhone,
+    email: IconMail,
   };
   const detailChips = preset.contactFields
     .map((field) => (c.details?.[field.key] ? `${field.label}: ${c.details[field.key]}` : null))
@@ -241,6 +259,17 @@ export default async function ContactDetailPage({
               </label>
             )}
             <Field name="email" label="E-mail" type="email" defaultValue={c.email ?? ""} maxLength={160} autoComplete="email" />
+            {c.email && (
+              <label className="flex items-center gap-2 text-sm font-bold text-ink">
+                <input
+                  type="checkbox"
+                  name="email_opt_out"
+                  defaultChecked={c.email_opt_out}
+                  className="h-4 w-4 rounded border-line"
+                />
+                Não mandar e-mails pra este contato
+              </label>
+            )}
             <Field name="instagram" label="Instagram" defaultValue={c.instagram ?? ""} maxLength={60} placeholder="@usuario" />
             <Field name="company" label={copy.companyField} defaultValue={c.company ?? ""} maxLength={120} autoComplete="organization" />
             <Field name="source" label="Origem" defaultValue={c.source ?? ""} maxLength={120} />
@@ -492,6 +521,35 @@ export default async function ContactDetailPage({
               </form>
             </div>
           </section>
+
+          {c.email && !c.email_opt_out && (
+            <section className="panel overflow-hidden">
+              <div className="border-b border-line px-5 py-4">
+                <h2 className="text-lg font-black tracking-[-0.02em] text-ink">Enviar e-mail</h2>
+                <p className="mt-1 text-sm font-medium text-ink-muted">
+                  Vai para {c.email} e fica registrado na linha do tempo.
+                </p>
+              </div>
+              <div className="p-5">
+                <form action={sendContactEmail} className="space-y-2">
+                  <input type="hidden" name="contact_id" value={c.id} />
+                  <input name="subject" required maxLength={160} placeholder="Assunto" className="field w-full" />
+                  <textarea
+                    name="body"
+                    required
+                    maxLength={4000}
+                    rows={4}
+                    placeholder="Mensagem..."
+                    className="field w-full"
+                  />
+                  <PendingButton className="btn" aria-label="Enviar e-mail" pendingLabel="Enviando">
+                    <IconMail className="h-4 w-4" />
+                    Enviar
+                  </PendingButton>
+                </form>
+              </div>
+            </section>
+          )}
 
           <section className="panel overflow-hidden">
             <div className="border-b border-line px-5 py-4">

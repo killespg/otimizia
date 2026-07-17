@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient as createSupabaseAdminClient } from "@supabase/supabase-js";
+import { contactMessageEmail, sendEmail } from "@/lib/email";
 import { logError } from "@/lib/logger";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
@@ -217,7 +218,7 @@ export async function updateContact(formData: FormData) {
   const id = requiredText(formData.get("id"), "Contato", 80);
   const { data: existing } = await supabase
     .from("contacts")
-    .select("details, whatsapp_opt_out")
+    .select("details, whatsapp_opt_out, email_opt_out")
     .eq("id", id)
     .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey)
@@ -226,9 +227,9 @@ export async function updateContact(formData: FormData) {
     ...(existing?.details ?? {}),
     ...collectDetails(formData, preset.contactFields),
   };
-  // whatsapp_opt_out_at só muda quando o estado realmente vira (marcando ou
-  // desmarcando) — resalvar o form sem tocar no checkbox não deve reescrever
-  // a data em que o contato pediu pra sair.
+  // whatsapp_opt_out_at/email_opt_out_at só mudam quando o estado realmente
+  // vira (marcando ou desmarcando) — resalvar o form sem tocar no checkbox
+  // não deve reescrever a data em que o contato pediu pra sair.
   const whatsappOptOut = formData.get("whatsapp_opt_out") === "on";
   const optOutTimestamp =
     whatsappOptOut === (existing?.whatsapp_opt_out ?? false)
@@ -236,6 +237,9 @@ export async function updateContact(formData: FormData) {
       : whatsappOptOut
         ? new Date().toISOString()
         : null;
+  const emailOptOut = formData.get("email_opt_out") === "on";
+  const emailOptOutTimestamp =
+    emailOptOut === (existing?.email_opt_out ?? false) ? undefined : emailOptOut ? new Date().toISOString() : null;
   const { error } = await supabase
     .from("contacts")
     .update({
@@ -249,6 +253,8 @@ export async function updateContact(formData: FormData) {
       details,
       whatsapp_opt_out: whatsappOptOut,
       ...(optOutTimestamp !== undefined ? { whatsapp_opt_out_at: optOutTimestamp } : {}),
+      email_opt_out: emailOptOut,
+      ...(emailOptOutTimestamp !== undefined ? { email_opt_out_at: emailOptOutTimestamp } : {}),
     })
     .eq("id", id)
     .eq("org_id", orgId)
@@ -354,6 +360,45 @@ export async function createCallLog(formData: FormData) {
     next_step: emptyToNull(formData.get("next_step"), LIMIT.callNextStep),
   });
   ensureOk(error, "Não deu para registrar a ligação.");
+  revalidatePath(`/contacts/${contactId}`);
+}
+
+// ---------- E-mail (2.1, Fase 2) ----------
+export async function sendContactEmail(formData: FormData) {
+  const { supabase, user, orgId, workspaceKey } = await requireUserWithPreset();
+  const contactId = await requireVisibleContactId(
+    supabase,
+    orgId,
+    workspaceKey,
+    formData.get("contact_id")
+  );
+  const { data: contact } = await supabase
+    .from("contacts")
+    .select("email, email_opt_out, name")
+    .eq("id", contactId)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey)
+    .maybeSingle();
+  if (!contact?.email) throw new Error("Este contato não tem e-mail cadastrado.");
+  if (contact.email_opt_out) throw new Error("Este contato optou por não receber e-mails.");
+
+  const subject = requiredText(formData.get("subject"), "Assunto", 160);
+  const body = requiredText(formData.get("body"), "Mensagem", 4000);
+  const senderName = (typeof user.user_metadata?.name === "string" && user.user_metadata.name) || "Equipe";
+
+  const sent = await sendEmail(contact.email, subject, contactMessageEmail(body, senderName));
+
+  const { error } = await supabase.from("email_logs").insert({
+    org_id: orgId,
+    workspace_key: workspaceKey,
+    contact_id: contactId,
+    deal_id: emptyToNull(formData.get("deal_id"), 64),
+    created_by: user.id,
+    subject,
+    status: sent ? "sent" : "failed",
+  });
+  ensureOk(error, "E-mail processado, mas não deu para registrar na timeline.");
+  if (!sent) throw new Error("Não deu para enviar o e-mail agora. Tente de novo em instantes.");
   revalidatePath(`/contacts/${contactId}`);
 }
 

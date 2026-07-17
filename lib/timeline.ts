@@ -8,7 +8,7 @@ import type { Interaction, Task } from "@/lib/supabase/types";
 // de etapa ficam como lacuna conhecida — não há tabela de histórico de
 // stage_changed nem de documentos hoje (ver
 // docs/roadmap-imobiliario/1.2-timeline-unificada.md).
-export type TimelineEntryKind = "interaction" | "task" | "visit" | "offer" | "call";
+export type TimelineEntryKind = "interaction" | "task" | "visit" | "offer" | "call" | "email";
 
 export type TimelineEntry = {
   kind: TimelineEntryKind;
@@ -40,6 +40,13 @@ export type TimelineCallInput = {
   duration_minutes: number | null;
   outcome: string | null;
   next_step: string | null;
+  created_at: string;
+};
+
+export type TimelineEmailInput = {
+  id: string;
+  subject: string;
+  status: string;
   created_at: string;
 };
 
@@ -81,6 +88,7 @@ export function buildContactTimeline(input: {
   visits?: TimelineVisitInput[];
   offers?: TimelineOfferInput[];
   calls?: TimelineCallInput[];
+  emails?: TimelineEmailInput[];
 }): TimelineEntry[] {
   const entries: TimelineEntry[] = [];
 
@@ -129,6 +137,17 @@ export function buildContactTimeline(input: {
       at: call.created_at,
       title: call.outcome ? `Ligação — ${call.outcome}` : "Ligação registrada",
       detail: [durationLabel, call.next_step ? `Próximo passo: ${call.next_step}` : null].filter(Boolean).join(" · ") || null,
+      done: true,
+    });
+  }
+
+  for (const email of input.emails ?? []) {
+    entries.push({
+      kind: "email",
+      id: email.id,
+      at: email.created_at,
+      title: `E-mail — ${email.subject}`,
+      detail: email.status === "failed" ? "Falha no envio" : null,
       done: true,
     });
   }

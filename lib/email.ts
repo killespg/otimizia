@@ -95,3 +95,30 @@ export function stalledDealEmail(params: {
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
 }
+
+// 2.1 (Fase 2): e-mail do corretor para o cliente final — não é uma
+// notificação interna do produto (emailShell acima), por isso não usa o
+// rodapé "você ativou avisos no OtimizIA". O opt-out aqui é uma linha
+// simples pedindo pra responder avisando, mediado por humano — ainda não
+// existe um link de descadastro de um clique (precisaria de um token
+// público, no mesmo espírito de real_estate_public_page_token; fica como
+// lacuna documentada em docs/roadmap-imobiliario/2.1-email-integrado.md).
+export function contactMessageEmail(bodyText: string, senderName: string): string {
+  const paragraphs = bodyText
+    .split("\n")
+    .filter((line) => line.trim().length > 0)
+    .map((line) => `<p style="font-size:15px;line-height:1.6;margin:0 0 12px;">${escapeHtml(line)}</p>`)
+    .join("");
+  return `<!doctype html>
+<html lang="pt-BR">
+  <body style="margin:0;padding:24px;background:#f5f5f4;font-family:Arial,Helvetica,sans-serif;color:#1c1917;">
+    <div style="max-width:480px;margin:0 auto;background:#ffffff;border-radius:12px;padding:28px;border:1px solid #e7e5e4;">
+      ${paragraphs}
+      <p style="margin-top:24px;font-size:13px;color:#78716c;">— ${escapeHtml(senderName)}</p>
+      <p style="margin-top:20px;font-size:11px;color:#a8a29e;">
+        Se preferir não receber mais e-mails, responda avisando.
+      </p>
+    </div>
+  </body>
+</html>`;
+}

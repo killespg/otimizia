@@ -62,6 +62,16 @@ describe("buildContactTimeline", () => {
     expect(timeline[0].title).toEqual("Ligação registrada");
     expect(timeline[0].detail).toBeNull();
   });
+
+  it("marca falha no envio de e-mail no detalhe da entrada (2.1)", () => {
+    const timeline = buildContactTimeline({
+      interactions: [],
+      tasks: [],
+      emails: [{ id: "e1", subject: "Proposta enviada", status: "failed", created_at: "2026-01-01T00:00:00.000Z" }],
+    });
+    expect(timeline[0].title).toEqual("E-mail — Proposta enviada");
+    expect(timeline[0].detail).toEqual("Falha no envio");
+  });
 });
 
 describe("filterTimeline", () => {

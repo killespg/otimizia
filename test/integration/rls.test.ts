@@ -1116,4 +1116,45 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
       await admin.from("contacts").delete().eq("id", contactA!.id);
     });
   });
+
+  // 2.1 (Fase 2): email_logs (0072_email_contact.sql).
+  describe("email_logs (2.1)", () => {
+    it("isola registros de e-mail entre organizações e valida a FK composta de contact_id", async () => {
+      const { data: contactA } = await userA.client
+        .from("contacts")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", name: "Cliente do e-mail", email: "cliente@exemplo.com" })
+        .select("id")
+        .single();
+
+      const { data: emailLog, error } = await userA.client
+        .from("email_logs")
+        .insert({
+          org_id: orgA,
+          workspace_key: "autonomous_seller",
+          contact_id: contactA!.id,
+          created_by: userA.userId,
+          subject: "Proposta enviada",
+          status: "sent",
+        })
+        .select("id")
+        .single();
+      expect(error).toBeNull();
+
+      const { data: seenByB } = await userB.client.from("email_logs").select("*").eq("id", emailLog!.id).maybeSingle();
+      expect(seenByB).toBeNull();
+
+      const orgB = await getPersonalOrgId(admin, userB.userId);
+      const { error: forgedError } = await userB.client.from("email_logs").insert({
+        org_id: orgB,
+        workspace_key: "autonomous_seller",
+        contact_id: contactA!.id,
+        created_by: userB.userId,
+        subject: "Tentativa de invasão",
+      });
+      expect(forgedError).not.toBeNull();
+
+      await admin.from("email_logs").delete().eq("id", emailLog!.id);
+      await admin.from("contacts").delete().eq("id", contactA!.id);
+    });
+  });
 });
