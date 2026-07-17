@@ -1157,4 +1157,101 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
       await admin.from("contacts").delete().eq("id", contactA!.id);
     });
   });
+
+  // 2.4 (Fase 2): webhooks de saída + API pública (0074_webhooks_and_api_keys.sql).
+  describe("webhooks e API pública (2.4)", () => {
+    it("emite deal.created e deal.stage_changed em crm_domain_events, e enfileira entrega pros endpoints ativos que assinam", async () => {
+      const { data: endpoint } = await admin
+        .from("webhook_endpoints")
+        .insert({ org_id: orgA, url: "https://example.com/hook", secret: "whsec_teste", event_types: ["deal.created", "deal.stage_changed"] })
+        .select("id")
+        .single();
+
+      const { data: deal } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", title: "Negócio 2.4" })
+        .select("id")
+        .single();
+
+      const { data: createdEvent } = await admin
+        .from("crm_domain_events")
+        .select("id")
+        .eq("event_type", "deal.created")
+        .eq("aggregate_id", deal!.id)
+        .maybeSingle();
+      expect(createdEvent).not.toBeNull();
+
+      const { data: createdDelivery } = await admin
+        .from("webhook_deliveries")
+        .select("id, status")
+        .eq("endpoint_id", endpoint!.id)
+        .eq("event_id", createdEvent!.id)
+        .maybeSingle();
+      expect(createdDelivery?.status).toEqual("pending");
+
+      await userA.client.from("deals").update({ stage: "em_contato" }).eq("id", deal!.id);
+
+      const { data: stageEvent } = await admin
+        .from("crm_domain_events")
+        .select("id")
+        .eq("event_type", "deal.stage_changed")
+        .eq("aggregate_id", deal!.id)
+        .maybeSingle();
+      expect(stageEvent).not.toBeNull();
+
+      await admin.from("webhook_deliveries").delete().eq("endpoint_id", endpoint!.id);
+      await admin.from("crm_domain_events").delete().eq("aggregate_id", deal!.id);
+      await admin.from("webhook_endpoints").delete().eq("id", endpoint!.id);
+      await admin.from("deals").delete().eq("id", deal!.id);
+    });
+
+    it("só admin gerencia webhook_endpoints e api_keys; membro comum não vê nem escreve", async () => {
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "staff" });
+
+      const { error: insertAsMemberError } = await userB.client.from("webhook_endpoints").insert({
+        org_id: orgA,
+        url: "https://example.com/tentativa",
+        secret: "whsec_x",
+        event_types: ["deal.created"],
+      });
+      expect(insertAsMemberError).not.toBeNull();
+
+      const { data: endpoint } = await userA.client
+        .from("webhook_endpoints")
+        .insert({ org_id: orgA, url: "https://example.com/admin-only", secret: "whsec_admin", event_types: ["deal.created"] })
+        .select("id")
+        .single();
+      const { data: seenByMember } = await userB.client.from("webhook_endpoints").select("*").eq("id", endpoint!.id).maybeSingle();
+      expect(seenByMember).toBeNull();
+
+      const { error: insertKeyAsMemberError } = await userB.client
+        .from("api_keys")
+        .insert({ org_id: orgA, name: "Tentativa", key_hash: "hash_falso", key_prefix: "otz_fals" });
+      expect(insertKeyAsMemberError).not.toBeNull();
+
+      await admin.from("webhook_endpoints").delete().eq("id", endpoint!.id);
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+    });
+
+    it("isola webhook_endpoints e api_keys entre organizações", async () => {
+      const { data: endpoint } = await userA.client
+        .from("webhook_endpoints")
+        .insert({ org_id: orgA, url: "https://example.com/orgA", secret: "whsec_a", event_types: ["deal.created"] })
+        .select("id")
+        .single();
+      const { data: seenByB } = await userB.client.from("webhook_endpoints").select("*").eq("id", endpoint!.id).maybeSingle();
+      expect(seenByB).toBeNull();
+
+      const { data: key } = await userA.client
+        .from("api_keys")
+        .insert({ org_id: orgA, name: "Chave A", key_hash: "hash_a", key_prefix: "otz_aaaa" })
+        .select("id")
+        .single();
+      const { data: keySeenByB } = await userB.client.from("api_keys").select("*").eq("id", key!.id).maybeSingle();
+      expect(keySeenByB).toBeNull();
+
+      await admin.from("webhook_endpoints").delete().eq("id", endpoint!.id);
+      await admin.from("api_keys").delete().eq("id", key!.id);
+    });
+  });
 });
