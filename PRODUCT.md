@@ -31,60 +31,9 @@ servem a esse núcleo — não o contrário.
 Stack: Next.js (App Router) + TypeScript + Tailwind + Supabase (Postgres + Auth,
 com RLS por usuário). Idioma do produto: **português do Brasil**.
 
-## Brand Personality
-
-Amigável e acolhedor, mas profissional. Tom de **fintech brasileira humana**
-(referência de sentimento: Nubank) — próximo, encorajador, com copy direta em
-português coloquial e claro, e cor usada com propósito. O produto deve fazer o
-autônomo se sentir no controle e acompanhado, não auditado.
-
-Três palavras: **acolhedor · claro · confiável.**
-
-Voz: parceiro de negócio, não software corporativo. Frases curtas, segunda
-pessoa ("você"), zero jargão de vendas enterprise.
-
-## Anti-references
-
-- **CRM corporativo (Salesforce e similares):** pesado, mil abas, configuração
-  infinita, feito para times. Intimida o autônomo — o oposto do objetivo.
-- **Planilha / Excel:** frio, genérico, sem orientação. É exatamente do que o
-  usuário está fugindo; o produto deve guiar, não apresentar uma grade vazia.
-- **Dashboard "IA genérico":** gradientes coloridos em tudo, vidro decorativo
-  (glassmorphism por padrão), cards idênticos repetidos, o template "número
-  gigante + label". O visual atual herda parte disso e deve ser **repensado**
-  para superfícies sólidas, limpas e legíveis — efeitos guardados para momentos
-  pontuais, nunca como base.
-- **App infantil/exagerado:** excesso de cor, emojis e animação. "Amigável" não
-  pode descambar em "não-profissional"; o autônomo precisa confiar a carteira de
-  clientes a ele.
-
-## Design Principles
-
-1. **O retorno é o herói.** Toda tela puxa o usuário para "quem eu preciso
-   chamar hoje?". O que está atrasado/para hoje tem o maior peso visual; o resto
-   apoia.
-2. **Guiar, nunca apresentar uma grade vazia.** Estados vazios ensinam o próximo
-   passo (cadastre o primeiro cliente, crie a primeira venda). Fugir da
-   sensação de planilha.
-3. **Calma sob densidade.** É uma ferramenta de trabalho repetido — clareza,
-   contraste forte e hierarquia previsível vencem o efeito visual. Familiaridade
-   é uma vantagem, não um defeito.
-4. **Acolhimento vem da copy e do uso de cor com propósito, não de decoração.**
-   O tom humano mora nas palavras e em cor aplicada com intenção (status, ação,
-   estado), não em gradientes e vidro de fundo.
-5. **Mobile é o caso principal, não a adaptação.** Pensar o toque, a leitura sob
-   luz variável e a navegação com o polegar primeiro; o desktop é o caso
-   confortável.
 
 ## Accessibility & Inclusion
 
 - **Mobile-first é a prioridade declarada.** Alvos de toque ≥44px, layouts que
   funcionam no celular em trânsito, leitura confortável sob luz forte (logo,
   contraste real importa muito).
-- **Contraste:** mirar WCAG AA — corpo de texto ≥4.5:1, texto grande ≥3:1. O
-  visual atual (texto cinza sobre vidro translúcido) viola isso em vários
-  pontos e deve ser corrigido na migração para superfícies sólidas.
-- **Status da venda não deve depender só de cor** (ganho/perdido/etc.): usar
-  rótulo + ícone/forma junto da cor (apoio a daltonismo).
-- **prefers-reduced-motion** já é respeitado em `globals.css`; manter a
-  alternativa de crossfade/sem deslocamento em qualquer animação nova.

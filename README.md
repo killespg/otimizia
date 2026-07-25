@@ -1,123 +1,184 @@
-# OtimizIA — CRM com IA para quem vende ou presta serviço sozinho (ou em equipe)
+# OtimizIA — nova base
 
-CRM para autônomos e pequenas equipes organizarem clientes, acompanharem
-vendas/casos e lembrarem de chamar cada pessoa na hora certa — com um
-assistente de IA que opera o CRM por conversa (texto, foto e voz).
+Base local reconstruída do OtimizIA. O backend original foi preservado e o
+frontend anterior foi removido. Toda interface adicionada a partir daqui deve
+ser construída exclusivamente com o design system atual e com as regras deste
+documento.
 
-Construído com **Next.js (App Router) + TypeScript + Tailwind CSS + Supabase
-(Postgres + Auth + Storage)**, **Anthropic Claude** (assistente), **OpenAI
-Realtime** (voz) e **Stripe** (assinatura). Também publicado como app Android
-via **Capacitor** (WebView apontando para o site em produção).
+## O que foi preservado
 
-## Funcionalidades
+- Rotas HTTP em `app/api/`.
+- Assistente de IA e ferramentas do CRM em `lib/ai/`.
+- Integrações com Supabase, Stripe, Resend, OpenAI, Anthropic, Evolution,
+  DataJud e Autentique.
+- Webhooks, tarefas agendadas, relatórios e feed de calendário.
+- Regras de negócio dos workspaces jurídico, imobiliário e CRM geral.
+- Migrations, RLS e configuração do Supabase em `supabase/`.
+- Scripts de importação e seed em `scripts/`.
+- Testes unitários e de integração que não dependem da interface.
 
-- **Autenticação** por e-mail e senha (Supabase Auth).
-- **Organizações multiusuário**: cada conta pertence a uma organização, com
-  papéis (admin/membro), workspaces por área de atuação e Row Level Security
-  por organização no Postgres.
-- **Presets por profissão**: campos, etapas e templates de mensagem se
-  adaptam ao tipo de negócio (vendedor autônomo, corretor, consultor,
-  prestador de serviço, produtor rural, pequeno negócio, e um vertical
-  dedicado para **escritório de advocacia** — prazos, casos, honorários,
-  recebíveis, minuta de peça gerada por IA e assinatura eletrônica de
-  documentos via Autentique).
-- **Contatos**: cadastro de clientes/leads com telefone, e-mail, empresa,
-  origem, observações e campos extras por profissão.
-- **Vendas em etapas**: funil em colunas (Novo → Em contato → Proposta →
-  Ganho / Perdido), com arrastar-e-soltar.
-- **Lembretes/tarefas**: hoje, atrasados, concluídos, com transferência entre
-  membros da equipe.
-- **Conversas**: registre ligações, mensagens e observações por cliente.
-- **Painel personalizável**: métricas, widgets, estilo e cor por usuário.
-- **Assistente de IA**: chat que executa ações reais no CRM (criar/editar
-  contatos, mover vendas, gerenciar tarefas, personalizar o painel), lê PDFs
-  e fotos anexadas, e responde por voz.
-- **Assinatura**: trial + plano pago via Stripe (checkout, portal, webhook).
-- **Notificações**: push no navegador/app (Web Push) e e-mail (Resend) com
-  resumo diário de retornos de hoje/atrasados e alerta de venda parada,
-  configuráveis em Configurações → Notificações.
-- **Importação de contatos via CSV** com mapeamento de colunas
-  (`/contacts/import`).
-- **Relatório de vendas** por período — criados, ganhos, perdidos, taxa de
-  conversão — com exportação em CSV (`/pipeline/report`).
-- **Lembretes recorrentes** (diário/semanal/mensal): concluir gera a próxima
-  ocorrência automaticamente.
-- **Assinatura de calendário (.ics)**: feed pessoal com lembretes e prazos,
-  compatível com Google Agenda/Apple Calendário (Configurações →
-  Calendário).
-- **LGPD**: exportação dos próprios dados em JSON e exclusão de conta
-  (Configurações → Seus dados / Zona de risco).
+## O que foi removido da origem
 
-## Configuração
+- Páginas públicas, autenticação visual e área autenticada.
+- Componentes React de interface e hooks exclusivos do navegador.
+- CSS, componentes, imagens e padrões visuais do frontend anterior.
+- Projeto Android/Capacitor.
+- Testes end-to-end da interface e Playwright.
 
-### 1. Criar projeto no Supabase
-
-1. Crie um projeto em [supabase.com](https://supabase.com).
-2. Em **SQL Editor**, rode a migration em
-   [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
-   (ou use a Supabase CLI — veja abaixo).
-3. Em **Project Settings → API**, copie a `URL` e a `anon public key`.
-
-### 2. Variáveis de ambiente
-
-```bash
-cp .env.example .env.local
-```
-
-Preencha as variáveis do Supabase, Stripe, Anthropic e OpenAI descritas em
-[`.env.example`](.env.example) (a maioria só é necessária em produção; para
-rodar localmente com o essencial, `NEXT_PUBLIC_SUPABASE_URL` e
-`NEXT_PUBLIC_SUPABASE_ANON_KEY` já cobrem login e CRM).
-
-### 3. Rodar localmente
+## Rodar localmente
 
 ```bash
 npm install
+copy .env.example .env.local
 npm run dev
 ```
 
-Acesse http://localhost:3000.
+Verificação do serviço:
 
-### Usando a Supabase CLI (opcional)
+```text
+GET http://localhost:3000/api/health
+```
+
+## Comandos
 
 ```bash
-npx supabase start          # sobe um Postgres + Auth local
-npx supabase db reset       # aplica as migrations de supabase/migrations
+npm run typecheck
+npm test
+npm run build
+```
+
+Os testes de integração exigem um ambiente Supabase configurado:
+
+```bash
+npm run test:integration
 ```
 
 ## Estrutura
 
-```
-app/
-  (auth)/        login, signup e server actions de autenticação
-  (app)/         área autenticada: dashboard, contacts, pipeline, tasks,
-                 team, settings, finance, law (vertical jurídico)
-  api/           rotas HTTP: assistant (chat de IA), billing, webhooks/stripe,
-                 realtime (voz)
-lib/ai/          ferramentas do assistente de IA (CRM_TOOLS + executeTool)
-lib/supabase/    clients (server, browser, admin, middleware) e tipos
-supabase/migrations/  schema SQL + RLS (por usuário e por organização)
-android/         projeto Capacitor (WebView apontando pro site em produção)
+```text
+app/api/             endpoints, webhooks e cron jobs
+lib/                 domínio, integrações e serviços
+lib/ai/              assistente e ferramentas operacionais
+lib/supabase/        clientes server/admin, middleware e tipos
+supabase/migrations/ schema, funções e políticas RLS
+scripts/             importadores e seeds
+test/                testes de integração do backend
 ```
 
-## Testes e CI
+## Interface atual
 
-```bash
-npm run lint             # eslint
-npm run typecheck        # tsc --noEmit
-npm test                 # vitest (unidade — módulos puros/lib)
-npm run build            # build de produção
-npm run test:integration # RLS/multi-tenancy contra Supabase local (precisa Docker) — veja test/integration/README.md
-npm run test:e2e         # Playwright, fluxo completo no navegador — veja e2e/README.md
+A nova interface começa pela dashboard jurídica em:
+
+```text
+GET /dashboard-juridico
 ```
 
-As quatro primeiras checagens rodam automaticamente em CI a cada push/PR
-(`.github/workflows/ci.yml`). `test:integration` e `test:e2e` precisam de
-Supabase local via Docker e não rodam nessa CI por padrão — são para rodar
-localmente (ou num job à parte com Docker disponível).
+### Módulos do produto jurídico
 
-## Próximos passos
+- `/dashboard-juridico` — visão operacional do escritório
+- `/dashboard-juridico/processos` — carteira processual e detalhe do caso
+- `/dashboard-juridico/clientes` — clientes e relacionamento
+- `/dashboard-juridico/agenda` — audiências, compromissos e prazos
+- `/dashboard-juridico/documentos` — documentos, revisão e assinatura
+- `/dashboard-juridico/financeiro` — honorários, recebíveis, pagamentos e despesas
+- `/dashboard-juridico/equipe` — equipe, cargos e escopo de acesso
+- `/dashboard-juridico/socio-assistente` — assistência contextual do escritório
+- `/dashboard-juridico/configuracoes` — preferências e integrações
 
-- Integração com WhatsApp já existe (`app/(app)/whatsapp`); e-mail
-  transacional (Resend) cobre resumo diário e venda parada — falta cobrir
-  outros eventos (ex. nova venda ganha, convite de equipe).
+Ela é uma implementação nova sobre o backend preservado. Não reutilizar telas,
+componentes ou decisões visuais do frontend removido.
+
+## Acordo visual — evitar “cara de IA”
+
+Este acordo é obrigatório para qualquer pessoa ou agente que criar ou alterar
+uma tela do OtimizIA. “Deixar bonito” não é o objetivo isolado: a interface deve
+parecer um produto profissional, específico para o trabalho do usuário e
+coerente com a identidade do OtimizIA.
+
+### Princípios
+
+1. **Produto antes da decoração.** A hierarquia deve nascer das tarefas, dados e
+   decisões reais do usuário. Elementos não podem existir apenas para preencher
+   espaço ou causar impacto visual.
+2. **Usar somente o design system atual.** Não recuperar componentes, CSS,
+   layouts ou convenções do frontend antigo. Uma referência externa pode
+   orientar estrutura, nunca substituir nossa linguagem visual.
+3. **Identidade sem ruído.** Roxo, marca e cápsulas animadas são elementos de
+   identidade. Devem estar presentes, mas não transformar cada superfície em
+   gradiente, brilho ou cartão promocional.
+4. **Denso não significa comprimido.** Informação operacional pode ser compacta,
+   porém precisa de tipografia legível, altura de linha, margens e separação
+   suficientes. Não tentar colocar toda a aplicação na primeira dobra.
+5. **O domínio decide a interface.** No jurídico, processos, prazos, audiências,
+   movimentações, responsáveis e recebíveis precisam ter significado correto.
+   Não usar métricas genéricas apenas porque são comuns em dashboards.
+
+### Sidebar acordada
+
+- Manter navegação hierárquica com grupo principal expansível.
+- Subabas devem ser recuadas e conectadas por um trilho vertical.
+- O item ativo usa marcador e contraste local dentro do grupo.
+- Módulos recolhíveis usam seta e preservam a hierarquia.
+- Não achatar a navegação em uma lista simples sem autorização explícita.
+- Não envolver o seletor do escritório em um cartão ou pill decorativo.
+
+### Cápsulas animadas
+
+- As cápsulas são parte da identidade visual e não devem ser removidas.
+- A animação deve ser lenta, contínua e respeitar `prefers-reduced-motion`.
+- Elas ficam no fundo, sem prejudicar contraste, leitura ou interação.
+- Devem continuar visíveis; reduzir sua opacidade até desaparecer também quebra
+  a identidade.
+
+### Bordas, cartões e botões
+
+- Bordas servem para estrutura: separar regiões, colunas, tabelas e estados.
+- Não colocar cada seletor, ação ou informação dentro de uma caixa arredondada.
+- Evitar sequências de cards iguais para métricas simples.
+- Evitar pills, badges e botões contornados quando texto, alinhamento ou uma
+  divisória resolvem a hierarquia.
+- Ações primárias podem ter preenchimento da marca, com raio discreto. Ações
+  secundárias devem ser mais planas e silenciosas.
+- Cantos arredondados não podem ser o principal recurso de composição.
+
+### Padrões proibidos
+
+- Saudação gigante como hero de dashboard.
+- Fileira de cards genéricos com ícone, número e variação percentual.
+- Gradientes e glows aplicados indiscriminadamente.
+- Blocos promocionais de “assistente” ocupando a navegação.
+- Texto genérico como “Aqui está o resumo do seu dia” quando não agrega contexto.
+- Gráficos decorativos sem decisão ou ação associada.
+- Excesso de badges coloridos e status inventados.
+- Bordas arredondadas em volta de todos os controles.
+- Tipografia pequena e espaçamento reduzido para forçar tudo acima da dobra.
+
+### Checklist antes de considerar uma tela pronta
+
+- [ ] A tela parece um produto específico em uso, e não um template de dashboard?
+- [ ] Cada bloco ajuda o usuário a decidir ou executar algo?
+- [ ] A sidebar hierárquica acordada foi preservada?
+- [ ] As cápsulas estão visíveis e não atrapalham o conteúdo?
+- [ ] As bordas organizam a estrutura em vez de decorar componentes?
+- [ ] Há poucos cards, pills, badges, gradientes e glows?
+- [ ] Tipografia, linhas e margens têm espaço suficiente em desktop e mobile?
+- [ ] O conteúdo e os valores representam corretamente o domínio do negócio?
+- [ ] A tela foi validada renderizada, não apenas pelo código?
+- [ ] `npm run typecheck`, `npm run lint`, testes relevantes e build passaram?
+
+Se uma alteração contrariar este acordo, ela precisa ser discutida explicitamente
+antes de ser implementada. Não reinterpretar silenciosamente uma decisão visual
+já aprovada.
+
+## Observação de arquitetura
+
+O projeto continua usando Next.js como servidor HTTP para manter as rotas já
+existentes e hospedar a nova interface. O frontend novo deve evoluir de forma
+gradual, sem misturar novamente a base visual antiga com os serviços preservados.
+
+## Pendência herdada
+
+O clone ainda usa Next.js `14.2.15`, como o repositório de origem. O
+`npm audit --omit=dev` recomenda uma atualização principal do Next para tratar
+vulnerabilidades conhecidas. Essa migração deve ser feita em uma etapa própria,
+porque altera APIs do framework e merece validação de todas as rotas.
