@@ -113,14 +113,20 @@ export default async function RealEstateCommissionsPage({
         <a href="/api/reports/real-estate-commissions" download className="inline-flex min-h-11 items-center justify-center gap-2 rounded border border-white/[0.1] px-4 text-[13px] font-semibold text-white/68 hover:bg-white/[0.04] hover:text-white"><Download size={15} /> Baixar relatório</a>
       </header>
 
-      <form method="get" className="grid gap-3 border-y border-white/[0.08] py-4 sm:grid-cols-[minmax(9rem,1fr)_minmax(9rem,1fr)_minmax(12rem,1.3fr)_auto] sm:items-end">
+      {/* Barra de controle, nao modulo: fica aberta e colada no cabecalho, com
+          uma regra abaixo separando controle de conteudo. Virar card daria a
+          um filtro o mesmo peso visual dos paineis de trabalho. */}
+      <form method="get" className="-mt-2 grid gap-3 border-b border-od-border pb-5 sm:grid-cols-[minmax(9rem,1fr)_minmax(9rem,1fr)_minmax(12rem,1.3fr)_auto] sm:items-end">
         <label><span className="label">De</span><input type="date" name="from" defaultValue={from} className="field mt-1" /></label>
         <label><span className="label">Até</span><input type="date" name="to" defaultValue={to} className="field mt-1" /></label>
         <label><span className="label">Corretor</span><select name="broker" defaultValue={brokerFilter} className="field mt-1"><option value="">Todos</option>{members.map((member) => <option key={member.user_id} value={member.user_id}>{member.name ?? "Sem nome"}</option>)}</select></label>
         <button type="submit" className="btn-secondary">Aplicar filtros</button>
       </form>
 
-      <section className="grid grid-cols-2 border-y border-white/[0.08] xl:grid-cols-4">
+      {/* MetricStrip continua aberta, com border-y e divisores — e a assinatura
+          documentada. Quem ancora a tela sao os paineis de conteudo abaixo;
+          transformar isto num card faria a quarta caixa identica da pagina. */}
+      <section className="grid grid-cols-2 border-y border-od-border xl:grid-cols-4">
         {summary.map(({ icon: Icon, ...item }) => <div key={item.label} className="min-w-0 border-b border-r border-white/[0.08] py-4 pr-4 even:border-r-0 [&:nth-last-child(-n+2)]:border-b-0 xl:border-b-0 xl:pl-5 xl:even:border-r xl:last:border-r-0 xl:first:pl-0"><div className="flex items-center gap-2 text-xs font-medium text-white/48"><Icon size={15} className="text-od-text-2" />{item.label}</div><p className="mt-3 truncate text-xl font-semibold text-white" title={item.value}>{item.value}</p><p className="mt-2 text-[11px] text-white/38">{item.note}</p></div>)}
       </section>
 
