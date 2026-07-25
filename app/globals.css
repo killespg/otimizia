@@ -154,7 +154,15 @@
 * { box-sizing: border-box; }
 html { min-height: 100%; background: var(--od-bg); font-family: var(--font-inter); }
 body { min-height: 100%; margin: 0; background: var(--od-bg); color: var(--od-text); text-rendering: optimizeLegibility; }
-button, input, select, textarea { font: inherit; }
+/* Mesmo motivo do reset de link: fora de @layer, isto vence as utilities. E
+   `font` e atalho — reseta tamanho, peso e familia de uma vez. Solto aqui fora,
+   toda classe text-[13px]/text-xs/font-semibold aplicada a <button>, <input> ou
+   <select> era ignorada, e o controle herdava os 16px/400 do body. Dentro da
+   layer, o reset segue valendo pro controle sem classe e a utility ganha quando
+   existe. */
+@layer base {
+  button, input, select, textarea { font: inherit; }
+}
 button, select { cursor: pointer; }
 button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: not-allowed; opacity: .55; }
 /* Precisa ficar em @layer base: no Tailwind 4 as utilities vivem em

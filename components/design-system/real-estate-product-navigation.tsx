@@ -218,7 +218,7 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
                 onClick={() => toggleGroup(group.label)}
                 aria-expanded={!closed}
                 aria-controls={`nav-grupo-${group.label}`}
-                className="flex h-7 w-full items-center gap-1.5 px-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-white/34 transition-colors hover:text-white/60"
+                className="flex h-7 w-full items-center gap-1.5 px-2 text-[10px] font-medium text-white/38 transition-colors hover:text-white/60"
               >
                 <ChevronRight size={11} className={`shrink-0 transition-transform duration-150 ${closed ? "" : "rotate-90"}`} />
                 <span className="min-w-0 flex-1 truncate text-left">{group.label}</span>
