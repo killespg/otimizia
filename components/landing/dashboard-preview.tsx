@@ -13,6 +13,7 @@ import {
   Gavel,
   Images,
   MessageCircle,
+  Pin,
   Search,
   Sparkles,
   TrendingUp,
@@ -43,9 +44,13 @@ type Profession = {
   timPrompt: string;
   workspaceLabel: string;
   /** Item de lista da vertical: carteira, processos ou funil. */
+  userName: string;
   listNav: string;
   listLabel: string;
-  extraNav: string[];
+  /* Grupos rotulados da sidebar, com contador por item — a gramatica que o
+     produto usa. Lista chapada nao parecia a navegacao real. */
+  groups: Array<{ label: string; items: Array<{ label: string; badge?: number; danger?: boolean }> }>;
+  subItems: string[];
   metrics: Metric[];
   chartLabel: string;
   chartDays: number[];
@@ -72,6 +77,7 @@ const PROFESSIONS: Profession[] = [
   {
     key: "real_estate_broker",
     org: "Mariana Costa Imóveis",
+    userName: "Mariana Costa",
     role: "Corretor de imóveis",
     search: "Buscar imóvel, bairro ou cidade",
     dateLabel: "Sábado, 25 de julho",
@@ -86,7 +92,6 @@ const PROFESSIONS: Profession[] = [
     workspaceLabel: "Visão geral de imóveis",
     listNav: "Carteira de imóveis",
     listLabel: "Imóveis ativos na carteira",
-    extraNav: ["Agenda de visitas", "Vitrines"],
     metrics: [
       { icon: Building2, label: "Imóveis ativos", value: "13", note: "2 captações no período" },
       { icon: Images, label: "Vitrines enviadas", value: "1", note: "seleções criadas" },
@@ -114,10 +119,17 @@ const PROFESSIONS: Profession[] = [
       { group: "Indicadores financeiros", rows: [["Comissão prevista", "R$ 562.650,00", "valor esperado"], ["Comissão recebida", "R$ 352.900,00", "63% da previsão"], ["Meta comercial", "R$ 2.200.000,00", "meta do período"]] },
       { group: "Esforço operacional", rows: [["Vitrines enviadas", "1", "seleções compartilhadas"], ["Propostas em aberto", "0", "nenhuma aguardando"], ["Comissões vencidas", "3", "exigem acompanhamento"]] },
     ],
+    groups: [
+      { label: "Imobiliário", items: [{ label: "Carteira de imóveis", badge: 18 }, { label: "Mapa" }, { label: "Agenda de visitas", badge: 10, danger: true }, { label: "Vitrines", badge: 4 }] },
+      { label: "Comercial", items: [{ label: "Clientes" }, { label: "Atendimentos", badge: 34 }, { label: "Calendário" }] },
+      { label: "Gestão", items: [{ label: "Comissões e metas" }, { label: "Equipe" }, { label: "Relatórios" }] },
+    ],
+    subItems: ["Minha operação", "Metas e comissões"],
   },
   {
     key: "law_office",
     org: "Ribeiro & Associados",
+    userName: "Helena Ribeiro",
     role: "Escritório de advocacia",
     search: "Buscar caso, cliente ou processo",
     dateLabel: "Sábado, 25 de julho",
@@ -132,7 +144,6 @@ const PROFESSIONS: Profession[] = [
     workspaceLabel: "Panorama do escritório",
     listNav: "Processos",
     listLabel: "Casos em andamento",
-    extraNav: ["Prazos", "Documentos"],
     metrics: [
       { icon: FileClock, label: "Prazos críticos", value: "3", note: "vencem hoje" },
       { icon: Gavel, label: "Casos ativos", value: "48", note: "9 sem movimento" },
@@ -160,10 +171,17 @@ const PROFESSIONS: Profession[] = [
       { group: "Andamento", rows: [["Movimentações", "12", "para revisar"], ["Audiências", "4", "no mês"], ["Casos ativos", "48", "em curso"]] },
       { group: "Honorários", rows: [["A receber", "R$ 84.300,00", "em aberto"], ["Vencidos", "R$ 19.200,00", "cobrança pendente"], ["Recebido no mês", "R$ 41.700,00", "49% do previsto"]] },
     ],
+    groups: [
+      { label: "Jurídico", items: [{ label: "Processos", badge: 48 }, { label: "Prazos", badge: 3, danger: true }, { label: "Movimentações", badge: 12 }, { label: "Documentos" }] },
+      { label: "Comercial", items: [{ label: "Clientes" }, { label: "Agenda" }, { label: "Consulta DataJud" }] },
+      { label: "Escritório", items: [{ label: "Financeiro" }, { label: "Equipe" }, { label: "Configurações" }] },
+    ],
+    subItems: ["Meu dia", "Prazos críticos"],
   },
   {
     key: "autonomous_seller",
     org: "Studio Nova",
+    userName: "Bruno Nova",
     role: "Vendedor autônomo",
     search: "Buscar cliente ou venda",
     dateLabel: "Sábado, 25 de julho",
@@ -178,7 +196,6 @@ const PROFESSIONS: Profession[] = [
     workspaceLabel: "Visão geral do negócio",
     listNav: "Funil de vendas",
     listLabel: "Negócios em aberto",
-    extraNav: ["Contatos", "Lembretes"],
     metrics: [
       { icon: MessageCircle, label: "Conversas", value: "87", note: "+12% desde ontem" },
       { icon: TrendingUp, label: "Vendas ganhas", value: "34", note: "+8% desde ontem" },
@@ -206,6 +223,12 @@ const PROFESSIONS: Profession[] = [
       { group: "Ritmo", rows: [["Vendas ganhas", "34", "+8% desde ontem"], ["Em negociação", "23", "na carteira"], ["Perdidas", "6", "no mês"]] },
       { group: "Relacionamento", rows: [["Contatos", "142", "na base"], ["Sem retorno", "18", "há mais de 7 dias"], ["Lembretes hoje", "5", "2 atrasados"]] },
     ],
+    groups: [
+      { label: "CRM", items: [{ label: "Contatos", badge: 142 }, { label: "Funil de vendas", badge: 23 }, { label: "Lembretes", badge: 5, danger: true }, { label: "Calendário" }] },
+      { label: "Operação", items: [{ label: "Produtos" }, { label: "Pedidos" }, { label: "Pós-venda" }] },
+      { label: "Gestão", items: [{ label: "Financeiro" }, { label: "Equipe" }, { label: "Relatórios" }] },
+    ],
+    subItems: ["Minha operação", "Relatórios"],
   },
 ];
 
@@ -237,6 +260,25 @@ function Avatar({ name, large = false }: { name: string; large?: boolean }) {
   );
 }
 
+function NavRow({ label, current, badge, danger, pinned, onClick }: { label: string; current: boolean; badge?: number; danger?: boolean; pinned?: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-current={current ? "page" : undefined}
+      className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-left text-[12px] transition-colors ${
+        current ? "bg-white/[0.075] font-semibold text-white" : "font-medium text-white/45 hover:bg-white/[0.04] hover:text-white/75"
+      }`}
+    >
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      {pinned ? <Pin className="size-2.5 shrink-0 text-white/35" strokeWidth={2} /> : null}
+      {typeof badge === "number" ? (
+        <span className={`shrink-0 text-[10px] font-semibold tabular-nums ${danger ? "text-[#fb7767]" : "text-white/60"}`}>{badge}</span>
+      ) : null}
+    </button>
+  );
+}
+
 export function DashboardPreview() {
   const [professionIndex, setProfessionIndex] = React.useState(0);
   const [screen, setScreen] = React.useState<Screen>("dashboard");
@@ -244,12 +286,10 @@ export function DashboardPreview() {
   const [switcherOpen, setSwitcherOpen] = React.useState(false);
   const profession = PROFESSIONS[professionIndex];
 
-  const navItems: Array<{ label: string; screen: Screen }> = [
+  const topItems: Array<{ label: string; screen: Screen; pinned?: boolean }> = [
     { label: "Visão geral", screen: "dashboard" },
     { label: "Tim", screen: "tim" },
-    { label: "WhatsApp", screen: "whatsapp" },
-    { label: profession.listNav, screen: "list" },
-    ...profession.extraNav.map((label) => ({ label, screen: "list" as Screen })),
+    { label: "WhatsApp", screen: "whatsapp", pinned: true },
   ];
 
   function open(item: { label: string; screen: Screen }) {
@@ -308,24 +348,51 @@ export function DashboardPreview() {
           ) : null}
         </div>
 
-        {navItems.map((item) => {
-          const current = item.label === navLabel;
-          return (
-            <button
-              key={item.label}
-              type="button"
-              onClick={() => open(item)}
-              aria-current={current ? "page" : undefined}
-              className={`truncate rounded-xl px-2.5 py-2 text-left text-[12px] transition-colors ${
-                current
-                  ? "bg-white/[0.075] font-semibold text-white"
-                  : "font-medium text-white/45 hover:bg-white/[0.04] hover:text-white/75"
-              }`}
-            >
-              {item.label}
-            </button>
-          );
-        })}
+        {topItems.map((item) => (
+          <NavRow
+            key={item.label}
+            label={item.label}
+            current={navLabel === item.label}
+            pinned={item.pinned}
+            onClick={() => open(item)}
+          />
+        ))}
+        {navLabel === "Visão geral" ? (
+          <div className="mx-3.5 mb-1 flex flex-col gap-0.5 border-l border-white/[0.08] pl-2.5">
+            {profession.subItems.map((sub, index) => (
+              <span
+                key={sub}
+                className={`truncate rounded-xl px-2 py-1 text-[11px] ${index === 0 ? "bg-white/[0.055] font-medium text-white" : "text-white/42"}`}
+              >
+                {sub}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
+        {profession.groups.map((group) => (
+          <div key={group.label} className="mt-2">
+            <p className="px-2 py-1 text-[10px] font-medium text-white/34">{group.label}</p>
+            {group.items.map((item) => (
+              <NavRow
+                key={item.label}
+                label={item.label}
+                badge={item.badge}
+                danger={item.danger}
+                current={navLabel === item.label}
+                onClick={() => { setScreen("list"); setNavLabel(item.label); }}
+              />
+            ))}
+          </div>
+        ))}
+
+        <div className="mt-auto border-t border-white/[0.06] pt-2">
+          <NavRow label="Configurações" current={false} onClick={() => { setScreen("list"); setNavLabel("Configurações"); }} />
+          <div className="flex items-center gap-2 px-2.5 py-2">
+            <Avatar name={profession.userName} />
+            <span className="min-w-0 flex-1 truncate text-[11px] text-white/60">{profession.userName}</span>
+          </div>
+        </div>
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col">

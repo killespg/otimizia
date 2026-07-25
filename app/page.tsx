@@ -83,6 +83,14 @@ export default async function LandingPage() {
                 <br />
                 <span className="text-od-accent">sem planilha escondida.</span>
               </h2>
+              {/* A instrucao fica aqui fora: dentro do card, o bloco da
+                  organizacao e o WorkspaceSwitcher do produto, e destaca-lo
+                  quebraria a fidelidade da sidebar. */}
+              <p className="mx-auto mt-5 max-w-[440px] text-[13px] leading-relaxed text-od-text-2">
+                O exemplo abaixo é navegável: clique nos itens do menu para trocar de tela,
+                e no <strong className="font-semibold text-od-text">nome do negócio</strong>, no topo
+                da barra lateral, para ver o painel de outra profissão.
+              </p>
             </>
           }
         >
