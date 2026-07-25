@@ -12,6 +12,7 @@ import {
 
   MessageCircle,
   Search,
+  Sparkles,
   TrendingUp,
   Users,
   type LucideIcon,
@@ -21,8 +22,11 @@ import { LogoMark } from "@/components/design-system/logo";
 type Metric = { icon: LucideIcon; label: string; value: string; note: string };
 type QueueItem = { name: string; note: string; urgent?: boolean };
 
+type Variant = "dashboard" | "tim" | "whatsapp";
+
 type Profession = {
   key: string;
+  variant?: Variant;
   tab: string;
   org: string;
   role: string;
@@ -51,7 +55,7 @@ const PROFESSIONS: Profession[] = [
     org: "Mariana Costa Imóveis",
     role: "Corretor de imóveis",
     search: "Buscar imóvel, bairro ou cidade",
-    nav: ["Visão geral", "Carteira de imóveis", "Mapa", "Agenda de visitas", "Vitrines", "Clientes"],
+    nav: ["Visão geral", "Tim", "WhatsApp", "Carteira de imóveis", "Agenda de visitas", "Vitrines"],
     active: "Visão geral",
     metrics: [
       { icon: Building2, label: "Imóveis ativos", value: "13", note: "2 captações no período" },
@@ -74,7 +78,7 @@ const PROFESSIONS: Profession[] = [
     org: "Ribeiro & Associados",
     role: "Escritório de advocacia",
     search: "Buscar caso, cliente ou processo",
-    nav: ["Visão geral", "Processos", "Prazos", "Movimentações", "Documentos", "Clientes"],
+    nav: ["Visão geral", "Tim", "WhatsApp", "Processos", "Prazos", "Movimentações"],
     active: "Visão geral",
     metrics: [
       { icon: FileClock, label: "Prazos críticos", value: "3", note: "vencem hoje" },
@@ -97,7 +101,7 @@ const PROFESSIONS: Profession[] = [
     org: "Studio Nova",
     role: "Vendedor autônomo",
     search: "Buscar cliente ou venda",
-    nav: ["Visão geral", "Contatos", "Funil de vendas", "Lembretes", "Calendário", "Tim"],
+    nav: ["Visão geral", "Tim", "WhatsApp", "Contatos", "Funil de vendas", "Lembretes"],
     active: "Visão geral",
     metrics: [
       { icon: MessageCircle, label: "Conversas", value: "87", note: "+12% desde ontem" },
@@ -114,6 +118,50 @@ const PROFESSIONS: Profession[] = [
       { name: "Freelab", note: "Aguardando aprovação" },
     ],
   },
+  {
+    key: "tim",
+    variant: "tim",
+    tab: "Tim",
+    org: "Studio Nova",
+    role: "Sócio-Assistente",
+    search: "Pergunte ao Tim...",
+    nav: ["Visão geral", "Tim", "WhatsApp", "Contatos", "Funil de vendas", "Lembretes"],
+    active: "Tim",
+    metrics: [],
+    chartLabel: "",
+    chartDays: [],
+    queueLabel: "",
+    queue: [],
+  },
+  {
+    key: "whatsapp",
+    variant: "whatsapp",
+    tab: "WhatsApp",
+    org: "Studio Nova",
+    role: "Atendimento",
+    search: "Buscar conversa",
+    nav: ["Visão geral", "Tim", "WhatsApp", "Contatos", "Funil de vendas", "Lembretes"],
+    active: "WhatsApp",
+    metrics: [],
+    chartLabel: "",
+    chartDays: [],
+    queueLabel: "",
+    queue: [],
+  },
+];
+
+const TIM_TROCA = [
+  { de: "voce", texto: "Quem eu preciso chamar hoje?" },
+  { de: "tim", texto: "Três pessoas. A Carla tem orçamento vencendo hoje, o Igor combinou retorno pra tarde e a Freelab está há 6 dias sem resposta." },
+  { de: "voce", texto: "Escreve uma mensagem pra Carla" },
+];
+
+const TIM_SUGESTOES = ["Resuma minha semana", "Quem está travado no funil?", "Quanto fechei no mês?"];
+
+const CONVERSAS = [
+  { nome: "Carla Nogueira", previa: "Consigo fechar até sexta?", hora: "09:12", naoLidas: 2 },
+  { nome: "Igor Batista", previa: "Perfeito, combinado então", hora: "08:40" },
+  { nome: "Freelab", previa: "Vou levar pro time e retorno", hora: "ontem" },
 ];
 
 function initials(name: string) {
@@ -186,6 +234,53 @@ export function DashboardPreview() {
             </span>
           </div>
 
+          {profession.variant === "tim" ? (
+            <div className="flex min-h-0 flex-1 flex-col px-4 py-4">
+              <div className="flex min-h-0 flex-1 flex-col justify-end gap-2.5">
+                {TIM_TROCA.map((msg, index) => (
+                  <div key={index} className={`flex ${msg.de === "voce" ? "justify-end" : "justify-start"}`}>
+                    <p className={`max-w-[78%] rounded-lg px-3 py-2 text-[11px] leading-relaxed ${msg.de === "voce" ? "bg-od-accent text-white" : "bg-white/[0.06] text-white/80"}`}>
+                      {msg.texto}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {TIM_SUGESTOES.map((s) => (
+                  <span key={s} className="rounded border border-od-border px-2 py-1 text-[10px] text-white/55">{s}</span>
+                ))}
+              </div>
+              <div className="mt-2 flex items-center gap-2 rounded-lg border border-od-border px-3 py-2">
+                <Sparkles className="size-3.5 shrink-0 text-od-accent" strokeWidth={2} />
+                <span className="flex-1 truncate text-[11px] text-white/35">Pergunte ao Tim...</span>
+              </div>
+            </div>
+          ) : profession.variant === "whatsapp" ? (
+            <div className="grid min-h-0 flex-1 md:grid-cols-[210px_1fr] md:divide-x md:divide-white/[0.07]">
+              <ul className="hidden flex-col md:flex">
+                {CONVERSAS.map((c, index) => (
+                  <li key={c.nome} className={`flex items-start gap-2 border-b border-white/[0.06] px-3 py-2.5 ${index === 0 ? "bg-white/[0.05]" : ""}`}>
+                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-white/[0.08] text-[9px] font-semibold text-white/70">{initials(c.nome)}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[11px] font-medium text-white">{c.nome}</span>
+                      <span className="block truncate text-[10px] text-white/45">{c.previa}</span>
+                    </span>
+                    <span className="shrink-0 text-[9px] text-white/35">{c.hora}</span>
+                    {c.naoLidas ? <span className="grid size-4 shrink-0 place-items-center rounded-full bg-od-accent text-[9px] font-bold text-white">{c.naoLidas}</span> : null}
+                  </li>
+                ))}
+              </ul>
+              <div className="flex min-h-0 flex-col justify-end gap-2.5 px-4 py-4">
+                <p className="max-w-[78%] rounded-lg bg-white/[0.06] px-3 py-2 text-[11px] text-white/80">Consigo fechar até sexta?</p>
+                <p className="ml-auto max-w-[78%] rounded-lg bg-od-accent px-3 py-2 text-[11px] text-white">Consegue sim, Carla. Te mando a proposta ainda hoje.</p>
+                <div className="mt-1 flex items-center gap-2 rounded-lg border border-od-border px-3 py-2">
+                  <MessageCircle className="size-3.5 shrink-0 text-white/35" strokeWidth={2} />
+                  <span className="flex-1 truncate text-[11px] text-white/35">Escrever mensagem</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+          <>
           <div className="grid grid-cols-2 divide-x divide-y divide-white/[0.07] border-b border-white/[0.07] sm:grid-cols-4 sm:divide-y-0">
             {profession.metrics.map(({ icon: Icon, label, value, note }) => (
               <div key={label} className="min-w-0 px-4 py-3.5">
@@ -242,6 +337,8 @@ export function DashboardPreview() {
               </ul>
             </div>
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>
