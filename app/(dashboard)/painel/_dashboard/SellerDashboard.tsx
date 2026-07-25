@@ -153,18 +153,18 @@ export function SellerDashboard({
     >
       <header className="flex flex-col gap-5 border-b border-white/[0.08] pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="flex items-center gap-2 text-xs font-semibold capitalize text-violet-300">
+          <p className="flex items-center gap-2 text-xs font-semibold capitalize text-od-text-3">
             <CalendarDays size={14} />
             <time dateTime={now.toISOString()}>{dateLabel}</time>
           </p>
           <h1 className="mt-3 text-od-title text-white">
-            Bom dia, <span className="text-violet-300">{displayName}.</span>
+            Bom dia, <span className="text-od-text">{displayName}.</span>
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-white/56">
             {actionableCount > 0 ? (
-              <>Você tem <strong className="font-semibold text-[#fca79b]">{actionableCount} {actionableCount === 1 ? "prioridade" : "prioridades"}</strong> para resolver e <strong className="font-semibold text-violet-200">{openDeals.length} {openDeals.length === 1 ? "venda em andamento" : "vendas em andamento"}</strong>.</>
+              <>Você tem <strong className="font-semibold text-[#fca79b]">{actionableCount} {actionableCount === 1 ? "prioridade" : "prioridades"}</strong> para resolver e <strong className="font-semibold text-od-text">{openDeals.length} {openDeals.length === 1 ? "venda em andamento" : "vendas em andamento"}</strong>.</>
             ) : (
-              <>Seu dia está em ordem. Há <strong className="font-semibold text-violet-200">{openDeals.length} {openDeals.length === 1 ? "venda em andamento" : "vendas em andamento"}</strong> na carteira.</>
+              <>Seu dia está em ordem. Há <strong className="font-semibold text-od-text">{openDeals.length} {openDeals.length === 1 ? "venda em andamento" : "vendas em andamento"}</strong> na carteira.</>
             )}
           </p>
         </div>
@@ -180,9 +180,9 @@ export function SellerDashboard({
 
       <section className="border-y border-white/[0.08] py-1">
         <Link href="/painel/assistente" className="group flex min-h-14 items-center gap-3 text-sm text-white/52 hover:text-white/80">
-          <Sparkles size={17} className="text-violet-400" />
+          <Sparkles size={17} className="text-od-accent" />
           <span className="min-w-0 flex-1 truncate">Pergunte ao Tim sobre seus clientes e vendas</span>
-          <ArrowRight size={16} className="text-white/25 transition-transform group-hover:translate-x-0.5 group-hover:text-violet-300" />
+          <ArrowRight size={16} className="text-white/25 transition-transform group-hover:translate-x-0.5 group-hover:text-od-text" />
         </Link>
       </section>
 
@@ -223,7 +223,7 @@ function SellerOperationsPulse({ operations }: { operations: Props["operations"]
           <h2 id="seller-operation-title" className="text-sm font-semibold text-white">Operação em dia</h2>
           <p className="mt-0.5 truncate text-xs text-white/52">Nenhuma pendência operacional agora.</p>
         </div>
-        <Link href="/painel/produtos" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-xs font-semibold text-violet-300 hover:text-violet-200">Abrir operação <ArrowRight size={14} /></Link>
+        <Link href="/painel/produtos" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir operação <ArrowRight size={14} /></Link>
       </section>
     );
   }
@@ -232,14 +232,14 @@ function SellerOperationsPulse({ operations }: { operations: Props["operations"]
     <section className="overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]" aria-labelledby="seller-operation-title">
       <header className="flex min-h-20 items-center justify-between gap-3 px-4">
         <div><h2 id="seller-operation-title" className="text-sm font-semibold text-white">Pulso da operação</h2><p className="mt-0.5 text-xs text-white/52">O que precisa de atenção depois da venda.</p></div>
-        <Link href="/painel/produtos" className="text-xs font-semibold text-violet-300 hover:text-violet-200">Abrir operação</Link>
+        <Link href="/painel/produtos" className="text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir operação</Link>
       </header>
       <div className={`grid sm:grid-cols-2 ${columnClass}`}>
         {attentionItems.map((item) => { const Icon = item.icon; return (
           <Link key={item.label} href={item.href} className="group flex min-h-20 items-center gap-3 border-t border-white/[0.08] px-4 hover:bg-white/[0.025] sm:[&:nth-child(2n)]:border-l lg:border-l lg:border-t-0">
-            <span className={`grid size-8 shrink-0 place-items-center rounded border ${item.alert ? "border-[#fb7767]/25 bg-[#fb7767]/10 text-[#fca79b]" : "border-violet-400/20 bg-violet-400/[0.08] text-violet-300"}`}><Icon size={16} /></span>
+            <span className={`grid size-8 shrink-0 place-items-center rounded border ${item.alert ? "border-[#fb7767]/25 bg-[#fb7767]/10 text-[#fca79b]" : "border-white/[0.10] bg-white/[0.05] text-od-text-2"}`}><Icon size={16} /></span>
             <span className="min-w-0 flex-1"><span className="block text-xs font-medium text-white/58">{item.label}</span><span className="mt-1 flex min-w-0 items-baseline gap-2"><strong className="text-lg font-semibold tabular-nums text-white">{item.value}</strong><span className="truncate text-xs text-white/50">{item.note}</span></span></span>
-            <ArrowRight size={14} className="ml-auto shrink-0 text-white/28 group-hover:text-violet-300" />
+            <ArrowRight size={14} className="ml-auto shrink-0 text-white/28 group-hover:text-od-text" />
           </Link>
         ); })}
       </div>
@@ -282,11 +282,11 @@ function SellerMetrics({ metrics }: { metrics: SellerMetric[] }) {
             className="flex min-h-24 items-start gap-3 border-b border-r border-white/[0.08] px-4 py-4 even:border-r-0 [&:nth-last-child(-n+2)]:border-b-0 xl:min-h-28 xl:border-b-0 xl:border-r xl:even:border-r xl:last:border-r-0 xl:px-5"
             style={{ display: metric.visible ? undefined : "none", order: metric.order }}
           >
-            <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded bg-violet-400/10 text-violet-300"><Icon className="size-4" /></span>
+            <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><Icon className="size-4" /></span>
             <div className="min-w-0">
               <p data-dashboard-metric-label={metric.metricKey} className="text-xs font-medium text-white/48">{metric.label}</p>
               <p className="mt-2 truncate text-2xl font-bold tracking-[-0.03em] text-white">{metric.value}</p>
-              {metric.delta || metric.compare ? <p className="mt-2 truncate text-[11px] text-white/38">{metric.delta ? <span className="mr-1.5 font-semibold text-violet-300">{metric.delta}</span> : null}{metric.compare}</p> : null}
+              {metric.delta || metric.compare ? <p className="mt-2 truncate text-[11px] text-white/38">{metric.delta ? <span className="mr-1.5 font-semibold text-od-text-2">{metric.delta}</span> : null}{metric.compare}</p> : null}
             </div>
           </article>
         );
@@ -312,7 +312,7 @@ function SellerCommercialIndicators({
           <h2 className="text-sm font-semibold text-white">Indicadores comerciais</h2>
           <p className="mt-1 text-xs text-white/44">Conversão, eficiência financeira e esforço da operação.</p>
         </div>
-        <Link href="/painel/funil/relatorio" className="shrink-0 text-xs font-semibold text-violet-300 hover:text-violet-200">Ver relatório</Link>
+        <Link href="/painel/funil/relatorio" className="shrink-0 text-xs font-semibold text-od-text-2 hover:text-od-text">Ver relatório</Link>
       </header>
       <div className="grid divide-y divide-white/[0.08] lg:grid-cols-3 lg:divide-x lg:divide-y-0">
         <InsightGroup
@@ -415,7 +415,7 @@ function SellerPriorities({ tasks, overdue, now, contacts }: { tasks: Task[]; ov
             <h2 className="text-od-subtitle text-white">Prioridades de hoje</h2>
             <p className="mt-1 text-xs text-white/45">{tasks.length ? `${tasks.length} ${tasks.length === 1 ? "item exige" : "itens exigem"} sua atenção` : "Nenhum retorno pendente agora"}</p>
           </div>
-          <Link href="/painel/tarefas" className="text-xs font-semibold text-violet-300 hover:text-violet-200">Ver meu dia</Link>
+          <Link href="/painel/tarefas" className="text-xs font-semibold text-od-text-2 hover:text-od-text">Ver meu dia</Link>
         </div>
         {tasks.length === 0 ? (
           <div className="flex min-h-28 items-center gap-3 px-4 py-5">
@@ -432,11 +432,11 @@ function SellerPriorities({ tasks, overdue, now, contacts }: { tasks: Task[]; ov
               const contact = task.contact_id ? contacts.get(task.contact_id) : undefined;
               return (
                 <Link key={task.id} href="/painel/tarefas" className="group grid min-h-16 gap-2 border-b border-white/[0.08] px-4 py-3 last:border-b-0 hover:bg-white/[0.025] md:grid-cols-[7rem_minmax(0,1.2fr)_minmax(9rem,.8fr)_7rem_1rem] md:items-center md:gap-3">
-                  <span className={`text-[11px] font-semibold uppercase tracking-[0.03em] ${isOverdue ? "text-[#fb7767]" : "text-violet-300"}`}>{isOverdue ? "Atrasado" : isToday(new Date(task.due_at ?? now), now) ? "Hoje" : "Próximo"}</span>
+                  <span className={`text-[11px] font-semibold uppercase tracking-[0.03em] ${isOverdue ? "text-[#fb7767]" : "text-od-text-3"}`}>{isOverdue ? "Atrasado" : isToday(new Date(task.due_at ?? now), now) ? "Hoje" : "Próximo"}</span>
                   <span className="min-w-0 truncate text-sm font-semibold text-white/88">{task.title}</span>
                   <span className="min-w-0 truncate text-xs text-white/48">{contact?.company || contact?.name || "Sem cliente vinculado"}</span>
                   <span className="text-xs text-white/48">{task.due_at ? formatDate(task.due_at) : "Sem data"}</span>
-                  <Check size={15} className="hidden text-white/24 group-hover:text-violet-300 md:block" />
+                  <Check size={15} className="hidden text-white/24 group-hover:text-od-text md:block" />
                 </Link>
               );
             })}
@@ -447,7 +447,7 @@ function SellerPriorities({ tasks, overdue, now, contacts }: { tasks: Task[]; ov
       <form id="novo-lembrete" action={createTask} data-dashboard-card className="rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] p-4">
         <input type="hidden" name="return_to" value="/painel" />
         <div className="flex items-start gap-3">
-          <span className="grid size-9 shrink-0 place-items-center rounded bg-violet-400/10 text-violet-300"><BellRing size={17} /></span>
+          <span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><BellRing size={17} /></span>
           <div><h2 className="text-sm font-semibold text-white">Criar lembrete rápido</h2><p className="mt-1 text-xs text-white/42">Registre o próximo contato sem sair do painel.</p></div>
         </div>
         <div className="mt-4 space-y-3">
@@ -467,10 +467,10 @@ function SellerDeals({ deals, contacts, preset }: { deals: Deal[]; contacts: Map
     <section data-dashboard-card className="h-full overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)]">
       <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-4 py-4">
         <div><h2 className="text-sm font-semibold text-white">Vendas em acompanhamento</h2><p className="mt-1 text-xs text-white/42">Ordenadas pela atividade mais recente</p></div>
-        <Link href="/painel/funil" className="inline-flex items-center gap-1 text-xs font-semibold text-violet-300 hover:text-violet-200">Ver funil <ArrowRight size={13} /></Link>
+        <Link href="/painel/funil" className="inline-flex items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text">Ver funil <ArrowRight size={13} /></Link>
       </div>
       {recent.length === 0 ? (
-        <div className="px-4 py-8 text-center"><Handshake size={24} className="mx-auto text-violet-300" /><p className="mt-3 text-sm font-semibold text-white">Nenhuma venda aberta ainda.</p><Link href="/painel/funil#new-deal" className="mt-2 inline-block text-xs font-semibold text-violet-300">Criar primeira venda</Link></div>
+        <div className="px-4 py-8 text-center"><Handshake size={24} className="mx-auto text-od-text-3" /><p className="mt-3 text-sm font-semibold text-white">Nenhuma venda aberta ainda.</p><Link href="/painel/funil#new-deal" className="mt-2 inline-block text-xs font-semibold text-od-accent">Criar primeira venda</Link></div>
       ) : (
         <div>
           <div className="hidden grid-cols-[minmax(0,1.2fr)_9rem_8rem_8rem] gap-3 border-b border-white/[0.07] px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-white/30 sm:grid"><span>Cliente / venda</span><span>Etapa</span><span>Valor</span><span>Entrada</span></div>
@@ -479,7 +479,7 @@ function SellerDeals({ deals, contacts, preset }: { deals: Deal[]; contacts: Map
             return (
               <Link href="/painel/funil" key={deal.id} className="grid gap-2 border-b border-white/[0.07] px-5 py-4 last:border-b-0 hover:bg-white/[0.025] sm:grid-cols-[minmax(0,1.2fr)_9rem_8rem_8rem] sm:items-center sm:gap-3">
                 <div className="min-w-0"><p className="truncate text-sm font-semibold text-white/88">{deal.title}</p><p className="mt-1 truncate text-[11px] text-white/38">{contact?.company || contact?.name || "Sem cliente vinculado"}</p></div>
-                <span className="w-fit rounded bg-violet-400/10 px-2 py-1 text-[11px] font-semibold text-violet-200">{stageLabel(deal.stage, preset)}</span>
+                <span className="w-fit rounded bg-white/[0.06] px-2 py-1 text-[11px] font-semibold text-od-text-2">{stageLabel(deal.stage, preset)}</span>
                 <span className="text-sm font-semibold tabular-nums text-white/72">{formatBRL(deal.value_cents ?? 0)}</span>
                 <span className="text-xs text-white/42">{formatDate(deal.created_at)}</span>
               </Link>
@@ -497,12 +497,12 @@ function SellerRevenue({ openValue, wonValue, series, conversionRate, avgTicketC
   const hasRevenueData = series.some((point) => point.cumulativeCents > 0);
   return (
     <section data-dashboard-card className="h-full rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] p-4 sm:p-6">
-      <div className="flex items-start justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Resultado comercial</h2><p className="mt-1 text-xs text-white/44">Valores reais da sua carteira neste mês</p></div><TrendingUp size={18} className="text-violet-300" /></div>
+      <div className="flex items-start justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Resultado comercial</h2><p className="mt-1 text-xs text-white/44">Valores reais da sua carteira neste mês</p></div><TrendingUp size={18} className="text-od-text-3" /></div>
       {hasRevenueData ? (
         <>
           <p className="mt-6 text-[32px] font-bold tracking-[-0.04em] text-white">{formatBRL(wonValue)}</p>
           <p className="mt-1 text-xs text-white/46">ganhos registrados no mês</p>
-          <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/[0.09]"><span className="block h-full rounded-full bg-violet-500" style={{ width: `${wonShare}%` }} /></div>
+          <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/[0.09]"><span className="block h-full rounded-full bg-od-accent" style={{ width: `${wonShare}%` }} /></div>
           <p className="mt-2 text-[11px] text-white/38">{wonShare}% do volume acompanhado já foi ganho</p>
           <RevenueLineChart series={series} dark />
           <div className="mt-5 grid divide-y divide-white/[0.08] border-y border-white/[0.08] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
@@ -516,16 +516,16 @@ function SellerRevenue({ openValue, wonValue, series, conversionRate, avgTicketC
           <div>
             <p className="text-[32px] font-bold tracking-[-0.04em] text-white">{formatBRL(wonValue)}</p>
             <p className="mt-1 text-xs text-white/46">ganhos registrados no mês</p>
-            <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/[0.09]"><span className="block h-full rounded-full bg-violet-500" style={{ width: `${wonShare}%` }} /></div>
+            <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/[0.09]"><span className="block h-full rounded-full bg-od-accent" style={{ width: `${wonShare}%` }} /></div>
             <p className="mt-2 text-[11px] text-white/38">{wonShare}% do volume acompanhado já foi ganho</p>
           </div>
           <div>
             <div className="flex flex-col gap-4 border-y border-white/[0.08] py-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded bg-violet-400/10 text-violet-300"><TrendingUp size={17} /></span>
+                <span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><TrendingUp size={17} /></span>
                 <div><p className="text-sm font-semibold text-white/76">Seu gráfico começa com a primeira venda ganha.</p><p className="mt-1 text-xs text-white/42">Mova uma oportunidade para ganha no funil.</p></div>
               </div>
-              <Link href="/painel/funil" className="text-xs font-semibold text-violet-300 hover:text-violet-200">Abrir funil</Link>
+              <Link href="/painel/funil" className="text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir funil</Link>
             </div>
             <div className="mt-4 grid divide-y divide-white/[0.08] border-y border-white/[0.08] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
               <MiniStat label="Em aberto" value={formatBRL(openValue)} />
@@ -548,7 +548,7 @@ function SellerAssistantPreview() {
     <section data-dashboard-card className="h-full overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)]">
       <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-4 py-4">
         <div className="flex items-center gap-3">
-          <span className="grid size-9 shrink-0 place-items-center rounded bg-violet-400/10 text-violet-300">
+          <span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2">
             <Sparkles size={17} />
           </span>
           <div>
@@ -571,13 +571,13 @@ function SellerAssistantPreview() {
             href="/painel/assistente"
             className="group flex min-h-12 items-center gap-3 px-4 text-xs font-medium text-white/62 hover:bg-white/[0.03] hover:text-white"
           >
-            <MessageCircle size={14} className="text-violet-300" />
+            <MessageCircle size={14} className="text-od-text-3" />
             <span className="min-w-0 flex-1">{prompt}</span>
-            <ArrowRight size={14} className="text-white/24 transition-transform group-hover:translate-x-0.5 group-hover:text-violet-300" />
+            <ArrowRight size={14} className="text-white/24 transition-transform group-hover:translate-x-0.5 group-hover:text-od-text" />
           </Link>
         ))}
       </div>
-      <Link href="/painel/assistente" className="flex min-h-11 items-center justify-center gap-2 border-t border-white/[0.08] text-xs font-semibold text-violet-300 hover:bg-violet-400/[0.05] hover:text-violet-200">
+      <Link href="/painel/assistente" className="flex min-h-11 items-center justify-center gap-2 border-t border-white/[0.08] text-xs font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text">
         Abrir conversa <ArrowRight size={14} />
       </Link>
     </section>
@@ -588,19 +588,19 @@ function SellerAgenda({ now, items }: { now: Date; items: CalendarItem[] }) {
   const upcoming = items.filter((item) => item.date >= now || item.tone === "danger").sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 6);
   return (
     <section data-dashboard-card className="h-full rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] p-4">
-      <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Próximos lembretes</h2><p className="mt-1 text-xs text-white/42">Quem chamar e quando</p></div><Link href="/painel/calendario" className="text-xs font-semibold text-violet-300 hover:text-violet-200">Calendário</Link></div>
-      {upcoming.length === 0 ? <div className="mt-4 flex flex-col gap-3 border-t border-white/[0.07] pt-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3"><Clock3 size={18} className="shrink-0 text-white/32" /><div><p className="text-sm font-medium text-white/62">Sua agenda está livre.</p><p className="mt-1 text-xs text-white/40">Crie um lembrete para não perder o próximo retorno.</p></div></div><Link href="#novo-lembrete" className="text-xs font-semibold text-violet-300 hover:text-violet-200">Criar lembrete</Link></div> : <ul className="mt-4 divide-y divide-white/[0.07]">{upcoming.map((item, index) => <li key={`${item.title}-${index}`}><Link href={item.href} className="flex items-center gap-3 py-3 hover:text-white"><span className={`size-2 rounded-full ${item.tone === "danger" ? "bg-[#fb7767]" : item.tone === "warning" ? "bg-amber-300" : "bg-violet-400"}`} /><span className="min-w-0 flex-1 truncate text-xs font-medium text-white/68">{item.title}</span><span className="text-[11px] text-white/38">{formatDate(item.date.toISOString())}</span></Link></li>)}</ul>}
+      <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Próximos lembretes</h2><p className="mt-1 text-xs text-white/42">Quem chamar e quando</p></div><Link href="/painel/calendario" className="text-xs font-semibold text-od-text-2 hover:text-od-text">Calendário</Link></div>
+      {upcoming.length === 0 ? <div className="mt-4 flex flex-col gap-3 border-t border-white/[0.07] pt-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3"><Clock3 size={18} className="shrink-0 text-white/32" /><div><p className="text-sm font-medium text-white/62">Sua agenda está livre.</p><p className="mt-1 text-xs text-white/40">Crie um lembrete para não perder o próximo retorno.</p></div></div><Link href="#novo-lembrete" className="text-xs font-semibold text-od-text-2 hover:text-od-text">Criar lembrete</Link></div> : <ul className="mt-4 divide-y divide-white/[0.07]">{upcoming.map((item, index) => <li key={`${item.title}-${index}`}><Link href={item.href} className="flex items-center gap-3 py-3 hover:text-white"><span className={`size-2 rounded-full ${item.tone === "danger" ? "bg-[#fb7767]" : item.tone === "warning" ? "bg-amber-300" : "bg-od-text-3"}`} /><span className="min-w-0 flex-1 truncate text-xs font-medium text-white/68">{item.title}</span><span className="text-[11px] text-white/38">{formatDate(item.date.toISOString())}</span></Link></li>)}</ul>}
     </section>
   );
 }
 
 function SellerOpenClaims({ tasks, deals, preset }: { tasks: Task[]; deals: Deal[]; preset: ProfessionPreset }) {
   return (
-    <section data-dashboard-card className="rounded border border-violet-400/20 bg-violet-400/[0.055] p-4 sm:p-6">
-      <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Disponíveis para assumir</h2><p className="mt-1 text-xs text-white/44">Itens da equipe ainda sem responsável</p></div><span className="rounded bg-violet-400/10 px-2 py-1 text-xs font-semibold text-violet-200">{tasks.length + deals.length}</span></div>
-      <div className="mt-4 divide-y divide-violet-300/10 border-y border-violet-300/10">
-        {tasks.map((task) => <div key={task.id} className="flex min-h-14 items-center gap-3 py-2"><BellRing size={15} className="text-violet-300" /><span className="min-w-0 flex-1 truncate text-sm font-medium text-white/72">{task.title}</span><form action={claimTask}><input type="hidden" name="task_id" value={task.id} /><input type="hidden" name="return_to" value="/painel" /><PendingButton className="min-h-9 rounded bg-violet-600 px-3 text-xs font-semibold text-white" pendingLabel="Assumindo">Assumir</PendingButton></form></div>)}
-        {deals.map((deal) => <div key={deal.id} className="flex min-h-14 items-center gap-3 py-2"><CircleDollarSign size={15} className="text-violet-300" /><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-white/72">{deal.title}</span><span className="text-[11px] text-white/38">{preset.dealSingular} · {formatBRL(deal.value_cents ?? 0)}</span></span><form action={claimDeal}><input type="hidden" name="deal_id" value={deal.id} /><input type="hidden" name="return_to" value="/painel" /><PendingButton className="min-h-9 rounded bg-violet-600 px-3 text-xs font-semibold text-white" pendingLabel="Assumindo">Assumir</PendingButton></form></div>)}
+    <section data-dashboard-card className="rounded border border-od-accent/25 bg-od-accent/[0.055] p-4 sm:p-6">
+      <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Disponíveis para assumir</h2><p className="mt-1 text-xs text-white/44">Itens da equipe ainda sem responsável</p></div><span className="rounded bg-od-accent/15 px-2 py-1 text-xs font-semibold text-od-text">{tasks.length + deals.length}</span></div>
+      <div className="mt-4 divide-y divide-od-accent/12 border-y border-od-accent/12">
+        {tasks.map((task) => <div key={task.id} className="flex min-h-14 items-center gap-3 py-2"><BellRing size={15} className="text-od-text-3" /><span className="min-w-0 flex-1 truncate text-sm font-medium text-white/72">{task.title}</span><form action={claimTask}><input type="hidden" name="task_id" value={task.id} /><input type="hidden" name="return_to" value="/painel" /><PendingButton className="min-h-9 rounded bg-od-accent px-3 text-xs font-semibold text-white" pendingLabel="Assumindo">Assumir</PendingButton></form></div>)}
+        {deals.map((deal) => <div key={deal.id} className="flex min-h-14 items-center gap-3 py-2"><CircleDollarSign size={15} className="text-od-text-3" /><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-white/72">{deal.title}</span><span className="text-[11px] text-white/38">{preset.dealSingular} · {formatBRL(deal.value_cents ?? 0)}</span></span><form action={claimDeal}><input type="hidden" name="deal_id" value={deal.id} /><input type="hidden" name="return_to" value="/painel" /><PendingButton className="min-h-9 rounded bg-od-accent px-3 text-xs font-semibold text-white" pendingLabel="Assumindo">Assumir</PendingButton></form></div>)}
       </div>
     </section>
   );
@@ -616,9 +616,9 @@ function SellerOnboarding({ preset, isOrgAdmin, done }: NonNullable<Props["onboa
   ];
   if (steps.every((step) => step.done)) return <></>;
   return (
-    <section data-dashboard-card className="rounded border border-violet-400/20 bg-[rgba(30,29,34,0.94)] p-4 sm:p-6">
-      <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-semibold text-violet-300">Primeiros passos</p><h2 className="mt-2 text-od-subtitle text-white">Deixe sua rotina de vendas pronta.</h2></div><form action={dismissChecklist}><PendingButton iconOnly pendingLabel="Fechando" className="grid size-9 place-items-center rounded text-white/38 hover:bg-white/[0.05] hover:text-white" aria-label="Fechar primeiros passos">×</PendingButton></form></div>
-      <div className="mt-4 grid border-y border-white/[0.08] sm:grid-cols-2 xl:grid-cols-3">{steps.map((step) => { const Icon = step.icon; return <Link key={step.label} href={step.href} className={`flex min-h-16 items-center gap-3 border-b border-white/[0.08] px-2 py-3 last:border-b-0 hover:bg-white/[0.02] sm:border-r sm:last:border-r-0 ${step.done ? "text-white/38" : "text-white/72"}`}><span className={`grid size-8 place-items-center rounded ${step.done ? "bg-emerald-400/10 text-emerald-300" : "bg-violet-400/10 text-violet-300"}`}>{step.done ? <Check size={16} /> : <Icon size={16} />}</span><span className={`text-sm font-medium ${step.done ? "line-through" : ""}`}>{step.label}</span></Link>; })}</div>
+    <section data-dashboard-card className="rounded border border-od-border bg-od-surface p-4 sm:p-6">
+      <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-semibold text-od-text-3">Primeiros passos</p><h2 className="mt-2 text-od-subtitle text-white">Deixe sua rotina de vendas pronta.</h2></div><form action={dismissChecklist}><PendingButton iconOnly pendingLabel="Fechando" className="grid size-9 place-items-center rounded text-white/38 hover:bg-white/[0.05] hover:text-white" aria-label="Fechar primeiros passos">×</PendingButton></form></div>
+      <div className="mt-4 grid border-y border-white/[0.08] sm:grid-cols-2 xl:grid-cols-3">{steps.map((step) => { const Icon = step.icon; return <Link key={step.label} href={step.href} className={`flex min-h-16 items-center gap-3 border-b border-white/[0.08] px-2 py-3 last:border-b-0 hover:bg-white/[0.02] sm:border-r sm:last:border-r-0 ${step.done ? "text-white/38" : "text-white/72"}`}><span className={`grid size-8 place-items-center rounded ${step.done ? "bg-emerald-400/10 text-emerald-300" : "bg-white/[0.06] text-od-text-2"}`}>{step.done ? <Check size={16} /> : <Icon size={16} />}</span><span className={`text-sm font-medium ${step.done ? "line-through" : ""}`}>{step.label}</span></Link>; })}</div>
     </section>
   );
 }
@@ -626,7 +626,7 @@ function SellerOnboarding({ preset, isOrgAdmin, done }: NonNullable<Props["onboa
 function SellerFounderMetrics({ metrics }: { metrics: DevMetrics }) {
   const activationRate = metrics.totalUsers ? Math.round((metrics.activatedUsers / metrics.totalUsers) * 100) : 0;
   const items = [["Cadastros", metrics.totalUsers], ["Ativados", `${metrics.activatedUsers} (${activationRate}%)`], ["Em teste", metrics.planCounts.trialing], ["Pagantes", metrics.planCounts.active]];
-  return <section className="grid border-y border-violet-400/20 bg-violet-400/[0.035] sm:grid-cols-4">{items.map(([label, value]) => <div key={label} className="border-b border-violet-400/15 px-4 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"><p className="text-[11px] text-violet-200/55">{label}</p><p className="mt-1 text-lg font-semibold text-white">{value}</p></div>)}</section>;
+  return <section className="grid border-y border-od-border bg-od-muted-surface sm:grid-cols-4">{items.map(([label, value]) => <div key={label} className="border-b border-od-border px-4 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"><p className="text-[11px] text-od-text-3">{label}</p><p className="mt-1 text-lg font-semibold text-white">{value}</p></div>)}</section>;
 }
 
 function sellerWidgetShellClass(widget: DashboardWidgetKey) {
