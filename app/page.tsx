@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Hero } from "@/components/landing/hero";
 import { LogoMarquee } from "@/components/landing/logo-marquee";
-import { FeatureGrid } from "@/components/landing/feature-grid";
+import { FeatureTabs } from "@/components/landing/feature-tabs";
 import { DashboardPreview } from "@/components/landing/dashboard-preview";
 import { SpotlightCard } from "@/components/landing/spotlight-card";
 import { AiComposer } from "@/components/landing/ai-composer";
@@ -68,10 +68,10 @@ export default async function LandingPage() {
             da página, por isso é a única seção com respiro de scroll próprio. */}
         <section className="pb-4">
           <SectionHeading
-            title="Tudo que você precisa pra não perder negócio"
-            description="Contatos, vendas e lembretes numa tela simples — você vê a prioridade e age."
+            title="O que muda de profissão pra profissão"
+            description="O núcleo é o mesmo; o que está em volta é feito pro seu trabalho. Escolha a sua."
           />
-          <FeatureGrid />
+          <FeatureTabs />
         </section>
 
         <ContainerScroll
