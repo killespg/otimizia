@@ -263,21 +263,41 @@ describe("frontend route parity", () => {
     expect(whatsapp).toContain("flat?: boolean");
   });
 
-  it("removes container cards across the real-estate workspace while preserving generic fallbacks", () => {
-    const realEstateFiles = [
-      "app/(dashboard)/painel/imoveis/page.tsx",
+  it("estrutura o workspace imobiliario por papel, preservando os fallbacks genericos", () => {
+    // Este guard nasceu de uma decisao anterior: achatar tudo no imobiliario,
+    // exigindo `real-estate-flat-section` em todas as telas. O achatamento foi
+    // longe demais — sem nenhuma superficie, os modulos acionaveis ficavam
+    // "voando" sobre o canvas.
+    //
+    // A regra agora e por papel, nao por workspace:
+    //   modulo com acao propria dentro (form, lista com botao) -> .panel
+    //   cabecalho, filtro, KPI e faixa de consulta -> continua aberto (flat)
+    //
+    // Por isso as duas classes convivem, e o guard passa a cobrir as duas
+    // pontas: quem virou painel nao pode voltar a flutuar, e quem deve seguir
+    // aberto nao pode virar card.
+    const panelFiles = [
       "app/(dashboard)/painel/imoveis/novo/page.tsx",
       "app/(dashboard)/painel/imoveis/mapa/page.tsx",
       "app/(dashboard)/painel/imoveis/visitas/page.tsx",
       "app/(dashboard)/painel/imoveis/colecoes/page.tsx",
       "app/(dashboard)/painel/imoveis/colecoes/nova/page.tsx",
-      "app/(dashboard)/painel/imoveis/[id]/page.tsx",
       "app/(dashboard)/painel/imoveis/[id]/ListingQualitySection.tsx",
-      "app/(dashboard)/painel/imoveis/match/[dealId]/page.tsx",
       "app/(dashboard)/painel/imoveis/match/[dealId]/OffersSection.tsx",
     ];
+    for (const file of panelFiles) {
+      const source = readFileSync(resolve(process.cwd(), file), "utf8");
+      expect(source).toContain("panel");
+    }
 
-    for (const file of realEstateFiles) {
+    // Telas que mantem faixas abertas para o conteudo de consulta.
+    const flatFiles = [
+      "app/(dashboard)/painel/imoveis/page.tsx",
+      "app/(dashboard)/painel/imoveis/visitas/page.tsx",
+      "app/(dashboard)/painel/imoveis/[id]/page.tsx",
+      "app/(dashboard)/painel/imoveis/match/[dealId]/page.tsx",
+    ];
+    for (const file of flatFiles) {
       const source = readFileSync(resolve(process.cwd(), file), "utf8");
       expect(source).toContain("real-estate-flat-section");
     }

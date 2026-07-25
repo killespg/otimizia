@@ -44,7 +44,7 @@ export function OffersSection({
   const roots = offers.filter((o) => !o.parent_offer_id);
 
   return (
-    <section className="real-estate-flat-section space-y-4 py-5 sm:py-6">
+    <section className="panel space-y-4 p-5 sm:p-6">
       <h2 className="text-base font-semibold text-ink">Propostas</h2>
 
       {roots.length === 0 ? (

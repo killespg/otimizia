@@ -152,7 +152,7 @@ export default async function ColecoesPage() {
       {collections.length > 2 ? <VitrineSearch /> : null}
 
       {collections.length === 0 ? (
-        <section className="real-estate-flat-section p-8 text-center">
+        <section className="panel p-8 text-center">
           <IconImage className="mx-auto h-8 w-8 text-brand-700" />
           <p className="mt-3 text-sm font-semibold text-ink">Nenhuma vitrine criada ainda.</p>
         </section>

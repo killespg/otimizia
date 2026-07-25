@@ -92,7 +92,7 @@ export default async function ImoveisMapaPage() {
   return (
     <div className="max-w-[1400px] space-y-6">
       <RealEstatePageHeader eyebrow="Imobiliário / Localização" title="Mapa de imóveis" description="Visualize a distribuição da carteira. Clique em um pin para ver o imóvel." />
-      <section className="real-estate-flat-section overflow-hidden">
+      <section className="panel overflow-hidden">
         <PropertyMap properties={points} />
       </section>
       <Link href="/painel/imoveis" className="nav-item inline-block text-sm font-semibold text-brand-700 hover:underline">

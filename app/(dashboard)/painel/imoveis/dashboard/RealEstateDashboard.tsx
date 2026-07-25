@@ -380,7 +380,7 @@ function IndicatorGroup({ title, items }: { title: string; items: Array<{ label:
 
 export function CommissionPanel({ commissions, members, deals, properties, canManage, expectedTotal, receivedTotal, overdueCount }: Pick<Props, "commissions" | "members" | "deals" | "properties" | "canManage"> & { expectedTotal: number; receivedTotal: number; overdueCount: number }) {
   return (
-    <section id="comissoes" className="scroll-mt-24 rounded-xl border border-od-border bg-od-surface p-5">
+    <section id="comissoes" className="panel scroll-mt-24 p-5">
       <header className="flex flex-wrap items-end justify-between gap-3 border-b border-white/[0.08] pb-4">
         <div><h2 className="text-sm font-semibold text-white">Comissões</h2><p className="mt-1 text-xs text-white/44">Prevista: {centsToReais(expectedTotal)} · Recebida: {centsToReais(receivedTotal)}</p></div>
         {overdueCount > 0 ? <span className="text-xs font-semibold text-[#fca79b]">{overdueCount} {overdueCount === 1 ? "vencida" : "vencidas"}</span> : null}
@@ -421,7 +421,7 @@ export function TargetsPanel({ targets, members, canManage, from, to }: Pick<Pro
   // Antes: borda-esquerda fingindo separador, porque nao havia painel nenhum.
   // Com superficie propria, o proprio bloco delimita a coluna.
   return (
-    <section id="metas" className="scroll-mt-24 rounded-xl border border-od-border bg-od-surface p-5">
+    <section id="metas" className="panel scroll-mt-24 p-5">
       <header className="border-b border-white/[0.08] pb-4"><div className="flex items-center gap-2"><Target size={16} className="text-od-text-3" /><h2 className="text-sm font-semibold text-white">Metas do período</h2></div><p className="mt-1 text-xs text-white/44">Acompanhe o objetivo da equipe ou de cada corretor.</p></header>
       <div className="pt-4">
         {targets.length === 0 ? <p className="text-sm text-white/46">Nenhuma meta definida para este período.</p> : (

@@ -24,7 +24,7 @@ export function ListingQualitySection({
   canManage: boolean;
 }) {
   return (
-    <section className="real-estate-flat-section space-y-4 py-5 sm:py-6">
+    <section className="panel space-y-4 p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold text-ink">Qualidade do anúncio</h2>

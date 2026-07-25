@@ -66,19 +66,27 @@ export default async function VisitasPage() {
   const history = visits.filter((v) => v.status === "completed" || v.status === "no_show" || v.status === "cancelled").slice(0, 30);
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="mx-auto w-full max-w-[1640px] space-y-6">
       <RealEstatePageHeader eyebrow="Imobiliário / Agenda" title="Visitas" description="Solicitações, agenda e histórico com lembretes automáticos antes de cada compromisso." />
 
       {requested.length > 0 && (
-        <section className="real-estate-flat-section py-5 sm:py-6">
+        <section className="panel p-5">
           <h2 className="mb-3 text-base font-semibold text-ink">Solicitações pendentes ({requested.length})</h2>
+          {/* Linha operacional: identificacao a esquerda, acao ancorada na
+              direita. Empilhado, cada solicitacao ocupava tres alturas e
+              deixava metade da largura vazia. */}
           <div className="divide-y divide-white/[0.08] border-t border-white/[0.08]">
             {requested.map((visit) => (
-              <div key={visit.id} className="py-4">
-                <p className="text-sm font-semibold text-ink">{propertyById.get(visit.property_id)?.title ?? "Imóvel"}</p>
-                <p className="text-xs font-bold text-ink-muted">{contactById.get(visit.contact_id)?.name ?? "Cliente"}</p>
+              <div
+                key={visit.id}
+                className="flex flex-col gap-3 py-4 md:flex-row md:items-end md:justify-between md:gap-6"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-ink">{propertyById.get(visit.property_id)?.title ?? "Imóvel"}</p>
+                  <p className="mt-0.5 truncate text-xs font-bold text-ink-muted">{contactById.get(visit.contact_id)?.name ?? "Cliente"}</p>
+                </div>
                 {canManage && (
-                  <form action={scheduleVisit} className="mt-3 flex flex-wrap items-end gap-2">
+                  <form action={scheduleVisit} className="flex flex-wrap items-end gap-2 md:shrink-0">
                     <input type="hidden" name="visit_id" value={visit.id} />
                     <label className="block">
                       <span className="label">Data e hora</span>

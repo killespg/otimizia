@@ -34,7 +34,7 @@ export default async function NovoImovelPage() {
     <div className="max-w-5xl space-y-6">
       <RealEstatePageHeader eyebrow="Imobiliário / Carteira" title="Novo imóvel" description="Cadastre os dados principais — fotos e vitrine você adiciona depois de salvar." />
 
-      <section className="real-estate-flat-section py-5 sm:py-6">
+      <section className="panel p-5 sm:p-6">
         <form action={createProperty} className="divide-y divide-line">
           <input type="hidden" name="status" value="ativo" />
 

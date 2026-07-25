@@ -90,7 +90,7 @@ export default async function NovaColecaoPage(props: { searchParams: Promise<{ i
     <div className="max-w-4xl space-y-6">
       <RealEstatePageHeader eyebrow="Imobiliário / Vitrines" title="Nova vitrine" description="Escolha os imóveis, dê um título e gere um link para compartilhar com o cliente." />
 
-      <section className="real-estate-flat-section py-5 sm:py-6">
+      <section className="panel p-5 sm:p-6">
         <form action={createShareCollection} className="space-y-4">
           <label className="block">
             <span className="label">
