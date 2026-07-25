@@ -8,7 +8,8 @@ export const runtime = "nodejs";
 // somente-leitura usado em legal_case_share_links. Usa a service role
 // porque não há cookie de sessão nessa requisição (Google/Apple Calendário
 // batem aqui direto, sem navegador autenticado).
-export async function GET(_request: Request, { params }: { params: { token: string } }) {
+export async function GET(_request: Request, props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   const token = params.token;
   if (!/^[0-9a-f-]{36}$/i.test(token)) {
     return new Response("Not found", { status: 404 });

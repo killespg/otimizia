@@ -40,7 +40,6 @@ export async function GET(request: Request) {
 
   return Response.json({ whatsapp: whatsappResult, push: pushResult, offers: offerResult });
 }
-
 // Janela alargada para 0-48h à frente (era 23h-24h, calibrada pra cron
 // horário) — com execução 1x/dia isso garante que toda visita marcada para
 // "amanhã" caia na janela em pelo menos uma das execuções diárias antes de
@@ -166,7 +165,7 @@ async function sendPushReminders(admin: ReturnType<typeof createAdminClient>, no
       const { sent: pushed } = await sendPushToUser(admin, visit.broker_id, {
         title: "Visita hoje",
         body: `${when} — ${property?.title ?? "Imóvel"}${address ? ` — ${address}` : ""}`,
-        url: "/imoveis/visitas",
+        url: "/painel/imoveis/visitas",
       });
       if (pushed > 0) sent++;
     } catch (err) {
@@ -208,7 +207,7 @@ async function sendOfferExpiryReminders(admin: ReturnType<typeof createAdminClie
       const { sent: pushed } = await sendPushToUser(admin, offer.created_by, {
         title: "Proposta expirando em breve",
         body: `${property?.title ?? "Imóvel"}${amount ? ` — ${amount}` : ""} — expira ${expiresWhen}`,
-        url: "/imoveis",
+        url: "/painel/imoveis",
       });
       if (pushed > 0) sent++;
     } catch (err) {

@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   const stripe = getStripe();
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   const orgId = await getActiveOrgId(supabase, user.id);
   const role = await getOrgRole(supabase, orgId, user.id);
   if (role !== "admin") {
-    return NextResponse.redirect(new URL("/settings?checkout=forbidden", request.url));
+    return NextResponse.redirect(new URL("/painel/configuracoes?checkout=forbidden", request.url));
   }
 
   const [{ data: org }, { count: seatCount }] = await Promise.all([
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       .eq("id", orgId);
     if (error) {
       logError("billing/checkout.link-customer", error, { userId: user.id });
-      return NextResponse.redirect(new URL("/settings?checkout=error", request.url));
+      return NextResponse.redirect(new URL("/painel/configuracoes?checkout=error", request.url));
     }
   }
 
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
   });
 
   if (!session.url) {
-    return NextResponse.redirect(new URL("/settings?checkout=error", request.url));
+    return NextResponse.redirect(new URL("/painel/configuracoes?checkout=error", request.url));
   }
   return NextResponse.redirect(session.url, 303);
 }

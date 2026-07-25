@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 // Alterna um tribunal na lista de favoritos do usuário (não é por
 // organização — cada advogado pode atuar em estados diferentes).
 export async function POST(request: Request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

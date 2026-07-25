@@ -13,7 +13,7 @@ export const runtime = "nodejs";
 // lista de acompanhamento (legal_watched_processes) na primeira vez que é
 // pesquisado, pra alimentar o cartão "Mudanças recentes" no painel.
 export async function POST(request: Request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -7,7 +7,7 @@ import { getWorkspaceKey } from "@/lib/workspaces";
 
 // Mesmo padrão de app/api/reports/deals/route.ts.
 export async function GET(request: Request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

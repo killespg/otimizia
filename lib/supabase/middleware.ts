@@ -41,18 +41,18 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/signup") ||
     path.startsWith("/forgot-password");
   const isProtected =
-    path.startsWith("/dashboard") ||
-    path.startsWith("/contacts") ||
-    path.startsWith("/pipeline") ||
-    path.startsWith("/tasks") ||
-    path.startsWith("/calendar") ||
-    path.startsWith("/assistant") ||
-    path.startsWith("/whatsapp") ||
-    path.startsWith("/settings") ||
-    path.startsWith("/team") ||
-    path.startsWith("/finance") ||
-    path.startsWith("/law") ||
-    path.startsWith("/imoveis") ||
+    path.startsWith("/painel") ||
+    path.startsWith("/painel/contatos") ||
+    path.startsWith("/painel/funil") ||
+    path.startsWith("/painel/tarefas") ||
+    path.startsWith("/painel/calendario") ||
+    path.startsWith("/painel/assistente") ||
+    path.startsWith("/painel/whatsapp") ||
+    path.startsWith("/painel/configuracoes") ||
+    path.startsWith("/painel/equipe") ||
+    path.startsWith("/painel/financeiro") ||
+    path.startsWith("/painel/juridico/processos") ||
+    path.startsWith("/painel/imoveis") ||
     path.startsWith("/onboarding") ||
     path.startsWith("/upgrade");
 
@@ -64,7 +64,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user && isAuthPage) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = "/painel";
     return NextResponse.redirect(url);
   }
 
