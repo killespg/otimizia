@@ -1,4 +1,5 @@
 import type { JobRole, LegalCaseStatus, Receivable } from "@/lib/supabase/types";
+import { normalizeWorkspaceKeys } from "@/lib/workspaces";
 
 export const LAW_JOB_ROLES: { value: JobRole; label: string; description: string }[] = [
   { value: "owner", label: "Sócio(a) administrador(a)", description: "Acesso total, equipe e configurações." },
@@ -26,6 +27,32 @@ export function jobRoleLabel(role: JobRole | null | undefined) {
 
 export function canViewLegal(role: JobRole | null | undefined, isAdmin = false) {
   return isAdmin || ["owner", "managing_partner", "lawyer", "paralegal", "intern"].includes(role ?? "");
+}
+
+/**
+ * Primeiro fator de acesso ao jurídico: a workspace precisa estar habilitada
+ * para o usuário.
+ *
+ * `canViewLegal` sozinho não serve como porta: ele libera para qualquer
+ * `isAdmin`, e as páginas passam `orgRole === "admin"` — como todo cliente é
+ * admin da própria organização, qualquer conta abria /painel/juridico. Um
+ * corretor via o dashboard jurídico dentro do shell imobiliário.
+ *
+ * A checagem é por `profession_types` (plural), não pela workspace ativa: quem
+ * é advogado E corretor continua entrando sem precisar alternar antes.
+ * `is_admin` aqui é a flag de fundador da plataforma (getWorkspaceKey manda
+ * esse perfil para a workspace "founder"), não o cargo dentro da org.
+ */
+export function hasLegalWorkspace(profile: {
+  is_admin?: boolean | null;
+  profession_type?: unknown;
+  profession_types?: unknown;
+}) {
+  if (profile.is_admin) return true;
+  return normalizeWorkspaceKeys(
+    profile.profession_types,
+    profile.profession_type,
+  ).includes("law_office");
 }
 
 export function canManageLegal(role: JobRole | null | undefined, isAdmin = false) {

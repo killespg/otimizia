@@ -1,4 +1,4 @@
-import { canViewLegal } from "@/lib/law-office";
+import { canViewLegal, hasLegalWorkspace } from "@/lib/law-office";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 
@@ -14,10 +14,17 @@ export async function POST(request: Request) {
   }
 
   const orgId = await getActiveOrgId(supabase, user.id);
-  const [orgRole, { data: membership }] = await Promise.all([
+  const [orgRole, { data: membership }, { data: profile }] = await Promise.all([
     getOrgRole(supabase, orgId, user.id),
     supabase.from("organization_members").select("job_role").eq("org_id", orgId).eq("user_id", user.id).maybeSingle(),
+    supabase.from("profiles").select("is_admin,profession_type,profession_types").eq("id", user.id).maybeSingle(),
   ]);
+  // Faltava o primeiro fator aqui: canViewLegal sozinho libera qualquer admin de
+  // organização, e todo cliente é admin da própria. Mesma regra do layout de
+  // /painel/juridico e da rota do DataJud.
+  if (!profile || !hasLegalWorkspace(profile)) {
+    return Response.json({ error: "Disponível apenas no workspace de advocacia." }, { status: 403 });
+  }
   if (!canViewLegal(membership?.job_role, orgRole === "admin")) {
     return Response.json({ error: "Seu cargo não acessa a área jurídica." }, { status: 403 });
   }
