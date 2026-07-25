@@ -150,13 +150,16 @@ describe("frontend route parity", () => {
     expect(shaderBackground).toContain('data-dashboard-shader="plasma-wires"');
     expect(shaderBackground).toContain('canvas.getContext("webgl")');
     expect(shaderBackground).toContain('z-[1]');
-    expect(shaderBackground).toContain("opacity-50");
+    // O fundo do dashboard é contido de propósito: o banho de cor fica perto
+    // do canvas #151419 e o acento roxo continua sendo a única voz alta da
+    // tela. Se estes valores subirem, o fundo volta a competir com o CTA.
+    expect(shaderBackground).toContain("opacity-30");
     expect(shaderBackground).toContain("window.requestAnimationFrame(render)");
     expect(shaderBackground).not.toContain("frameInterval");
     expect(shaderBackground).toContain("const float overallSpeed = 0.15");
-    expect(shaderBackground).toContain("const vec4 lineColor = vec4(0.4, 0.2, 0.8, 1.0)");
-    expect(shaderBackground).toContain("vec4 bgColor1 = vec4(0.1, 0.1, 0.3, 1.0)");
-    expect(shaderBackground).toContain("vec4 bgColor2 = vec4(0.3, 0.1, 0.5, 1.0)");
+    expect(shaderBackground).toContain("const vec4 lineColor = vec4(0.26, 0.14, 0.5, 1.0)");
+    expect(shaderBackground).toContain("vec4 bgColor1 = vec4(0.055, 0.05, 0.08, 1.0)");
+    expect(shaderBackground).toContain("vec4 bgColor2 = vec4(0.1, 0.055, 0.15, 1.0)");
     expect(shaderBackground).toContain("fragColor *= verticalFade");
     expect(shaderBackground).toContain("startCanvasFallback(canvas)");
     expect(shaderBackground).toContain('canvas.dataset.shaderStatus = "canvas-fallback-running"');
@@ -165,6 +168,37 @@ describe("frontend route parity", () => {
     expect(neuralBackground).toContain("elapsed / motionReferenceStepMs");
     expect(neuralBackground).toContain("1 - Math.pow(1 - trailOpacity, frameScale)");
     expect(neuralBackground).not.toContain("frameInterval");
+  });
+
+  it("mantem a poeira de fundo em toda a area autenticada", () => {
+    const ambientParticles = readFileSync(
+      resolve(process.cwd(), "components/design-system/ambient-particles.tsx"),
+      "utf8",
+    );
+    const shells = [
+      "app/(dashboard)/painel/layout.tsx",
+      "components/legal/legal-app-shell.tsx",
+      "components/platform/platform-shell.tsx",
+    ];
+
+    // Os tres shells autenticados montam a mesma poeira: painel, workspace
+    // juridico e shell de plataforma. Se um deixar de montar, a area fica sem
+    // o fundo que as outras tem.
+    for (const shell of shells) {
+      const source = readFileSync(resolve(process.cwd(), shell), "utf8");
+      expect(source).toContain("<AmbientParticles />");
+      expect(source).toContain("@/components/design-system/ambient-particles");
+    }
+
+    // Textura, nao superficie: canvas transparente (clearRect, sem fillRect de
+    // fundo), atras do shader (z-0 contra z-[1]) e sem capturar ponteiro.
+    expect(ambientParticles).toContain("context.clearRect(0, 0, width, height)");
+    expect(ambientParticles).toContain("pointer-events-none fixed inset-0 z-0");
+    expect(ambientParticles).toContain('aria-hidden="true"');
+    // Acessibilidade e custo: para com movimento reduzido e com a aba oculta.
+    expect(ambientParticles).toContain('matchMedia("(prefers-reduced-motion: reduce)")');
+    expect(ambientParticles).toContain('document.addEventListener("visibilitychange"');
+    expect(ambientParticles).toContain("if (document.hidden)");
   });
 
   it("uses a continuous seller and real-estate performance surface without changing the generic report", () => {
