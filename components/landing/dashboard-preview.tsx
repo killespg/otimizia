@@ -6,6 +6,7 @@ import {
   Building2,
   ArrowRight,
   CalendarDays,
+  Check,
   ChevronsUpDown,
   CircleDollarSign,
   FileClock,
@@ -51,6 +52,10 @@ type Profession = {
   queueLabel: string;
   queue: Row[];
   listRows: Row[];
+  /* Painel de indicadores do produto: tres colunas de rotulo/valor. */
+  indicatorsTitle: string;
+  indicatorsNote: string;
+  indicators: Array<{ group: string; rows: Array<[string, string, string]> }>;
 };
 
 /**
@@ -102,6 +107,13 @@ const PROFESSIONS: Profession[] = [
       { name: "Conjunto comercial", note: "Berrini · R$ 640.000" },
       { name: "Loja de esquina", note: "Pinheiros · R$ 980.000" },
     ],
+    indicatorsTitle: "Indicadores imobiliários",
+    indicatorsNote: "Carteira, eficiência comercial e resultado financeiro.",
+    indicators: [
+      { group: "Conversão e carteira", rows: [["Taxa de aceitação", "—", "Sem propostas no período"], ["Visitas concluídas", "6/16", "visitas realizadas"], ["Captações", "2", "imóveis adicionados"]] },
+      { group: "Indicadores financeiros", rows: [["Comissão prevista", "R$ 562.650,00", "valor esperado"], ["Comissão recebida", "R$ 352.900,00", "63% da previsão"], ["Meta comercial", "R$ 2.200.000,00", "meta do período"]] },
+      { group: "Esforço operacional", rows: [["Vitrines enviadas", "1", "seleções compartilhadas"], ["Propostas em aberto", "0", "nenhuma aguardando"], ["Comissões vencidas", "3", "exigem acompanhamento"]] },
+    ],
   },
   {
     key: "law_office",
@@ -140,6 +152,13 @@ const PROFESSIONS: Profession[] = [
       { name: "Inventário Nogueira", note: "Família · em curso" },
       { name: "Tech Sul x Fornecedor", note: "Cível · cobrança" },
       { name: "Consultoria Prime", note: "Contratos · revisão" },
+    ],
+    indicatorsTitle: "Panorama do escritório",
+    indicatorsNote: "Prazos, andamento processual e honorários.",
+    indicators: [
+      { group: "Prazos e risco", rows: [["Vencem hoje", "3", "exigem ação"], ["Próximos 7 dias", "11", "na agenda"], ["Casos parados", "9", "há mais de 30 dias"]] },
+      { group: "Andamento", rows: [["Movimentações", "12", "para revisar"], ["Audiências", "4", "no mês"], ["Casos ativos", "48", "em curso"]] },
+      { group: "Honorários", rows: [["A receber", "R$ 84.300,00", "em aberto"], ["Vencidos", "R$ 19.200,00", "cobrança pendente"], ["Recebido no mês", "R$ 41.700,00", "49% do previsto"]] },
     ],
   },
   {
@@ -180,6 +199,13 @@ const PROFESSIONS: Profession[] = [
       { name: "Freelab", note: "Contato · R$ 22.000" },
       { name: "Tech Sul", note: "Fechamento · R$ 5.300" },
     ],
+    indicatorsTitle: "Resultado comercial",
+    indicatorsNote: "Conversão, ritmo de vendas e carteira.",
+    indicators: [
+      { group: "Conversão", rows: [["Taxa de conversão", "28%", "dos negócios abertos"], ["Ciclo de vendas", "12 dias", "média do período"], ["Ticket médio", "R$ 9.400", "por venda ganha"]] },
+      { group: "Ritmo", rows: [["Vendas ganhas", "34", "+8% desde ontem"], ["Em negociação", "23", "na carteira"], ["Perdidas", "6", "no mês"]] },
+      { group: "Relacionamento", rows: [["Contatos", "142", "na base"], ["Sem retorno", "18", "há mais de 7 dias"], ["Lembretes hoje", "5", "2 atrasados"]] },
+    ],
   },
 ];
 
@@ -215,6 +241,7 @@ export function DashboardPreview() {
   const [professionIndex, setProfessionIndex] = React.useState(0);
   const [screen, setScreen] = React.useState<Screen>("dashboard");
   const [navLabel, setNavLabel] = React.useState("Visão geral");
+  const [switcherOpen, setSwitcherOpen] = React.useState(false);
   const profession = PROFESSIONS[professionIndex];
 
   const navItems: Array<{ label: string; screen: Screen }> = [
@@ -230,10 +257,13 @@ export function DashboardPreview() {
     setNavLabel(item.label);
   }
 
-  function cycleProfession() {
-    setProfessionIndex((current) => (current + 1) % PROFESSIONS.length);
+  // Ciclar no clique escondia as outras profissoes: sem lista visivel, quem
+  // olha nao sabe que existem. Abre igual ao WorkspaceSwitcher do produto.
+  function chooseProfession(index: number) {
+    setProfessionIndex(index);
     setScreen("dashboard");
     setNavLabel("Visão geral");
+    setSwitcherOpen(false);
   }
 
   return (
@@ -247,18 +277,36 @@ export function DashboardPreview() {
         {/* Onde o WorkspaceSwitcher vive no produto. Aqui ele troca a profissão
             inteira, pra quem explora ver o painel de cada uma sem abas por fora
             do card. */}
-        <button
-          type="button"
-          onClick={cycleProfession}
-          title="Ver outra profissão"
-          className="mb-3 flex items-center gap-2 rounded-xl px-2 py-1.5 text-left transition-colors hover:bg-white/[0.05]"
-        >
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-[11px] font-semibold text-white/85">{profession.org}</span>
-            <span className="block truncate text-[10px] text-white/45">{profession.role}</span>
-          </span>
-          <ChevronsUpDown className="size-3 shrink-0 text-white/40" strokeWidth={2} />
-        </button>
+        <div className="relative mb-3">
+          <button
+            type="button"
+            onClick={() => setSwitcherOpen((open) => !open)}
+            aria-expanded={switcherOpen}
+            className="flex w-full items-center gap-2 rounded-xl border border-white/[0.07] px-2 py-1.5 text-left transition-colors hover:bg-white/[0.05]"
+          >
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[11px] font-semibold text-white/85">{profession.org}</span>
+              <span className="block truncate text-[10px] text-white/45">{profession.role}</span>
+            </span>
+            <ChevronsUpDown className="size-3 shrink-0 text-white/40" strokeWidth={2} />
+          </button>
+          {switcherOpen ? (
+            <ul className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-xl border border-od-border bg-od-surface py-1">
+              {PROFESSIONS.map((item, index) => (
+                <li key={item.key}>
+                  <button
+                    type="button"
+                    onClick={() => chooseProfession(index)}
+                    className={`flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-[11px] transition-colors hover:bg-white/[0.06] ${index === professionIndex ? "font-semibold text-white" : "text-white/60"}`}
+                  >
+                    <span className="min-w-0 flex-1 truncate">{item.role}</span>
+                    {index === professionIndex ? <Check className="size-3 shrink-0 text-od-accent" strokeWidth={2.5} /> : null}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
 
         {navItems.map((item) => {
           const current = item.label === navLabel;
@@ -438,6 +486,29 @@ export function DashboardPreview() {
                     </li>
                   ))}
                 </ul>
+              </div>
+            </div>
+
+            <div className="border-t border-white/[0.07] px-4 py-3">
+              <p className="text-[12px] font-semibold text-white">{profession.indicatorsTitle}</p>
+              <p className="mt-0.5 text-[10px] text-white/45">{profession.indicatorsNote}</p>
+              <div className="mt-3 grid gap-x-5 gap-y-3 md:grid-cols-3">
+                {profession.indicators.map(({ group, rows }) => (
+                  <div key={group} className="min-w-0">
+                    <p className="text-[10px] font-medium text-white/45">{group}</p>
+                    <ul className="mt-1.5 space-y-1.5">
+                      {rows.map(([label, value, note]) => (
+                        <li key={label} className="flex items-baseline justify-between gap-2">
+                          <span className="min-w-0">
+                            <span className="block truncate text-[10px] text-white/70">{label}</span>
+                            <span className="block truncate text-[9px] text-white/35">{note}</span>
+                          </span>
+                          <span className="shrink-0 text-[11px] font-semibold text-white">{value}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
             </div>
           </>
