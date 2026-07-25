@@ -112,15 +112,27 @@
 :root {
   color-scheme: dark;
   --font-inter: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Escada de superfícies com passo de ~0.045 de L em OKLCH (295deg, C 0.010).
+     Antes os quatro planos ficavam em L 0.163 / 0.195 / 0.212 / 0.234 — passos
+     de 0.018 a 0.031, abaixo do que o olho separa, então a estrutura da tela
+     dependia só do matiz roxo. Agora o valor carrega a hierarquia e o acento
+     fica livre pra significar ação. */
   --od-bg: #151419;
-  --od-surface: #1e1d22;
-  --od-muted-surface: #19181d;
-  --od-border: #323039;
-  --od-border-hover: #46434e;
-  --od-text: #faf9f8;
-  --od-text-2: #a39da8;
-  --od-text-3: #837d8a;
-  --od-accent: #8b5cf6;
+  --od-surface: #2a292f;
+  --od-muted-surface: #1f1e24;
+  --od-border: #3a3840;
+  --od-border-hover: #515058;
+  /* Rampa recalculada junto com as superfícies: ao clarear os planos, o texto
+     silencioso perdia contraste (od-text-3 caía a 3.61 sobre od-surface, abaixo
+     do AA de 4.5). Agora o pior caso da rampa é 4.53, sobre a superfície mais
+     clara, e a separação entre os três níveis se mantém em ~0.1 de L. */
+  --od-text: #f5f4f7;
+  --od-text-2: #b2b0b7;
+  --od-text-3: #928f98;
+  /* Branco sobre o acento antigo (#8b5cf6) dava 4.23 — o rótulo do CTA é 13px
+     semibold, não conta como texto grande, então o botão primário reprovava em
+     AA. Um passo de L mais escuro leva a 4.51 sem mudar a identidade. */
+  --od-accent: #8757f0;
   --od-accent-hover: #a78bfa;
   --od-accent-tint: #241c38;
   --od-success-bg: oklch(0.31 0.06 150);
@@ -129,7 +141,7 @@
   --od-warning-fg: oklch(0.82 0.13 75);
   --od-danger-bg: oklch(0.3 0.07 25);
   --od-danger-fg: oklch(0.78 0.15 25);
-  --od-sidebar: #0f0d11;
+  --od-sidebar: #0b0a0f;
   --od-sidebar-active: rgba(255, 255, 255, 0.07);
   --z-dropdown: 50;
   --z-sticky: 60;
@@ -145,7 +157,16 @@ body { min-height: 100%; margin: 0; background: var(--od-bg); color: var(--od-te
 button, input, select, textarea { font: inherit; }
 button, select { cursor: pointer; }
 button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: not-allowed; opacity: .55; }
-a { color: inherit; text-decoration: none; }
+/* Precisa ficar em @layer base: no Tailwind 4 as utilities vivem em
+   @layer utilities, e CSS sem layer nenhuma vence qualquer layer. Solto aqui
+   fora, `a { color: inherit }` anulava TODA classe text-* aplicada a link no
+   app inteiro — o rótulo do CTA com `text-white` renderizava em var(--od-text),
+   e links com text-od-text-2 ou text-violet-300 saíam na cor herdada. Dentro da
+   layer, o reset continua valendo pro link sem classe e a utility volta a
+   ganhar quando existe. */
+@layer base {
+  a { color: inherit; text-decoration: none; }
+}
 h1, h2, h3 { text-wrap: balance; }
 p { text-wrap: pretty; }
 ::selection { background: var(--od-accent); color: #fff; }
