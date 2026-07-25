@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { IconArrowRight, IconBot, IconX } from "@/app/(app)/icons";
+import { IconArrowRight, IconBot, IconX } from "@/app/(dashboard)/painel/icons";
 import { propertyStatusLabel, propertyTypeLabel, transactionTypeLabel } from "@/lib/real-estate";
 import type { RealEstatePropertyStatus, RealEstatePropertyType, RealEstateTransactionType } from "@/lib/supabase/types";
 
@@ -104,7 +104,7 @@ export function PropertyFilterChat() {
 
   return (
     <div className="border-b border-line pb-4">
-      <div className="flex items-center gap-2 text-xs font-black text-ink-soft">
+      <div className="flex items-center gap-2 text-xs font-semibold text-ink-soft">
         <IconBot className="h-4 w-4 text-brand-700" />
         Filtrar conversando com a IA
       </div>
@@ -114,13 +114,13 @@ export function PropertyFilterChat() {
           {activeChips.map((chip) => (
             <span
               key={chip.key}
-              className="flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-black text-brand-700"
+              className="flex items-center gap-1 rounded bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700"
             >
               {chipLabel(chip.key, chip.value)}
               <button
                 type="button"
                 onClick={() => removeChip(chip.key)}
-                className="press-sm grid h-3.5 w-3.5 place-items-center rounded-full hover:bg-brand-600/20"
+                className="press-sm grid h-3.5 w-3.5 place-items-center rounded hover:bg-brand-600/20"
                 aria-label={`Remover filtro ${chipLabel(chip.key, chip.value)}`}
               >
                 <IconX className="h-2.5 w-2.5" />
@@ -135,13 +135,13 @@ export function PropertyFilterChat() {
           {messages.map((message, index) =>
             message.role === "user" ? (
               <div key={index} className="flex justify-end">
-                <div className="max-w-[85%] rounded-xl rounded-br-sm bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] px-3 py-1.5 text-xs font-semibold text-white">
+                <div className="max-w-[85%] rounded-lg rounded-br-sm bg-brand-700 px-3 py-1.5 text-xs font-semibold text-white">
                   {message.content}
                 </div>
               </div>
             ) : (
               <div key={index} className="flex justify-start">
-                <div className="max-w-[85%] rounded-xl rounded-bl-sm bg-white px-3 py-1.5 text-xs font-semibold text-ink">
+                <div className="max-w-[85%] rounded rounded-bl-sm bg-surface px-3 py-1.5 text-xs font-semibold text-ink">
                   {message.content}
                 </div>
               </div>
@@ -175,7 +175,7 @@ export function PropertyFilterChat() {
         <button
           type="submit"
           disabled={sending || !input.trim()}
-          className="press-sm flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] text-white transition-opacity disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-brand-600"
+          className="press-sm flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand-700 text-white transition-opacity disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-brand-600"
           aria-label="Enviar"
         >
           <IconArrowRight className="h-4 w-4" />

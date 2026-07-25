@@ -36,7 +36,7 @@ export function PropertyReactionButtons({ token, propertyId }: { token: string; 
   }
 
   if (selected) {
-    return <p className="text-sm font-black text-brand-700">Obrigado! Registramos: {OPTIONS.find((o) => o.value === selected)?.label}.</p>;
+    return <p className="text-sm font-semibold text-brand-700">Obrigado! Registramos: {OPTIONS.find((o) => o.value === selected)?.label}.</p>;
   }
 
   return (
@@ -47,7 +47,7 @@ export function PropertyReactionButtons({ token, propertyId }: { token: string; 
           type="button"
           disabled={sending}
           onClick={() => react(option.value)}
-          className="press-sm rounded-md border border-line bg-white px-3 py-2 text-xs font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 disabled:opacity-50"
+          className="press-sm rounded-md border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 disabled:opacity-50"
         >
           {option.label}
         </button>

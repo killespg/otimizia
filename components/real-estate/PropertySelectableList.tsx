@@ -41,7 +41,7 @@ export function PropertySelectableList({ rows, selectable = true }: { rows: Prop
               />
             )}
             <Link
-              href={`/imoveis/${row.id}`}
+              href={`/painel/imoveis/${row.id}`}
               className="nav-item flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
             >
               <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -58,7 +58,7 @@ export function PropertySelectableList({ rows, selectable = true }: { rows: Prop
                 )}
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate text-sm font-black text-ink">{row.title}</p>
+                    <p className="truncate text-sm font-semibold text-ink">{row.title}</p>
                     <span className={"tag " + row.statusTagClass}>{row.statusLabel}</span>
                   </div>
                   <p className="mt-1 truncate text-xs font-bold text-ink-muted">{row.subtitle}</p>
@@ -66,7 +66,7 @@ export function PropertySelectableList({ rows, selectable = true }: { rows: Prop
               </div>
               <div className="flex shrink-0 items-center gap-4 sm:justify-end">
                 <span className="text-xs font-bold text-ink-muted">{row.facts}</span>
-                <span className="text-sm font-black text-ink">{row.priceLabel}</span>
+                <span className="text-sm font-semibold text-ink">{row.priceLabel}</span>
               </div>
             </Link>
           </div>
@@ -79,7 +79,7 @@ export function PropertySelectableList({ rows, selectable = true }: { rows: Prop
             <button type="button" onClick={() => setSelected(new Set())} className="text-xs font-bold text-ink-muted hover:text-ink">
               Limpar
             </button>
-            <Link href={`/imoveis/colecoes/nova?ids=${Array.from(selected).join(",")}`} className="btn-soft shrink-0 text-xs">
+            <Link href={`/painel/imoveis/colecoes/nova?ids=${Array.from(selected).join(",")}`} className="btn-secondary shrink-0 text-xs">
               Criar vitrine com selecionados
             </Link>
           </div>

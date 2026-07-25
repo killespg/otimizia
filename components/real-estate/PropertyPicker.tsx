@@ -59,7 +59,7 @@ export function PropertyPicker({
           placeholder="Buscar por título ou bairro"
           className="field flex-1"
         />
-        <button type="button" onClick={selectAllFiltered} className="btn-soft shrink-0 whitespace-nowrap text-xs">
+        <button type="button" onClick={selectAllFiltered} className="btn-secondary shrink-0 whitespace-nowrap text-xs">
           Selecionar todos ({filtered.length})
         </button>
       </div>

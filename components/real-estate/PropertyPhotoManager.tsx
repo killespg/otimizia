@@ -1,29 +1,22 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
-import { deletePropertyMedia, reorderPropertyMedia } from "@/app/(app)/imoveis/actions";
-import { IconTrash } from "@/app/(app)/icons";
+import { useOptimistic, useState, useTransition } from "react";
+import { deletePropertyMedia, reorderPropertyMedia } from "@/app/(dashboard)/painel/imoveis/actions";
+import { IconTrash } from "@/app/(dashboard)/painel/icons";
 
 type Photo = { id: string; url: string };
 
 export function PropertyPhotoManager({ propertyId, photos }: { propertyId: string; photos: Photo[] }) {
-  const [order, setOrder] = useState(photos);
+  const [order, setOrder] = useOptimistic(photos, (_current, next: Photo[]) => next);
   const [dragId, setDragId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
-  // Ressincroniza com a verdade do servidor depois de qualquer revalidação
-  // (exclusão, upload, ou o próprio reorder já persistido) — sem isso o
-  // estado local do drag-and-drop poderia ficar dessincronizado.
-  useEffect(() => {
-    setOrder(photos);
-  }, [photos]);
-
   function persist(newOrder: Photo[]) {
-    setOrder(newOrder);
     const formData = new FormData();
     formData.set("property_id", propertyId);
     for (const photo of newOrder) formData.append("media_ids", photo.id);
     startTransition(() => {
+      setOrder(newOrder);
       reorderPropertyMedia(formData);
     });
   }
@@ -60,7 +53,7 @@ export function PropertyPhotoManager({ propertyId, photos }: { propertyId: strin
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- vem de storage público, sem next/image configurado */}
           <img src={photo.url} alt="" className="aspect-square w-full select-none object-cover" draggable={false} />
-          <span className="absolute left-1.5 top-1.5 grid h-5 min-w-5 place-items-center rounded bg-black/60 px-1 text-[10px] font-black text-white">
+          <span className="absolute left-1.5 top-1.5 grid h-5 min-w-5 place-items-center rounded bg-black/60 px-1 text-[10px] font-semibold text-white">
             {index + 1}
           </span>
           <form action={deletePropertyMedia} className="absolute right-1.5 top-1.5">
