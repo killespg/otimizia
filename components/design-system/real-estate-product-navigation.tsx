@@ -19,6 +19,7 @@ import {
   LogOut,
   MapPinned,
   MessageCircle,
+  Pin,
   Settings,
   Users,
   type LucideIcon,
@@ -56,6 +57,10 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
   // é a exceção, então só o que o usuário fecha entra no armazenamento.
   const [closedGroups, setClosedGroups] = useState<string[]>([]);
   const [overviewOpen, setOverviewOpen] = useState(true);
+  // Itens fixados no topo, por href. O WhatsApp entra como padrão por ser o
+  // canal de resposta mais urgente do corretor, mas é só um padrão: quem quiser
+  // desafixa, e qualquer outro item pode subir.
+  const [pinned, setPinned] = useState<string[]>(["/painel/whatsapp"]);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -72,6 +77,15 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
         }
       }
       setOverviewOpen(window.localStorage.getItem("otimizia-real-estate-nav-overview") !== "0");
+      const savedPinned = window.localStorage.getItem("otimizia-real-estate-nav-pinned");
+      if (savedPinned) {
+        try {
+          const parsed: unknown = JSON.parse(savedPinned);
+          if (Array.isArray(parsed)) setPinned(parsed.filter((value): value is string => typeof value === "string"));
+        } catch {
+          // storage corrompido nao pode derrubar a navegacao
+        }
+      }
     });
     return () => window.cancelAnimationFrame(frame);
   }, []);
@@ -90,6 +104,12 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
     const next = !overviewOpen;
     setOverviewOpen(next);
     window.localStorage.setItem("otimizia-real-estate-nav-overview", next ? "1" : "0");
+  }
+
+  function togglePin(href: string) {
+    const next = pinned.includes(href) ? pinned.filter((item) => item !== href) : [...pinned, href];
+    setPinned(next);
+    window.localStorage.setItem("otimizia-real-estate-nav-pinned", JSON.stringify(next));
   }
 
   function toggle() {
@@ -122,6 +142,10 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
     window.addEventListener("pointerup", finish);
   }
 
+  // Nomeado em vez de posicional: mobileTabs e barHrefs referenciavam este item
+  // por indice (commercial[2]), entao move-lo de grupo trocaria silenciosamente
+  // a aba do celular por outra.
+  const whatsapp: NavItem = { href: "/painel/whatsapp", label: "WhatsApp", icon: MessageCircle };
   const overview: NavItem[] = [
     { href: "/painel/imoveis/dashboard", label: "Visão geral", icon: CircleGauge, exact: true },
     { href: "/painel/assistente", label: "Tim", icon: Bot },
@@ -135,7 +159,7 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
   const commercial: NavItem[] = [
     { href: "/painel/contatos", label: "Clientes", icon: ContactRound },
     { href: "/painel/funil", label: "Atendimentos", icon: KanbanSquare, badge: counts.deals },
-    { href: "/painel/whatsapp", label: "WhatsApp", icon: MessageCircle },
+    whatsapp,
     { href: "/painel/calendario", label: "Calendário", icon: CalendarDays },
   ];
   const management: NavItem[] = [
@@ -143,20 +167,71 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
     { href: "/painel/equipe", label: "Equipe", icon: Users },
     { href: "/painel/funil/relatorio", label: "Relatórios", icon: BarChart3 },
   ];
-  const groups = [
-    { label: "", items: overview },
-    { label: "Imobiliário", items: portfolio },
-    { label: "Comercial", items: commercial },
-    { label: "Gestão", items: management },
-  ];
+  // Visão geral e Tim são a âncora da navegação e não entram no jogo de fixar:
+  // já estão no topo, e permitir desafixá-los deixaria a sidebar sem base.
+  const pinnableItems = [...portfolio, ...commercial, ...management];
+  const pinnedItems = pinned
+    .map((href) => pinnableItems.find((item) => item.href === href))
+    .filter((item): item is NavItem => Boolean(item));
+  const pinnedHrefs = new Set(pinnedItems.map((item) => item.href));
+  // Fixado sobe, não duplica: o item sai do grupo de origem.
+  const withoutPinned = (items: NavItem[]) => items.filter((item) => !pinnedHrefs.has(item.href));
 
-  function Item({ item }: { item: NavItem }) {
+  // Fixado sobe pro grupo de cima, junto de Visão geral e Tim — sem seção
+  // própria: uma aba só pra isso separava o que o usuário quis deixar perto.
+  const groups = [
+    { label: "", items: [...overview, ...pinnedItems] },
+    { label: "Imobiliário", items: withoutPinned(portfolio) },
+    { label: "Comercial", items: withoutPinned(commercial) },
+    { label: "Gestão", items: withoutPinned(management) },
+  ].filter((group) => group.items.length > 0);
+
+  // A fixabilidade é por item, não por grupo: no topo convivem a âncora fixa
+  // (Visão geral, Tim) e os fixados, que precisam poder ser desafixados.
+  const anchorHrefs = new Set(overview.map((item) => item.href));
+  const canPin = (item: NavItem) => !anchorHrefs.has(item.href);
+
+  function Item({ item, pinnable = true, trailing }: { item: NavItem; pinnable?: boolean; trailing?: React.ReactNode }) {
     const active = isCurrent(pathname, item);
     const Icon = item.icon;
-    return <Link href={item.href} prefetch={true} title={collapsed ? item.label : undefined} aria-current={active ? "page" : undefined} className={`group flex min-h-8 items-center rounded-xl text-[13px] transition-colors ${collapsed ? "mx-auto size-9 justify-center" : "gap-2 px-2.5"} ${active ? "bg-white/[0.075] font-semibold text-white" : "text-white/58 hover:bg-white/[0.045] hover:text-white"}`}>
-      <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/55 group-hover:text-white/75"} />
-      {!collapsed ? <><span className="min-w-0 flex-1 truncate">{item.label}</span>{typeof item.badge === "number" && item.badge > 0 ? <span className={`text-[11px] font-semibold tabular-nums ${item.danger ? "text-[#fb7767]" : "text-white/65"}`}>{item.badge}</span> : null}</> : null}
-    </Link>;
+
+    if (collapsed) {
+      return <Link href={item.href} prefetch={true} title={item.label} aria-current={active ? "page" : undefined} className={`group mx-auto flex size-9 min-h-8 items-center justify-center rounded-xl text-[13px] transition-colors ${active ? "bg-white/[0.075] font-semibold text-white" : "text-white/58 hover:bg-white/[0.045] hover:text-white"}`}>
+        <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/55 group-hover:text-white/75"} />
+      </Link>;
+    }
+
+    const isPinned = pinned.includes(item.href);
+    // O realce mora no contêiner e link, contador e alfinete ficam dentro dele:
+    // um retângulo só, e nenhum elemento clicável aninhado dentro do link.
+    return <div className={`group flex min-h-8 items-center rounded-xl pr-1 transition-colors ${active ? "bg-white/[0.075]" : "hover:bg-white/[0.045]"}`}>
+      <Link href={item.href} prefetch={true} aria-current={active ? "page" : undefined} className={`flex min-w-0 flex-1 items-center gap-2 px-2.5 text-[13px] ${active ? "font-semibold text-white" : "text-white/58 group-hover:text-white"}`}>
+        <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/55 group-hover:text-white/75"} />
+        <span className="min-w-0 flex-1 truncate">{item.label}</span>
+      </Link>
+      {trailing}
+      {/* Contador e alfinete dividem a mesma vaga, trocando no hover. Em vagas
+          separadas o alfinete roubava 24px fixos da linha e truncava rótulos
+          longos ("Carteira de imóveis") mesmo sem ninguém passar o mouse. */}
+      {pinnable || (typeof item.badge === "number" && item.badge > 0) ? (
+        <span className="relative grid min-w-6 shrink-0 place-items-center px-1">
+          {typeof item.badge === "number" && item.badge > 0 ? (
+            <span className={`text-[11px] font-semibold tabular-nums transition-opacity ${pinnable ? "group-hover:opacity-0" : ""} ${item.danger ? "text-[#fb7767]" : "text-white/65"}`}>{item.badge}</span>
+          ) : null}
+          {pinnable ? (
+            <button
+              type="button"
+              onClick={() => togglePin(item.href)}
+              aria-pressed={isPinned}
+              title={isPinned ? "Desafixar do topo" : "Fixar no topo"}
+              className={`absolute inset-0 grid place-items-center text-white/40 transition-opacity hover:text-white ${isPinned ? "" : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"}`}
+            >
+              <Pin size={12} className={isPinned ? "fill-current" : ""} />
+            </button>
+          ) : null}
+        </span>
+      ) : null}
+    </div>;
   }
 
   // O chevron da "Visão geral" era decorativo: cravado no rótulo, sem onClick e
@@ -181,9 +256,9 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
   const mobileTabs: [NavItem, NavItem, NavItem] = [
     { ...overview[0], label: "Início" },
     { ...portfolio[0], label: "Imóveis" },
-    commercial[2],
+    whatsapp,
   ];
-  const barHrefs = new Set([overview[0].href, portfolio[0].href, commercial[2].href, overview[1].href]);
+  const barHrefs = new Set([overview[0].href, portfolio[0].href, whatsapp.href, overview[1].href]);
   const mobileGroups = [
     { label: "Imobiliário", items: portfolio },
     { label: "Comercial", items: commercial },
@@ -234,18 +309,11 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
             {!hidden ? (
               <div id={group.label ? `nav-grupo-${group.label}` : undefined}>
                 {group.items.map((item, index) => <Fragment key={item.href + item.label}>
-                  {group.label === "" && index === 0 && !collapsed ? (
-                    // Uma caixa só: o realce vive no contêiner, e link e seta
-                    // ficam dentro dele. Botão fora do item criava um segundo
-                    // retângulo de hover só pra seta.
-                    <div className={`group flex min-h-8 items-center rounded-xl pr-1 transition-colors ${isCurrent(pathname, item) ? "bg-white/[0.075]" : "hover:bg-white/[0.045]"}`}>
-                      <Link href={item.href} prefetch={true} aria-current={isCurrent(pathname, item) ? "page" : undefined} className={`flex min-w-0 flex-1 items-center gap-2 px-2.5 text-[13px] ${isCurrent(pathname, item) ? "font-semibold text-white" : "text-white/58 group-hover:text-white"}`}>
-                        <item.icon size={16} strokeWidth={isCurrent(pathname, item) ? 2.2 : 1.8} className={isCurrent(pathname, item) ? "text-od-text-2" : "text-white/55"} />
-                        <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                      </Link>
-                      <OverviewDisclosure />
-                    </div>
-                  ) : <Item item={item} />}
+                  <Item
+                    item={item}
+                    pinnable={canPin(item)}
+                    trailing={group.label === "" && index === 0 && !collapsed ? <OverviewDisclosure /> : undefined}
+                  />
                   {group.label === "" && index === 0 && !collapsed && overviewOpen ? (
                     <div id="nav-visao-geral" className="mx-3.5 flex translate-x-px flex-col gap-1 border-l border-white/[0.08] px-2.5 py-0.5">
                       <Link href="/painel/imoveis/dashboard" className={`flex h-7 -translate-x-px items-center rounded-xl px-2 text-[12px] ${pathname === "/painel/imoveis/dashboard" ? "bg-white/[0.055] font-medium text-white" : "text-white/42 hover:text-white"}`}>Minha operação</Link>
