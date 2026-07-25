@@ -8,11 +8,11 @@ import { LogoMarquee } from "@/components/landing/logo-marquee";
 import { FeatureTabs } from "@/components/landing/feature-tabs";
 import { DashboardPreview } from "@/components/landing/dashboard-preview";
 import { Pricing } from "@/components/landing/pricing";
+import { Glow, Reveal } from "@/components/landing/reveal";
 import { FaqAccordion } from "@/components/FaqAccordion";
 import { SpotlightCard } from "@/components/landing/spotlight-card";
 import { AiComposer } from "@/components/landing/ai-composer";
 import { ContainerScroll } from "@/components/landing/container-scroll-animation";
-import { MouseSpotlight } from "@/components/landing/mouse-spotlight";
 
 /**
  * Faixa de seção de largura total.
@@ -40,17 +40,18 @@ function Section({
   return (
     <section
       id={id}
-      className={`scroll-mt-16 border-t border-od-border ${raised ? "bg-od-muted-surface" : "bg-od-bg"}`}
+      className={`relative isolate scroll-mt-16 overflow-hidden border-t border-od-border ${raised ? "bg-od-muted-surface" : "bg-od-bg"}`}
     >
+      <Glow className="-top-40 left-1/2 -translate-x-1/2" size={640} intensity={0.1} pulse />
       <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-8 py-20 md:py-24">
-        <div className="mx-auto mb-12 max-w-[560px] text-center">
+        <Reveal className="mx-auto mb-12 max-w-[560px] text-center">
           <p className="text-od-label text-od-text-3">{eyebrow}</p>
           <h2 className="mt-3 text-od-title text-od-text">{title}</h2>
           {description ? (
             <p className="mt-3 text-[15px] leading-relaxed text-od-text-2">{description}</p>
           ) : null}
-        </div>
-        {children}
+        </Reveal>
+        <Reveal delay={0.08}>{children}</Reveal>
       </div>
     </section>
   );
@@ -68,7 +69,6 @@ export default async function LandingPage() {
 
   return (
     <div className="dark relative bg-od-bg">
-      <MouseSpotlight />
 
       {/* Glow de fundo único, atravessando hero → features → dashboard, pra costurar
           as seções em vez de cada uma "recomeçar" visualmente do zero. */}

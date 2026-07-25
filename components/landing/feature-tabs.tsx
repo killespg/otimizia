@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   BadgeCheck,
   Bell,
@@ -147,10 +148,17 @@ const VERTICALS: Vertical[] = [
   },
 ];
 
-function FeatureRow({ feature }: { feature: Feature }) {
+function FeatureRow({ feature, index }: { feature: Feature; index: number }) {
   const Icon = feature.icon;
+  const reduceMotion = useReducedMotion();
   return (
-    <div className="flex min-w-0 gap-3 py-3.5">
+    <motion.div
+      className="flex min-w-0 gap-3 py-3.5"
+      initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1], delay: Math.min(index, 5) * 0.045 }}
+    >
       <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-xl bg-od-accent/10 text-od-accent">
         <Icon className="size-4" strokeWidth={2} />
       </span>
@@ -158,7 +166,7 @@ function FeatureRow({ feature }: { feature: Feature }) {
         <span className="block text-[14px] font-semibold text-od-text">{feature.title}</span>
         <span className="mt-0.5 block text-[13px] leading-relaxed text-od-text-2">{feature.description}</span>
       </span>
-    </div>
+    </motion.div>
   );
 }
 
@@ -204,8 +212,8 @@ export function FeatureTabs() {
           <div key={group.label} className="grid gap-x-8 py-5 md:grid-cols-[160px_minmax(0,1fr)]">
             <p className="pt-3.5 text-od-label text-od-text-3">{group.label}</p>
             <div className="grid gap-x-8 sm:grid-cols-2 2xl:grid-cols-3">
-              {group.features.map((feature) => (
-                <FeatureRow key={feature.title} feature={feature} />
+              {group.features.map((feature, index) => (
+                <FeatureRow key={feature.title} feature={feature} index={index} />
               ))}
             </div>
           </div>
@@ -219,8 +227,8 @@ export function FeatureTabs() {
             </p>
           </div>
           <div className="grid gap-x-8 sm:grid-cols-2 2xl:grid-cols-3">
-            {COMUM.map((feature) => (
-              <FeatureRow key={feature.title} feature={feature} />
+            {COMUM.map((feature, index) => (
+              <FeatureRow key={feature.title} feature={feature} index={index} />
             ))}
           </div>
         </div>
