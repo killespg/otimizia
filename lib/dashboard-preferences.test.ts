@@ -9,7 +9,7 @@ import {
   mergeScopedPreferences,
   metricLabel,
 } from "./dashboard-preferences";
-import type { ProfessionPreset } from "./professions";
+import { getProfessionPreset, type ProfessionPreset } from "./professions";
 
 const preset = {
   metrics: [
@@ -25,6 +25,7 @@ describe("getDashboardPreferences", () => {
     expect(prefs.accent).toBe("purple");
     expect(prefs.metrics).toEqual(["open_value", "contacts"]);
     expect(prefs.widgets).toEqual([...DASHBOARD_WIDGETS]);
+    expect(prefs.showAnimatedBackground).toBe(true);
   });
 
   it("keeps only known metric/widget keys from stored value", () => {
@@ -67,6 +68,31 @@ describe("getDashboardPreferences", () => {
     expect(getDashboardPreferences(legacy, preset, "law_office").style).toBe("compact");
     expect(getDashboardPreferences(legacy, preset, "autonomous_seller").style).toBe("compact");
   });
+
+  it("preserves an explicitly disabled animated background", () => {
+    const prefs = getDashboardPreferences({ showAnimatedBackground: false }, preset);
+    expect(prefs.showAnimatedBackground).toBe(false);
+  });
+
+  it("upgrades the old seller statistics to useful commercial defaults", () => {
+    const sellerPreset = getProfessionPreset("autonomous_seller");
+    const prefs = getDashboardPreferences(
+      {
+        autonomous_seller: {
+          metrics: ["open_value", "open_deals", "won_value_month", "overdue_tasks"],
+        },
+      },
+      sellerPreset,
+      "autonomous_seller",
+    );
+
+    expect(prefs.metrics).toEqual([
+      "open_value",
+      "won_value_month",
+      "conversion_rate",
+      "commission_open",
+    ]);
+  });
 });
 
 describe("mergeScopedPreferences", () => {
@@ -78,6 +104,7 @@ describe("mergeScopedPreferences", () => {
       metrics: ["open_value"],
       metricLabels: {},
       widgets: ["metrics"],
+      showAnimatedBackground: true,
     });
     expect(merged.law_office).toEqual({ style: "compact" });
     expect(getDashboardPreferences(merged, preset, "autonomous_seller").style).toBe("clean");

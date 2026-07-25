@@ -18,6 +18,12 @@ function monthKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
+// Timestamps do banco chegam em ISO/UTC. Usar getters locais aqui desloca
+// eventos da meia-noite para o mês anterior em fusos negativos (ex.: Brasil).
+function utcMonthKey(date: Date): string {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
 function monthLabel(date: Date): string {
   return `${MONTH_LABELS[date.getMonth()]}/${date.getFullYear()}`;
 }
@@ -45,12 +51,12 @@ export function buildMonthlyDealStats(deals: Deal[], from: Date, to: Date): Mont
 
   for (const deal of deals) {
     const createdAt = new Date(deal.created_at);
-    const createdKey = monthKey(createdAt);
+    const createdKey = utcMonthKey(createdAt);
     if (buckets.has(createdKey)) buckets.get(createdKey)!.created++;
 
     if (deal.closed_at) {
       const closedAt = new Date(deal.closed_at);
-      const closedKey = monthKey(closedAt);
+      const closedKey = utcMonthKey(closedAt);
       const bucket = buckets.get(closedKey);
       if (bucket) {
         if (deal.stage === "ganho") {

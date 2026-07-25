@@ -31,7 +31,8 @@ export type MetricKey =
   | "overdue_tasks"
   | "conversations_today"
   | "conversion_rate"
-  | "avg_ticket";
+  | "avg_ticket"
+  | "commission_open";
 
 export type MetricSpec = {
   key: MetricKey;
@@ -112,10 +113,10 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
       { key: "proximo_passo", label: "Próximo passo", type: "text", placeholder: "Ex: Enviar proposta por WhatsApp" },
     ],
     metrics: [
-      { key: "open_value", label: "Valor aberto" },
-      { key: "open_deals", label: "Vendas em andamento" },
-      { key: "won_value_month", label: "Ganhas no mês" },
-      { key: "overdue_tasks", label: "Follow-ups atrasados" },
+      { key: "open_value", label: "Potencial em aberto" },
+      { key: "won_value_month", label: "Vendido no mês" },
+      { key: "conversion_rate", label: "Conversão no mês" },
+      { key: "commission_open", label: "Comissão prevista" },
     ],
     messageTemplates: [
       {

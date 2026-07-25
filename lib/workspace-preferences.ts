@@ -1,4 +1,5 @@
 import type { ProfessionPreset } from "@/lib/professions";
+import type { SellerBusinessProfile } from "@/lib/supabase/types";
 import type { WorkspaceKey } from "@/lib/workspaces";
 
 export type WorkspaceLabelKey =
@@ -12,6 +13,10 @@ export type WorkspaceLabels = Record<WorkspaceLabelKey, string>;
 
 export type WorkspacePreferences = {
   labels?: Partial<WorkspaceLabels>;
+  sellerOperation?: Pick<
+    SellerBusinessProfile,
+    "sales_models" | "enabled_modules" | "default_warranty_days" | "low_stock_threshold" | "allow_negative_stock"
+  >;
 };
 
 export type WorkspacePreferencesByKey = Partial<Record<WorkspaceKey, WorkspacePreferences>>;
