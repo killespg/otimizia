@@ -43,7 +43,8 @@ type SharedCollection = {
   properties: SharedProperty[];
 };
 
-export default async function SharedPropertyCollectionPage({ params }: { params: { token: string } }) {
+export default async function SharedPropertyCollectionPage(props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   if (!/^[0-9a-f-]{36}$/i.test(params.token)) notFound();
 
   const supabase = createSupabaseClient(

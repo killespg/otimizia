@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { IconChevronRight } from "@/app/(app)/icons";
+import { IconChevronRight } from "@/app/(dashboard)/painel/icons";
 
 type FaqItem = {
   q: string;

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { BrandName } from "@/components/BrandName";
-import { IconX } from "@/app/(app)/icons";
+import { LogoMark } from "@/components/design-system/logo";
+import { IconX } from "@/app/(dashboard)/painel/icons";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -84,7 +84,7 @@ export function InstallAppPrompt() {
 
   return (
     <section
-      className="install-app-prompt fixed inset-x-3 bottom-[calc(5.8rem+env(safe-area-inset-bottom))] z-[70] rounded-2xl border border-brand-200 bg-surface p-3 shadow-[0_24px_58px_-28px_rgba(7,8,28,0.86)] sm:hidden"
+      className="install-app-prompt fixed inset-x-3 bottom-[calc(5.8rem+env(safe-area-inset-bottom))] z-[70] rounded-lg border border-brand-200 bg-surface p-3 sm:hidden"
       aria-label="Instalar aplicativo"
     >
       <button
@@ -97,13 +97,9 @@ export function InstallAppPrompt() {
       </button>
 
       <div className="flex gap-3 pr-8">
-        <Image
-          src="/otimizia-app-icon.png"
-          alt=""
-          width={46}
-          height={46}
-          className="h-[46px] w-[46px] shrink-0 rounded-xl"
-        />
+        <span className="grid size-[46px] shrink-0 place-items-center rounded-md bg-[#120f1c]">
+          <LogoMark size={38} />
+        </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-black text-ink">
             Use o <BrandName /> como app
@@ -135,14 +131,14 @@ export function InstallAppPrompt() {
         <button
           type="button"
           onClick={install}
-          className="nav-item flex min-h-11 flex-1 items-center justify-center rounded-xl bg-brand-700 px-4 text-sm font-black text-white"
+          className="nav-item flex min-h-11 flex-1 items-center justify-center rounded-md bg-brand-700 px-4 text-sm font-semibold text-white"
         >
           Baixar aplicativo
         </button>
         <button
           type="button"
           onClick={close}
-          className="nav-item min-h-11 rounded-xl border border-line bg-surface px-3 text-xs font-black text-ink-muted"
+          className="nav-item min-h-11 rounded-md border border-line bg-surface px-3 text-xs font-semibold text-ink-muted"
         >
           Depois
         </button>

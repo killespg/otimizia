@@ -6,14 +6,14 @@ import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 
 async function requireOrgAdmin() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
   const orgId = await getActiveOrgId(supabase, user.id);
   const role = await getOrgRole(supabase, orgId, user.id);
-  if (role !== "admin") redirect("/dashboard");
+  if (role !== "admin") redirect("/painel");
   return { supabase, orgId };
 }
 
@@ -53,7 +53,7 @@ export async function completeOnboarding(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  redirect("/painel");
 }
 
 export async function skipOnboarding() {
@@ -69,7 +69,7 @@ export async function skipOnboarding() {
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  redirect("/painel");
 }
 
 function text(v: FormDataEntryValue | null, max: number): string {
@@ -82,3 +82,4 @@ function requiredText(v: FormDataEntryValue | null, label: string, max: number):
   if (!s) throw new Error(`${label} obrigatório.`);
   return s;
 }
+

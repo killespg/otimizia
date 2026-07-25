@@ -26,7 +26,8 @@ type SharedCase = {
   documents: { name: string; document_type: string; external_url: string }[];
 };
 
-export default async function SharedCasePage({ params }: { params: { token: string } }) {
+export default async function SharedCasePage(props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   if (!/^[0-9a-f-]{36}$/i.test(params.token)) notFound();
 
   const supabase = createSupabaseClient(

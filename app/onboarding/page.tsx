@@ -7,7 +7,7 @@ import type { Organization } from "@/lib/supabase/types";
 import { completeOnboarding, skipOnboarding } from "./actions";
 
 export default async function OnboardingPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -15,7 +15,7 @@ export default async function OnboardingPage() {
 
   const orgId = await getActiveOrgId(supabase, user.id);
   const role = await getOrgRole(supabase, orgId, user.id);
-  if (role !== "admin") redirect("/dashboard");
+  if (role !== "admin") redirect("/painel");
 
   const { data: orgData } = await supabase
     .from("organizations")
@@ -23,12 +23,13 @@ export default async function OnboardingPage() {
     .eq("id", orgId)
     .maybeSingle();
   const org = orgData as Organization | null;
-  if (org?.onboarded_at) redirect("/dashboard");
+  if (org?.onboarded_at) redirect("/painel");
 
   return (
-    <main className="min-h-[100dvh] bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-2 sm:p-5 md:p-6">
-      <div className="mx-auto max-w-2xl py-6 sm:py-10">
-        <div className="panel space-y-5 p-6 sm:p-8">
+    <main className="min-h-[100dvh] bg-[#171320] px-4 py-8 sm:py-12">
+      <div className="mx-auto max-w-3xl">
+        <div className="mb-8 border-b border-white/[0.08] pb-6"><p className="text-xs font-semibold text-violet-300">Configuração inicial</p><p className="mt-2 text-sm text-white/42">Você poderá alterar tudo depois nas configurações do painel.</p></div>
+        <div className="panel space-y-6 p-5 sm:p-8">
           <div>
             <p className="text-sm font-black text-ink">Bem-vindo(a) ao <BrandName /></p>
             <h1 className="mt-2 text-2xl font-black tracking-[-0.03em] text-ink sm:text-3xl">
