@@ -43,7 +43,7 @@ export function NavBar({ items, className, actions }: NavBarProps) {
         className,
       )}
     >
-      <nav className="mx-auto flex h-14 max-w-[1180px] items-center gap-4 px-5 sm:px-8">
+      <nav className="mx-auto flex h-14 max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] items-center gap-4 px-5 sm:px-8">
         <ul className="flex min-w-0 flex-1 items-center gap-1">
           {items.map((item) => {
             const Icon = item.icon;

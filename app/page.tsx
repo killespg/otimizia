@@ -41,7 +41,7 @@ function Section({
       id={id}
       className={`scroll-mt-16 border-t border-od-border ${raised ? "bg-od-muted-surface" : "bg-od-bg"}`}
     >
-      <div className="mx-auto max-w-[1180px] px-8 py-20 md:py-24">
+      <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-8 py-20 md:py-24">
         <div className="mx-auto mb-12 max-w-[560px] text-center">
           <p className="text-od-label text-od-text-3">{eyebrow}</p>
           <h2 className="mt-3 text-od-title text-od-text">{title}</h2>
@@ -84,7 +84,7 @@ export default async function LandingPage() {
       <main className="relative overflow-hidden">
         {/* Abertura: hero e prova social continuam emendados, sem regua entre
             eles — sao um bloco de entrada, nao duas categorias. */}
-        <div className="mx-auto max-w-[1180px] px-8 pt-10">
+        <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-8 pt-10">
           <Hero animated />
           <div className="-mt-4 pb-20 pt-14">
             <p className="mb-7 text-center text-od-label text-od-text-3">
@@ -155,7 +155,7 @@ export default async function LandingPage() {
         </Section>
 
         <section className="border-t border-od-border bg-od-muted-surface">
-          <div className="mx-auto max-w-[1180px] px-8 py-24 text-center">
+          <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-8 py-24 text-center">
             <h2 className="mx-auto mb-4 max-w-[520px] text-od-title text-od-text">
               Pronto pra parar de perder negócio por esquecimento?
             </h2>
@@ -170,7 +170,7 @@ export default async function LandingPage() {
         </section>
 
         <footer className="border-t border-od-border bg-od-bg">
-          <div className="mx-auto flex max-w-[1180px] flex-col items-center gap-2 px-8 py-12 text-sm text-od-text-3">
+          <div className="mx-auto flex max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] flex-col items-center gap-2 px-8 py-12 text-sm text-od-text-3">
             <span className="font-bold text-od-text">OtimizIA</span>
             <span>© {new Date().getFullYear()} OtimizIA. Todos os direitos reservados.</span>
           </div>

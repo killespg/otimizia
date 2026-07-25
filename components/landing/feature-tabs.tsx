@@ -203,7 +203,7 @@ export function FeatureTabs() {
         {vertical.groups.map((group) => (
           <div key={group.label} className="grid gap-x-8 py-5 md:grid-cols-[160px_minmax(0,1fr)]">
             <p className="pt-3.5 text-od-label text-od-text-3">{group.label}</p>
-            <div className="grid gap-x-8 sm:grid-cols-2">
+            <div className="grid gap-x-8 sm:grid-cols-2 2xl:grid-cols-3">
               {group.features.map((feature) => (
                 <FeatureRow key={feature.title} feature={feature} />
               ))}
@@ -218,7 +218,7 @@ export function FeatureTabs() {
               Vale para as três profissões.
             </p>
           </div>
-          <div className="grid gap-x-8 sm:grid-cols-2">
+          <div className="grid gap-x-8 sm:grid-cols-2 2xl:grid-cols-3">
             {COMUM.map((feature) => (
               <FeatureRow key={feature.title} feature={feature} />
             ))}

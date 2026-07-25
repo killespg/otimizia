@@ -66,7 +66,7 @@ export const Header = ({
       style={{
         translateY: translate,
       }}
-      className="div max-w-5xl mx-auto text-center"
+      className="div max-w-5xl min-[1536px]:max-w-6xl min-[1800px]:max-w-7xl min-[2200px]:max-w-[1600px] mx-auto text-center"
     >
       {titleComponent}
     </motion.div>
@@ -91,7 +91,7 @@ export const Card = ({
         boxShadow:
           "0 0 #0000004d, 0 9px 20px #0000004a, 0 37px 37px #00000042, 0 84px 50px #00000026, 0 149px 60px #0000000a, 0 233px 65px #00000003",
       }}
-      className="mx-auto -mt-12 h-[34rem] w-full max-w-5xl rounded-2xl border border-od-border bg-od-surface p-2 shadow-od-float md:h-[46rem] md:p-3"
+      className="mx-auto -mt-12 h-[34rem] w-full max-w-5xl min-[1536px]:max-w-6xl min-[1800px]:max-w-7xl min-[2200px]:max-w-[1600px] rounded-2xl border border-od-border bg-od-surface p-2 shadow-od-float md:h-[46rem] md:p-3"
     >
       <div className="h-full w-full overflow-hidden rounded-xl bg-od-muted-surface">
         {children}
