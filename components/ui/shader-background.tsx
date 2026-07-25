@@ -23,7 +23,7 @@ const FRAGMENT_SHADER = `
   const float minorLineFrequency = 1.0;
   const vec4 gridColor = vec4(0.5);
   const float scale = 5.0;
-  const vec4 lineColor = vec4(0.4, 0.2, 0.8, 1.0);
+  const vec4 lineColor = vec4(0.26, 0.14, 0.5, 1.0);
   const float minLineWidth = 0.01;
   const float maxLineWidth = 0.2;
   const float lineSpeed = 1.0 * overallSpeed;
@@ -79,8 +79,11 @@ const FRAGMENT_SHADER = `
     space.x += random(space.y * warpFrequency + iTime * warpSpeed + 2.0) * warpAmplitude * horizontalFade;
 
     vec4 lines = vec4(0.0);
-    vec4 bgColor1 = vec4(0.1, 0.1, 0.3, 1.0);
-    vec4 bgColor2 = vec4(0.3, 0.1, 0.5, 1.0);
+    // Tons quase iguais ao canvas #151419: o fundo do shader existe pra dar
+    // profundidade, não pra pintar o dashboard. Um banho navy/violeta saturado
+    // aqui virava a cor dominante da tela e competia com o acento da marca.
+    vec4 bgColor1 = vec4(0.055, 0.05, 0.08, 1.0);
+    vec4 bgColor2 = vec4(0.1, 0.055, 0.15, 1.0);
 
     for(int l = 0; l < linesPerGroup; l++) {
       float normalizedLineIndex = float(l) / float(linesPerGroup);
@@ -204,7 +207,7 @@ export default function ShaderBackground() {
       ref={canvasRef}
       aria-hidden="true"
       data-dashboard-shader="plasma-wires"
-      className="pointer-events-none fixed inset-0 z-[1] h-full w-full opacity-50"
+      className="pointer-events-none fixed inset-0 z-[1] h-full w-full opacity-30"
     />
   );
 }
@@ -259,9 +262,11 @@ function startCanvasFallback(canvas: HTMLCanvasElement) {
     canvas.width = width;
     canvas.height = height;
 
+    // Mesmos tons do bgColor1/bgColor2 do shader — os dois caminhos precisam
+    // desenhar o mesmo fundo.
     horizontalBackground = context.createLinearGradient(0, 0, width, 0);
-    horizontalBackground.addColorStop(0, "rgb(26 26 77)");
-    horizontalBackground.addColorStop(1, "rgb(77 26 128)");
+    horizontalBackground.addColorStop(0, "rgb(14 13 20)");
+    horizontalBackground.addColorStop(1, "rgb(26 14 38)");
 
     verticalShade = context.createLinearGradient(0, 0, 0, height);
     verticalShade.addColorStop(0, "rgba(0, 0, 0, 1)");
@@ -350,10 +355,10 @@ function startCanvasFallback(canvas: HTMLCanvasElement) {
         if (index === 0) context.moveTo(point.x, point.y);
         else context.lineTo(point.x, point.y);
       });
-      context.strokeStyle = `rgba(102, 51, 204, ${0.28 + averageRand * 0.34})`;
+      context.strokeStyle = `rgba(102, 51, 204, ${0.18 + averageRand * 0.22})`;
       context.lineWidth = averageWidth;
       context.stroke();
-      context.strokeStyle = `rgba(102, 51, 204, ${0.62 + averageRand * 0.38})`;
+      context.strokeStyle = `rgba(102, 51, 204, ${0.4 + averageRand * 0.25})`;
       context.lineWidth = Math.max(0.65, averageWidth * 0.15);
       context.stroke();
 
@@ -363,7 +368,7 @@ function startCanvasFallback(canvas: HTMLCanvasElement) {
         const circlePoint = getLinePoint(lineIndex, circleX, time);
         context.beginPath();
         context.arc(circleX, circlePoint.y, Math.max(1.2, width * 0.0015), 0, Math.PI * 2);
-        context.fillStyle = `rgba(102, 51, 204, ${0.7 + circlePoint.rand * 0.3})`;
+        context.fillStyle = `rgba(102, 51, 204, ${0.45 + circlePoint.rand * 0.2})`;
         context.fill();
       }
     }
