@@ -395,7 +395,7 @@ export function DashboardPreview() {
         </div>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
           <div className="flex min-w-0 flex-1 items-center gap-2 border-b border-white/[0.12] py-1.5 md:w-64 md:flex-none">
             <Search className="size-3.5 shrink-0 text-white/40" strokeWidth={2} />
@@ -520,15 +520,15 @@ export function DashboardPreview() {
               ))}
             </div>
 
-            <div className="grid min-h-0 flex-1 md:grid-cols-[1.3fr_1fr] md:divide-x md:divide-white/[0.07]">
+            <div className="grid shrink-0 md:grid-cols-[1.3fr_1fr] md:divide-x md:divide-white/[0.07]">
               <div className="px-4 py-4">
                 <p className="text-[11px] font-medium text-white/45">{profession.chartLabel}</p>
-                <div className="mt-3 flex items-end gap-1.5" aria-hidden="true">
+                <div className="mt-3 flex h-[84px] items-end gap-1.5" aria-hidden="true">
                   {profession.chartDays.map((height, index) => (
                     <span
                       key={index}
                       className={`flex-1 rounded-sm ${height === Math.max(...profession.chartDays) ? "bg-od-accent" : "bg-white/[0.13]"}`}
-                      style={{ height: `${height}px` }}
+                      style={{ height: `${Math.round((height / Math.max(...profession.chartDays)) * 100)}%` }}
                     />
                   ))}
                 </div>
@@ -540,7 +540,7 @@ export function DashboardPreview() {
               <div className="px-4 py-4">
                 <p className="text-[11px] font-medium text-white/45">{profession.queueLabel}</p>
                 <ul className="mt-2 divide-y divide-white/[0.07]">
-                  {profession.queue.map((item) => (
+                  {profession.queue.slice(0, 2).map((item) => (
                     <li key={item.name} className="flex items-center gap-2.5 py-2">
                       <Avatar name={item.name} />
                       <span className="min-w-0 flex-1">
@@ -564,7 +564,7 @@ export function DashboardPreview() {
                   <div key={group} className="min-w-0">
                     <p className="text-[10px] font-medium text-white/45">{group}</p>
                     <ul className="mt-1.5 space-y-1.5">
-                      {rows.map(([label, value, note]) => (
+                      {rows.slice(0, 2).map(([label, value, note]) => (
                         <li key={label} className="flex items-baseline justify-between gap-2">
                           <span className="min-w-0">
                             <span className="block truncate text-[10px] text-white/70">{label}</span>

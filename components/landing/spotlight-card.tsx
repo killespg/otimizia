@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import ShaderBackground from "@/components/ui/shader-background";
 
 /**
  * Dark card with a mouse-tracked radial spotlight (CSS custom properties)
@@ -46,7 +45,16 @@ export function SpotlightCard({ localSpotlight = true }: { localSpotlight?: bool
           direto no painel.
         </p>
       </div>
-      <div className="relative z-[1] h-[280px] flex-1 overflow-hidden rounded-xl"><ShaderBackground /></div>
+      {/* Aqui vinha o acento 3D do design system, que exigiria three + fiber +
+          drei. Minha primeira troca foi pelo ShaderBackground — errada: ele e
+          `fixed inset-0` por design, entao vazava do card e cobria a landing
+          inteira. Este e contido: fica dentro do proprio retangulo. */}
+      <div className="relative z-[1] h-[280px] flex-1 overflow-hidden rounded-xl border border-od-border bg-od-bg">
+        <div className="absolute left-1/2 top-1/2 size-[220px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-od-accent/20 blur-3xl" />
+        <div className="absolute inset-0 grid place-items-center">
+          <div className="size-24 rotate-45 rounded-2xl border border-od-accent/40 bg-od-accent/10" />
+        </div>
+      </div>
     </div>
   );
 }
