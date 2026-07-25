@@ -9,7 +9,7 @@ import { Paperclip, Send, Sparkles } from "lucide-react";
  */
 export function AiComposer() {
   return (
-    <div className="border-y border-white/[0.08] bg-[#0f0d11] px-5 py-10 sm:px-10">
+    <div className="border-b border-od-border py-10">
       <div className="mx-auto max-w-[520px]">
         <div className="mb-5 text-center">
           <h3 className="mb-1 text-xl font-semibold text-white">Como posso ajudar hoje?</h3>

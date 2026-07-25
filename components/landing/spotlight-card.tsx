@@ -24,7 +24,7 @@ export function SpotlightCard({ localSpotlight = true }: { localSpotlight?: bool
     <div
       ref={ref}
       onMouseMove={onMouseMove}
-      className="relative flex min-h-[340px] items-center gap-8 overflow-hidden rounded-xl bg-[#0f0d11] p-12"
+      className="relative flex min-h-[300px] flex-col items-start gap-8 border-y border-od-border py-12 md:flex-row md:items-center"
       style={{ ["--x" as string]: "50%", ["--y" as string]: "50%" }}
     >
       {localSpotlight ? (
@@ -45,15 +45,12 @@ export function SpotlightCard({ localSpotlight = true }: { localSpotlight?: bool
           direto no painel.
         </p>
       </div>
-      {/* Aqui vinha o acento 3D do design system, que exigiria three + fiber +
-          drei. Minha primeira troca foi pelo ShaderBackground — errada: ele e
-          `fixed inset-0` por design, entao vazava do card e cobria a landing
-          inteira. Este e contido: fica dentro do proprio retangulo. */}
-      <div className="relative z-[1] h-[280px] flex-1 overflow-hidden rounded-xl border border-od-border bg-od-bg">
-        <div className="absolute left-1/2 top-1/2 size-[220px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-od-accent/20 blur-3xl" />
-        <div className="absolute inset-0 grid place-items-center">
-          <div className="size-24 rotate-45 rounded-2xl border border-od-accent/40 bg-od-accent/10" />
-        </div>
+      {/* Acento solto no fundo da faixa, sem moldura: com borda e superficie
+          proprias ele era mais um card dentro da secao. O 3D original exigiria
+          three + fiber + drei. */}
+      <div className="relative z-[1] flex h-[240px] flex-1 items-center justify-center" aria-hidden="true">
+        <div className="absolute size-[220px] rounded-full bg-od-accent/15 blur-3xl" />
+        <div className="relative size-24 rotate-45 rounded-2xl border border-od-accent/40 bg-od-accent/10" />
       </div>
     </div>
   );
