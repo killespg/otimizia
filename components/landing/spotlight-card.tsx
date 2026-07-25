@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { Sparkles } from "lucide-react";
 
 /**
  * Dark card with a mouse-tracked radial spotlight (CSS custom properties)
@@ -24,7 +25,7 @@ export function SpotlightCard({ localSpotlight = true }: { localSpotlight?: bool
     <div
       ref={ref}
       onMouseMove={onMouseMove}
-      className="relative flex min-h-[300px] flex-col items-start gap-8 border-y border-od-border py-12 md:flex-row md:items-center"
+      className="relative flex flex-col items-start gap-10 border-b border-od-border pb-10 md:flex-row md:items-center"
       style={{ ["--x" as string]: "50%", ["--y" as string]: "50%" }}
     >
       {localSpotlight ? (
@@ -45,13 +46,22 @@ export function SpotlightCard({ localSpotlight = true }: { localSpotlight?: bool
           direto no painel.
         </p>
       </div>
-      {/* Acento solto no fundo da faixa, sem moldura: com borda e superficie
-          proprias ele era mais um card dentro da secao. O 3D original exigiria
-          three + fiber + drei. */}
-      <div className="relative z-[1] flex h-[240px] flex-1 items-center justify-center" aria-hidden="true">
-        <div className="absolute size-[220px] rounded-full bg-od-accent/15 blur-3xl" />
-        <div className="relative size-24 rotate-45 rounded-2xl border border-od-accent/40 bg-od-accent/10" />
-      </div>
+      <ul className="relative z-[1] flex w-full flex-1 flex-col gap-2">
+        {[
+          "Quem eu preciso chamar hoje?",
+          "Resuma o que aconteceu essa semana",
+          "Quem está travado no funil há mais de 7 dias?",
+          "Escreve uma mensagem de retorno pra Carla",
+        ].map((pergunta) => (
+          <li
+            key={pergunta}
+            className="flex items-center gap-2.5 rounded-md border border-od-border px-3.5 py-2.5 text-[13px] text-od-text-2"
+          >
+            <Sparkles className="size-3.5 shrink-0 text-od-accent" strokeWidth={2} />
+            {pergunta}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

@@ -10,7 +10,7 @@ import { AnimatedShapesBackground } from "@/components/design-system/animated-sh
  */
 export function Hero({ animated = false }: { animated?: boolean }) {
   return (
-    <div className="relative overflow-hidden rounded-[20px] bg-[#0f0d11] px-8 py-[72px] text-center">
+    <section className="relative overflow-hidden border-b border-od-border bg-od-bg px-8 py-24 text-center md:py-28">
       <div
         className="pointer-events-none absolute inset-0 overflow-hidden opacity-25"
         aria-hidden
@@ -36,32 +36,28 @@ export function Hero({ animated = false }: { animated?: boolean }) {
       />
       {animated ? <AnimatedShapesBackground /> : null}
       <div className="relative z-10">
-        <div className="mb-[22px] inline-flex items-center gap-1.5 rounded-4xl border border-white/10 bg-white/[0.06] px-4 py-1.5 text-[13px] text-[#c9c2d1]">
+        <div className="mb-6 inline-flex items-center gap-1.5 rounded-md border border-od-border px-3 py-1.5 text-[12px] font-medium text-od-text-2">
           CRM feito para quem vende sozinho
           <ArrowRight className="size-3.5" strokeWidth={2} />
         </div>
-        <h1 className="mx-0 mb-4 text-[46px] font-extrabold leading-[1.1] tracking-[-0.02em]">
+        <h1 className="mx-auto mb-5 max-w-[16ch] text-[44px] font-extrabold leading-[1.1] tracking-[-0.02em] md:max-w-none md:text-[56px]">
           <span className="text-white">Venda sem perder </span>
           <span className="text-od-accent">
             o fio.
           </span>
         </h1>
-        <p className="mx-auto mb-7 max-w-[520px] text-base leading-relaxed text-[#a39da8]">
+        <p className="mx-auto mb-9 max-w-[520px] text-base leading-relaxed text-od-text-2">
           Contatos, vendas e lembretes numa tela simples. Você vê a prioridade
           e age sem cavar conversa antiga.
         </p>
-        <span
-          className="relative inline-block rounded-4xl p-[1.5px]"
-          style={{ background: "linear-gradient(90deg, #5c22e8, #a78bfa, #5c22e8)" }}
+        <a
+          href="/signup"
+          className="inline-flex min-h-11 items-center gap-2 rounded-md bg-od-accent px-6 text-sm font-semibold text-white transition-colors hover:bg-od-accent-hover"
         >
-          <a
-            href="#"
-            className="inline-block rounded-4xl bg-[#0f0d11] px-7 py-3.5 text-sm font-semibold text-white"
-          >
-            Começar grátis
-          </a>
-        </span>
+          Começar grátis
+          <ArrowRight className="size-4" strokeWidth={2} />
+        </a>
       </div>
-    </div>
+    </section>
   );
 }

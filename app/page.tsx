@@ -7,9 +7,10 @@ import { Hero } from "@/components/landing/hero";
 import { LogoMarquee } from "@/components/landing/logo-marquee";
 import { FeatureTabs } from "@/components/landing/feature-tabs";
 import { DashboardPreview } from "@/components/landing/dashboard-preview";
+import { Pricing } from "@/components/landing/pricing";
+import { FaqAccordion } from "@/components/FaqAccordion";
 import { SpotlightCard } from "@/components/landing/spotlight-card";
 import { AiComposer } from "@/components/landing/ai-composer";
-import { Dock } from "@/components/landing/dock";
 import { ContainerScroll } from "@/components/landing/container-scroll-animation";
 import { MouseSpotlight } from "@/components/landing/mouse-spotlight";
 
@@ -117,7 +118,7 @@ export default async function LandingPage() {
                 {/* A instrucao fica aqui fora: dentro do card, o bloco da
                     organizacao e o WorkspaceSwitcher do produto, e destaca-lo
                     quebraria a fidelidade da sidebar. */}
-                <p className="mx-auto mt-5 max-w-[440px] text-[13px] leading-relaxed text-od-text-2">
+                <p className="mx-auto mt-5 max-w-[440px] pb-10 text-[13px] leading-relaxed text-od-text-2">
                   O exemplo abaixo é navegável: clique nos itens do menu para trocar de tela,
                   e no <strong className="font-semibold text-od-text">nome do negócio</strong>, no topo
                   da barra lateral, para ver o painel de outra profissão.
@@ -145,12 +146,48 @@ export default async function LandingPage() {
         </Section>
 
         <Section
-          eyebrow="Atalhos"
-          title="Ações rápidas, um clique de distância"
-          description="Dashboard, contatos, funil e lembretes — sempre à mão, sem precisar navegar por menus."
+          id="planos"
+          eyebrow="Planos"
+          title="Um preço, tudo incluso"
+          description="Sem módulo pago à parte: a profissão que você escolhe já vem completa."
         >
-          <div className="text-center">
-            <Dock className="bg-transparent p-0" />
+          <Pricing />
+        </Section>
+
+        <Section
+          eyebrow="Dúvidas"
+          title="Perguntas frequentes"
+          raised
+        >
+          <div className="mx-auto max-w-[760px]">
+            <FaqAccordion
+              items={[
+                {
+                  q: "Preciso de cartão de crédito para começar?",
+                  a: "Não. Você cria a conta, escolhe sua profissão e entra no painel na hora. O cartão só entra se você decidir assinar depois do teste.",
+                },
+                {
+                  q: "Serve para a minha profissão?",
+                  a: "Hoje o OtimizIA tem painel próprio para vendedor autônomo, escritório de advocacia e corretor de imóveis. Cada um vem com as telas e os termos daquele trabalho — carteira e visitas no imobiliário, prazos e processos no jurídico, funil e pedidos nas vendas.",
+                },
+                {
+                  q: "Como funciona o WhatsApp?",
+                  a: "Você conecta seu número e passa a responder de dentro do painel. A conversa fica ligada ao contato e à negociação, com o histórico importado, e dá para deixar a IA responder quando você não puder.",
+                },
+                {
+                  q: "Consigo usar no celular?",
+                  a: "Sim. O OtimizIA é instalável direto do navegador, funciona como aplicativo e manda notificação antes dos seus compromissos — foi pensado para quem usa em trânsito, entre um atendimento e outro.",
+                },
+                {
+                  q: "Dá para trabalhar em equipe?",
+                  a: "Dá. Você convida sócios e assistentes com cargos diferentes, controlando quem vê o financeiro, quem gerencia casos e quem só registra atendimento.",
+                },
+                {
+                  q: "E se eu quiser cancelar?",
+                  a: "Cancela quando quiser, sem multa nem fidelidade. Seus dados continuam seus, e você pode exportá-los nas configurações da conta.",
+                },
+              ]}
+            />
           </div>
         </Section>
 
@@ -170,9 +207,36 @@ export default async function LandingPage() {
         </section>
 
         <footer className="border-t border-od-border bg-od-bg">
-          <div className="mx-auto flex max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] flex-col items-center gap-2 px-8 py-12 text-sm text-od-text-3">
-            <span className="font-bold text-od-text">OtimizIA</span>
-            <span>© {new Date().getFullYear()} OtimizIA. Todos os direitos reservados.</span>
+          <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-8 py-12">
+            <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+              <div className="max-w-[320px]">
+                <p className="text-[15px] font-extrabold text-od-text">OtimizIA</p>
+                <p className="mt-2 text-[13px] leading-relaxed text-od-text-2">
+                  CRM para quem vende sozinho ou em time pequeno — com o painel da sua profissão.
+                </p>
+              </div>
+              <div className="flex gap-12">
+                <div>
+                  <p className="text-od-label text-od-text-3">Produto</p>
+                  <ul className="mt-3 space-y-2 text-[13px]">
+                    <li><Link href="#recursos" className="text-od-text-2 hover:text-od-text">Recursos</Link></li>
+                    <li><Link href="#painel" className="text-od-text-2 hover:text-od-text">O painel</Link></li>
+                    <li><Link href="#planos" className="text-od-text-2 hover:text-od-text">Planos</Link></li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-od-label text-od-text-3">Conta</p>
+                  <ul className="mt-3 space-y-2 text-[13px]">
+                    <li><Link href="/login" className="text-od-text-2 hover:text-od-text">Entrar</Link></li>
+                    <li><Link href="/signup" className="text-od-text-2 hover:text-od-text">Criar conta</Link></li>
+                    <li><Link href="/termos" className="text-od-text-2 hover:text-od-text">Termos de uso</Link></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <p className="mt-10 border-t border-od-border pt-6 text-[12px] text-od-text-3">
+              © {new Date().getFullYear()} OtimizIA. Todos os direitos reservados.
+            </p>
           </div>
         </footer>
       </main>

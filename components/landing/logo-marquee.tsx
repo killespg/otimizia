@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Panel } from "./panel";
 
-const logos = ["Consultoria Prime", "Tech Sul", "Serviços Locais", "Freelab", "Studio Nova"];
+const logos = ["Corretores de imóveis", "Escritórios de advocacia", "Consultores", "Prestadores de serviço", "Pequenos comércios"];
 
 /**
  * Infinite-scrolling logo/text marquee with edge fade, CSS-driven.
