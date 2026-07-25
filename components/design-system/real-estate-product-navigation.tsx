@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BarChart3,
   Bot,
@@ -19,19 +19,17 @@ import {
   LogOut,
   MapPinned,
   MessageCircle,
-  Pin,
   Settings,
   Users,
-  type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { PendingButton } from "@/components/PendingButton";
 import { LogoMark, LogoWordmark } from "@/components/design-system/logo";
 import { MobileAppNav } from "@/components/design-system/mobile-app-nav";
+import { ProductNavGroups, type NavGroup, type NavItem } from "@/components/design-system/product-nav-groups";
 import { WorkspaceSwitcher } from "@/app/(dashboard)/painel/WorkspaceSwitcher";
 
 type RealEstateCounts = { properties: number; visits: number; collections: number; deals: number };
-type NavItem = { href: string; label: string; icon: LucideIcon; exact?: boolean; badge?: number; danger?: boolean };
 type Props = {
   workspaceKey: string;
   workspaceOptions: Array<{ value: string; label: string }>;
@@ -44,73 +42,20 @@ function initials(name: string) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "OT";
 }
 
-function isCurrent(pathname: string, item: NavItem) {
-  if (item.exact) return pathname === item.href;
-  return pathname === item.href || pathname.startsWith(`${item.href}/`);
-}
-
 export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, displayName, organizationName, counts }: Props) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(255);
-  // Grupos e o submenu da visão geral guardam o estado aberto/fechado. Fechado
-  // é a exceção, então só o que o usuário fecha entra no armazenamento.
-  const [closedGroups, setClosedGroups] = useState<string[]>([]);
-  const [overviewOpen, setOverviewOpen] = useState(true);
-  // Itens fixados no topo, por href. O WhatsApp entra como padrão por ser o
-  // canal de resposta mais urgente do corretor, mas é só um padrão: quem quiser
-  // desafixa, e qualquer outro item pode subir.
-  const [pinned, setPinned] = useState<string[]>(["/painel/whatsapp"]);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       setCollapsed(window.localStorage.getItem("otimizia-real-estate-sidebar-collapsed") === "1");
       const savedWidth = Number(window.localStorage.getItem("otimizia-real-estate-sidebar-width"));
       if (Number.isFinite(savedWidth) && savedWidth >= 220 && savedWidth <= 360) setSidebarWidth(savedWidth);
-      const savedClosed = window.localStorage.getItem("otimizia-real-estate-nav-closed");
-      if (savedClosed) {
-        try {
-          const parsed: unknown = JSON.parse(savedClosed);
-          if (Array.isArray(parsed)) setClosedGroups(parsed.filter((value): value is string => typeof value === "string"));
-        } catch {
-          // valor corrompido no storage nao pode derrubar a navegacao
-        }
-      }
-      setOverviewOpen(window.localStorage.getItem("otimizia-real-estate-nav-overview") !== "0");
-      const savedPinned = window.localStorage.getItem("otimizia-real-estate-nav-pinned");
-      if (savedPinned) {
-        try {
-          const parsed: unknown = JSON.parse(savedPinned);
-          if (Array.isArray(parsed)) setPinned(parsed.filter((value): value is string => typeof value === "string"));
-        } catch {
-          // storage corrompido nao pode derrubar a navegacao
-        }
-      }
     });
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
-  // O efeito fica fora do updater: em StrictMode o React invoca o updater duas
-  // vezes, e escrita no storage dentro dele dispara em duplicado.
-  function toggleGroup(label: string) {
-    const next = closedGroups.includes(label)
-      ? closedGroups.filter((item) => item !== label)
-      : [...closedGroups, label];
-    setClosedGroups(next);
-    window.localStorage.setItem("otimizia-real-estate-nav-closed", JSON.stringify(next));
-  }
-
-  function toggleOverview() {
-    const next = !overviewOpen;
-    setOverviewOpen(next);
-    window.localStorage.setItem("otimizia-real-estate-nav-overview", next ? "1" : "0");
-  }
-
-  function togglePin(href: string) {
-    const next = pinned.includes(href) ? pinned.filter((item) => item !== href) : [...pinned, href];
-    setPinned(next);
-    window.localStorage.setItem("otimizia-real-estate-nav-pinned", JSON.stringify(next));
-  }
 
   function toggle() {
     setCollapsed((current) => {
@@ -167,89 +112,13 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
     { href: "/painel/equipe", label: "Equipe", icon: Users },
     { href: "/painel/funil/relatorio", label: "Relatórios", icon: BarChart3 },
   ];
-  // Visão geral e Tim são a âncora da navegação e não entram no jogo de fixar:
-  // já estão no topo, e permitir desafixá-los deixaria a sidebar sem base.
-  const pinnableItems = [...portfolio, ...commercial, ...management];
-  const pinnedItems = pinned
-    .map((href) => pinnableItems.find((item) => item.href === href))
-    .filter((item): item is NavItem => Boolean(item));
-  const pinnedHrefs = new Set(pinnedItems.map((item) => item.href));
-  // Fixado sobe, não duplica: o item sai do grupo de origem.
-  const withoutPinned = (items: NavItem[]) => items.filter((item) => !pinnedHrefs.has(item.href));
+  const groups: NavGroup[] = [
+    { label: "", items: overview },
+    { label: "Imobiliário", items: portfolio },
+    { label: "Comercial", items: commercial },
+    { label: "Gestão", items: management },
+  ];
 
-  // Fixado sobe pro grupo de cima, junto de Visão geral e Tim — sem seção
-  // própria: uma aba só pra isso separava o que o usuário quis deixar perto.
-  const groups = [
-    { label: "", items: [...overview, ...pinnedItems] },
-    { label: "Imobiliário", items: withoutPinned(portfolio) },
-    { label: "Comercial", items: withoutPinned(commercial) },
-    { label: "Gestão", items: withoutPinned(management) },
-  ].filter((group) => group.items.length > 0);
-
-  // A fixabilidade é por item, não por grupo: no topo convivem a âncora fixa
-  // (Visão geral, Tim) e os fixados, que precisam poder ser desafixados.
-  const anchorHrefs = new Set(overview.map((item) => item.href));
-  const canPin = (item: NavItem) => !anchorHrefs.has(item.href);
-
-  function Item({ item, pinnable = true, trailing }: { item: NavItem; pinnable?: boolean; trailing?: React.ReactNode }) {
-    const active = isCurrent(pathname, item);
-    const Icon = item.icon;
-
-    if (collapsed) {
-      return <Link href={item.href} prefetch={true} title={item.label} aria-current={active ? "page" : undefined} className={`group mx-auto flex size-9 min-h-8 items-center justify-center rounded-xl text-[13px] transition-colors ${active ? "bg-white/[0.075] font-semibold text-white" : "text-white/58 hover:bg-white/[0.045] hover:text-white"}`}>
-        <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/55 group-hover:text-white/75"} />
-      </Link>;
-    }
-
-    const isPinned = pinned.includes(item.href);
-    // O realce mora no contêiner e link, contador e alfinete ficam dentro dele:
-    // um retângulo só, e nenhum elemento clicável aninhado dentro do link.
-    return <div className={`group flex min-h-8 items-center rounded-xl pr-1 transition-colors ${active ? "bg-white/[0.075]" : "hover:bg-white/[0.045]"}`}>
-      <Link href={item.href} prefetch={true} aria-current={active ? "page" : undefined} className={`flex min-w-0 flex-1 items-center gap-2 px-2.5 text-[13px] ${active ? "font-semibold text-white" : "text-white/58 group-hover:text-white"}`}>
-        <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/55 group-hover:text-white/75"} />
-        <span className="min-w-0 flex-1 truncate">{item.label}</span>
-      </Link>
-      {trailing}
-      {/* Contador e alfinete dividem a mesma vaga, trocando no hover. Em vagas
-          separadas o alfinete roubava 24px fixos da linha e truncava rótulos
-          longos ("Carteira de imóveis") mesmo sem ninguém passar o mouse. */}
-      {pinnable || (typeof item.badge === "number" && item.badge > 0) ? (
-        <span className="relative grid min-w-6 shrink-0 place-items-center px-1">
-          {typeof item.badge === "number" && item.badge > 0 ? (
-            <span className={`text-[11px] font-semibold tabular-nums transition-opacity ${pinnable ? "group-hover:opacity-0" : ""} ${item.danger ? "text-[#fb7767]" : "text-white/65"}`}>{item.badge}</span>
-          ) : null}
-          {pinnable ? (
-            <button
-              type="button"
-              onClick={() => togglePin(item.href)}
-              aria-pressed={isPinned}
-              title={isPinned ? "Desafixar do topo" : "Fixar no topo"}
-              className={`absolute inset-0 grid place-items-center text-white/40 transition-opacity hover:text-white ${isPinned ? "" : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"}`}
-            >
-              <Pin size={12} className={isPinned ? "fill-current" : ""} />
-            </button>
-          ) : null}
-        </span>
-      ) : null}
-    </div>;
-  }
-
-  // O chevron da "Visão geral" era decorativo: cravado no rótulo, sem onClick e
-  // sem estado, enquanto os sub-itens apareciam ou sumiam conforme a rota. Um
-  // controle que parece clicável precisa responder ao clique, e a estrutura do
-  // menu não pode mudar sozinha quando o usuário navega.
-  function OverviewDisclosure() {
-    return <button
-      type="button"
-      onClick={toggleOverview}
-      aria-expanded={overviewOpen}
-      aria-controls="nav-visao-geral"
-      title={overviewOpen ? "Recolher visão geral" : "Expandir visão geral"}
-      className="grid size-6 shrink-0 place-items-center text-white/38 transition-colors hover:text-white"
-    >
-      <ChevronRight size={13} className={`transition-transform duration-150 ${overviewOpen ? "rotate-90" : ""}`} />
-    </button>;
-  }
 
   // Rótulos curtos só na barra do celular (a sidebar mantém os completos):
   // "Carteira de imóveis" não cabe numa aba e quebrava o layout em telas menores.
@@ -281,50 +150,20 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
       </header>
 
       <nav className="flex-1 overflow-y-auto px-2">
-        {groups.map((group) => {
-          const closed = closedGroups.includes(group.label);
-          // Recolhido em ícones não há rótulo de grupo pra clicar, então lá o
-          // grupo é sempre mostrado — senão itens sumiriam sem controle visível.
-          const hidden = closed && !collapsed && group.label !== "";
-          return <section key={group.label || "overview"} className="mb-0 p-2">
-            {!collapsed && group.label ? (
-              <button
-                type="button"
-                onClick={() => toggleGroup(group.label)}
-                aria-expanded={!closed}
-                aria-controls={`nav-grupo-${group.label}`}
-                className="flex h-7 w-full items-center gap-1.5 px-2 text-[10px] font-medium text-white/38 transition-colors hover:text-white/60"
-              >
-                <ChevronRight size={11} className={`shrink-0 transition-transform duration-150 ${closed ? "" : "rotate-90"}`} />
-                <span className="min-w-0 flex-1 truncate text-left">{group.label}</span>
-                {/* Recolher o grupo da pagina atual escondia o item ativo e o
-                    usuario perdia a referencia de onde esta. O ponto devolve
-                    esse sinal sem precisar reabrir. */}
-                {closed && group.items.some((item) => isCurrent(pathname, item)) ? (
-                  <span className="size-1.5 shrink-0 rounded-full bg-od-accent" aria-label="Contém a página atual" />
-                ) : null}
-                {closed ? <span className="text-[11px] tabular-nums text-white/38">{group.items.length}</span> : null}
-              </button>
-            ) : null}
-            {!hidden ? (
-              <div id={group.label ? `nav-grupo-${group.label}` : undefined}>
-                {group.items.map((item, index) => <Fragment key={item.href + item.label}>
-                  <Item
-                    item={item}
-                    pinnable={canPin(item)}
-                    trailing={group.label === "" && index === 0 && !collapsed ? <OverviewDisclosure /> : undefined}
-                  />
-                  {group.label === "" && index === 0 && !collapsed && overviewOpen ? (
-                    <div id="nav-visao-geral" className="mx-3.5 flex translate-x-px flex-col gap-1 border-l border-white/[0.08] px-2.5 py-0.5">
-                      <Link href="/painel/imoveis/dashboard" className={`flex h-7 -translate-x-px items-center rounded-xl px-2 text-[12px] ${pathname === "/painel/imoveis/dashboard" ? "bg-white/[0.055] font-medium text-white" : "text-white/42 hover:text-white"}`}>Minha operação</Link>
-                      <Link href="/painel/imoveis/comissoes" className={`flex h-7 -translate-x-px items-center rounded-xl px-2 text-[12px] ${pathname === "/painel/imoveis/comissoes" ? "bg-white/[0.055] font-medium text-white" : "text-white/42 hover:text-white"}`}>Metas e comissões</Link>
-                    </div>
-                  ) : null}
-                </Fragment>)}
-              </div>
-            ) : null}
-          </section>;
-        })}
+        <ProductNavGroups
+          namespace="real-estate"
+          groups={groups}
+          collapsed={collapsed}
+          pathname={pathname}
+          defaultPinned={[whatsapp.href]}
+          submenu={{
+            parentHref: "/painel/imoveis/dashboard",
+            items: [
+              { href: "/painel/imoveis/dashboard", label: "Minha operação" },
+              { href: "/painel/imoveis/comissoes", label: "Metas e comissões" },
+            ],
+          }}
+        />
       </nav>
 
       <footer className="border-t border-white/[0.06] p-2">

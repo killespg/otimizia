@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BellRing,
   Bot,
@@ -21,25 +21,17 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Users,
-  type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { PendingButton } from "@/components/PendingButton";
 import { LogoMark, LogoWordmark } from "@/components/design-system/logo";
 import { MobileAppNav } from "@/components/design-system/mobile-app-nav";
+import { ProductNavGroups, type NavItem } from "@/components/design-system/product-nav-groups";
 import { WorkspaceSwitcher } from "@/app/(dashboard)/painel/WorkspaceSwitcher";
 import type { SellerModule } from "@/lib/supabase/types";
 
 type SellerCounts = { contacts: number; deals: number; reminders: number };
 
-type NavItem = {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  exact?: boolean;
-  badge?: number;
-  danger?: boolean;
-};
 
 type Props = {
   workspaceKey: string;
@@ -57,12 +49,6 @@ function initials(name: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("") || "OT";
-}
-
-function isCurrent(pathname: string, item: NavItem) {
-  if (item.href === "/painel" && pathname === "/painel/funil/relatorio") return true;
-  if (item.exact) return pathname === item.href;
-  return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
 export function SellerProductNavigation({ workspaceKey, workspaceOptions, displayName, organizationName, counts, enabledModules }: Props) {
@@ -143,33 +129,6 @@ export function SellerProductNavigation({ workspaceKey, workspaceOptions, displa
     { label: "Gestão", items: management },
   ];
 
-  function Item({ item }: { item: NavItem }) {
-    const active = isCurrent(pathname, item);
-    const Icon = item.icon;
-    return (
-      <Link
-        href={item.href}
-        prefetch={true}
-        title={collapsed ? item.label : undefined}
-        aria-current={active ? "page" : undefined}
-        className={`group flex min-h-8 items-center rounded-xl text-[13px] transition-colors ${collapsed ? "mx-auto size-9 justify-center" : "gap-2 px-2.5"} ${active ? "bg-white/[0.075] font-semibold text-white" : "text-white/58 hover:bg-white/[0.045] hover:text-white"}`}
-      >
-        <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/55 group-hover:text-white/75"} />
-        {!collapsed ? (
-          <>
-            <span className="min-w-0 flex-1 truncate">{item.label}</span>
-            {item.label === "Visão geral" ? <ChevronRight size={14} className="text-white/28" /> : null}
-            {typeof item.badge === "number" && item.badge > 0 ? (
-              <span className={`text-[11px] font-semibold tabular-nums ${item.danger ? "text-[#fb7767]" : "text-white/65"}`}>
-                {item.badge}
-              </span>
-            ) : null}
-          </>
-        ) : null}
-      </Link>
-    );
-  }
-
   const mobileTabs: [NavItem, NavItem, NavItem] = [overview[0], crm[3], crm[1]];
   const barHrefs = new Set([overview[0].href, crm[3].href, crm[1].href, overview[1].href]);
   const mobileGroups = [
@@ -215,24 +174,20 @@ export function SellerProductNavigation({ workspaceKey, workspaceOptions, displa
         </header>
 
         <nav className="flex-1 overflow-y-auto px-2">
-          {groups.map((group) => (
-            <section key={group.label || "overview"} className="mb-0 p-2">
-              {!collapsed && group.label ? <p className="flex h-8 items-center px-2 text-xs font-medium text-white/46">{group.label}</p> : null}
-              <div>
-                {group.items.map((item, index) => (
-                  <Fragment key={item.href + item.label}>
-                    <Item item={item} />
-                    {group.label === "" && index === 0 && !collapsed && (pathname === "/painel" || pathname === "/painel/funil/relatorio") ? (
-                      <div className="mx-3.5 flex translate-x-px flex-col gap-1 border-l border-white/[0.08] px-2.5 py-0.5">
-                        <Link href="/painel" prefetch={true} className={`flex h-7 -translate-x-px items-center rounded-xl px-2 text-sm font-medium ${pathname === "/painel" ? "bg-white/[0.055] text-white" : "text-white/42 hover:text-white"}`}>Meu dia</Link>
-                        <Link href="/painel/funil/relatorio" prefetch={true} className={`flex h-7 -translate-x-px items-center rounded-xl px-2 text-sm ${pathname === "/painel/funil/relatorio" ? "bg-white/[0.055] font-medium text-white" : "text-white/42 hover:text-white"}`}>Desempenho</Link>
-                      </div>
-                    ) : null}
-                  </Fragment>
-                ))}
-              </div>
-            </section>
-          ))}
+          <ProductNavGroups
+            namespace="seller"
+            groups={groups}
+            collapsed={collapsed}
+            pathname={pathname}
+            defaultPinned={["/painel/whatsapp"]}
+          submenu={{
+            parentHref: "/painel",
+            items: [
+              { href: "/painel", label: "Minha operação" },
+              { href: "/painel/funil/relatorio", label: "Relatórios" },
+            ],
+          }}
+          />
         </nav>
 
         <footer className="border-t border-white/[0.06] p-2">

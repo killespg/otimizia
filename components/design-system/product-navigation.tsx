@@ -24,16 +24,14 @@ import {
   SearchCheck,
   Settings,
   Users,
-  type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { PendingButton } from "@/components/PendingButton";
 import { LogoMark, LogoWordmark } from "@/components/design-system/logo";
 import { MobileAppNav } from "@/components/design-system/mobile-app-nav";
+import { ProductNavGroups, type NavGroup, type NavItem } from "@/components/design-system/product-nav-groups";
 import { WorkspaceSwitcher } from "@/app/(dashboard)/painel/WorkspaceSwitcher";
 
-type NavItem = { href: string; label: string; icon: LucideIcon; exact?: boolean };
-type NavGroup = { label: string; items: NavItem[] };
 
 type Props = {
   workspaceKey: string;
@@ -45,11 +43,6 @@ type Props = {
   realEstateAccess: { enabled: boolean; canManage: boolean };
   labels: { contacts: string; pipeline: string; followups: string };
 };
-
-function isCurrent(pathname: string, item: NavItem) {
-  if (item.exact) return pathname === item.href;
-  return pathname === item.href || pathname.startsWith(`${item.href}/`);
-}
 
 function initials(name: string) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "OT";
@@ -147,30 +140,14 @@ export function ProductNavigation(props: Props) {
           </div>
         ) : null}
 
-        <nav className="flex-1 overflow-y-auto px-2 py-4">
-          {groups.map((group) => (
-            <section key={group.label} className="mb-5">
-              {!collapsed ? <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/30">{group.label}</p> : null}
-              <div className="space-y-0.5">
-                {group.items.map((item) => {
-                  const active = isCurrent(pathname, item);
-                  const ItemIcon = item.icon;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      title={collapsed ? item.label : undefined}
-                      aria-current={active ? "page" : undefined}
-                      className={`nav-item flex min-h-8 items-center rounded-xl text-[13px] font-medium ${collapsed ? "justify-center px-2" : "gap-3 px-3"} ${active ? "bg-white/[0.075] text-white" : "text-white/48 hover:bg-white/[0.05] hover:text-white/80"}`}
-                    >
-                      <ItemIcon size={17} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/40"} />
-                      {!collapsed ? <span className="min-w-0 flex-1 truncate">{item.label}</span> : null}
-                    </Link>
-                  );
-                })}
-              </div>
-            </section>
-          ))}
+        <nav className="flex-1 overflow-y-auto px-2">
+          <ProductNavGroups
+            namespace="crm"
+            groups={groups}
+            collapsed={collapsed}
+            pathname={pathname}
+            defaultPinned={["/painel/whatsapp"]}
+          />
         </nav>
 
         <div className="border-t border-white/[0.06] p-2">
