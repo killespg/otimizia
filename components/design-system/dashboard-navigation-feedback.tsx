@@ -42,7 +42,7 @@ export function DashboardNavigationFeedback() {
         aria-hidden="true"
         className={`pointer-events-none fixed inset-x-0 top-0 z-[90] h-0.5 overflow-hidden transition-opacity duration-150 ${pending ? "opacity-100" : "opacity-0"}`}
       >
-        <span className="block h-full w-4/5 origin-left animate-[dashboard-navigation_900ms_cubic-bezier(.16,1,.3,1)_both] bg-violet-400" />
+        <span className="block h-full w-4/5 origin-left animate-[dashboard-navigation_900ms_cubic-bezier(.16,1,.3,1)_both] bg-od-accent" />
       </div>
       <output data-testid="dashboard-navigation-timing" className="sr-only" aria-hidden="true">
         {lastDuration === null ? "idle" : String(lastDuration)}

@@ -132,7 +132,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
       <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold text-violet-300">{isSeller ? "Vendas / Agenda" : isRealEstate ? "Imobiliário / Agenda" : "Jurídico / Agenda"}</p>
+          <p className="text-xs font-semibold text-od-text-2">{isSeller ? "Vendas / Agenda" : isRealEstate ? "Imobiliário / Agenda" : "Jurídico / Agenda"}</p>
           <h1 className="mt-2 text-od-title text-white">
             Calendário
           </h1>
@@ -358,7 +358,7 @@ function MetricCard({
   return (
     <article className="border-b border-white/[0.08] p-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
       <div className="flex items-center gap-3">
-        <span className={danger ? "text-[#fb7767]" : "text-violet-300"}><Icon className="h-4 w-4"/></span>
+        <span className={danger ? "text-[#fb7767]" : "text-od-text-2"}><Icon className="h-4 w-4"/></span>
         <div className="min-w-0">
           <p className="text-[10px] text-white/42">{label}</p>
           <p className="mt-0.5 text-[20px] font-bold tracking-[-0.03em] text-white">{value}</p>

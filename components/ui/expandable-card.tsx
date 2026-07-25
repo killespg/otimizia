@@ -59,7 +59,7 @@ export function ExpandableCard({ title, src, description, children, className, c
               <div className="relative -mt-12 px-6 pb-8 sm:px-8">
                 <div className="flex items-start justify-between gap-5">
                   <div>
-                    <motion.p layoutId={`description-${description}-${id}`} className="text-[11px] font-medium text-violet-200/60">{description}</motion.p>
+                    <motion.p layoutId={`description-${description}-${id}`} className="text-[11px] font-medium text-od-text/60">{description}</motion.p>
                     <motion.h3 id={titleId} layoutId={`title-${title}-${id}`} className="mt-2 text-[25px] font-semibold tracking-[-0.02em] text-white sm:text-[30px]">{title}</motion.h3>
                   </div>
                   <motion.button type="button" aria-label="Fechar pré-visualização" layoutId={`button-${title}-${id}`} className="grid size-9 shrink-0 place-items-center bg-white/[0.06] text-white/55 hover:bg-white/[0.1] hover:text-white" onClick={() => setActive(false)}>
@@ -86,7 +86,7 @@ export function ExpandableCard({ title, src, description, children, className, c
         </motion.div>
         <div className="flex items-center justify-between gap-4 px-4 py-4">
           <div className="min-w-0">
-            <motion.p layoutId={`description-${description}-${id}`} className="truncate text-[9px] font-medium text-violet-200/48">{description}</motion.p>
+            <motion.p layoutId={`description-${description}-${id}`} className="truncate text-[9px] font-medium text-od-text/48">{description}</motion.p>
             <motion.h3 layoutId={`title-${title}-${id}`} className="mt-1.5 truncate text-[12px] font-semibold text-white/68">{title}</motion.h3>
           </div>
           <motion.span layoutId={`button-${title}-${id}`} className="grid size-7 shrink-0 place-items-center text-white/30"><Plus size={15} /></motion.span>

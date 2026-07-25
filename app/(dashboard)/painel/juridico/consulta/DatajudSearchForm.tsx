@@ -137,7 +137,7 @@ export function DatajudSearchForm({
               title={isFavorite ? "Remover dos favoritos" : "Favoritar este tribunal"}
               className={
                 "grid h-11 w-11 shrink-0 place-items-center rounded-md border border-white/[0.1] " +
-                (isFavorite ? "bg-violet-400/10 text-violet-300" : "bg-transparent text-white/40")
+                (isFavorite ? "bg-white/[0.06] text-od-text-2" : "bg-transparent text-white/40")
               }
             >
               <IconStar className="h-5 w-5" filled={isFavorite} />
@@ -179,7 +179,7 @@ export function DatajudSearchForm({
           <div className="border-b border-white/[0.08] p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold text-violet-300">{process.classe?.nome ?? "Classe não informada"}</p>
+                <p className="text-[11px] font-semibold text-od-text-2">{process.classe?.nome ?? "Classe não informada"}</p>
                 <p className="mt-1 text-[17px] font-semibold tracking-[-0.02em] text-white">{formatNumero(process.numeroProcesso)}</p>
               </div>
               {canManage && (
@@ -214,7 +214,7 @@ export function DatajudSearchForm({
                 .sort((a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime())
                 .map((movimento, index) => (
                   <article key={`${movimento.codigo}-${movimento.dataHora}-${index}`} className="flex items-start gap-3 border-b border-white/[0.06] px-5 py-4">
-                    <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-md bg-violet-400/10 text-violet-300">
+                    <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-md bg-white/[0.06] text-od-text-2">
                       <IconClock className="h-4 w-4" />
                     </span>
                     <div className="min-w-0">

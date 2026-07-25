@@ -81,7 +81,7 @@ export default async function SettingsPage(
   return (
     <div className={`settings-hub mx-auto w-full max-w-[1640px] space-y-5 ${isSeller ? "seller-settings" : isRealEstate ? "real-estate-settings" : ""}`}>
       <header className="border-b border-white/[0.08] pb-5">
-        <p className="text-xs font-semibold text-violet-300">{isSeller ? "Vendas / Configurações" : isRealEstate ? "Imobiliário / Configurações" : "Escritório / Configurações"}</p>
+        <p className="text-xs font-semibold text-od-text-2">{isSeller ? "Vendas / Configurações" : isRealEstate ? "Imobiliário / Configurações" : "Escritório / Configurações"}</p>
         <h1 className="mt-2 text-od-title text-white">
           {isSeller ? "Configurações do negócio" : isRealEstate ? "Configurações da operação imobiliária" : "Seu espaço de trabalho"}
         </h1>

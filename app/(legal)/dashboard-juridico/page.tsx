@@ -79,7 +79,7 @@ export default function LegalDashboardPage() {
                 <div>
                   {movements.map((item) => (
                     <Link key={`${item.title}-${item.caseName}`} href="/painel/juridico/processos?visao=movimentacoes" className="group flex w-full gap-3.5 border-t border-white/[0.06] py-4 text-left first:border-t-0">
-                      <span className={`mt-1.5 size-1.5 shrink-0 rounded-full ${item.unread ? "bg-violet-400" : "bg-white/18"}`} />
+                      <span className={`mt-1.5 size-1.5 shrink-0 rounded-full ${item.unread ? "bg-od-accent" : "bg-white/18"}`} />
                       <span className="min-w-0 flex-1"><span className="block text-[12px] font-medium text-white/72 group-hover:text-white">{item.title}</span><span className="mt-1 block truncate text-[11px] text-white/34">{item.caseName}</span></span>
                       <span className="shrink-0 text-right"><span className="block text-[10px] font-medium text-white/32">{item.source}</span><span className="mt-1 block text-[10px] text-white/24">{item.time}</span></span>
                     </Link>
@@ -89,7 +89,7 @@ export default function LegalDashboardPage() {
             </section>
 
             <section className="py-8">
-              <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="text-[15px] font-semibold text-white">Processos em acompanhamento</h2><p className="mt-1.5 text-[12px] text-white/34">Ordenados pelo próximo compromisso</p></div><div className="flex items-center gap-1 border-b border-white/[0.07]"><Link href="/painel/juridico/processos" className="border-b border-violet-400 px-4 py-2.5 text-[11px] font-semibold text-white">Todos</Link><Link href="/painel/juridico/processos?responsavel=eu" className="px-4 py-2.5 text-[11px] text-white/34">Minha carteira</Link><Link href="/painel/juridico/prazos" className="px-4 py-2.5 text-[11px] text-white/34">Com prazo</Link></div></div>
+              <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="text-[15px] font-semibold text-white">Processos em acompanhamento</h2><p className="mt-1.5 text-[12px] text-white/34">Ordenados pelo próximo compromisso</p></div><div className="flex items-center gap-1 border-b border-white/[0.07]"><Link href="/painel/juridico/processos" className="border-b border-od-accent px-4 py-2.5 text-[11px] font-semibold text-white">Todos</Link><Link href="/painel/juridico/processos?responsavel=eu" className="px-4 py-2.5 text-[11px] text-white/34">Minha carteira</Link><Link href="/painel/juridico/prazos" className="px-4 py-2.5 text-[11px] text-white/34">Com prazo</Link></div></div>
               <div className="overflow-x-auto">
                 <div className="min-w-[820px]">
                   <div className="grid grid-cols-[1.25fr_1.25fr_.55fr_.7fr_.7fr_.65fr_24px] gap-5 border-y border-white/[0.07] px-1 py-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/26"><span>Processo / cliente</span><span>Assunto</span><span>Tribunal</span><span>Responsável</span><span>Fase</span><span>Próximo ato</span><span /></div>

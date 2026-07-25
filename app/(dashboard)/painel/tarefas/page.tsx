@@ -101,7 +101,7 @@ export default async function TasksPage() {
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
       <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold text-violet-300">{workspaceKey === "autonomous_seller" ? "Vendas" : "Escritório"} / {workspaceLabels.followups}</p>
+          <p className="text-xs font-semibold text-od-text-2">{workspaceKey === "autonomous_seller" ? "Vendas" : "Escritório"} / {workspaceLabels.followups}</p>
           <h1 className="mt-2 text-od-title text-white">
             {workspaceLabels.followups}
           </h1>
@@ -216,10 +216,10 @@ export default async function TasksPage() {
       )}
 
       {reviewQueue.length > 0 && (
-        <section className={isSeller ? "overflow-hidden border-y border-violet-400/20" : "panel overflow-hidden border-brand-200"}>
+        <section className={isSeller ? "overflow-hidden border-y border-od-accent/20" : "panel overflow-hidden border-brand-200"}>
           <div className="flex items-center justify-between border-b border-line bg-brand-50 px-5 py-4">
             <div><h2 className="text-lg font-black text-ink">Entregas para aprovar</h2><p className="mt-1 text-sm font-medium text-ink-muted">Revise o trabalho, aprove ou devolva com uma orientação.</p></div>
-            <span className="tag bg-od-muted-surface text-violet-300">{reviewQueue.length}</span>
+            <span className="tag bg-od-muted-surface text-od-text-2">{reviewQueue.length}</span>
           </div>
           <ul className="divide-y divide-line px-5">{reviewQueue.map((task)=><TaskItem key={task.id} task={task} overdue={false} members={members} currentUserId={user!.id} isAdmin={isAdmin} canReviewAll={canReviewAll}/>)}</ul>
         </section>
@@ -326,7 +326,7 @@ function MetricCard({
   return (
     <article className="border-b border-white/[0.08] p-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
       <div className="flex items-center gap-3">
-        <span className={pink ? "text-amber-300" : "text-violet-300"}><Icon className="h-4 w-4"/></span>
+        <span className={pink ? "text-amber-300" : "text-od-text-2"}><Icon className="h-4 w-4"/></span>
         <div className="min-w-0">
           <p className="text-xs text-white/50">{label}</p>
           <p className="mt-1 text-2xl font-bold tracking-[-0.02em] text-white">

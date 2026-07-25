@@ -19,7 +19,7 @@ export function FeaturedDocumentPreview() {
         <div><p className="text-[9px] uppercase tracking-[0.09em] text-white/24">Atualizado</p><p className="mt-2 text-white/65">Hoje, 11:42</p></div>
       </div>
       <div className="mt-7"><h4 className="text-[12px] font-semibold text-white/68">Checklist de revisão</h4><div className="mt-4 grid gap-3 sm:grid-cols-2">{checklist.map((item, index) => <div key={item} className="flex items-start gap-2.5"><span className={`mt-0.5 grid size-4 shrink-0 place-items-center ${index < 3 ? "text-emerald-300/65" : "text-amber-300/65"}`}>{index < 3 ? <Check size={12} /> : <span className="size-1.5 rounded-full bg-current" />}</span><span className="text-[11px] text-white/43">{item}</span></div>)}</div></div>
-      <div className="mt-8 flex items-center justify-between border-t border-white/[0.07] pt-5"><p className="text-[10px] text-white/28">Documento restrito à equipe do caso</p><Link href="/painel/juridico/processos" className="inline-flex items-center gap-2 text-[11px] font-medium text-violet-300/70 hover:text-violet-200"><FileText size={13} />Abrir processos</Link></div>
+      <div className="mt-8 flex items-center justify-between border-t border-white/[0.07] pt-5"><p className="text-[10px] text-white/28">Documento restrito à equipe do caso</p><Link href="/painel/juridico/processos" className="inline-flex items-center gap-2 text-[11px] font-medium text-od-text-3 hover:text-od-text"><FileText size={13} />Abrir processos</Link></div>
     </ExpandableCard>
   );
 }

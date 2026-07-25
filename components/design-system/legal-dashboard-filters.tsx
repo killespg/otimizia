@@ -59,7 +59,7 @@ export function LegalDashboardFilters({
       />
       <Link
         href="/painel/juridico/processos?novo=1"
-        className="inline-flex min-h-11 items-center gap-2 rounded-md border border-violet-200/15 bg-[#5f35d4] px-4 text-[13px] font-semibold text-white shadow-none transition-colors hover:bg-[#6a3fe0]"
+        className="inline-flex min-h-11 items-center gap-2 rounded-md border border-od-accent/15 bg-[#5f35d4] px-4 text-[13px] font-semibold text-white shadow-none transition-colors hover:bg-[#6a3fe0]"
       >
         <Plus size={16} strokeWidth={2.25} />
         Novo caso
@@ -82,7 +82,7 @@ function FilterSelect({
   const selected = options.find((option) => option.value === value)?.label ?? value;
 
   return (
-    <label className="relative inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.03] px-3 text-[12px] font-medium text-white/65 transition-colors hover:bg-white/[0.06] hover:text-white focus-within:ring-2 focus-within:ring-violet-400/45">
+    <label className="relative inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.03] px-3 text-[12px] font-medium text-white/65 transition-colors hover:bg-white/[0.06] hover:text-white focus-within:ring-2 focus-within:ring-od-accent/45">
       <span>{selected}</span>
       <ChevronDown size={12} />
       <span className="sr-only">{label}</span>

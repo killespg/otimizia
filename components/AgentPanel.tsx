@@ -51,7 +51,7 @@ export function AgentPanel({ userName }: { userName?: string }) {
         </div>
         <Link
           href="/painel/assistente"
-          className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-violet-300 hover:text-violet-200"
+          className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text"
         >
           Tela cheia
           <IconArrowRight className="h-3.5 w-3.5" />

@@ -35,7 +35,7 @@ export function DashboardCustomizePanel({
   return (
     <div className={isSeller ? "flex flex-col gap-3 border-b border-white/[0.08] pb-4 sm:flex-row sm:items-end sm:justify-between" : "dashboard-customize-header"}>
       <div>
-        <p className={isSeller ? "text-xs font-semibold text-violet-300" : "dashboard-section-eyebrow"}>Área de trabalho</p>
+        <p className={isSeller ? "text-xs font-semibold text-od-text-2" : "dashboard-section-eyebrow"}>Área de trabalho</p>
         <h2 className={isSeller ? "mt-1 text-sm font-semibold text-white" : "dashboard-customize-title"}>{isSeller ? "Visão geral de vendas" : "Visão geral do escritório"}</h2>
       </div>
       <details
@@ -50,7 +50,7 @@ export function DashboardCustomizePanel({
       <div className={isSeller ? "mt-3 w-full rounded-xl border border-white/[0.09] bg-[#1e1d22] p-4 shadow-2xl sm:absolute sm:right-0 sm:top-10 sm:z-50 sm:min-w-[640px] sm:p-5 lg:min-w-[760px]" : "dashboard-customize-panel"}>
         <div className={isSeller ? "mb-5 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between" : "dashboard-customize-header"}>
           <div>
-            <p className={isSeller ? "text-xs font-semibold text-violet-300" : "dashboard-customize-eyebrow"}>Modo de edição</p>
+            <p className={isSeller ? "text-xs font-semibold text-od-text-2" : "dashboard-customize-eyebrow"}>Modo de edição</p>
             <h2 className={isSeller ? "mt-1 text-od-subtitle text-white" : "dashboard-customize-title"}>Deixe o painel do seu jeito</h2>
             <p className={isSeller ? "mt-1 text-xs leading-relaxed text-white/44" : "dashboard-customize-description"}>Escolha a aparência, o fundo e as métricas. Para reorganizar os blocos, use as alças no painel abaixo.</p>
           </div>

@@ -45,7 +45,7 @@ export function VoicePanel({
     return (
       <div className="flex items-center justify-between gap-3 border-t border-white/[0.08] px-4 py-2.5 text-xs">
         <span className="flex min-w-0 items-center gap-2 text-white/60">
-          <IconMic className={`h-3.5 w-3.5 shrink-0 ${voiceStatus === "connecting" ? "animate-pulse text-violet-300" : "text-red-400"}`} />
+          <IconMic className={`h-3.5 w-3.5 shrink-0 ${voiceStatus === "connecting" ? "animate-pulse text-od-text-2" : "text-red-400"}`} />
           <span className="truncate">
             {voiceStatus === "connecting" ? "Conectando com o Tim…" : voiceError ?? "Não consegui iniciar a chamada."}
           </span>
@@ -82,7 +82,7 @@ export function VoicePanel({
           className="relative shrink-0"
           style={{ "--level": voiceLevel } as CSSProperties}
         >
-          <TimAvatar size={30} className={voiceSpeaker === "assistant" ? "ring-2 ring-violet-400/60" : voiceSpeaker === "user" ? "ring-2 ring-white/30" : ""} />
+          <TimAvatar size={30} className={voiceSpeaker === "assistant" ? "ring-2 ring-od-accent/60" : voiceSpeaker === "user" ? "ring-2 ring-white/30" : ""} />
         </span>
         <p className="min-w-0 flex-1 truncate text-[12px] text-white/55">
           {voiceSpeaker === "assistant" ? "Tim falando" : voiceSpeaker === "user" ? "Ouvindo você…" : "Pode falar quando quiser"}

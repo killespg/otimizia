@@ -10,8 +10,8 @@ function Capsule({ className, width, height, rotate, delay }: { className: strin
       animate={{ y: [0, 14, 0], x: [0, 6, 0] }}
       transition={{ y: { duration: 16, delay, repeat: Infinity, ease: "easeInOut" }, x: { duration: 21, delay, repeat: Infinity, ease: "easeInOut" } }}
       className={cn(
-        "absolute rounded-full border border-violet-300/[0.14]",
-        "bg-violet-500/[0.06]",
+        "absolute rounded-full border border-od-accent/[0.14]",
+        "bg-od-accent/[0.06]",
         "shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_18px_60px_rgba(91,33,182,0.08)]",
         "backdrop-blur-[2px]",
         className,

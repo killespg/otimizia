@@ -42,9 +42,9 @@ export function SellerOperationSettingsForm(props: Props) {
         <div className="grid border-l border-white/[0.07] sm:grid-cols-2 xl:grid-cols-3">
           {SELLER_SALES_MODELS.map((model) => {
             const selected = models.includes(model.value);
-            return <label key={model.value} className={`relative flex min-h-28 cursor-pointer gap-3 border-b border-r border-white/[0.07] p-4 ${selected ? "bg-violet-400/[0.055]" : "hover:bg-white/[0.02]"}`}>
+            return <label key={model.value} className={`relative flex min-h-28 cursor-pointer gap-3 border-b border-r border-white/[0.07] p-4 ${selected ? "bg-od-accent/[0.055]" : "hover:bg-white/[0.02]"}`}>
               <input type="checkbox" name="sales_models" value={model.value} checked={selected} onChange={() => toggleModel(model.value)} disabled={!props.canEdit} className="sr-only" />
-              <span className={`mt-0.5 grid size-6 shrink-0 place-items-center border ${selected ? "border-violet-400 bg-violet-600 text-white" : "border-white/20 text-transparent"}`}><Check size={14} /></span>
+              <span className={`mt-0.5 grid size-6 shrink-0 place-items-center border ${selected ? "border-od-accent bg-od-accent text-white" : "border-white/20 text-transparent"}`}><Check size={14} /></span>
               <span><strong className="block text-sm font-semibold text-white/78">{model.label}</strong><span className="mt-1.5 block text-xs leading-relaxed text-white/40">{model.description}</span></span>
             </label>;
           })}
@@ -60,7 +60,7 @@ export function SellerOperationSettingsForm(props: Props) {
             return <label key={module.value} className="flex min-h-16 cursor-pointer items-center gap-3 px-4 hover:bg-white/[0.02]">
               <input type="checkbox" name="enabled_modules" value={module.value} checked={selected} onChange={() => toggleModule(module.value)} disabled={!props.canEdit || locked} className="sr-only" />
               {locked ? <input type="hidden" name="enabled_modules" value={module.value} /> : null}
-              <span className={`grid size-6 shrink-0 place-items-center border ${selected ? "border-violet-400 bg-violet-600 text-white" : "border-white/20 text-transparent"}`}><Check size={14} /></span>
+              <span className={`grid size-6 shrink-0 place-items-center border ${selected ? "border-od-accent bg-od-accent text-white" : "border-white/20 text-transparent"}`}><Check size={14} /></span>
               <span className="min-w-0 flex-1"><strong className="block text-sm font-semibold text-white/72">{module.label}</strong><span className="mt-1 block text-xs text-white/40">{module.description}</span></span>
               {locked ? <span className="text-[11px] font-semibold text-white/30">Essencial</span> : null}
             </label>;
@@ -73,7 +73,7 @@ export function SellerOperationSettingsForm(props: Props) {
         <div className="grid gap-4 p-4 md:grid-cols-3">
           <label><span className="label">Garantia padrão em dias</span><input name="default_warranty_days" type="number" min="0" max="3650" defaultValue={props.defaultWarrantyDays} disabled={!props.canEdit} className="field mt-1.5" /></label>
           <label><span className="label">Alerta de estoque baixo</span><input name="low_stock_threshold" type="number" min="0" defaultValue={props.lowStockThreshold} disabled={!props.canEdit} className="field mt-1.5" /></label>
-          <label className="flex min-h-11 items-center gap-3 self-end text-sm text-white/62"><input name="allow_negative_stock" type="checkbox" defaultChecked={props.allowNegativeStock} disabled={!props.canEdit} className="size-4 accent-violet-600" /><span>Permitir estoque negativo</span></label>
+          <label className="flex min-h-11 items-center gap-3 self-end text-sm text-white/62"><input name="allow_negative_stock" type="checkbox" defaultChecked={props.allowNegativeStock} disabled={!props.canEdit} className="size-4 accent-od-accent" /><span>Permitir estoque negativo</span></label>
         </div>
       </section>
 

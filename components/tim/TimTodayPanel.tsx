@@ -43,7 +43,7 @@ export function TimTodayPanel({
         accent="text-[#fb7767]"
       />
 
-      <TaskGroup title="Prazo hoje" emptyLabel="Nenhum lembrete pra hoje." tasks={todayTasks} accent="text-violet-300" />
+      <TaskGroup title="Prazo hoje" emptyLabel="Nenhum lembrete pra hoje." tasks={todayTasks} accent="text-od-text-2" />
 
       <Link
         href="/painel/tarefas"

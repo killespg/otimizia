@@ -47,7 +47,7 @@ export function AppSplash() {
             {[0, 1, 2].map((index) => (
               <motion.span
                 key={index}
-                className="size-1.5 rounded-full bg-violet-300/70"
+                className="size-1.5 rounded-full bg-white/[0.06]"
                 animate={reduceMotion ? undefined : { opacity: [0.25, 1, 0.25] }}
                 transition={reduceMotion ? undefined : { duration: 1, repeat: Infinity, delay: index * 0.16, ease: "easeInOut" }}
               />

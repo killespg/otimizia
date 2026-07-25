@@ -5,7 +5,7 @@ import { Save } from "lucide-react";
 import { LegalSettingsMenu } from "@/components/legal/legal-settings-menu";
 import { LegalPage, PageHeader, PrimaryAction, SectionTitle, StatusTag } from "@/components/legal/legal-ui";
 
-const fieldClass = "mt-2 w-full border-b border-white/[0.09] bg-transparent py-2 text-[12px] text-white/70 outline-none focus:border-violet-400";
+const fieldClass = "mt-2 w-full border-b border-white/[0.09] bg-transparent py-2 text-[12px] text-white/70 outline-none focus:border-od-accent";
 
 export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
@@ -23,7 +23,7 @@ export default function SettingsPage() {
 
         <section id="notificacoes" className="scroll-mt-20 border-t border-white/[0.07] pt-8">
           <SectionTitle title="Notificações" description="Eventos que exigem atenção da equipe" />
-          <div>{notifications.map((item, index) => <div key={item.label} className="flex items-center justify-between gap-5 border-t border-white/[0.055] py-4 first:border-t-0"><div><p className="text-[11px] font-medium text-white/58">{item.label}</p><p className="mt-1 text-[9px] text-white/27">{item.note}</p></div><button type="button" role="switch" aria-checked={item.enabled} aria-label={item.label} onClick={() => setNotifications((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, enabled: !entry.enabled } : entry))} className={`relative h-5 w-9 rounded-full ${item.enabled ? "bg-violet-500/75" : "bg-white/[0.08]"}`}><span className={`absolute left-0 top-1 size-3 rounded-full bg-white/80 transition-transform ${item.enabled ? "translate-x-5" : "translate-x-1"}`} /></button></div>)}</div>
+          <div>{notifications.map((item, index) => <div key={item.label} className="flex items-center justify-between gap-5 border-t border-white/[0.055] py-4 first:border-t-0"><div><p className="text-[11px] font-medium text-white/58">{item.label}</p><p className="mt-1 text-[9px] text-white/27">{item.note}</p></div><button type="button" role="switch" aria-checked={item.enabled} aria-label={item.label} onClick={() => setNotifications((current) => current.map((entry, entryIndex) => entryIndex === index ? { ...entry, enabled: !entry.enabled } : entry))} className={`relative h-5 w-9 rounded-full ${item.enabled ? "bg-od-accent/75" : "bg-white/[0.08]"}`}><span className={`absolute left-0 top-1 size-3 rounded-full bg-white/80 transition-transform ${item.enabled ? "translate-x-5" : "translate-x-1"}`} /></button></div>)}</div>
         </section>
 
         <section id="integracoes" className="scroll-mt-20 border-t border-white/[0.07] pt-8">
@@ -33,7 +33,7 @@ export default function SettingsPage() {
 
         <section id="seguranca" className="scroll-mt-20 border-t border-white/[0.07] pt-8"><SectionTitle title="Segurança e privacidade" description="Acesso protegido por organização, cargo e participação no processo" /><div className="grid gap-4 sm:grid-cols-2"><div><p className="text-[10px] text-white/28">Sessões ativas</p><p className="mt-2 text-[14px] font-medium text-white/66">2 dispositivos</p></div><div><p className="text-[10px] text-white/28">Última revisão de acessos</p><p className="mt-2 text-[14px] font-medium text-white/66">15 jul 2026</p></div></div></section>
 
-        <section id="dados-exportacao" className="scroll-mt-20 border-t border-white/[0.07] pt-8"><SectionTitle title="Dados e exportação" description="Retenção, portabilidade e histórico do workspace" /><div className="flex flex-wrap items-center gap-x-10 gap-y-4"><div><p className="text-[10px] text-white/28">Retenção padrão</p><p className="mt-2 text-[13px] text-white/62">5 anos após encerramento</p></div><button type="button" onClick={exportSettings} className="text-[11px] font-medium text-violet-300/70 hover:text-violet-200">Solicitar exportação</button></div></section>
+        <section id="dados-exportacao" className="scroll-mt-20 border-t border-white/[0.07] pt-8"><SectionTitle title="Dados e exportação" description="Retenção, portabilidade e histórico do workspace" /><div className="flex flex-wrap items-center gap-x-10 gap-y-4"><div><p className="text-[10px] text-white/28">Retenção padrão</p><p className="mt-2 text-[13px] text-white/62">5 anos após encerramento</p></div><button type="button" onClick={exportSettings} className="text-[11px] font-medium text-od-accent/70 hover:text-od-accent">Solicitar exportação</button></div></section>
       </div>
     </section>
   </LegalPage>;

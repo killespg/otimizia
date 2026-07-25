@@ -49,5 +49,5 @@ export default async function ConfirmSellerSalePage({ params }: { params: Promis
 }
 
 function Summary({ icon, label, value, detail }: { icon: React.ReactNode; label: string; value: string; detail: string }) {
-  return <div className="border-b border-white/[0.07] p-4 sm:border-r xl:border-b-0 xl:last:border-r-0"><div className="flex items-center gap-2 text-xs text-white/42"><span className="text-violet-300">{icon}</span>{label}</div><p className="mt-2 truncate text-sm font-semibold text-white/82">{value}</p><p className="mt-1 truncate text-xs text-white/38">{detail}</p></div>;
+  return <div className="border-b border-white/[0.07] p-4 sm:border-r xl:border-b-0 xl:last:border-r-0"><div className="flex items-center gap-2 text-xs text-white/42"><span className="text-od-text-2">{icon}</span>{label}</div><p className="mt-2 truncate text-sm font-semibold text-white/82">{value}</p><p className="mt-1 truncate text-xs text-white/38">{detail}</p></div>;
 }

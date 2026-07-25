@@ -72,7 +72,7 @@ export function ContactsExplorer({
     <>
       <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold text-violet-300">{eyebrow}</p>
+          <p className="text-xs font-semibold text-od-text-2">{eyebrow}</p>
           <h1 className="mt-2 text-od-title text-white">
             {title}
           </h1>
@@ -81,12 +81,12 @@ export function ContactsExplorer({
           </p>
           <Link
             href="/painel/contatos/importar"
-            className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-violet-300 hover:text-violet-200"
+            className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-od-text-2 hover:text-od-text"
           >
             Importar contatos via CSV
             <IconArrowRight className="h-4 w-4" />
           </Link>
-          <Link href="/painel/funil" className="ml-5 mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-violet-300 hover:text-violet-200">Ver atendimentos<IconArrowRight className="h-4 w-4"/></Link>
+          <Link href="/painel/funil" className="ml-5 mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-od-text-2 hover:text-od-text">Ver atendimentos<IconArrowRight className="h-4 w-4"/></Link>
         </div>
 
         <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
@@ -192,7 +192,7 @@ export function ContactsExplorer({
                         <span className="tag bg-surface-2 text-ink-muted">{contact.source}</span>
                       )}
                     </div>
-                    <IconArrowRight className="h-3.5 w-3.5 text-white/30 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-violet-300" />
+                    <IconArrowRight className="h-3.5 w-3.5 text-white/30 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-od-text" />
                   </Link>
                 </li>
               ))}
@@ -218,7 +218,7 @@ function MetricCard({
   return (
     <article className="border-b border-white/[0.08] p-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
       <div className="flex items-center gap-3">
-        <span className={pink ? "text-amber-300" : "text-violet-300"}><Icon className="h-4 w-4" /></span>
+        <span className={pink ? "text-amber-300" : "text-od-text-2"}><Icon className="h-4 w-4" /></span>
         <div className="min-w-0">
           <p className="text-xs text-white/50">{label}</p>
           <p className="mt-1 text-2xl font-bold tracking-[-0.02em] text-white">

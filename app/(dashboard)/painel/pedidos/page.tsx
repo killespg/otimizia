@@ -47,13 +47,13 @@ export default async function SellerOrdersPage({ searchParams }: { searchParams:
             const contact = order.contact_id ? contacts.get(order.contact_id) : null;
             const itemCount = order.seller_order_items.reduce((sum, item) => sum + item.quantity, 0);
             return <Link key={order.id} href={`/painel/pedidos/${order.id}`} className="group grid min-h-16 gap-2 px-4 py-3 hover:bg-white/[0.025] lg:grid-cols-[9rem_minmax(12rem,1.4fr)_7rem_8rem_8rem_9rem_3rem] lg:items-center">
-              <span><strong className="block text-sm font-semibold text-violet-200">{order.order_number}</strong><span className="mt-1 block text-xs text-white/34">{date(order.confirmed_at || order.created_at)}</span></span>
+              <span><strong className="block text-sm font-semibold text-od-text">{order.order_number}</strong><span className="mt-1 block text-xs text-white/34">{date(order.confirmed_at || order.created_at)}</span></span>
               <span className="min-w-0"><strong className="block truncate text-sm font-semibold text-white/78">{contact?.name ?? "Cliente não vinculado"}</strong><span className="mt-1 block truncate text-xs text-white/38">{contact?.company || "Venda direta"}</span></span>
               <span className="text-sm text-white/62"><span className="mb-1 block text-[11px] font-medium text-white/50 lg:hidden">Itens</span><span className="flex items-center gap-2"><PackageCheck size={15} className="text-white/50" /> {itemCount}</span></span>
               <span className="text-sm font-semibold tabular-nums text-white/78"><span className="mb-1 block text-[11px] font-medium text-white/50 lg:hidden">Total</span>{money(order.total_cents)}</span>
               <span><span className="mb-1 block text-[11px] font-medium text-white/50 lg:hidden">Pagamento</span><SellerStatus tone={order.payment_status === "paid" ? "success" : order.payment_status === "partial" ? "warning" : "neutral"}>{sellerPaymentStatusLabel(order.payment_status)}</SellerStatus></span>
               <span><span className="mb-1 block text-[11px] font-medium text-white/50 lg:hidden">Status</span><SellerStatus tone={order.status === "completed" ? "success" : order.status === "cancelled" ? "danger" : order.status === "ready" ? "violet" : "neutral"}>{sellerOrderStatusLabel(order.status)}</SellerStatus></span>
-              <ChevronRight size={15} className="hidden text-white/24 group-hover:text-violet-300 lg:block" />
+              <ChevronRight size={15} className="hidden text-white/24 group-hover:text-od-text lg:block" />
             </Link>;
           })}</div> : <SellerEmptyState title="Nenhum pedido encontrado" description="Revise a busca ou escolha outro status." icon="box" />}
         </section>
@@ -64,4 +64,4 @@ export default async function SellerOrdersPage({ searchParams }: { searchParams:
   );
 }
 
-function Guide({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) { return <div className="border-b border-white/[0.08] p-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"><span className="text-violet-300">{icon}</span><h2 className="mt-3 text-sm font-semibold text-white/72">{title}</h2><p className="mt-1 text-xs leading-relaxed text-white/38">{text}</p></div>; }
+function Guide({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) { return <div className="border-b border-white/[0.08] p-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"><span className="text-od-text-2">{icon}</span><h2 className="mt-3 text-sm font-semibold text-white/72">{title}</h2><p className="mt-1 text-xs leading-relaxed text-white/38">{text}</p></div>; }

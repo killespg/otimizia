@@ -144,7 +144,7 @@ export function LegalProductNavigation({ displayName, organizationName, canViewF
         aria-current={active ? "page" : undefined}
         className={`group flex min-h-9 items-center rounded-xl text-sm transition-colors ${collapsed ? "mx-auto size-9 justify-center" : "gap-2 px-2"} ${active ? "bg-white/[0.075] font-semibold text-white" : "text-white/58 hover:bg-white/[0.045] hover:text-white"}`}
       >
-        <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-violet-300" : "text-white/55 group-hover:text-white/75"} />
+        <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/55 group-hover:text-white/75"} />
         {!collapsed ? <><span className="min-w-0 flex-1 truncate">{item.label}</span>{item.label === "Visão geral" ? <ChevronRight size={14} className="text-white/28"/> : null}{typeof item.badge === "number" && item.badge > 0 ? <span className={`text-[11px] font-semibold tabular-nums ${item.danger ? "text-[#fb7767]" : "text-white/65"}`}>{item.badge}</span> : null}</> : null}
       </Link>
     );
@@ -200,7 +200,7 @@ export function LegalProductNavigation({ displayName, organizationName, canViewF
             }}
             className="group absolute inset-y-0 -right-1 z-[70] flex w-2 cursor-col-resize items-center justify-center touch-none"
           >
-            <span className="h-12 w-1 rounded-full bg-white/15 opacity-70 transition group-hover:bg-violet-400 group-hover:opacity-100" />
+            <span className="h-12 w-1 rounded-full bg-white/15 opacity-70 transition group-hover:bg-od-accent group-hover:opacity-100" />
           </button>
         ) : null}
       </aside>

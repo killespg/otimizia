@@ -130,7 +130,7 @@ export function ProductNavigation(props: Props) {
         aria-label="Navegação principal"
       >
         <div className={`flex h-16 items-center border-b border-white/[0.06] ${collapsed ? "justify-center px-2" : "justify-between px-4"}`}>
-          <Link href="/painel" aria-label="Ir para o painel" className="nav-item rounded-md focus-visible:ring-2 focus-visible:ring-violet-400">
+          <Link href="/painel" aria-label="Ir para o painel" className="nav-item rounded-md focus-visible:ring-2 focus-visible:ring-od-accent">
             {collapsed ? <LogoMark size={30} /> : <LogoWordmark height={30} />}
           </Link>
           {!collapsed ? (
@@ -163,7 +163,7 @@ export function ProductNavigation(props: Props) {
                       aria-current={active ? "page" : undefined}
                       className={`nav-item flex min-h-11 items-center rounded-md text-[13px] font-medium ${collapsed ? "justify-center px-2" : "gap-3 px-3"} ${active ? "bg-white/[0.075] text-white" : "text-white/48 hover:bg-white/[0.05] hover:text-white/80"}`}
                     >
-                      <ItemIcon size={17} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-violet-300" : "text-white/40"} />
+                      <ItemIcon size={17} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/40"} />
                       {!collapsed ? <span className="min-w-0 flex-1 truncate">{item.label}</span> : null}
                     </Link>
                   );

@@ -69,7 +69,7 @@ export default async function PipelineReportPage(
         <div>
           <Link
             href="/painel/funil"
-            className={usesFlatSurface ? "inline-flex items-center gap-1.5 text-xs font-semibold text-violet-300 hover:text-violet-200" : "inline-flex items-center gap-1 text-sm font-bold text-ink-muted hover:text-ink"}
+            className={usesFlatSurface ? "inline-flex items-center gap-1.5 text-xs font-semibold text-od-text-2 hover:text-od-text" : "inline-flex items-center gap-1 text-sm font-bold text-ink-muted hover:text-ink"}
           >
             <IconArrowRight className="h-4 w-4 rotate-180" />
             {isRealEstate ? "Voltar para atendimentos" : `Voltar para ${workspaceLabels.pipeline}`}
@@ -105,7 +105,7 @@ export default async function PipelineReportPage(
           </form>
           <a
             href={`/api/reports/deals?months=${monthsBack}`}
-            className={usesFlatSurface ? "inline-flex min-h-11 items-center gap-1.5 rounded-md px-3 text-xs font-semibold text-violet-300 hover:bg-violet-400/[0.06] hover:text-violet-200" : "btn-soft inline-flex items-center gap-1.5"}
+            className={usesFlatSurface ? "inline-flex min-h-11 items-center gap-1.5 rounded-md px-3 text-xs font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text" : "btn-soft inline-flex items-center gap-1.5"}
           >
             <IconDownload className="h-4 w-4" />
             Exportar CSV

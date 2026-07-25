@@ -188,7 +188,7 @@ export default async function ImovelDetailPage(props: { params: Promise<{ id: st
       </section>
       {v2Enabled && <ListingQualitySection property={property} documents={documents} canManage={canManage} />}
       {suggestions.length > 0 && (
-        <section className="space-y-2 border-y border-violet-400/20 bg-violet-400/[0.025] py-5">
+        <section className="space-y-2 border-y border-od-accent/20 bg-od-accent/[0.025] py-5">
           <div>
             <h2 className="text-sm font-semibold text-brand-700">IA sugere — confirme antes de publicar</h2>
             <p className="mt-0.5 text-xs font-medium text-ink-muted">

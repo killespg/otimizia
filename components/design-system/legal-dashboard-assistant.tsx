@@ -57,7 +57,7 @@ export function LegalDashboardAssistant({
       </form>
       {response ? (
         <div className="border-t border-od-border px-7 py-3" aria-live="polite">
-          <p className="text-xs font-semibold text-violet-300">
+          <p className="text-xs font-semibold text-od-text-2">
             Tim
           </p>
           <p className="mt-1 max-w-4xl text-sm leading-6 text-white/70">

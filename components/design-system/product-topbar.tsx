@@ -24,8 +24,8 @@ export function ProductTopbar({ initials }: { initials: string }) {
         <input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Buscar contatos" placeholder="Buscar cliente ou contato" className="!min-h-0 !border-0 !bg-transparent !p-0 text-[13px] !shadow-none outline-none placeholder:text-white/35" />
       </form>
       <div className="flex shrink-0 items-center gap-1">
-        <Link href="/painel/assistente" aria-label="Abrir conversa com o Tim" className="grid size-11 place-items-center rounded-md text-white/42 hover:bg-white/[0.05] hover:text-violet-200"><Bot size={17} /></Link>
-        <Link href="/painel/tarefas" aria-label="Ver lembretes" className="relative grid size-11 place-items-center rounded-md text-white/42 hover:bg-white/[0.05] hover:text-white"><Bell size={17} /><span className="absolute right-2.5 top-2.5 size-1.5 rounded-full bg-violet-500" /></Link>
+        <Link href="/painel/assistente" aria-label="Abrir conversa com o Tim" className="grid size-11 place-items-center rounded-md text-white/42 hover:bg-white/[0.05] hover:text-od-text"><Bot size={17} /></Link>
+        <Link href="/painel/tarefas" aria-label="Ver lembretes" className="relative grid size-11 place-items-center rounded-md text-white/42 hover:bg-white/[0.05] hover:text-white"><Bell size={17} /><span className="absolute right-2.5 top-2.5 size-1.5 rounded-full bg-od-accent" /></Link>
         <Link href="/painel/configuracoes" aria-label="Abrir sua conta" className="ml-1 grid size-8 place-items-center rounded-full bg-white/[0.08] text-[10px] font-semibold text-white/75">{initials}</Link>
       </div>
     </header>

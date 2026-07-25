@@ -345,7 +345,7 @@ export default function Board({
                 (flat
                   ? "flex min-w-[calc(100vw-2rem)] shrink-0 snap-start flex-col overflow-hidden border-r border-white/[0.08] bg-transparent transition-colors duration-200 sm:min-w-[18rem] "
                   : "panel flex min-w-[calc(100vw-2rem)] shrink-0 snap-start flex-col overflow-hidden transition-colors duration-200 sm:min-w-[18rem] ") +
-                (isOver ? (flat ? "bg-violet-400/[0.06]" : "border-brand-300 bg-brand-50") : "")
+                (isOver ? (flat ? "bg-od-accent/[0.06]" : "border-brand-300 bg-brand-50") : "")
               }
             >
               <header className={flat ? "border-b border-white/[0.08] bg-transparent px-4 py-4" : "border-b border-line bg-white px-4 py-4"}>
@@ -388,7 +388,7 @@ export default function Board({
                           setOverList(null);
                         }}
                         className={
-                          (flat ? "row-link group rounded-md border border-white/[0.09] bg-white/[0.025] p-3 hover:border-violet-400/30 " : "row-link group rounded-lg border border-line bg-white p-3 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] hover:border-brand-200 ") +
+                          (flat ? "row-link group rounded-md border border-white/[0.09] bg-white/[0.025] p-3 hover:border-od-accent/30 " : "row-link group rounded-lg border border-line bg-white p-3 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] hover:border-brand-200 ") +
                           (boardBusy ? "cursor-wait opacity-70" : canDrag ? "cursor-grab active:cursor-grabbing" : "") +
                           " " +
                           (dragId === deal.id ? "scale-[0.985] opacity-45 ring-2 ring-brand-300" : "")
@@ -471,14 +471,14 @@ export default function Board({
                             {isSeller && deal.details?.seller_order_id ? (
                               <Link
                                 href={`/painel/pedidos/${deal.details.seller_order_id}`}
-                                className="flex min-h-11 items-center justify-center border border-violet-400/25 bg-violet-400/[0.06] px-3 text-xs font-semibold text-violet-200 hover:bg-violet-400/[0.1]"
+                                className="flex min-h-11 items-center justify-center border border-od-accent/25 bg-od-accent/[0.06] px-3 text-xs font-semibold text-od-text hover:bg-white/[0.04]"
                               >
                                 Abrir pedido confirmado
                               </Link>
                             ) : isSeller && deal.stage !== "perdido" ? (
                               <Link
                                 href={`/painel/vendas/${deal.id}/confirmar`}
-                                className="flex min-h-11 items-center justify-center border border-violet-400/25 bg-violet-400/[0.06] px-3 text-xs font-semibold text-violet-200 hover:bg-violet-400/[0.1]"
+                                className="flex min-h-11 items-center justify-center border border-od-accent/25 bg-od-accent/[0.06] px-3 text-xs font-semibold text-od-text hover:bg-white/[0.04]"
                               >
                                 Confirmar venda e criar pedido
                               </Link>

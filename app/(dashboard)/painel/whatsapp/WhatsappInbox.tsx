@@ -367,7 +367,7 @@ export function WhatsappInbox({
                         <span
                           className={
                             "shrink-0 text-[11px] tabular-nums " +
-                            (unread > 0 ? "font-semibold text-violet-300" : "text-white/40")
+                            (unread > 0 ? "font-semibold text-od-text-2" : "text-white/40")
                           }
                         >
                           {listTime(conversation.last_message_at)}
@@ -469,7 +469,7 @@ export function WhatsappInbox({
                   className={
                     "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors " +
                     (selected.ia_active
-                      ? "bg-violet-400/15 text-violet-200 hover:bg-violet-400/25"
+                      ? "bg-white/[0.06] text-od-text hover:bg-white/[0.04]"
                       : "text-white/45 hover:bg-white/[0.06]")
                   }
                   title={
@@ -661,7 +661,7 @@ export function WhatsappInbox({
                         key={collection.id}
                         type="button"
                         onClick={() => shareVitrine(collection)}
-                        className="max-w-[240px] truncate rounded border border-violet-400/25 bg-violet-400/10 px-2.5 py-1.5 text-[12px] font-medium text-violet-200 hover:bg-violet-400/20"
+                        className="max-w-[240px] truncate rounded border border-od-accent/25 bg-white/[0.06] px-2.5 py-1.5 text-[12px] font-medium text-od-text hover:bg-white/[0.04]"
                         title={`Enviar a vitrine "${collection.title}"`}
                       >
                         Vitrine: {collection.title}

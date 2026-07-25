@@ -53,7 +53,7 @@ export function MenuItem({ children, onClick, disabled = false, icon, isActive =
   return (
     <button
       type="button"
-      className={`group relative grid size-full place-items-center text-center transition-colors ${disabled ? "cursor-not-allowed text-white/20" : "text-white/48 hover:text-violet-200"} ${isActive ? "bg-violet-500 text-white" : ""}`}
+      className={`group relative grid size-full place-items-center text-center transition-colors ${disabled ? "cursor-not-allowed text-white/20" : "text-white/48 hover:text-od-text"} ${isActive ? "bg-od-accent text-white" : ""}`}
       role="menuitem"
       onClick={onClick}
       disabled={disabled}

@@ -23,7 +23,7 @@ export function AuthShell({
       <div className="mx-auto grid min-h-[100dvh] w-full max-w-6xl overflow-hidden border-white/[0.08] bg-[#1d1924] sm:min-h-[min(760px,calc(100dvh-2.5rem))] sm:rounded-lg sm:border lg:grid-cols-[1.05fr_.95fr]">
         <section className="hidden flex-col justify-between border-r border-white/[0.07] bg-[#120f1c] p-10 lg:flex">
           <div>
-            <Link href="/" className="inline-flex rounded-md focus-visible:ring-2 focus-visible:ring-violet-400"><LogoWordmark height={32} /></Link>
+            <Link href="/" className="inline-flex rounded-md focus-visible:ring-2 focus-visible:ring-od-accent"><LogoWordmark height={32} /></Link>
             <h2 className="mt-16 max-w-lg text-[34px] font-extrabold leading-[1.14] tracking-[-0.025em] text-white">O que precisa da sua atenção, sem ruído.</h2>
             <p className="mt-4 max-w-md text-[15px] leading-7 text-white/48">Contatos, vendas e lembretes no mesmo lugar, adaptados ao seu jeito de trabalhar.</p>
           </div>
@@ -34,7 +34,7 @@ export function AuthShell({
               [CalendarCheck2, "Lembretes no momento certo", "O que venceu sobe para o topo da fila."],
             ].map(([Icon, label, description]) => {
               const FeatureIcon = Icon as typeof ContactRound;
-              return <div key={String(label)} className="flex gap-4 border-t border-white/[0.06] py-5 first:border-t-0"><FeatureIcon size={18} className="mt-0.5 shrink-0 text-violet-300" /><div><p className="text-sm font-semibold text-white/78">{String(label)}</p><p className="mt-1 text-xs leading-5 text-white/35">{String(description)}</p></div></div>;
+              return <div key={String(label)} className="flex gap-4 border-t border-white/[0.06] py-5 first:border-t-0"><FeatureIcon size={18} className="mt-0.5 shrink-0 text-od-text-3" /><div><p className="text-sm font-semibold text-white/78">{String(label)}</p><p className="mt-1 text-xs leading-5 text-white/35">{String(description)}</p></div></div>;
             })}
           </div>
         </section>
@@ -60,7 +60,7 @@ export function AuthShell({
 export function AuthField({ label, name, required, className = "", ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string; name: string }) {
   return (
     <div>
-      <label className="label" htmlFor={name}>{label}{required ? <><span className="ml-1 text-violet-300" aria-hidden="true">*</span><span className="sr-only"> obrigatório</span></> : null}</label>
+      <label className="label" htmlFor={name}>{label}{required ? <><span className="ml-1 text-od-text-2" aria-hidden="true">*</span><span className="sr-only"> obrigatório</span></> : null}</label>
       <input id={name} name={name} required={required} className={`field mt-1.5 ${className}`} {...props} />
     </div>
   );

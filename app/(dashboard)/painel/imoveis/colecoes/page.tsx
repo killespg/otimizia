@@ -24,7 +24,7 @@ const REACTION_LABEL: Record<RealEstatePropertyReaction, string> = {
 // sobreporia estas cores; aqui usamos só utilitários do Tailwind.
 const REACTION_BADGE: Record<RealEstatePropertyReaction, string> = {
   quero_visitar: "bg-emerald-500 text-emerald-950",
-  interessado: "bg-violet-500 text-white",
+  interessado: "bg-od-accent text-white",
   sem_interesse: "bg-black/55 text-white",
 };
 

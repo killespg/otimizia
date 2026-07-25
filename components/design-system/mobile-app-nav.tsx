@@ -128,7 +128,7 @@ export function MobileAppNav({ tabs, timHref, groups, quickActions, ariaLabel }:
                     <LogoMark size={18} />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[14px] font-semibold text-violet-200">Falar com o Tim</span>
+                    <span className="block text-[14px] font-semibold text-od-text">Falar com o Tim</span>
                     <span className="block text-[12px] text-white/50">Seu parceiro de negócios</span>
                   </span>
                   <ChevronRight size={18} className="shrink-0 text-white/30" />
@@ -229,7 +229,7 @@ function BarTab({ item, active, onTap }: { item: MobileNavItem; active: boolean;
         <motion.span layoutId="mobile-tab-active" className="absolute inset-0 rounded-[18px] bg-white/[0.07]" transition={{ type: "spring", damping: 30, stiffness: 400 }} />
       ) : null}
       <span className="relative shrink-0">
-        <Icon size={20} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-violet-300" : ""} />
+        <Icon size={20} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : ""} />
         {typeof item.badge === "number" && item.badge > 0 ? (
           <span className={`absolute -right-2 -top-1.5 min-w-4 rounded-full px-1 text-[9px] font-semibold leading-4 tabular-nums ${item.danger ? "bg-[#fb7767] text-[#3a0f0a]" : "bg-white/20 text-white"}`}>
             {item.badge}
@@ -292,12 +292,12 @@ function MenuRow({
         aria-current={active ? "page" : undefined}
         className={`flex min-h-12 items-center gap-3 px-4 active:bg-white/[0.02] ${index === 0 ? "" : "border-t border-white/[0.06]"}`}
       >
-        <Icon size={18} className={active || accentIcon ? "text-violet-300" : "text-white/55"} />
+        <Icon size={18} className={active || accentIcon ? "text-od-text-2" : "text-white/55"} />
         <span className={`min-w-0 flex-1 truncate text-[14px] ${active ? "font-semibold text-white" : "text-white/78"}`}>{label}</span>
         {typeof badge === "number" && badge > 0 ? (
           <span className={`text-[12px] font-semibold tabular-nums ${danger ? "text-[#fb7767]" : "text-white/55"}`}>{badge}</span>
         ) : null}
-        {active ? <span className="size-1.5 shrink-0 rounded-full bg-violet-400" /> : null}
+        {active ? <span className="size-1.5 shrink-0 rounded-full bg-od-accent" /> : null}
       </Link>
     </motion.div>
   );

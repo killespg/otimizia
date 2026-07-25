@@ -82,7 +82,7 @@ export function TimConversation({
             <button
               type="button"
               onClick={onPersonalize}
-              className="self-start text-[12px] font-medium text-violet-300/85 hover:text-violet-200"
+              className="self-start text-[12px] font-medium text-od-text-3 hover:text-od-text"
             >
               Conta pra ele sobre sua empresa →
             </button>

@@ -124,7 +124,7 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
     const active = isCurrent(pathname, item);
     const Icon = item.icon;
     return <Link href={item.href} prefetch={true} title={collapsed ? item.label : undefined} aria-current={active ? "page" : undefined} className={`group flex min-h-9 items-center rounded text-sm transition-colors ${collapsed ? "mx-auto size-9 justify-center" : "gap-2 px-2"} ${active ? "bg-white/[0.075] font-semibold text-white" : "text-white/58 hover:bg-white/[0.045] hover:text-white"}`}>
-      <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-violet-300" : "text-white/55 group-hover:text-white/75"} />
+      <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/55 group-hover:text-white/75"} />
       {!collapsed ? <><span className="min-w-0 flex-1 truncate">{item.label}</span>{item.label === "Visão geral" ? <ChevronRight size={14} className="text-white/28" /> : null}{typeof item.badge === "number" && item.badge > 0 ? <span className={`text-[11px] font-semibold tabular-nums ${item.danger ? "text-[#fb7767]" : "text-white/65"}`}>{item.badge}</span> : null}</> : null}
     </Link>;
   }
@@ -171,7 +171,7 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
         <form action={logout}><PendingButton iconOnly={collapsed} pendingLabel="Saindo" className={`flex min-h-9 w-full items-center rounded text-sm text-white/48 hover:bg-white/[0.05] hover:text-white ${collapsed ? "justify-center" : "gap-2 px-2"}`}><LogOut size={16} />{!collapsed ? <span>Sair</span> : <span className="sr-only">Sair</span>}</PendingButton></form>
         {collapsed ? <button type="button" onClick={toggle} aria-label="Expandir menu" className="mt-1 grid min-h-9 w-full place-items-center rounded-md text-white/45 hover:bg-white/[0.05] hover:text-white"><ChevronRight size={16} /></button> : null}
       </footer>
-      {!collapsed ? <button type="button" aria-label="Redimensionar menu lateral" title="Arraste para redimensionar" onPointerDown={startResize} onDoubleClick={() => { setSidebarWidth(255); window.localStorage.setItem("otimizia-real-estate-sidebar-width", "255"); }} className="group absolute inset-y-0 -right-1 z-[var(--z-modal-backdrop)] flex w-2 cursor-col-resize items-center justify-center touch-none"><span className="h-12 w-1 rounded-full bg-white/15 opacity-70 transition group-hover:bg-violet-400 group-hover:opacity-100" /></button> : null}
+      {!collapsed ? <button type="button" aria-label="Redimensionar menu lateral" title="Arraste para redimensionar" onPointerDown={startResize} onDoubleClick={() => { setSidebarWidth(255); window.localStorage.setItem("otimizia-real-estate-sidebar-width", "255"); }} className="group absolute inset-y-0 -right-1 z-[var(--z-modal-backdrop)] flex w-2 cursor-col-resize items-center justify-center touch-none"><span className="h-12 w-1 rounded-full bg-white/15 opacity-70 transition group-hover:bg-od-accent group-hover:opacity-100" /></button> : null}
     </aside>
 
     <MobileAppNav

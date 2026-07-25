@@ -121,7 +121,7 @@ export default async function RealEstateCommissionsPage({
       </form>
 
       <section className="grid grid-cols-2 border-y border-white/[0.08] xl:grid-cols-4">
-        {summary.map(({ icon: Icon, ...item }) => <div key={item.label} className="min-w-0 border-b border-r border-white/[0.08] py-4 pr-4 even:border-r-0 [&:nth-last-child(-n+2)]:border-b-0 xl:border-b-0 xl:pl-5 xl:even:border-r xl:last:border-r-0 xl:first:pl-0"><div className="flex items-center gap-2 text-xs font-medium text-white/48"><Icon size={15} className="text-violet-300" />{item.label}</div><p className="mt-3 truncate text-xl font-semibold text-white" title={item.value}>{item.value}</p><p className="mt-2 text-[11px] text-white/38">{item.note}</p></div>)}
+        {summary.map(({ icon: Icon, ...item }) => <div key={item.label} className="min-w-0 border-b border-r border-white/[0.08] py-4 pr-4 even:border-r-0 [&:nth-last-child(-n+2)]:border-b-0 xl:border-b-0 xl:pl-5 xl:even:border-r xl:last:border-r-0 xl:first:pl-0"><div className="flex items-center gap-2 text-xs font-medium text-white/48"><Icon size={15} className="text-od-text-2" />{item.label}</div><p className="mt-3 truncate text-xl font-semibold text-white" title={item.value}>{item.value}</p><p className="mt-2 text-[11px] text-white/38">{item.note}</p></div>)}
       </section>
 
       <section className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(21rem,.55fr)]">

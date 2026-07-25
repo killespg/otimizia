@@ -59,13 +59,13 @@ export default async function SellerAfterSalesPage({ searchParams }: { searchPar
                 <span className="min-w-0"><span className="mb-1 block text-[11px] font-medium text-white/50 lg:hidden">Cliente</span><strong className="block truncate text-sm font-medium text-white/66">{contact?.name ?? "Cliente não vinculado"}</strong><span className="mt-1 block truncate text-xs text-white/46">{contact?.phone || contact?.email || "Sem contato"}</span></span>
                 <span><span className="mb-1 block text-[11px] font-medium text-white/50 lg:hidden">Validade</span><SellerStatus tone={isExpired ? "danger" : days <= 30 ? "warning" : "success"}>{isExpired ? "Vencida" : date(warranty.expires_on)}</SellerStatus></span>
                 <span className="text-sm font-semibold tabular-nums text-white/62"><span className="mb-1 block text-[11px] font-medium text-white/50 lg:hidden">Chamados</span>{claimCountByWarranty.get(warranty.id) ?? 0}</span>
-                <ChevronRight size={15} className="hidden text-white/24 group-hover:text-violet-300 lg:block" />
+                <ChevronRight size={15} className="hidden text-white/24 group-hover:text-od-text lg:block" />
               </Link>;
             })}</div>
           </section>
 
-          <section id="novo-chamado" className="scroll-mt-24 border border-violet-400/20 bg-[#1e1d22]/90">
-            <header className="border-b border-violet-400/15 px-4 py-4"><div className="flex items-center gap-3"><Wrench size={18} className="text-violet-300" /><div><h2 className="text-sm font-semibold text-white">Abrir atendimento</h2><p className="mt-1 text-xs text-white/46">Registre o problema e acompanhe até a solução.</p></div></div></header>
+          <section id="novo-chamado" className="scroll-mt-24 border border-od-accent/20 bg-[#1e1d22]/90">
+            <header className="border-b border-od-accent/15 px-4 py-4"><div className="flex items-center gap-3"><Wrench size={18} className="text-od-text-2" /><div><h2 className="text-sm font-semibold text-white">Abrir atendimento</h2><p className="mt-1 text-xs text-white/46">Registre o problema e acompanhe até a solução.</p></div></div></header>
             <form action={createSellerWarrantyClaim} className="space-y-3 p-4">
               <label><span className="label">Garantia</span><select name="warranty_id" defaultValue={selectedWarranty?.id ?? ""} required className="field mt-1.5"><option value="" disabled>Selecione a garantia</option>{warranties.map((warranty) => { const item = items.get(warranty.order_item_id); const contact = warranty.contact_id ? contacts.get(warranty.contact_id) : null; return <option key={warranty.id} value={warranty.id}>{item?.product_name_snapshot ?? "Produto"} · {contact?.name ?? "Sem cliente"} · {date(warranty.expires_on)}</option>; })}</select></label>
               <label><span className="label">Assunto</span><input name="title" required maxLength={160} placeholder="Ex: Produto parou de funcionar" className="field mt-1.5" /></label>
@@ -99,4 +99,4 @@ export default async function SellerAfterSalesPage({ searchParams }: { searchPar
   );
 }
 
-function Guide({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) { return <div className="border-b border-white/[0.08] p-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"><span className="text-violet-300">{icon}</span><h2 className="mt-3 text-sm font-semibold text-white/72">{title}</h2><p className="mt-1 text-xs leading-relaxed text-white/46">{text}</p></div>; }
+function Guide({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) { return <div className="border-b border-white/[0.08] p-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"><span className="text-od-text-2">{icon}</span><h2 className="mt-3 text-sm font-semibold text-white/72">{title}</h2><p className="mt-1 text-xs leading-relaxed text-white/46">{text}</p></div>; }

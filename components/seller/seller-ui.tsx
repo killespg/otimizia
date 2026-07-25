@@ -14,7 +14,7 @@ export function SellerPageHeader({
   return (
     <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-6 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p className="text-xs font-semibold text-violet-300">Operação de vendas</p>
+        <p className="text-xs font-semibold text-od-text-2">Operação de vendas</p>
         <h1 className="mt-2 text-od-title text-white">{title}</h1>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-white/52">{description}</p>
       </div>
@@ -45,7 +45,7 @@ export function SellerEmptyState({ title, description, action, icon = "products"
   const Icon = icon === "box" ? Box : PackageSearch;
   return (
     <div className={`flex min-h-56 flex-col items-center justify-center border-y border-white/[0.08] px-5 py-10 text-center ${className}`}>
-      <span className="grid size-11 place-items-center border border-violet-300/20 bg-violet-400/[0.07] text-violet-300"><Icon size={21} /></span>
+      <span className="grid size-11 place-items-center border border-od-accent/20 bg-od-accent/[0.07] text-od-text-2"><Icon size={21} /></span>
       <h2 className="mt-4 text-base font-semibold text-white">{title}</h2>
       <p className="mt-2 max-w-md text-sm leading-relaxed text-white/46">{description}</p>
       {action ? <div className="mt-5">{action}</div> : null}
@@ -68,7 +68,7 @@ export function ProductThumb({ src, name, size = "md" }: { src?: string | null; 
 export function SellerStatus({ tone = "neutral", children }: { tone?: "neutral" | "violet" | "success" | "warning" | "danger"; children: ReactNode }) {
   const tones = {
     neutral: "border-white/[0.1] text-white/56",
-    violet: "border-violet-400/25 bg-violet-400/[0.07] text-violet-200",
+    violet: "border-od-accent/25 bg-od-accent/[0.07] text-od-text",
     success: "border-emerald-400/25 bg-emerald-400/[0.06] text-emerald-300",
     warning: "border-amber-300/25 bg-amber-300/[0.06] text-amber-300",
     danger: "border-[#fb7767]/30 bg-[#fb7767]/[0.06] text-[#fb7767]",

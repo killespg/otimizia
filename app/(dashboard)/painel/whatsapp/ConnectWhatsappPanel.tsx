@@ -85,7 +85,7 @@ export function ConnectWhatsappPanel({
 
   return (
     <div className={flat ? "flex flex-col items-center gap-4 border-y border-white/[0.08] py-8 text-center" : "flex flex-col items-center gap-4 border border-white/[0.09] bg-[#1e1d22] p-10 text-center"}>
-      <span className="grid size-12 place-items-center rounded-md bg-violet-400/10 text-violet-300">
+      <span className="grid size-12 place-items-center rounded-md bg-white/[0.06] text-od-text-2">
         <IconMessage className="h-6 w-6" />
       </span>
       <div>

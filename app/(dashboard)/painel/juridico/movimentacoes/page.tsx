@@ -28,7 +28,7 @@ export default async function LegalMovementsPage() {
     <div className="mx-auto w-full max-w-[1640px] space-y-6">
       <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold text-violet-300">Jurídico / Movimentações</p>
+          <p className="text-xs font-semibold text-od-text-2">Jurídico / Movimentações</p>
           <h1 className="mt-2 text-od-title text-od-text">Movimentações processuais</h1>
           <p className="mt-2 max-w-2xl text-sm text-od-text-2">Acompanhe o que mudou nos processos monitorados e registre cada revisão.</p>
         </div>
@@ -47,5 +47,5 @@ export default async function LegalMovementsPage() {
 }
 
 function Metric({ label, value, highlight = false, danger = false }: { label: string; value: number; highlight?: boolean; danger?: boolean }) {
-  return <article className="flex items-center gap-3 border-b border-od-border px-4 py-5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"><RefreshCw size={16} className={danger ? "text-[#fb7767]" : "text-violet-300"}/><div><p className="text-xs text-od-text-2">{label}</p><p className={`mt-1 text-2xl font-bold ${danger ? "text-[#fb7767]" : highlight ? "text-violet-200" : "text-od-text"}`}>{value}</p></div></article>;
+  return <article className="flex items-center gap-3 border-b border-od-border px-4 py-5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"><RefreshCw size={16} className={danger ? "text-[#fb7767]" : "text-od-text-2"}/><div><p className="text-xs text-od-text-2">{label}</p><p className={`mt-1 text-2xl font-bold ${danger ? "text-[#fb7767]" : highlight ? "text-od-text" : "text-od-text"}`}>{value}</p></div></article>;
 }

@@ -74,7 +74,7 @@ export default async function LawPage(props: { searchParams?: Promise<{ busca?: 
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
       <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold text-violet-300">Jurídico / Processos</p>
+          <p className="text-xs font-semibold text-od-text-2">Jurídico / Processos</p>
           <h1 className="mt-2 text-od-title text-white">Carteira de processos</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/52">Casos ativos, responsáveis, risco e próximo compromisso em uma única fila operacional.</p>
         </div>
@@ -111,7 +111,7 @@ export default async function LawPage(props: { searchParams?: Promise<{ busca?: 
             <h2 className="text-base font-semibold text-white">Processos em acompanhamento</h2>
             <p className="mt-1 text-xs text-white/52">{query ? `${visibleCases.length} resultado(s) para “${searchParams?.busca}”` : "Ordenados pelo próximo prazo"}</p>
           </div>
-          <div className="flex items-center gap-3"><span className="text-xs text-white/50">{allCases.length} no total</span>{query ? <Link href="/painel/juridico/processos" className="text-xs font-semibold text-violet-300">Limpar busca</Link> : null}</div>
+          <div className="flex items-center gap-3"><span className="text-xs text-white/50">{allCases.length} no total</span>{query ? <Link href="/painel/juridico/processos" className="text-xs font-semibold text-od-text-2">Limpar busca</Link> : null}</div>
         </div>
         {visibleCases.length === 0 ? (
           <EmptyCases />
@@ -255,14 +255,14 @@ function Metric({
 }) {
   return (
     <article className="flex items-center gap-3 border-b border-white/[0.08] px-4 py-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
-      <span className={warning ? "text-[#fb7767]" : "text-violet-300"}><Icon className="h-4 w-4" /></span>
+      <span className={warning ? "text-[#fb7767]" : "text-od-text-2"}><Icon className="h-4 w-4" /></span>
       <div><p className="text-xs font-medium text-white/50">{label}</p><p className="mt-1 text-2xl font-bold tracking-[-.02em] text-white">{value}</p></div>
     </article>
   );
 }
 
 function Status({ status }: { status: LegalCase["status"] }) {
-  return <span className="w-fit rounded-md bg-violet-400/10 px-2 py-1 text-xs font-semibold text-violet-200">{LEGAL_CASE_STATUS[status]}</span>;
+  return <span className="w-fit rounded-md bg-white/[0.06] px-2 py-1 text-xs font-semibold text-od-text">{LEGAL_CASE_STATUS[status]}</span>;
 }
 
 function Field({
@@ -359,7 +359,7 @@ function NotLawOffice() {
 function EmptyCases() {
   return (
     <div className="p-8 text-center">
-      <IconColumns className="mx-auto h-7 w-7 text-violet-300" />
+      <IconColumns className="mx-auto h-7 w-7 text-od-text-2" />
       <p className="mt-3 text-sm font-semibold text-white">Nenhum caso encontrado.</p>
       <p className="mt-1 text-[12px] text-white/48">
         Use o formulário acima para transformar um atendimento contratado em operação jurídica.

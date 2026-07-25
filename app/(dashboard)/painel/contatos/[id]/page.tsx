@@ -118,7 +118,7 @@ export default async function ContactDetailPage(
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
       <Link
         href="/painel/contatos"
-        className="inline-flex items-center gap-2 text-[11px] font-semibold text-violet-300 hover:text-violet-200"
+        className="inline-flex items-center gap-2 text-[11px] font-semibold text-od-text-2 hover:text-od-text"
       >
         <IconArrowRight className="h-4 w-4 rotate-180" />
         {copy.backLabel}
@@ -128,7 +128,7 @@ export default async function ContactDetailPage(
         <div className="flex min-w-0 items-center gap-4">
           <Avatar name={contactName} className="size-12 text-sm" />
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-violet-300">{copy.sectionSingular}</p>
+            <p className="text-xs font-semibold text-od-text-2">{copy.sectionSingular}</p>
             <h1 className="text-safe mt-2 text-od-title text-white">
               {contactName}
             </h1>
@@ -434,7 +434,7 @@ function MiniStat({
 }) {
   return (
     <div className="flex items-center gap-3 border-l border-white/[0.08] px-3 py-2">
-      <Icon className={`h-4 w-4 ${pink ? "text-amber-300" : "text-violet-300"}`} />
+      <Icon className={`h-4 w-4 ${pink ? "text-amber-300" : "text-od-text-2"}`} />
       <div><p className="text-[9px] text-white/38">{label}</p><p className="text-[18px] font-bold text-white">{value}</p></div>
     </div>
   );

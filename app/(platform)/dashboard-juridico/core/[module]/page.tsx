@@ -45,7 +45,7 @@ export default async function CoreModulePage(
             Um módulo compartilhado do OtimizIA, com linguagem e contexto adaptados para {preset.shortLabel.toLowerCase()}.
           </p>
         </div>
-        <Link href={workspace === "law_office" ? "/painel/juridico" : `/painel/workspaces/${workspace}`} className="text-[10px] text-violet-300/60 hover:text-violet-200">
+        <Link href={workspace === "law_office" ? "/painel/juridico" : `/painel/workspaces/${workspace}`} className="text-[10px] text-od-text-2/60 hover:text-od-accent">
           Voltar ao painel
         </Link>
       </header>
@@ -54,7 +54,7 @@ export default async function CoreModulePage(
         {(Object.entries(modules) as [ModuleKey, (typeof modules)[ModuleKey]][]).map(([key, item]) => {
           const Icon = item.icon;
           const active = key === moduleKey;
-          return <Link key={key} href={`/painel/juridico/core/${key}?workspace=${workspace}`} className={`inline-flex h-12 shrink-0 items-center gap-2 border-b px-4 text-[10px] ${active ? "border-violet-400 text-violet-200" : "border-transparent text-white/30 hover:text-white/62"}`}><Icon size={13} />{item.label}</Link>;
+          return <Link key={key} href={`/painel/juridico/core/${key}?workspace=${workspace}`} className={`inline-flex h-12 shrink-0 items-center gap-2 border-b px-4 text-[10px] ${active ? "border-od-accent text-od-accent" : "border-transparent text-white/30 hover:text-white/62"}`}><Icon size={13} />{item.label}</Link>;
         })}
       </nav>
 

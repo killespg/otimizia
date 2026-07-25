@@ -60,7 +60,7 @@ export default async function DeadlinesPage() {
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
       <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold text-violet-300">Jurídico / Agenda e prazos</p>
+          <p className="text-xs font-semibold text-od-text-2">Jurídico / Agenda e prazos</p>
           <h1 className="mt-2 text-od-title text-white">Agenda e prazos</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/52">Fila cronológica do escritório para agir antes que um compromisso vire risco.</p>
         </div>
@@ -136,7 +136,7 @@ function DeadlineGroup({
               <span
                 className={
                   "text-xs font-semibold " +
-                  (danger ? "text-[#fb7767]" : muted ? "text-white/38" : "text-violet-300")
+                  (danger ? "text-[#fb7767]" : muted ? "text-white/38" : "text-od-text-2")
                 }
               >
                 {item.next_deadline_at
@@ -168,7 +168,7 @@ function Metric({
 }) {
   return (
     <article className="flex items-center gap-3 border-b border-white/[0.08] px-4 py-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
-      <span className={danger ? "text-[#fb7767]" : muted ? "text-white/35" : "text-violet-300"}><Icon className="h-4 w-4" /></span>
+      <span className={danger ? "text-[#fb7767]" : muted ? "text-white/35" : "text-od-text-2"}><Icon className="h-4 w-4" /></span>
       <div><p className="text-xs text-white/50">{label}</p><p className="mt-1 text-2xl font-bold tracking-[-.02em] text-white">{value}</p></div>
     </article>
   );

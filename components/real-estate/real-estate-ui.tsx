@@ -14,7 +14,7 @@ export function RealEstatePageHeader({
   return (
     <header className="flex flex-col gap-5 border-b border-white/[0.08] pb-6 md:flex-row md:items-end md:justify-between">
       <div className="min-w-0">
-        <p className="text-xs font-semibold text-violet-300">{eyebrow}</p>
+        <p className="text-xs font-semibold text-od-text-2">{eyebrow}</p>
         <h1 className="mt-2 text-od-title text-white">{title}</h1>
         {description ? <p className="mt-2 max-w-3xl text-sm leading-relaxed text-white/52">{description}</p> : null}
       </div>
