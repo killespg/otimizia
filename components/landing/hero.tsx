@@ -36,9 +36,8 @@ export function Hero({ animated = false }: { animated?: boolean }) {
       />
       {animated ? <AnimatedShapesBackground /> : null}
       <div className="relative z-10">
-        <div className="mb-6 inline-flex items-center gap-1.5 rounded-md border border-od-border px-3 py-1.5 text-[12px] font-medium text-od-text-2">
+        <div className="mb-6 text-od-label text-od-text-3">
           CRM feito para quem vende sozinho
-          <ArrowRight className="size-3.5" strokeWidth={2} />
         </div>
         <h1 className="mx-auto mb-5 max-w-[16ch] text-[44px] font-extrabold leading-[1.1] tracking-[-0.02em] md:max-w-none md:text-[56px]">
           <span className="text-white">Venda sem perder </span>

@@ -46,7 +46,7 @@ export function SpotlightCard({ localSpotlight = true }: { localSpotlight?: bool
           direto no painel.
         </p>
       </div>
-      <ul className="relative z-[1] flex w-full flex-1 flex-col gap-2">
+      <ul className="relative z-[1] w-full flex-1 divide-y divide-od-border border-y border-od-border">
         {[
           "Quem eu preciso chamar hoje?",
           "Resuma o que aconteceu essa semana",
@@ -55,7 +55,7 @@ export function SpotlightCard({ localSpotlight = true }: { localSpotlight?: bool
         ].map((pergunta) => (
           <li
             key={pergunta}
-            className="flex items-center gap-2.5 rounded-md border border-od-border px-3.5 py-2.5 text-[13px] text-od-text-2"
+            className="flex items-center gap-2.5 py-3 text-[13px] text-od-text-2"
           >
             <Sparkles className="size-3.5 shrink-0 text-od-accent" strokeWidth={2} />
             {pergunta}
