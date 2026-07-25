@@ -4,15 +4,22 @@ import Image from "next/image";
 const MARK_RATIO = 1;
 const WORDMARK_RATIO = 1280 / 329;
 
-/** Exact approved OtimizIA mark, preserved from the supplied artwork. */
+/**
+ * Marca oficial da OtimizIA.
+ *
+ * Usa as variantes -2026, que sao RGBA com alfa de verdade. As -approved-dark
+ * sao RGB sem canal alfa e por isso dependiam de mix-blend-screen para simular
+ * recorte: o truque so funciona sobre fundo escuro, desbota a arte e deixa um
+ * retangulo visivel em qualquer outra superficie.
+ */
 export function LogoMark({ size = 32, className }: { size?: number; className?: string }) {
   return (
     <Image
-      src="/otimizia-mark-approved-dark.png"
+      src="/otimizia-mark-2026-dark.png"
       alt="OtimizIA"
       width={size}
       height={Math.round(size / MARK_RATIO)}
-      className={`mix-blend-screen ${className ?? ""}`}
+      className={className}
       priority
       unoptimized
     />
@@ -23,11 +30,11 @@ export function LogoMark({ size = 32, className }: { size?: number; className?: 
 export function LogoWordmark({ height = 30, className }: { height?: number; className?: string }) {
   return (
     <Image
-      src="/otimizia-logo-approved-dark.png"
+      src="/otimizia-logo-2026-dark.png"
       alt="OtimizIA"
       width={Math.round(height * WORDMARK_RATIO)}
       height={height}
-      className={`mix-blend-screen ${className ?? ""}`}
+      className={className}
       priority
       unoptimized
     />
@@ -49,11 +56,11 @@ export function LogoWordmarkAdaptive({ height = 30, className }: { height?: numb
         unoptimized
       />
       <Image
-        src="/otimizia-logo-approved-dark.png"
+        src="/otimizia-logo-2026-dark.png"
         alt="OtimizIA"
         width={width}
         height={height}
-        className={`${className ?? ""} hidden mix-blend-screen dark:block`}
+        className={`${className ?? ""} hidden dark:block`}
         priority
         unoptimized
       />

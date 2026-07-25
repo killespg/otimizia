@@ -2,7 +2,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { FloatingNav } from "@/components/landing/floating-nav";
 import { Hero } from "@/components/landing/hero";
 import { LogoMarquee } from "@/components/landing/logo-marquee";
 import { FeatureGrid } from "@/components/landing/feature-grid";
@@ -50,7 +49,6 @@ export default async function LandingPage() {
       />
 
       <div className="sticky top-4 z-50 px-4">
-        <FloatingNav />
       </div>
 
       <main className="mx-auto max-w-[1180px] px-8 pb-[120px] pt-10">

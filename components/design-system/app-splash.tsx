@@ -37,9 +37,7 @@ export function AppSplash() {
             animate={{ opacity: 1, scale: 1 }}
             transition={reduceMotion ? { duration: 0 } : { duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            {/* Variante com fundo transparente de verdade (alpha=0) — não
-                precisa de mix-blend, então não sobra retângulo em fundo
-                nenhum, diferente da -approved-dark usada na sidebar. */}
+            {/* Mesma variante -2026 do LogoWordmark: RGBA com alfa de verdade. */}
             <Image src="/otimizia-logo-2026-dark.png" alt="OtimizIA" width={156} height={40} priority unoptimized />
           </motion.div>
 

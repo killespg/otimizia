@@ -81,14 +81,14 @@ export function Topbar() {
  */
 export function DashboardShell() {
   return (
-    <div className="relative flex overflow-hidden border-y border-white/[0.06] bg-[#171320]">
+    <div className="relative flex h-full overflow-hidden rounded-xl border border-white/[0.08] bg-od-bg">
       <Sidebar />
       <div className="min-w-0 flex-1">
         <Topbar />
         <div className="grid grid-cols-1 divide-y divide-white/[0.07] border-y border-white/[0.07] pb-24 sm:grid-cols-3 sm:divide-x sm:divide-y-0 md:pb-0">
           {dashboardMetrics.map(({ icon: Icon, label, value, note }) => (
             <div key={label} className="flex items-center gap-3 px-5 py-5">
-              <Icon className="size-4 shrink-0 text-violet-300" strokeWidth={2} />
+              <Icon className="size-4 shrink-0 text-od-accent" strokeWidth={2} />
               <div className="min-w-0">
                 <div className="flex items-baseline gap-2">
                   <span className="text-xl font-bold text-white">{value}</span>
@@ -98,6 +98,46 @@ export function DashboardShell() {
               </div>
             </div>
           ))}
+        </div>
+        <div className="grid gap-0 border-b border-white/[0.07] md:grid-cols-[1.4fr_1fr] md:divide-x md:divide-white/[0.07]">
+          <div className="px-5 py-5">
+            <p className="text-[11px] font-medium text-white/45">Funil desta semana</p>
+            <div className="mt-4 flex items-end gap-1.5" aria-hidden="true">
+              {[38, 52, 44, 68, 59, 81, 72].map((height, index) => (
+                <span
+                  key={index}
+                  className={`flex-1 rounded-sm ${index === 5 ? "bg-od-accent" : "bg-white/[0.13]"}`}
+                  style={{ height: `${height}px` }}
+                />
+              ))}
+            </div>
+            <div className="mt-3 flex justify-between text-[10px] text-white/35">
+              <span>seg</span><span>ter</span><span>qua</span><span>qui</span><span>sex</span><span>sáb</span><span>dom</span>
+            </div>
+          </div>
+          <div className="px-5 py-5">
+            <p className="text-[11px] font-medium text-white/45">Quem chamar hoje</p>
+            <ul className="mt-3 divide-y divide-white/[0.07]">
+              {[
+                { name: "Marina Alves", note: "Proposta enviada", tone: "atrasado" },
+                { name: "Rafael Souza", note: "Retorno combinado", tone: "hoje" },
+                { name: "Studio Nova", note: "Aguardando contrato", tone: "hoje" },
+              ].map((item) => (
+                <li key={item.name} className="flex items-center gap-3 py-2.5">
+                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white/[0.08] text-[10px] font-semibold text-white/70">
+                    {item.name.split(" ").map((part) => part[0]).join("").slice(0, 2)}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[12px] font-medium text-white">{item.name}</span>
+                    <span className="block truncate text-[10px] text-white/45">{item.note}</span>
+                  </span>
+                  <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${item.tone === "atrasado" ? "bg-[#fb7767]/12 text-[#fca79b]" : "bg-white/[0.07] text-white/60"}`}>
+                    {item.tone === "atrasado" ? "Atrasado" : "Hoje"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
       <MobileTabBar />

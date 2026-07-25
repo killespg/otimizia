@@ -460,9 +460,16 @@ describe("frontend route parity", () => {
     const serviceWorker = readFileSync(resolve(process.cwd(), "public/sw.js"), "utf8");
 
     expect(logo).toContain("const WORDMARK_RATIO = 1280 / 329");
-    expect(logo).toContain('src="/otimizia-logo-approved-dark.png"');
-    expect(logo).toContain('src="/otimizia-mark-approved-dark.png"');
-    expect(logo).toContain("mix-blend-screen");
+    // A identidade e a mesma arte: -approved-dark e -2026-dark tem dimensoes
+    // identicas (1280x329 e 512x512). A diferenca e tecnica — a -approved-dark
+    // e RGB sem canal alfa, e por isso exigia mix-blend-screen para simular
+    // recorte, o que so funciona sobre fundo escuro e deixa retangulo visivel
+    // em qualquer outra superficie. A -2026 e RGBA de verdade.
+    expect(logo).toContain('src="/otimizia-logo-2026-dark.png"');
+    expect(logo).toContain('src="/otimizia-mark-2026-dark.png"');
+    // Precisa mirar o uso, nao a mencao: o comentario do componente explica
+    // por que o truque saiu, e citaria a classe numa checagem textual.
+    expect(logo).not.toMatch(/className=\{[^}]*mix-blend-screen/);
     expect(logo).toContain("unoptimized");
     expect(manifest).toContain('src: "/otimizia-app-icon-2026.png"');
     expect(manifest).toContain('src: "/otimizia-app-icon-2026-maskable.png"');
