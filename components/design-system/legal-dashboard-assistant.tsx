@@ -10,6 +10,11 @@ export function LegalDashboardAssistant({
   suggestions: string[];
 }) {
   const [value, setValue] = useState("");
+  // O provider de chat e global e guarda o historico de qualquer tela. Sem esta
+  // trava, a barra exibia messages[length - 1] de uma conversa anterior: uma
+  // resposta sem a pergunta visivel, as vezes com o vocabulario de outra
+  // vertical. A fala do Tim so aparece depois que o usuario pergunta AQUI.
+  const [asked, setAsked] = useState(false);
   const { messages, sending, status, send } = useAssistantChat();
   const last = messages.length ? messages[messages.length - 1] : null;
 
@@ -18,10 +23,13 @@ export function LegalDashboardAssistant({
     const question = value.trim();
     if (!question || sending) return;
     setValue("");
+    setAsked(true);
     await send(question);
   }
 
-  const response = status || (last?.role === "assistant" ? last.content : "");
+  const response = asked
+    ? status || (last?.role === "assistant" ? last.content : "")
+    : "";
 
   return (
     <section className="border-y border-od-border py-3">

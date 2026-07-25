@@ -249,6 +249,17 @@ export default async function LegalDashboardPage({
   const priorityItems = visibleDeadlines.slice(0, 2);
   const tableCases = activeCases.slice(0, 6);
 
+  // Tres estados diferentes, nao um "vazio" so. Escritorio sem nenhum caso
+  // precisa aprender a area; escritorio com a carteira em dia precisa ouvir que
+  // esta em dia. Colapsar os dois em "Nenhuma prioridade encontrada" era o que
+  // fazia a tela nao dizer nada.
+  const hasAnyCase = allActiveCases.length > 0;
+  const hasSignals = critical.length > 0 || reviews.length > 0;
+  // Quantos prazos pendentes existem FORA do escopo atual (periodo, carteira,
+  // area). Se houver, o vazio nao e "nada pra fazer" — e "nada aqui", e vale
+  // oferecer a ampliacao em vez de deixar o usuario achar que zerou.
+  const deadlinesOutOfScope = deadlines.length - visibleDeadlines.length;
+
   return (
     <div id="carteira" className="mx-auto w-full max-w-[1640px] text-white">
       <section className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -261,23 +272,57 @@ export default async function LegalDashboardPage({
             Bom dia,{" "}
             <span className="text-violet-300">{firstName(displayName)}.</span>
           </h1>
-          <p className="mt-2 flex max-w-3xl flex-wrap items-center gap-x-2 gap-y-1 text-sm text-white/60">
-            <span>O escritório começa o dia com</span>
-            <span className="inline-flex items-center gap-1 font-semibold text-[#fca79b]">
-              <AlertTriangle size={14} />
-              {critical.length}{" "}
-              {critical.length === 1 ? "prazo crítico" : "prazos críticos"}
-            </span>
-            <span className="text-white/35">e</span>
-            <span className="inline-flex items-center gap-1 font-semibold text-violet-200">
-              <FileCheck2 size={14} />
-              {reviews.length}{" "}
-              {reviews.length === 1 ? "movimentação" : "movimentações"} para
-              revisar.
-            </span>
-          </p>
+          {/* Cor de estado só aparece quando existe estado. Vermelho sobre um
+              zero era alarme anunciando que não há nada de errado — e era o
+              único ponto forte de cor da tela. */}
+          {!hasAnyCase ? (
+            <p className="mt-2 max-w-3xl text-sm text-white/60">
+              Seu escritório ainda não tem casos cadastrados. Comece por um caso
+              e o painel passa a mostrar prazos, movimentações e honorários.
+            </p>
+          ) : hasSignals ? (
+            <p className="mt-2 flex max-w-3xl flex-wrap items-center gap-x-2 gap-y-1 text-sm text-white/60">
+              <span>O escritório começa o dia com</span>
+              {critical.length > 0 ? (
+                <span className="inline-flex items-center gap-1 font-semibold text-[#fca79b]">
+                  <AlertTriangle size={14} />
+                  {critical.length}{" "}
+                  {critical.length === 1 ? "prazo crítico" : "prazos críticos"}
+                </span>
+              ) : null}
+              {critical.length > 0 && reviews.length > 0 ? (
+                <span className="text-white/35">e</span>
+              ) : null}
+              {reviews.length > 0 ? (
+                <span className="inline-flex items-center gap-1 font-semibold text-violet-200">
+                  <FileCheck2 size={14} />
+                  {reviews.length}{" "}
+                  {reviews.length === 1 ? "movimentação" : "movimentações"} para
+                  revisar.
+                </span>
+              ) : null}
+            </p>
+          ) : (
+            <p className="mt-2 flex max-w-3xl flex-wrap items-center gap-x-1.5 text-sm text-white/60">
+              <Check size={15} className="mt-1 shrink-0 text-emerald-300/80" />
+              <span>
+                Nenhum prazo crítico e nenhuma movimentação pendente.{" "}
+                <span className="text-white/45">
+                  {allActiveCases.length}{" "}
+                  {allActiveCases.length === 1
+                    ? "caso ativo na carteira"
+                    : "casos ativos na carteira"}
+                  .
+                </span>
+              </span>
+            </p>
+          )}
         </div>
-        <LegalDashboardFilters period={period} portfolio={portfolio} area={area} areas={areas} />
+        {/* Sem caso nenhum não há o que filtrar: três seletores desabilitados
+            de fato só somam moldura no dia um. */}
+        {hasAnyCase ? (
+          <LegalDashboardFilters period={period} portfolio={portfolio} area={area} areas={areas} />
+        ) : null}
       </section>
 
       <div className="space-y-6">
@@ -292,28 +337,40 @@ export default async function LegalDashboardPage({
         <section>
           <div className="mb-3 flex items-end justify-between gap-4">
             <div>
-              <h2 className="text-base font-semibold">Prioridades de hoje</h2>
+              <h2 className="text-base font-semibold">
+                {hasAnyCase ? "Prioridades de hoje" : "Como o jurídico funciona"}
+              </h2>
               <p className="mt-1 text-xs text-white/60">
-                {priorityItems.length === 1
-                  ? "Um item exige ação do escritório"
-                  : `${priorityItems.length} itens exigem ação do escritório`}
+                {!hasAnyCase
+                  ? "Três passos e o painel começa a trabalhar por você"
+                  : priorityItems.length === 1
+                    ? "Um item exige ação do escritório"
+                    : priorityItems.length > 0
+                      ? `${priorityItems.length} itens exigem ação do escritório`
+                      : "Carteira em dia no período selecionado"}
               </p>
             </div>
-            <Link
-              href="/painel/juridico/prazos"
-              className="shrink-0 text-xs font-semibold text-violet-300 hover:text-violet-200"
-            >
-              Ver meu dia
-            </Link>
+            {hasAnyCase ? (
+              <Link
+                href="/painel/juridico/prazos"
+                className="shrink-0 text-xs font-semibold text-violet-300 hover:text-violet-200"
+              >
+                Ver meu dia
+              </Link>
+            ) : null}
           </div>
-          <div className="hidden grid-cols-[128px_minmax(0,1.2fr)_minmax(150px,.8fr)_110px_120px_32px] gap-x-3 px-3 pb-2 text-od-label text-white/35 sm:grid">
-            <span>Prioridade</span>
-            <span>Caso</span>
-            <span>Próxima ação</span>
-            <span>Área</span>
-            <span>Responsável</span>
-            <span />
-          </div>
+          {/* O cabeçalho de coluna vive DENTRO do caso com linhas. Fora dele,
+              prometia cinco colunas e entregava uma frase centralizada. */}
+          {priorityItems.length ? (
+            <div className="hidden grid-cols-[128px_minmax(0,1.2fr)_minmax(150px,.8fr)_110px_120px_32px] gap-x-3 px-3 pb-2 text-od-label text-white/35 sm:grid">
+              <span>Prioridade</span>
+              <span>Caso</span>
+              <span>Próxima ação</span>
+              <span>Área</span>
+              <span>Responsável</span>
+              <span />
+            </div>
+          ) : null}
           {priorityItems.length ? (
             <div className="divide-y divide-od-border border-y border-od-border">
               {priorityItems.map((deadline) => {
@@ -374,10 +431,99 @@ export default async function LegalDashboardPage({
                 );
               })}
             </div>
+          ) : hasAnyCase ? (
+            /* Carteira em dia: boa notícia dita como boa notícia. Se existem
+               prazos fora do escopo atual, dizemos quantos — senão o usuário
+               conclui que zerou quando só está olhando por uma fresta. */
+            <div className="flex flex-col gap-3 border-y border-od-border px-3 py-6 sm:flex-row sm:items-center sm:justify-between">
+              <p className="flex items-start gap-2.5 text-sm text-white/70">
+                <span className="mt-px grid size-8 shrink-0 place-items-center rounded-xl bg-emerald-400/10 text-emerald-300">
+                  <Check size={15} />
+                </span>
+                <span>
+                  Nada vence {period === "7" ? "nos próximos 7 dias" : "nos próximos 30 dias"}
+                  {portfolio === "mine" ? " na sua carteira" : " na carteira do escritório"}
+                  {area === "all" ? "" : ` em ${area}`}.
+                  {deadlinesOutOfScope > 0 ? (
+                    <span className="mt-1 block text-white/45">
+                      {deadlinesOutOfScope}{" "}
+                      {deadlinesOutOfScope === 1
+                        ? "prazo pendente fica fora deste filtro"
+                        : "prazos pendentes ficam fora deste filtro"}
+                      .
+                    </span>
+                  ) : null}
+                </span>
+              </p>
+              <Link
+                href="/painel/juridico/prazos"
+                className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-md border border-od-border px-4 text-[13px] font-semibold text-white/80 hover:border-white/25 hover:text-white"
+              >
+                Ver todos os prazos
+                <ArrowUpRight size={14} />
+              </Link>
+            </div>
           ) : (
-            <p className="border-y border-od-border px-4 py-8 text-center text-sm text-white/55">
-              Nenhuma prioridade encontrada.
-            </p>
+            /* Dia um: ensina a área em vez de dizer "nada aqui". Numerado
+               porque é uma sequência de verdade — cada passo destrava o
+               seguinte. */
+            <ol className="divide-y divide-od-border border-y border-od-border">
+              {[
+                {
+                  step: "1",
+                  title: "Cadastre um caso",
+                  body: "Cliente, área, responsável e o próximo prazo. É o que alimenta todo o resto do painel.",
+                  href: "/painel/juridico/processos",
+                  action: "Novo caso",
+                  Icon: FileCheck2,
+                },
+                {
+                  step: "2",
+                  title: "Puxe o processo do DataJud",
+                  body: "Pelo número do processo, o OtimizIA importa as partes e o histórico em vez de você digitar.",
+                  href: "/painel/juridico/consulta",
+                  action: "Consultar",
+                  Icon: FileSearch,
+                },
+                {
+                  step: "3",
+                  title: "Deixe o Tim vigiar os prazos",
+                  body: "Movimentação nova e prazo chegando aparecem aqui, e o assistente avisa antes de virar urgência.",
+                  href: "/painel/juridico/prazos",
+                  action: "Ver prazos",
+                  Icon: FileClock,
+                },
+              ].map(({ step, title, body, href, action, Icon }) => (
+                <li
+                  key={step}
+                  className="flex flex-col gap-3 px-3 py-4 sm:flex-row sm:items-center sm:gap-4"
+                >
+                  <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-od-accent/12 text-[13px] font-bold text-violet-300">
+                    {step}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <strong className="flex items-center gap-2 text-[13px] font-semibold text-white">
+                      <Icon size={14} className="shrink-0 text-white/40" />
+                      {title}
+                    </strong>
+                    <span className="mt-1 block max-w-[62ch] text-xs leading-5 text-white/55">
+                      {body}
+                    </span>
+                  </span>
+                  <Link
+                    href={href}
+                    className={`inline-flex h-11 shrink-0 items-center gap-1.5 rounded-md px-4 text-[13px] font-semibold transition-colors ${
+                      step === "1"
+                        ? "bg-od-accent text-white hover:bg-od-accent-hover"
+                        : "border border-od-border text-white/80 hover:border-white/25 hover:text-white"
+                    }`}
+                  >
+                    {action}
+                    <ArrowUpRight size={14} />
+                  </Link>
+                </li>
+              ))}
+            </ol>
           )}
         </section>
 
