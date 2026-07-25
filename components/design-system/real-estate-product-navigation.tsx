@@ -52,15 +52,45 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(255);
+  // Grupos e o submenu da visão geral guardam o estado aberto/fechado. Fechado
+  // é a exceção, então só o que o usuário fecha entra no armazenamento.
+  const [closedGroups, setClosedGroups] = useState<string[]>([]);
+  const [overviewOpen, setOverviewOpen] = useState(true);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       setCollapsed(window.localStorage.getItem("otimizia-real-estate-sidebar-collapsed") === "1");
       const savedWidth = Number(window.localStorage.getItem("otimizia-real-estate-sidebar-width"));
       if (Number.isFinite(savedWidth) && savedWidth >= 220 && savedWidth <= 360) setSidebarWidth(savedWidth);
+      const savedClosed = window.localStorage.getItem("otimizia-real-estate-nav-closed");
+      if (savedClosed) {
+        try {
+          const parsed: unknown = JSON.parse(savedClosed);
+          if (Array.isArray(parsed)) setClosedGroups(parsed.filter((value): value is string => typeof value === "string"));
+        } catch {
+          // valor corrompido no storage nao pode derrubar a navegacao
+        }
+      }
+      setOverviewOpen(window.localStorage.getItem("otimizia-real-estate-nav-overview") !== "0");
     });
     return () => window.cancelAnimationFrame(frame);
   }, []);
+
+  // O efeito fica fora do updater: em StrictMode o React invoca o updater duas
+  // vezes, e escrita no storage dentro dele dispara em duplicado.
+  function toggleGroup(label: string) {
+    const next = closedGroups.includes(label)
+      ? closedGroups.filter((item) => item !== label)
+      : [...closedGroups, label];
+    setClosedGroups(next);
+    window.localStorage.setItem("otimizia-real-estate-nav-closed", JSON.stringify(next));
+  }
+
+  function toggleOverview() {
+    const next = !overviewOpen;
+    setOverviewOpen(next);
+    window.localStorage.setItem("otimizia-real-estate-nav-overview", next ? "1" : "0");
+  }
 
   function toggle() {
     setCollapsed((current) => {
@@ -125,8 +155,25 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
     const Icon = item.icon;
     return <Link href={item.href} prefetch={true} title={collapsed ? item.label : undefined} aria-current={active ? "page" : undefined} className={`group flex min-h-8 items-center rounded-xl text-[13px] transition-colors ${collapsed ? "mx-auto size-9 justify-center" : "gap-2 px-2.5"} ${active ? "bg-white/[0.075] font-semibold text-white" : "text-white/58 hover:bg-white/[0.045] hover:text-white"}`}>
       <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/55 group-hover:text-white/75"} />
-      {!collapsed ? <><span className="min-w-0 flex-1 truncate">{item.label}</span>{item.label === "Visão geral" ? <ChevronRight size={14} className="text-white/28" /> : null}{typeof item.badge === "number" && item.badge > 0 ? <span className={`text-[11px] font-semibold tabular-nums ${item.danger ? "text-[#fb7767]" : "text-white/65"}`}>{item.badge}</span> : null}</> : null}
+      {!collapsed ? <><span className="min-w-0 flex-1 truncate">{item.label}</span>{typeof item.badge === "number" && item.badge > 0 ? <span className={`text-[11px] font-semibold tabular-nums ${item.danger ? "text-[#fb7767]" : "text-white/65"}`}>{item.badge}</span> : null}</> : null}
     </Link>;
+  }
+
+  // O chevron da "Visão geral" era decorativo: cravado no rótulo, sem onClick e
+  // sem estado, enquanto os sub-itens apareciam ou sumiam conforme a rota. Um
+  // controle que parece clicável precisa responder ao clique, e a estrutura do
+  // menu não pode mudar sozinha quando o usuário navega.
+  function OverviewDisclosure() {
+    return <button
+      type="button"
+      onClick={toggleOverview}
+      aria-expanded={overviewOpen}
+      aria-controls="nav-visao-geral"
+      title={overviewOpen ? "Recolher visão geral" : "Expandir visão geral"}
+      className="grid size-6 shrink-0 place-items-center text-white/38 transition-colors hover:text-white"
+    >
+      <ChevronRight size={13} className={`transition-transform duration-150 ${overviewOpen ? "rotate-90" : ""}`} />
+    </button>;
   }
 
   // Rótulos curtos só na barra do celular (a sidebar mantém os completos):
@@ -159,10 +206,57 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
       </header>
 
       <nav className="flex-1 overflow-y-auto px-2">
-        {groups.map((group) => <section key={group.label || "overview"} className="mb-0 p-2">
-          {!collapsed && group.label ? <p className="flex h-8 items-center px-2 text-xs font-medium text-white/46">{group.label}</p> : null}
-          <div>{group.items.map((item, index) => <Fragment key={item.href + item.label}><Item item={item} />{group.label === "" && index === 0 && !collapsed && pathname === "/painel/imoveis/dashboard" ? <div className="mx-3.5 flex translate-x-px flex-col gap-1 border-l border-white/[0.08] px-2.5 py-0.5"><Link href="/painel/imoveis/dashboard" className="flex h-7 -translate-x-px items-center rounded-xl bg-white/[0.055] px-2 text-[12px] font-medium text-white">Minha operação</Link><Link href="/painel/imoveis/comissoes" className="flex h-7 -translate-x-px items-center rounded-xl px-2 text-[12px] text-white/42 hover:text-white">Metas e comissões</Link></div> : null}</Fragment>)}</div>
-        </section>)}
+        {groups.map((group) => {
+          const closed = closedGroups.includes(group.label);
+          // Recolhido em ícones não há rótulo de grupo pra clicar, então lá o
+          // grupo é sempre mostrado — senão itens sumiriam sem controle visível.
+          const hidden = closed && !collapsed && group.label !== "";
+          return <section key={group.label || "overview"} className="mb-0 p-2">
+            {!collapsed && group.label ? (
+              <button
+                type="button"
+                onClick={() => toggleGroup(group.label)}
+                aria-expanded={!closed}
+                aria-controls={`nav-grupo-${group.label}`}
+                className="flex h-7 w-full items-center gap-1.5 px-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-white/34 transition-colors hover:text-white/60"
+              >
+                <ChevronRight size={11} className={`shrink-0 transition-transform duration-150 ${closed ? "" : "rotate-90"}`} />
+                <span className="min-w-0 flex-1 truncate text-left">{group.label}</span>
+                {/* Recolher o grupo da pagina atual escondia o item ativo e o
+                    usuario perdia a referencia de onde esta. O ponto devolve
+                    esse sinal sem precisar reabrir. */}
+                {closed && group.items.some((item) => isCurrent(pathname, item)) ? (
+                  <span className="size-1.5 shrink-0 rounded-full bg-od-accent" aria-label="Contém a página atual" />
+                ) : null}
+                {closed ? <span className="text-[11px] tabular-nums text-white/38">{group.items.length}</span> : null}
+              </button>
+            ) : null}
+            {!hidden ? (
+              <div id={group.label ? `nav-grupo-${group.label}` : undefined}>
+                {group.items.map((item, index) => <Fragment key={item.href + item.label}>
+                  {group.label === "" && index === 0 && !collapsed ? (
+                    // Uma caixa só: o realce vive no contêiner, e link e seta
+                    // ficam dentro dele. Botão fora do item criava um segundo
+                    // retângulo de hover só pra seta.
+                    <div className={`group flex min-h-8 items-center rounded-xl pr-1 transition-colors ${isCurrent(pathname, item) ? "bg-white/[0.075]" : "hover:bg-white/[0.045]"}`}>
+                      <Link href={item.href} prefetch={true} aria-current={isCurrent(pathname, item) ? "page" : undefined} className={`flex min-w-0 flex-1 items-center gap-2 px-2.5 text-[13px] ${isCurrent(pathname, item) ? "font-semibold text-white" : "text-white/58 group-hover:text-white"}`}>
+                        <item.icon size={16} strokeWidth={isCurrent(pathname, item) ? 2.2 : 1.8} className={isCurrent(pathname, item) ? "text-od-text-2" : "text-white/55"} />
+                        <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                      </Link>
+                      <OverviewDisclosure />
+                    </div>
+                  ) : <Item item={item} />}
+                  {group.label === "" && index === 0 && !collapsed && overviewOpen ? (
+                    <div id="nav-visao-geral" className="mx-3.5 flex translate-x-px flex-col gap-1 border-l border-white/[0.08] px-2.5 py-0.5">
+                      <Link href="/painel/imoveis/dashboard" className={`flex h-7 -translate-x-px items-center rounded-xl px-2 text-[12px] ${pathname === "/painel/imoveis/dashboard" ? "bg-white/[0.055] font-medium text-white" : "text-white/42 hover:text-white"}`}>Minha operação</Link>
+                      <Link href="/painel/imoveis/comissoes" className={`flex h-7 -translate-x-px items-center rounded-xl px-2 text-[12px] ${pathname === "/painel/imoveis/comissoes" ? "bg-white/[0.055] font-medium text-white" : "text-white/42 hover:text-white"}`}>Metas e comissões</Link>
+                    </div>
+                  ) : null}
+                </Fragment>)}
+              </div>
+            ) : null}
+          </section>;
+        })}
       </nav>
 
       <footer className="border-t border-white/[0.06] p-2">
