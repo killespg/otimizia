@@ -1,13 +1,15 @@
 import Link from "next/link";
+import { CaptchaField } from "@/components/CaptchaField";
 import { PendingButton } from "@/components/PendingButton";
 import { login } from "../actions";
 import { AuthShell, AuthField } from "../AuthShell";
 
-export default function LoginPage({
-  searchParams,
-}: {
-  searchParams: { error?: string; message?: string };
-}) {
+export default async function LoginPage(
+  props: {
+    searchParams: Promise<{ error?: string; message?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   return (
     <AuthShell
       title="Entrar"
@@ -51,6 +53,7 @@ export default function LoginPage({
             Esqueci minha senha
           </Link>
         </div>
+        <CaptchaField />
         <PendingButton className="btn w-full py-3 text-base" pendingLabel="Entrando">
           Entrar
         </PendingButton>

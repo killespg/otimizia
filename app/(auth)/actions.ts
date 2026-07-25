@@ -9,9 +9,10 @@ import { resolveDemoCredentials } from "@/lib/demo-account";
 import { normalizeProfession, type ProfessionType } from "@/lib/professions";
 import { resolveOrigin } from "@/lib/request-origin";
 import { createClient } from "@/lib/supabase/server";
+import { TURNSTILE_TOKEN_FIELD, clientIpFromHeaders, verifyTurnstile } from "@/lib/turnstile";
 
 export async function login(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const rawEmail = textField(formData.get("email"), 160).toLowerCase();
   const rawPassword = passwordField(formData.get("password"));
   const demoCredentials = resolveDemoCredentials(rawEmail, rawPassword);
@@ -22,17 +23,19 @@ export async function login(formData: FormData) {
     redirectWithError("/login", "Preencha e-mail e senha.");
   }
 
+  await requireTurnstile(formData, "/login");
+
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
     redirectWithError("/login", "Não foi possível entrar. Confira os dados.");
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  redirect("/painel");
 }
 
 export async function signup(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const email = emailField(formData.get("email"));
   const password = passwordField(formData.get("password"));
   const name = textField(formData.get("name"), 120);
@@ -68,7 +71,9 @@ export async function signup(formData: FormData) {
     );
   }
 
-  const origin = resolveOrigin(headers());
+  await requireTurnstile(formData, "/signup");
+
+  const origin = resolveOrigin(await headers());
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -97,17 +102,19 @@ export async function signup(formData: FormData) {
     );
   }
 
-  redirect("/dashboard");
+  redirect("/painel");
 }
 
 export async function requestPasswordReset(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const email = emailField(formData.get("email"));
   if (!email) {
     redirectWithError("/forgot-password", "Informe um e-mail válido.");
   }
 
-  const origin = resolveOrigin(headers());
+  await requireTurnstile(formData, "/forgot-password");
+
+  const origin = resolveOrigin(await headers());
 
   await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/reset-password`,
@@ -122,7 +129,7 @@ export async function requestPasswordReset(formData: FormData) {
 }
 
 export async function logout() {
-  const supabase = createClient();
+  const supabase = await createClient();
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
   redirect("/login");
@@ -140,6 +147,22 @@ function emailField(v: FormDataEntryValue | null): string {
 
 function passwordField(v: FormDataEntryValue | null): string {
   return typeof v === "string" ? v.slice(0, 200) : "";
+}
+
+// Gate de CAPTCHA: valida o token do Turnstile no backend (siteverify) antes
+// de deixar a action seguir. Se a verificação falhar, redireciona com erro e
+// nunca chega no Supabase. Sem TURNSTILE_SECRET no ambiente, verifyTurnstile
+// libera (ver lib/turnstile.ts) — então isso é inócuo até a proteção ser ligada.
+async function requireTurnstile(formData: FormData, path: string): Promise<void> {
+  const token = String(formData.get(TURNSTILE_TOKEN_FIELD) ?? "").slice(0, 4000);
+  const outcome = await verifyTurnstile(token, clientIpFromHeaders(await headers()));
+  if (!outcome.ok) {
+    const message =
+      outcome.reason === "siteverify_unreachable"
+        ? "Não deu para verificar a segurança agora. Tente de novo em instantes."
+        : "Falha na verificação de segurança. Recarregue a página e tente de novo.";
+    redirectWithError(path, message);
+  }
 }
 
 function professionTypeFields(formData: FormData): ProfessionType[] {
@@ -173,3 +196,4 @@ function signupErrorMessage(error: { message?: string; status?: number; code?: s
 
   return "Não foi possível criar a conta. Tente novamente em instantes.";
 }
+

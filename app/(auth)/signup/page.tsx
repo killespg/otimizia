@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
+import { CaptchaField } from "@/components/CaptchaField";
 import { PendingButton } from "@/components/PendingButton";
 import { PROFESSION_OPTIONS } from "@/lib/professions";
 import { signup } from "../actions";
 import { AuthShell, AuthField } from "../AuthShell";
 
-export default function SignupPage({
-  searchParams,
-}: {
-  searchParams: { error?: string };
-}) {
+export default async function SignupPage(
+  props: {
+    searchParams: Promise<{ error?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   return (
     <AuthShell
       title="Criar conta"
@@ -123,6 +125,7 @@ export default function SignupPage({
             <BrandName />.
           </span>
         </label>
+        <CaptchaField />
         <PendingButton className="btn w-full py-3 text-base" pendingLabel="Criando">
           Criar conta grátis
         </PendingButton>

@@ -1,13 +1,15 @@
 import Link from "next/link";
+import { CaptchaField } from "@/components/CaptchaField";
 import { PendingButton } from "@/components/PendingButton";
 import { requestPasswordReset } from "../actions";
 import { AuthShell, AuthField } from "../AuthShell";
 
-export default function ForgotPasswordPage({
-  searchParams,
-}: {
-  searchParams: { error?: string; message?: string };
-}) {
+export default async function ForgotPasswordPage(
+  props: {
+    searchParams: Promise<{ error?: string; message?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   return (
     <AuthShell
       title="Esqueci minha senha"
@@ -35,6 +37,7 @@ export default function ForgotPasswordPage({
           maxLength={160}
           autoComplete="email"
         />
+        <CaptchaField />
         <PendingButton className="btn w-full py-3 text-base" pendingLabel="Enviando">
           Enviar link de redefinição
         </PendingButton>

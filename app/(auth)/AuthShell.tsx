@@ -1,7 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { IconAlert, IconBell, IconBot, IconCheck, IconColumns } from "../(app)/icons";
+import type { InputHTMLAttributes } from "react";
+import { AlertCircle, CalendarCheck2, Check, Columns3, ContactRound } from "lucide-react";
+import { LogoWordmark } from "@/components/design-system/logo";
 
 export function AuthShell({
   title,
@@ -19,105 +19,37 @@ export function AuthShell({
   footer: React.ReactNode;
 }) {
   return (
-    <main className="min-h-[100dvh] bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-2 sm:p-5 md:p-6">
-      <div className="relative mx-auto grid min-h-[calc(100dvh-1rem)] max-w-6xl overflow-hidden rounded-2xl bg-white shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] md:min-h-[calc(100dvh-3rem)] lg:grid-cols-[1.05fr_0.95fr]">
-        <ThemeToggle compact className="absolute right-4 top-4 z-20" />
-
-        <section className="hidden bg-[#f8fbff] p-8 lg:block">
-          <Link href="/" className="nav-item inline-flex items-center rounded-md">
-            <Image
-              src="/otimizia-logo.png"
-              alt="OtimizIA"
-              width={206}
-              height={60}
-              priority
-              sizes="206px"
-              className="h-10 w-auto dark:hidden"
-            />
-            <Image
-              src="/otimizia-logo-dark.png"
-              alt="OtimizIA"
-              width={216}
-              height={61}
-              priority
-              sizes="216px"
-              className="hidden h-10 w-auto dark:block"
-            />
-          </Link>
-
-          <div className="mt-16 max-w-xl">
-            <p className="text-sm font-black text-brand-700">CRM com IA</p>
-            <h2 className="mt-4 text-[clamp(2.5rem,6vw,4.5rem)] font-black leading-[0.94] tracking-[-0.04em] text-ink">
-              Sua rotina de vendas em ordem.
-            </h2>
-            <p className="mt-5 max-w-md text-base font-medium leading-relaxed text-ink-soft">
-              Entre para ver clientes para chamar, vendas abertas e lembretes em
-              uma tela simples.
-            </p>
+    <main className="min-h-[100dvh] bg-[#171320] p-0 sm:grid sm:place-items-center sm:p-5">
+      <div className="mx-auto grid min-h-[100dvh] w-full max-w-6xl overflow-hidden border-white/[0.08] bg-[#1d1924] sm:min-h-[min(760px,calc(100dvh-2.5rem))] sm:rounded-lg sm:border lg:grid-cols-[1.05fr_.95fr]">
+        <section className="hidden flex-col justify-between border-r border-white/[0.07] bg-[#120f1c] p-10 lg:flex">
+          <div>
+            <Link href="/" className="inline-flex rounded-md focus-visible:ring-2 focus-visible:ring-violet-400"><LogoWordmark height={32} /></Link>
+            <h2 className="mt-16 max-w-lg text-[34px] font-extrabold leading-[1.14] tracking-[-0.025em] text-white">O que precisa da sua atenção, sem ruído.</h2>
+            <p className="mt-4 max-w-md text-[15px] leading-7 text-white/48">Contatos, vendas e lembretes no mesmo lugar, adaptados ao seu jeito de trabalhar.</p>
           </div>
-
-          <div className="enter mt-12 grid max-w-xl gap-3">
-            <PreviewItem icon={IconBell} title="Fila do dia" body="Quem precisa de resposta aparece primeiro." />
-            <PreviewItem icon={IconColumns} title="Vendas abertas" body="Etapas claras para cada negócio." />
-            <PreviewItem icon={IconBot} title="Sócio-Assistente" body="Ajuda para resumir e decidir o próximo passo." />
+          <div className="border-y border-white/[0.07]">
+            {[
+              [ContactRound, "Clientes organizados", "Histórico e próximos passos sempre à mão."],
+              [Columns3, "Funil que acompanha seu processo", "Etapas, valores e responsáveis sem planilha."],
+              [CalendarCheck2, "Lembretes no momento certo", "O que venceu sobe para o topo da fila."],
+            ].map(([Icon, label, description]) => {
+              const FeatureIcon = Icon as typeof ContactRound;
+              return <div key={String(label)} className="flex gap-4 border-t border-white/[0.06] py-5 first:border-t-0"><FeatureIcon size={18} className="mt-0.5 shrink-0 text-violet-300" /><div><p className="text-sm font-semibold text-white/78">{String(label)}</p><p className="mt-1 text-xs leading-5 text-white/35">{String(description)}</p></div></div>;
+            })}
           </div>
         </section>
 
-        <section className="flex items-center justify-center px-5 py-10 sm:px-8">
-          <div className="hero-rise w-full max-w-[420px]">
-            <Link
-              href="/"
-              className="nav-item mx-auto mb-8 flex w-max items-center gap-2.5 hover:opacity-80 lg:hidden"
-            >
-              <Image
-                src="/otimizia-logo.png"
-                alt="OtimizIA"
-                width={204}
-                height={60}
-                priority
-                sizes="204px"
-                className="h-10 w-auto dark:hidden"
-              />
-              <Image
-                src="/otimizia-logo-dark.png"
-                alt="OtimizIA"
-                width={216}
-                height={61}
-                priority
-                sizes="216px"
-                className="hidden h-10 w-auto dark:block"
-              />
-            </Link>
+        <section className="flex min-h-[100dvh] items-center px-5 py-10 sm:min-h-0 sm:px-10 lg:px-14">
+          <div className="mx-auto w-full max-w-md">
+            <div className="mb-10 lg:hidden"><LogoWordmark height={30} /></div>
+            <h1 className="text-[28px] font-bold tracking-[-0.02em] text-white">{title}</h1>
+            <p className="mt-2 max-w-[65ch] text-sm leading-6 text-white/48">{subtitle}</p>
 
-            <div className="panel overflow-hidden">
-              <div className="border-b border-line px-6 pb-5 pt-6 sm:px-8">
-                <h1 className="text-3xl font-black tracking-[-0.03em] text-ink">
-                  {title}
-                </h1>
-                <p className="mt-2 text-sm font-medium text-ink-soft">{subtitle}</p>
-              </div>
+            {error ? <div role="alert" className="mt-5 flex items-start gap-3 border border-red-400/20 bg-red-400/[0.06] p-3 text-sm text-red-200"><AlertCircle size={17} className="mt-0.5 shrink-0" /><span>{error}</span></div> : null}
+            {notice ? <div role="status" className="mt-5 flex items-start gap-3 border border-emerald-400/20 bg-emerald-400/[0.05] p-3 text-sm text-emerald-200"><Check size={17} className="mt-0.5 shrink-0" /><span>{notice}</span></div> : null}
 
-              <div className="px-6 py-6 sm:px-8">
-                {error && (
-                  <div className="banner-in mb-5 flex items-start gap-2 rounded-md border border-danger-200 bg-danger-50 px-3.5 py-3 text-sm font-bold text-danger-700">
-                    <IconAlert className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span className="min-w-0 text-safe">{error}</span>
-                  </div>
-                )}
-                {notice && (
-                  <div className="banner-in mb-5 flex items-start gap-2 rounded-md border border-success-200 bg-success-50 px-3.5 py-3 text-sm font-bold text-success-700">
-                    <IconCheck className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span className="min-w-0 text-safe">{notice}</span>
-                  </div>
-                )}
-
-                {children}
-              </div>
-
-              <div className="border-t border-line bg-[#f8fbff] px-6 py-4 text-center text-sm font-medium text-ink-soft sm:px-8">
-                {footer}
-              </div>
-            </div>
+            {children}
+            <p className="mt-7 border-t border-white/[0.07] pt-5 text-sm text-white/45">{footer}</p>
           </div>
         </section>
       </div>
@@ -125,70 +57,11 @@ export function AuthShell({
   );
 }
 
-function PreviewItem({
-  icon: Icon,
-  title,
-  body,
-}: {
-  icon: (props: { className?: string }) => JSX.Element;
-  title: string;
-  body: string;
-}) {
-  return (
-    <article className="flex items-start gap-3 rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)]">
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-700">
-        <Icon className="h-5 w-5" />
-      </span>
-      <div>
-        <h3 className="text-sm font-black text-ink">{title}</h3>
-        <p className="mt-1 text-sm font-medium leading-relaxed text-ink-muted">
-          {body}
-        </p>
-      </div>
-    </article>
-  );
-}
-
-export function AuthField({
-  name,
-  label,
-  type = "text",
-  required = false,
-  minLength,
-  autoComplete,
-  maxLength,
-}: {
-  name: string;
-  label: string;
-  type?: string;
-  required?: boolean;
-  minLength?: number;
-  autoComplete?: string;
-  maxLength?: number;
-}) {
+export function AuthField({ label, name, required, className = "", ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string; name: string }) {
   return (
     <div>
-      <label className="label" htmlFor={name}>
-        {label}
-        {required && (
-          <>
-            <span className="ml-1 text-brand-700" aria-hidden="true">
-              *
-            </span>
-            <span className="sr-only"> obrigatório</span>
-          </>
-        )}
-      </label>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        required={required}
-        minLength={minLength}
-        maxLength={maxLength}
-        autoComplete={autoComplete}
-        className="field mt-1.5"
-      />
+      <label className="label" htmlFor={name}>{label}{required ? <><span className="ml-1 text-violet-300" aria-hidden="true">*</span><span className="sr-only"> obrigatório</span></> : null}</label>
+      <input id={name} name={name} required={required} className={`field mt-1.5 ${className}`} {...props} />
     </div>
   );
 }
