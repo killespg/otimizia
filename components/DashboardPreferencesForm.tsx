@@ -31,7 +31,7 @@ const STYLE_LABELS: Record<DashboardStyle, string> = {
 };
 
 const STYLE_PREVIEWS: Record<DashboardStyle, string> = {
-  glow: "border-violet-400/45 bg-[#241c38] text-violet-100",
+  glow: "border-od-accent/45 bg-od-accent-tint text-od-text",
   clean: "border-[#d8d2dc] bg-[#f7f5f8] text-[#241f29]",
   compact: "border-od-border bg-od-muted-surface text-od-text-2",
   executive: "border-[#38343d] bg-[#0f0d11] text-[#faf9f8]",
@@ -45,7 +45,7 @@ const SELLER_STYLE_LABELS: Record<DashboardStyle, string> = {
 };
 
 const SELLER_STYLE_PREVIEWS: Record<DashboardStyle, string> = {
-  glow: "border-violet-400/45 bg-[#241c38] text-violet-100",
+  glow: "border-od-accent/45 bg-od-accent-tint text-od-text",
   clean: "border-[#38343d] bg-[#1e1d22] text-[#faf9f8]",
   compact: "border-[#323039] bg-[#19181d] text-[#a39da8]",
   executive: "border-[#38343d] bg-[#0f0d11] text-[#faf9f8]",
@@ -179,8 +179,8 @@ export function DashboardPreferencesForm({
       ))}
 
       <div className={usesFlatTabs ? "grid grid-cols-2 border-b border-white/[0.09]" : "dashboard-preferences-tabs"} role="tablist" aria-label="Seções da personalização">
-        <button type="button" role="tab" aria-selected={section === "appearance"} onClick={() => setSection("appearance")} className={usesFlatTabs ? `min-h-11 border-b-2 px-3 text-xs font-semibold transition-colors ${section === "appearance" ? "border-violet-400 text-white" : "border-transparent text-white/44 hover:text-white/72"}` : section === "appearance" ? "is-active" : ""}>Aparência</button>
-        <button type="button" role="tab" aria-selected={section === "metrics"} onClick={() => setSection("metrics")} className={usesFlatTabs ? `min-h-11 border-b-2 px-3 text-xs font-semibold transition-colors ${section === "metrics" ? "border-violet-400 text-white" : "border-transparent text-white/44 hover:text-white/72"}` : section === "metrics" ? "is-active" : ""}>Estatísticas <span className={usesFlatTabs ? "ml-1 text-violet-300" : undefined}>{metrics.length}/8</span></button>
+        <button type="button" role="tab" aria-selected={section === "appearance"} onClick={() => setSection("appearance")} className={usesFlatTabs ? `min-h-11 border-b-2 px-3 text-xs font-semibold transition-colors ${section === "appearance" ? "border-od-accent text-white" : "border-transparent text-white/44 hover:text-white/72"}` : section === "appearance" ? "is-active" : ""}>Aparência</button>
+        <button type="button" role="tab" aria-selected={section === "metrics"} onClick={() => setSection("metrics")} className={usesFlatTabs ? `min-h-11 border-b-2 px-3 text-xs font-semibold transition-colors ${section === "metrics" ? "border-od-accent text-white" : "border-transparent text-white/44 hover:text-white/72"}` : section === "metrics" ? "is-active" : ""}>Estatísticas <span className={usesFlatTabs ? "ml-1 text-od-text-3" : undefined}>{metrics.length}/8</span></button>
       </div>
 
       {section === "appearance" && <div className="grid gap-4 lg:grid-cols-2" role="tabpanel">
@@ -236,7 +236,7 @@ export function DashboardPreferencesForm({
                 aria-hidden="true"
                 className={`relative h-6 w-11 shrink-0 rounded-full border transition-colors ${
                   showAnimatedBackground
-                    ? "border-violet-400/60 bg-violet-500"
+                    ? "border-od-accent/60 bg-od-accent"
                     : "border-white/[0.12] bg-white/[0.06]"
                 }`}
               >
@@ -265,7 +265,7 @@ export function DashboardPreferencesForm({
             </div>
             <label className="block w-full sm:w-52">
               <span className="sr-only">Custo mensal de vendas e marketing</span>
-              <span className="flex h-11 items-center rounded-md border border-white/[0.09] bg-[#151419] px-3 focus-within:border-violet-400">
+              <span className="flex h-11 items-center rounded-md border border-white/[0.09] bg-[#151419] px-3 focus-within:border-od-accent">
                 <span className="mr-2 text-sm text-white/42">R$</span>
                 <input
                   value={salesMarketingCost}
@@ -292,7 +292,7 @@ export function DashboardPreferencesForm({
                   setDraggingMetric(null);
                 }}
                 className={isSeller
-                  ? `rounded-md border p-3 transition-colors ${active ? "border-violet-400/35 bg-violet-400/[0.07]" : "border-white/[0.08] bg-white/[0.018]"}`
+                  ? `rounded-md border p-3 transition-colors ${active ? "border-od-accent/35 bg-od-accent/[0.07]" : "border-white/[0.08] bg-white/[0.018]"}`
                   : "rounded-lg border p-3 transition " + (active ? "border-brand-300 bg-brand-50/70 dark:border-brand-800 dark:bg-brand-950/50" : "border-line bg-surface")}
               >
                 <button
@@ -304,7 +304,7 @@ export function DashboardPreferencesForm({
                     className={
                       "mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border " +
                       (active
-                        ? isSeller ? "border-violet-400 bg-violet-600 text-white" : "border-brand-600 bg-brand-700 text-white"
+                        ? isSeller ? "border-od-accent bg-od-accent text-white" : "border-brand-600 bg-brand-700 text-white"
                         : isSeller ? "border-white/[0.12] bg-transparent text-transparent" : "border-line bg-white text-transparent")
                     }
                   >
@@ -312,7 +312,7 @@ export function DashboardPreferencesForm({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className={isSeller ? "flex items-center gap-1.5 text-sm font-semibold text-white/78" : "flex items-center gap-1.5 text-sm font-black text-ink"}>
-                      {active && <IconGrip className={isSeller ? "h-4 w-4 shrink-0 text-violet-300" : "h-4 w-4 shrink-0 text-ink-muted"} />}
+                      {active && <IconGrip className={isSeller ? "h-4 w-4 shrink-0 text-od-text-2" : "h-4 w-4 shrink-0 text-ink-muted"} />}
                       {label}
                     </span>
                     <span className={isSeller ? "mt-0.5 block text-xs text-white/38" : "mt-0.5 block text-xs font-semibold text-ink-muted"}>
@@ -331,7 +331,7 @@ export function DashboardPreferencesForm({
                   }
                   placeholder={preset.metrics.find((metric) => metric.key === key)?.label ?? fallbackLabel}
                   maxLength={42}
-                  className={isSeller ? "mt-2 h-10 w-full rounded-md border border-white/[0.09] bg-[#151419] px-3 text-sm text-white/72 outline-none placeholder:text-white/32 focus:border-violet-400" : "field mt-2 h-9 text-sm"}
+                  className={isSeller ? "mt-2 h-10 w-full rounded-md border border-white/[0.09] bg-[#151419] px-3 text-sm text-white/72 outline-none placeholder:text-white/32 focus:border-od-accent" : "field mt-2 h-9 text-sm"}
                 />
                 {active && (
                     <MobileOrderButtons

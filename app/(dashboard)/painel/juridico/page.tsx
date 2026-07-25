@@ -264,13 +264,13 @@ export default async function LegalDashboardPage({
     <div id="carteira" className="mx-auto w-full max-w-[1640px] text-white">
       <section className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <p className="flex items-center gap-2 text-xs font-semibold text-violet-300">
+          <p className="flex items-center gap-2 text-xs font-semibold text-od-text-3">
             <CalendarDays size={16} />
             {dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}
           </p>
           <h1 className="mt-2 text-od-title font-extrabold tracking-[-0.02em]">
             Bom dia,{" "}
-            <span className="text-violet-300">{firstName(displayName)}.</span>
+            <span className="text-od-text">{firstName(displayName)}.</span>
           </h1>
           {/* Cor de estado só aparece quando existe estado. Vermelho sobre um
               zero era alarme anunciando que não há nada de errado — e era o
@@ -294,7 +294,7 @@ export default async function LegalDashboardPage({
                 <span className="text-white/35">e</span>
               ) : null}
               {reviews.length > 0 ? (
-                <span className="inline-flex items-center gap-1 font-semibold text-violet-200">
+                <span className="inline-flex items-center gap-1 font-semibold text-od-text">
                   <FileCheck2 size={14} />
                   {reviews.length}{" "}
                   {reviews.length === 1 ? "movimentação" : "movimentações"} para
@@ -353,7 +353,7 @@ export default async function LegalDashboardPage({
             {hasAnyCase ? (
               <Link
                 href="/painel/juridico/prazos"
-                className="shrink-0 text-xs font-semibold text-violet-300 hover:text-violet-200"
+                className="shrink-0 text-xs font-semibold text-od-text-2 hover:text-od-text"
               >
                 Ver meu dia
               </Link>
@@ -388,13 +388,13 @@ export default async function LegalDashboardPage({
                   >
                     <div className="flex min-w-0 items-center gap-2.5">
                       <span
-                        className={`grid size-8 shrink-0 place-items-center rounded-xl ${urgent ? "bg-red-400/10 text-[#fb7767]" : "bg-violet-400/10 text-violet-300"}`}
+                        className={`grid size-8 shrink-0 place-items-center rounded-xl ${urgent ? "bg-red-400/10 text-[#fb7767]" : "bg-white/[0.06] text-od-text-2"}`}
                       >
                         <PriorityIcon size={14} />
                       </span>
                       <span className="hidden min-w-0 sm:block">
                         <strong
-                          className={`block text-od-label ${urgent ? "text-[#fca79b]" : "text-violet-300"}`}
+                          className={`block text-od-label ${urgent ? "text-[#fca79b]" : "text-od-text-3"}`}
                         >
                           {urgent ? "Crítico" : "Revisão"}
                         </strong>
@@ -498,7 +498,7 @@ export default async function LegalDashboardPage({
                   key={step}
                   className="flex flex-col gap-3 px-3 py-4 sm:flex-row sm:items-center sm:gap-4"
                 >
-                  <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-od-accent/12 text-[13px] font-bold text-violet-300">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-od-accent/12 text-[13px] font-bold text-od-accent">
                     {step}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -642,7 +642,7 @@ function StatCard({
       ? "text-[#fb7767]"
       : tone === "warning"
         ? "text-amber-300"
-        : "text-violet-300";
+        : "text-od-text-2";
   return (
     <article className="min-w-0 rounded-xl border border-od-border bg-od-surface p-4">
       <div className="flex items-center gap-2">
@@ -659,7 +659,7 @@ function StatCard({
         <span className="text-xs text-white/50">{context}</span>
         <Link
           href={href}
-          className="shrink-0 text-xs font-semibold text-violet-300 hover:text-violet-200"
+          className="shrink-0 text-xs font-semibold text-od-text-2 hover:text-od-text"
         >
           {action}
         </Link>
@@ -712,7 +712,7 @@ function PortfolioChart({ cases }: { cases: LegalCase[] }) {
             Novos casos e encerramentos nos últimos 7 meses
           </p>
         </div>
-        <span className="text-xs font-semibold text-violet-200">
+        <span className="text-xs font-semibold text-od-text-2">
           {delta >= 0 ? "+" : ""}
           {delta} casos no mês
         </span>
@@ -889,7 +889,7 @@ function CasesTable({
                 </span>
                 {owner}
               </span>
-              <span className="w-fit rounded-md bg-violet-400/15 px-2 py-0.5 text-[11px] font-semibold text-violet-200">
+              <span className="w-fit rounded-md bg-white/[0.06] px-2 py-0.5 text-[11px] font-semibold text-od-text-2">
                 {CASE_STATUS[item.status]}
               </span>
               <span

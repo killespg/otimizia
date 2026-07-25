@@ -81,13 +81,13 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
         <SellerSummaryStrip items={summaryItems} />
       </div>
 
-      <details id="novo-produto" className="group scroll-mt-24 border-y border-violet-400/20 bg-violet-400/[0.035] open:pb-6">
-        <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-1 text-sm font-semibold text-violet-200">
-          <span className="grid size-8 place-items-center border border-violet-400/20 bg-violet-400/[0.08]"><PackagePlus size={16} /></span>
+      <details id="novo-produto" className="group scroll-mt-24 border-y border-od-accent/25 bg-od-accent/[0.035] open:pb-6">
+        <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-1 text-sm font-semibold text-od-text">
+          <span className="grid size-8 place-items-center border border-od-accent/25 bg-od-accent/[0.08]"><PackagePlus size={16} /></span>
           Cadastrar produto
           <ChevronRight size={15} className="ml-auto transition-transform group-open:rotate-90" />
         </summary>
-        <form action={createSellerProduct} className="grid gap-4 border-t border-violet-400/15 pt-6 md:grid-cols-2 xl:grid-cols-4">
+        <form action={createSellerProduct} className="grid gap-4 border-t border-od-accent/15 pt-6 md:grid-cols-2 xl:grid-cols-4">
           <ProductFormFields collections={collections} defaultWarrantyDays={profile.default_warranty_days} enabledModules={profile.enabled_modules} />
           <div className="flex justify-end md:col-span-2 xl:col-span-4"><PendingButton className="btn" pendingLabel="Criando produto">Criar produto</PendingButton></div>
         </form>
@@ -119,7 +119,7 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
                         {usesVariants ? <span className="text-xs text-white/54"><span className="mb-1 block text-[11px] font-medium text-white/50 xl:hidden">Variações</span>{product.seller_product_variants.length || "—"}</span> : null}
                         <span className="text-sm font-medium tabular-nums text-white/78"><span className="mb-1 block text-[11px] font-medium text-white/50 xl:hidden">Preço</span>{money(product.base_price_cents)}</span>
                         {usesInventory ? <span className={`text-sm font-semibold tabular-nums ${product.track_stock && stock <= threshold ? "text-amber-300" : "text-white/70"}`}><span className="mb-1 block text-[11px] font-medium text-white/50 xl:hidden">Estoque</span>{product.track_stock ? `${stock} un.` : "Livre"}</span> : null}
-                        <Link href={`/painel/produtos/${product.id}`} className="flex min-h-11 items-center justify-end text-xs font-semibold text-violet-300">Detalhes <ChevronRight size={14} /></Link>
+                        <Link href={`/painel/produtos/${product.id}`} className="flex min-h-11 items-center justify-end text-xs font-semibold text-od-text-2">Detalhes <ChevronRight size={14} /></Link>
                       </div>
                       {usesVariants && product.seller_product_variants.length > 0 ? (
                         <div className="mt-3 hidden border-t border-white/[0.06] pt-2 xl:block">
@@ -135,9 +135,9 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
 
           <aside className="space-y-3">
             {usesCollections ? <section className="border border-white/[0.09] bg-[#1e1d22]/90 p-4">
-              <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-semibold text-white">Coleções ativas</h2><Layers3 size={16} className="text-violet-300" /></div>
+              <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-semibold text-white">Coleções ativas</h2><Layers3 size={16} className="text-od-text-3" /></div>
               {activeCollections.length ? <ul className="mt-3 divide-y divide-white/[0.07]">{activeCollections.map((collection) => <li key={collection.id}><Link href={`/painel/colecoes#${collection.id}`} className="flex min-h-12 items-center justify-between gap-3 text-xs text-white/66"><span className="truncate">{collection.name}</span><SellerStatus tone="success">Ativa</SellerStatus></Link></li>)}</ul> : <p className="mt-3 text-xs leading-relaxed text-white/42">Nenhuma coleção ativa. Use coleções para organizar lançamentos sem apagar o histórico.</p>}
-              <Link href="/painel/colecoes" className="mt-3 inline-flex min-h-11 items-center text-xs font-semibold text-violet-300">Gerenciar coleções <ChevronRight size={14} /></Link>
+              <Link href="/painel/colecoes" className="mt-3 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2">Gerenciar coleções <ChevronRight size={14} /></Link>
             </section> : null}
             {usesInventory ? <section className="border border-white/[0.09] bg-[#1e1d22]/90 p-4">
               <div className="flex items-center gap-2"><TriangleAlert size={16} className="text-amber-300" /><h2 className="text-sm font-semibold text-white">Estoque baixo</h2></div>
@@ -174,8 +174,8 @@ function ProductFormFields({ collections, defaultWarrantyDays, enabledModules }:
     {usesCommissions ? <label><span className="label">Comissão padrão</span><input name="default_commission_percent" type="number" min="0" max="100" step="0.01" placeholder="%" className="field mt-1.5" /></label> : null}
     {usesInventory ? <label><span className="label">Limite de estoque baixo</span><input name="low_stock_threshold" type="number" min="0" placeholder="Usar padrão" className="field mt-1.5" /></label> : null}
     <label><span className="label">Status</span><select name="status" defaultValue="active" className="field mt-1.5"><option value="active">Ativo</option><option value="draft">Rascunho</option><option value="inactive">Inativo</option></select></label>
-    {usesInventory ? <label className="flex min-h-11 items-center gap-2 self-end text-sm text-white/62"><input name="track_stock" type="checkbox" defaultChecked className="size-4 accent-violet-600" /> Controlar estoque</label> : null}
-    {usesWarranties ? <label className="flex min-h-11 items-center gap-2 self-end text-sm text-white/62"><input name="requires_serial" type="checkbox" className="size-4 accent-violet-600" /> Exigir número de série</label> : null}
+    {usesInventory ? <label className="flex min-h-11 items-center gap-2 self-end text-sm text-white/62"><input name="track_stock" type="checkbox" defaultChecked className="size-4 accent-od-accent" /> Controlar estoque</label> : null}
+    {usesWarranties ? <label className="flex min-h-11 items-center gap-2 self-end text-sm text-white/62"><input name="requires_serial" type="checkbox" className="size-4 accent-od-accent" /> Exigir número de série</label> : null}
     <label className="md:col-span-2 xl:col-span-4"><span className="label">Descrição</span><textarea name="description" maxLength={3000} placeholder="Informações úteis para venda e pós-venda" className="field mt-1.5" /></label>
   </>;
 }
