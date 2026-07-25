@@ -1,5 +1,5 @@
 import {
-  PROFESSION_OPTIONS,
+  ASSIGNABLE_PROFESSION_OPTIONS,
   normalizeProfession,
   type ProfessionType,
 } from "@/lib/professions";
@@ -28,9 +28,11 @@ export function normalizeWorkspaceKeys(values: unknown, fallback?: unknown): Wor
   return [normalizeProfession(fallback)];
 }
 
+// Usa a lista atribuivel, nao a do cadastro: quem ja tem uma profissao
+// desativada precisa continuar vendo e alternando pra ela no seletor.
 export function getWorkspaceOptions(values: unknown, activeValue: unknown) {
   const enabled = normalizeWorkspaceKeys(values, activeValue);
-  return PROFESSION_OPTIONS.filter((option) =>
+  return ASSIGNABLE_PROFESSION_OPTIONS.filter((option) =>
     enabled.includes(option.value as WorkspaceKey)
   );
 }
