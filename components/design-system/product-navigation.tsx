@@ -161,7 +161,7 @@ export function ProductNavigation(props: Props) {
                       href={item.href}
                       title={collapsed ? item.label : undefined}
                       aria-current={active ? "page" : undefined}
-                      className={`nav-item flex min-h-11 items-center rounded-md text-[13px] font-medium ${collapsed ? "justify-center px-2" : "gap-3 px-3"} ${active ? "bg-white/[0.075] text-white" : "text-white/48 hover:bg-white/[0.05] hover:text-white/80"}`}
+                      className={`nav-item flex min-h-8 items-center rounded-xl text-[13px] font-medium ${collapsed ? "justify-center px-2" : "gap-3 px-3"} ${active ? "bg-white/[0.075] text-white" : "text-white/48 hover:bg-white/[0.05] hover:text-white/80"}`}
                     >
                       <ItemIcon size={17} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/40"} />
                       {!collapsed ? <span className="min-w-0 flex-1 truncate">{item.label}</span> : null}
@@ -174,7 +174,7 @@ export function ProductNavigation(props: Props) {
         </nav>
 
         <div className="border-t border-white/[0.06] p-2">
-          <Link href="/painel/configuracoes" title={collapsed ? "Configurações" : undefined} className={`nav-item flex min-h-11 items-center rounded-md text-[12px] text-white/48 hover:bg-white/[0.05] hover:text-white/80 ${collapsed ? "justify-center" : "gap-3 px-3"}`}>
+          <Link href="/painel/configuracoes" title={collapsed ? "Configurações" : undefined} className={`nav-item flex min-h-8 items-center rounded-xl text-[12px] text-white/48 hover:bg-white/[0.05] hover:text-white/80 ${collapsed ? "justify-center" : "gap-3 px-3"}`}>
             <Settings size={17} />{!collapsed ? <span>Configurações</span> : null}
           </Link>
           <div className={`mt-1 flex items-center py-2 ${collapsed ? "justify-center" : "gap-3 px-3"}`}>

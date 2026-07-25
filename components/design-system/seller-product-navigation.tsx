@@ -152,7 +152,7 @@ export function SellerProductNavigation({ workspaceKey, workspaceOptions, displa
         prefetch={true}
         title={collapsed ? item.label : undefined}
         aria-current={active ? "page" : undefined}
-        className={`group flex min-h-9 items-center rounded-xl text-sm transition-colors ${collapsed ? "mx-auto size-9 justify-center" : "gap-2 px-2"} ${active ? "bg-white/[0.075] font-semibold text-white" : "text-white/58 hover:bg-white/[0.045] hover:text-white"}`}
+        className={`group flex min-h-8 items-center rounded-xl text-[13px] transition-colors ${collapsed ? "mx-auto size-9 justify-center" : "gap-2 px-2.5"} ${active ? "bg-white/[0.075] font-semibold text-white" : "text-white/58 hover:bg-white/[0.045] hover:text-white"}`}
       >
         <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/55 group-hover:text-white/75"} />
         {!collapsed ? (
@@ -236,7 +236,7 @@ export function SellerProductNavigation({ workspaceKey, workspaceOptions, displa
         </nav>
 
         <footer className="border-t border-white/[0.06] p-2">
-          <Link href="/painel/configuracoes" prefetch={true} className={`flex min-h-9 items-center rounded-xl text-sm text-white/58 hover:bg-white/[0.05] hover:text-white ${collapsed ? "justify-center" : "gap-2 px-2"}`}>
+          <Link href="/painel/configuracoes" prefetch={true} className={`flex min-h-8 items-center rounded-xl text-[13px] text-white/58 hover:bg-white/[0.05] hover:text-white ${collapsed ? "justify-center" : "gap-2 px-2.5"}`}>
             <Settings size={16} />{!collapsed ? <span>Configurações</span> : null}
           </Link>
           {!collapsed ? (
@@ -246,7 +246,7 @@ export function SellerProductNavigation({ workspaceKey, workspaceOptions, displa
             </div>
           ) : null}
           <form action={logout}>
-            <PendingButton iconOnly={collapsed} pendingLabel="Saindo" className={`flex min-h-9 w-full items-center rounded-xl text-sm text-white/48 hover:bg-white/[0.05] hover:text-white ${collapsed ? "justify-center" : "gap-2 px-2"}`}>
+            <PendingButton iconOnly={collapsed} pendingLabel="Saindo" className={`flex min-h-8 w-full items-center rounded-xl text-[13px] text-white/48 hover:bg-white/[0.05] hover:text-white ${collapsed ? "justify-center" : "gap-2 px-2.5"}`}>
               <LogOut size={16} />{!collapsed ? <span>Sair</span> : <span className="sr-only">Sair</span>}
             </PendingButton>
           </form>
