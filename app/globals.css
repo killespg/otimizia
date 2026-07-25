@@ -60,6 +60,7 @@
   --color-od-accent: var(--od-accent);
   --color-od-accent-hover: var(--od-accent-hover);
   --color-od-accent-tint: var(--od-accent-tint);
+  --color-od-sidebar: var(--od-sidebar);
 
   --radius-sm: 4px;
   --radius-md: 4px;

@@ -21,7 +21,7 @@ const dashboardMetrics = [
 /** Dark sidebar nav with a quiet shared active state. Desktop only; mobile gets MobileTabBar instead. */
 export function Sidebar({ active = "Dashboard" }: { active?: string }) {
   return (
-    <div className="hidden w-[180px] shrink-0 flex-col gap-0.5 bg-[#120f1c] px-4 py-5 md:flex">
+    <div className="hidden w-[180px] shrink-0 flex-col gap-0.5 bg-od-sidebar px-4 py-5 md:flex">
       <div className="mb-4 flex items-center gap-2 px-2">
         <LogoMark size={20} className="shrink-0" />
         <span className="text-[15px] font-extrabold text-white">OtimizIA</span>
@@ -81,7 +81,7 @@ export function Topbar() {
  */
 export function DashboardShell() {
   return (
-    <div className="relative flex h-full overflow-hidden rounded-xl border border-white/[0.08] bg-od-bg">
+    <div className="relative flex h-full overflow-hidden rounded-xl border border-od-border bg-od-muted-surface">
       <Sidebar />
       <div className="min-w-0 flex-1">
         <Topbar />
