@@ -1,0 +1,28 @@
+import Link from "next/link";
+import { ArrowLeft, CalendarPlus, FilePlus2, MoreHorizontal, Plus, ShieldAlert } from "lucide-react";
+import { Avatar, LegalPage, PrimaryAction, QuietAction, SectionTitle, StatusTag } from "@/components/legal/legal-ui";
+
+const timeline = [
+  { date: "18 jul · 08:42", title: "Intimação disponibilizada", detail: "Prazo de 5 dias úteis para manifestação da parte autora.", source: "DataJud · TRT-2" },
+  { date: "16 jul · 15:10", title: "Ata de audiência anexada", detail: "Documento revisado e aprovado por Marina Ribeiro.", source: "Marina Ribeiro" },
+  { date: "16 jul · 10:30", title: "Audiência de conciliação realizada", detail: "Sem acordo. Instrução designada para 22 de agosto.", source: "Carlos Mendes" },
+  { date: "11 jul · 17:22", title: "Manifestação protocolada", detail: "Petição intermediária registrada no PJe.", source: "Tribunal · TRT-2" },
+];
+
+export default async function CaseDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  return <LegalPage>
+    <div className="mb-6"><Link href="/painel/juridico/processos" className="inline-flex items-center gap-2 text-[11px] text-white/36 hover:text-white/68"><ArrowLeft size={12} />Voltar para processos</Link></div>
+    <header className="border-b border-white/[0.08] pb-7">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between"><div><div className="flex flex-wrap items-center gap-2"><StatusTag tone="brand">Em instrução</StatusTag><StatusTag tone="danger">Risco alto</StatusTag><span className="text-[10px] text-white/28">Acesso restrito</span></div><h1 className="mt-4 text-[28px] font-semibold tracking-[-0.025em] text-white">Mariana Lopes × Grupo Atlas</h1><p className="mt-2 font-mono text-[11px] text-white/34">1008421-22.2026.5.02.0031 · 3ª Vara do Trabalho de São Paulo</p></div><div className="flex flex-wrap items-center gap-1"><QuietAction icon={CalendarPlus} href="?novo=prazo">Novo prazo</QuietAction><QuietAction icon={FilePlus2} href="?novo=documento">Documento</QuietAction><PrimaryAction icon={Plus} href="?novo=atividade">Registrar atividade</PrimaryAction><button type="button" aria-label="Mais opções" className="grid size-9 place-items-center text-white/35"><MoreHorizontal size={16} /></button></div></div>
+    </header>
+
+    <section className="grid border-b border-white/[0.08] lg:grid-cols-[1.55fr_.75fr]">
+      <div className="py-8 lg:border-r lg:border-white/[0.08] lg:pr-9"><SectionTitle title="Histórico do processo" description="Movimentações externas e registros internos em ordem cronológica" /><div>{timeline.map((item, index) => <div key={item.date} className="relative grid grid-cols-[88px_16px_minmax(0,1fr)] gap-4 pb-7 last:pb-0"><span className="pt-0.5 text-[10px] text-white/28">{item.date}</span><span className="relative flex justify-center"><span className={`mt-1.5 size-2 rounded-full ${index === 0 ? "bg-violet-400" : "bg-white/20"}`} />{index < timeline.length - 1 ? <span className="absolute bottom-[-7px] top-4 w-px bg-white/[0.07]" /> : null}</span><div><p className="text-[12px] font-medium text-white/75">{item.title}</p><p className="mt-1.5 text-[11px] leading-relaxed text-white/38">{item.detail}</p><p className="mt-2 text-[9px] text-white/24">{item.source}</p></div></div>)}</div></div>
+      <aside className="py-8 lg:pl-9"><SectionTitle title="Dados do caso" /><dl className="space-y-5 text-[11px]"><div><dt className="text-white/28">Cliente</dt><dd className="mt-1.5 text-white/68">Mariana Lopes</dd></div><div><dt className="text-white/28">Parte contrária</dt><dd className="mt-1.5 text-white/68">Grupo Atlas Serviços S.A.</dd></div><div><dt className="text-white/28">Área</dt><dd className="mt-1.5 text-white/68">Trabalhista</dd></div><div><dt className="text-white/28">Responsável</dt><dd className="mt-2 flex items-center gap-2"><Avatar initials="MR" /><span className="text-white/68">Marina Ribeiro</span></dd></div><div><dt className="text-white/28">Equipe do caso</dt><dd className="mt-2 flex items-center gap-2"><Avatar initials="CM" /><Avatar initials="LS" /><span className="text-white/38">+1</span></dd></div><div><dt className="text-white/28">Próximo prazo</dt><dd className="mt-1.5 text-[#ff8175]">Hoje, 17:00</dd></div></dl><div className="mt-8 border-t border-white/[0.07] pt-6"><p className="flex items-center gap-2 text-[11px] font-medium text-white/55"><ShieldAlert size={13} />Confidencialidade</p><p className="mt-2 text-[10px] leading-relaxed text-white/30">Visível apenas para responsáveis, colaboradores do caso e sócios gestores.</p></div></aside>
+    </section>
+
+    <section className="grid border-b border-white/[0.08] md:grid-cols-3"><div className="py-6 md:pr-7"><p className="text-[11px] text-white/30">Contrato de honorários</p><p className="mt-2 text-[18px] font-semibold text-white/78">R$ 24.000</p><p className="mt-1 text-[10px] text-white/28">Fixo · assinado em 12 fev</p></div><div className="border-t border-white/[0.07] py-6 md:border-l md:border-t-0 md:px-7"><p className="text-[11px] text-white/30">Recebido</p><p className="mt-2 text-[18px] font-semibold text-emerald-300/75">R$ 12.000</p><p className="mt-1 text-[10px] text-white/28">3 de 6 parcelas</p></div><div className="border-t border-white/[0.07] py-6 md:border-l md:border-t-0 md:pl-7"><p className="text-[11px] text-white/30">Despesas reembolsáveis</p><p className="mt-2 text-[18px] font-semibold text-white/78">R$ 1.840</p><p className="mt-1 text-[10px] text-[#ff8175]">R$ 620 ainda não reembolsados</p></div></section>
+    <span className="sr-only">{params.id}</span>
+  </LegalPage>;
+}
