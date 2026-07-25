@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Hero } from "@/components/landing/hero";
 import { LogoMarquee } from "@/components/landing/logo-marquee";
 import { FeatureGrid } from "@/components/landing/feature-grid";
-import { DashboardShell } from "@/components/landing/dashboard-shell";
+import { DashboardPreview } from "@/components/landing/dashboard-preview";
 import { SpotlightCard } from "@/components/landing/spotlight-card";
 import { AiComposer } from "@/components/landing/ai-composer";
 import { Dock } from "@/components/landing/dock";
@@ -87,7 +87,7 @@ export default async function LandingPage() {
           }
         >
           <div className="h-full w-full overflow-auto rounded-2xl bg-od-bg p-4">
-            <DashboardShell />
+            <DashboardPreview />
           </div>
         </ContainerScroll>
 
