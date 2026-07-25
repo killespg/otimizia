@@ -1,8 +1,9 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { IconBot, IconMic } from "@/app/(app)/icons";
-import { useVoiceCall } from "@/lib/ai/useVoiceCall";
+import { IconMic } from "@/app/(dashboard)/painel/icons";
+import { TimAvatar } from "@/components/tim/TimAvatar";
+import type { useVoiceCall } from "@/lib/ai/useVoiceCall";
 
 function formatCallTime(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
@@ -10,137 +11,100 @@ function formatCallTime(totalSeconds: number): string {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
-export function VoicePanel() {
-  const {
-    voiceStatus,
-    voiceError,
-    voiceSpeaker,
-    voiceLevel,
-    captions,
-    partialCaption,
-    callSeconds,
-    startVoice,
-    stopVoice,
-  } = useVoiceCall();
+type VoiceCallState = ReturnType<typeof useVoiceCall>;
+
+// Estado de chamada de voz com o Tim — não é mais um card grande e solto: em
+// repouso ("idle") não renderiza nada (o gatilho de voz é o próprio botão do
+// compositor); só aparece uma faixa compacta, presa acima do compositor,
+// enquanto conecta ou durante a chamada.
+export function VoicePanel({
+  voiceStatus,
+  voiceError,
+  voiceSpeaker,
+  voiceLevel,
+  captions,
+  partialCaption,
+  callSeconds,
+  startVoice,
+  stopVoice,
+}: Pick<
+  VoiceCallState,
+  | "voiceStatus"
+  | "voiceError"
+  | "voiceSpeaker"
+  | "voiceLevel"
+  | "captions"
+  | "partialCaption"
+  | "callSeconds"
+  | "startVoice"
+  | "stopVoice"
+>) {
+  if (voiceStatus === "idle") return null;
+
+  if (voiceStatus === "connecting" || voiceStatus === "error") {
+    return (
+      <div className="flex items-center justify-between gap-3 border-t border-white/[0.08] px-4 py-2.5 text-xs">
+        <span className="flex min-w-0 items-center gap-2 text-white/60">
+          <IconMic className={`h-3.5 w-3.5 shrink-0 ${voiceStatus === "connecting" ? "animate-pulse text-violet-300" : "text-red-400"}`} />
+          <span className="truncate">
+            {voiceStatus === "connecting" ? "Conectando com o Tim…" : voiceError ?? "Não consegui iniciar a chamada."}
+          </span>
+        </span>
+        <button
+          type="button"
+          onClick={voiceStatus === "connecting" ? stopVoice : startVoice}
+          className="min-h-8 shrink-0 rounded border border-white/[0.1] px-2.5 text-[11px] font-semibold text-white/75 hover:bg-white/[0.06]"
+        >
+          {voiceStatus === "connecting" ? "Cancelar" : "Tentar de novo"}
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={
-        "voice-panel rounded-lg border border-line bg-surface-2 p-3 " +
-        (voiceStatus === "live" ? "is-live" : "")
-      }
-    >
-      {voiceStatus === "live" ? (
-        <div className="pop-in flex flex-col items-center gap-3 py-1">
-          <div className="flex w-full items-center justify-between">
-            <span className="voice-live-badge inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wide text-success-700">
-              <span className="h-1.5 w-1.5 rounded-full bg-success-600" />
-              Ao vivo · {formatCallTime(callSeconds)}
-            </span>
-            <button
-              type="button"
-              onClick={stopVoice}
-              className="nav-item inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg border border-danger-200 bg-danger-50 px-3 text-[11px] font-black text-danger-700 hover:bg-danger-100"
-            >
-              Encerrar
-            </button>
-          </div>
+    <div className="border-t border-white/[0.08] px-4 py-3">
+      <div className="flex items-center justify-between">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-300">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          Ao vivo · {formatCallTime(callSeconds)}
+        </span>
+        <button
+          type="button"
+          onClick={stopVoice}
+          className="min-h-8 rounded border border-red-400/25 bg-red-400/10 px-2.5 text-[11px] font-semibold text-red-300 hover:bg-red-400/20"
+        >
+          Encerrar
+        </button>
+      </div>
 
-          <div
-            className={
-              "voice-orb " +
-              (voiceSpeaker === "assistant"
-                ? "is-speaking"
-                : voiceSpeaker === "user"
-                  ? "is-listening"
-                  : "")
-            }
-            style={{ "--level": voiceLevel } as CSSProperties}
-          >
-            <IconBot className="h-6 w-6" />
-          </div>
+      <div className="mt-2.5 flex items-center gap-3">
+        <span
+          className="relative shrink-0"
+          style={{ "--level": voiceLevel } as CSSProperties}
+        >
+          <TimAvatar size={30} className={voiceSpeaker === "assistant" ? "ring-2 ring-violet-400/60" : voiceSpeaker === "user" ? "ring-2 ring-white/30" : ""} />
+        </span>
+        <p className="min-w-0 flex-1 truncate text-[12px] text-white/55">
+          {voiceSpeaker === "assistant" ? "Tim falando" : voiceSpeaker === "user" ? "Ouvindo você…" : "Pode falar quando quiser"}
+        </p>
+      </div>
 
-          <p className="text-[11px] font-black uppercase tracking-wide text-ink-muted">
-            {voiceSpeaker === "assistant"
-              ? "Sócio-Assistente falando"
-              : voiceSpeaker === "user"
-                ? "Ouvindo você"
-                : "Pode falar quando quiser"}
-          </p>
-
-          {(captions.length > 0 || partialCaption) && (
-            <div className="voice-captions enter mt-1 max-h-24 w-full space-y-1.5 overflow-y-auto">
-              {captions.map((line, index) => (
-                <p
-                  key={index}
-                  className={
-                    "text-xs font-medium leading-snug " +
-                    (line.role === "user"
-                      ? "text-right text-ink-muted"
-                      : "text-left text-ink")
-                  }
-                >
-                  {line.text}
-                </p>
-              ))}
-              {partialCaption && partialCaption.text && (
-                <p
-                  className={
-                    "text-xs font-medium italic leading-snug opacity-70 " +
-                    (partialCaption.role === "user"
-                      ? "text-right text-ink-muted"
-                      : "text-left text-ink")
-                  }
-                >
-                  {partialCaption.text}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="pop-in flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <span
-              className={
-                "grid h-9 w-9 shrink-0 place-items-center rounded-full " +
-                (voiceStatus === "connecting"
-                  ? "bg-brand-100 text-brand-700"
-                  : voiceStatus === "error"
-                    ? "bg-danger-50 text-danger-700"
-                    : "bg-brand-50 text-brand-700")
-              }
+      {(captions.length > 0 || partialCaption) && (
+        <div className="mt-2 max-h-20 space-y-1 overflow-y-auto">
+          {captions.map((line, index) => (
+            <p
+              key={index}
+              className={`text-xs leading-snug ${line.role === "user" ? "text-right text-white/50" : "text-left text-white/75"}`}
             >
-              <IconMic
-                className={"h-4 w-4 " + (voiceStatus === "connecting" ? "animate-pulse" : "")}
-              />
-            </span>
-            <div className="min-w-0">
-              <p className="text-xs font-black text-ink">Voz em tempo real</p>
-              <p className="mt-0.5 truncate text-xs font-semibold text-ink-muted">
-                {voiceStatus === "connecting"
-                  ? "Conectando microfone..."
-                  : voiceError ?? "Converse por áudio com o Sócio-Assistente."}
-              </p>
-            </div>
-          </div>
-          {voiceStatus === "connecting" ? (
-            <button
-              type="button"
-              onClick={stopVoice}
-              className="nav-item inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg border border-danger-200 bg-danger-50 px-3 text-xs font-black text-danger-700 hover:bg-danger-100"
+              {line.text}
+            </p>
+          ))}
+          {partialCaption && partialCaption.text && (
+            <p
+              className={`text-xs italic leading-snug opacity-70 ${partialCaption.role === "user" ? "text-right text-white/50" : "text-left text-white/75"}`}
             >
-              Cancelar
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={startVoice}
-              className="nav-item inline-flex min-h-11 shrink-0 items-center gap-2 rounded-lg bg-brand-700 px-3 text-xs font-black text-white hover:bg-brand-800"
-            >
-              <IconMic className="h-4 w-4" />
-              {voiceStatus === "error" ? "Tentar de novo" : "Falar"}
-            </button>
+              {partialCaption.text}
+            </p>
           )}
         </div>
       )}

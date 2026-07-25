@@ -1,38 +1,26 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
-import { IconArrowRight, IconBot, IconPaperclip, IconX } from "@/app/(app)/icons";
 import { useAssistantChat } from "@/lib/ai/AssistantChatProvider";
 import { usePdfAttachment } from "@/lib/ai/usePdfAttachment";
-import { ChatImageAttach, type PendingImage } from "./ChatImageAttach";
+import { useVoiceCall } from "@/lib/ai/useVoiceCall";
+import type { PendingImage } from "./ChatImageAttach";
 import { VoicePanel } from "./VoicePanel";
+import { TimHeader } from "@/components/tim/TimHeader";
+import { TimConversation } from "@/components/tim/TimConversation";
+import { TimComposer } from "@/components/tim/TimComposer";
 
-const SUGGESTIONS = [
-  "Como está meu negócio hoje?",
-  "Quais lembretes estão atrasados?",
-  "Crie um contato para mim",
-];
-
-export function AssistantChat() {
+// Versão flutuante da conversa com o Tim — mesma identidade e densidade da
+// tela cheia (app/(dashboard)/painel/assistente), num painel ancorado.
+export function AssistantChat({ firstName }: { firstName?: string }) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [pendingImage, setPendingImage] = useState<PendingImage | null>(null);
   const { messages, status, sending, send } = useAssistantChat();
   const attachment = usePdfAttachment();
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const voice = useVoiceCall();
   const sheetRef = useRef<HTMLDivElement>(null);
   const fabRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [messages, status, open]);
-
-  useEffect(() => {
-    if (open) inputRef.current?.focus();
-  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -79,175 +67,61 @@ export function AssistantChat() {
     void send(text, image ?? undefined, file);
   }
 
+  if (!open) {
+    return (
+      <button
+        ref={fabRef}
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="Abrir conversa com o Tim"
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-od-accent text-white shadow-[0_16px_40px_-16px_rgba(92,34,232,0.8)] hover:bg-od-accent-hover"
+      >
+        <span className="text-lg font-bold">T</span>
+      </button>
+    );
+  }
+
   return (
-    <>
-      {open && (
-        <div
-          ref={sheetRef}
-          className="assistant-sheet fixed inset-x-3 bottom-[calc(6.6rem+env(safe-area-inset-bottom))] z-50 flex max-h-[min(620px,calc(100dvh-8rem))] flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-[0_24px_70px_-30px_rgba(7,8,28,0.55)] sm:inset-x-auto sm:bottom-24 sm:right-6 sm:w-[400px]"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Sócio-Assistente"
-        >
-          <div className="flex items-center gap-3 border-b border-line bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_60%,#0bbfe8_100%)] px-4 py-3 text-white">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
-              <IconBot className="h-5 w-5" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold leading-tight">Sócio-Assistente</p>
-              <p className="text-xs text-white/75">
-                Cria contatos, move vendas, agenda lembretes e responde sobre seu negócio.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false);
-                fabRef.current?.focus();
-              }}
-              className="press-sm grid min-h-11 min-w-11 place-items-center rounded-md text-lg leading-none text-white/80 transition-colors duration-150 ease-out hover:bg-white/15 hover:text-white focus-visible:ring-2 focus-visible:ring-white"
-              aria-label="Fechar Sócio-Assistente"
-            >
-              ×
-            </button>
-          </div>
+    <div
+      ref={sheetRef}
+      className="fixed inset-x-3 bottom-[calc(6.6rem+env(safe-area-inset-bottom))] z-50 flex max-h-[min(620px,calc(100dvh-8rem))] flex-col overflow-hidden rounded-xl border border-white/[0.09] bg-[#1e1d22] shadow-[0_24px_70px_-30px_rgba(0,0,0,0.72)] sm:inset-x-auto sm:bottom-24 sm:right-6 sm:w-[400px]"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Conversa com o Tim"
+    >
+      <TimHeader
+        status={status}
+        onClose={() => {
+          setOpen(false);
+          fabRef.current?.focus();
+        }}
+      />
 
-          <div ref={scrollRef} className="enter flex-1 space-y-3 overflow-y-auto px-4 py-4">
-            {messages.length === 0 && (
-              <div className="space-y-3">
-                <p className="text-sm text-ink-muted">
-                  E aí! Manda ver, por exemplo:
-                </p>
-                <div className="flex flex-col items-start gap-2">
-                  {SUGGESTIONS.map((suggestion) => (
-                    <button
-                      key={suggestion}
-                      type="button"
-                      onClick={() => submit(suggestion)}
-                      className="press-sm rounded-full border border-line bg-surface-2 px-3 py-1.5 text-left text-[13px] font-semibold text-ink transition-colors duration-150 ease-out hover:border-brand-600/40 hover:text-brand-600 focus-visible:ring-2 focus-visible:ring-brand-600"
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+      <TimConversation
+        className="px-3 py-3"
+        messages={messages}
+        status={status}
+        firstName={firstName}
+        suggestions={["Como está meu negócio hoje?", "Quais lembretes estão atrasados?", "Crie um contato para mim"]}
+        onSuggestion={submit}
+      />
 
-            {messages.map((message, index) =>
-              message.role === "user" ? (
-                <div key={index} className="flex justify-end">
-                  <div className="max-w-[85%] space-y-2 rounded-2xl rounded-br-sm bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] px-3.5 py-2 text-sm text-white">
-                    {message.imageUrl && (
-                      <span className="relative block h-40 w-full overflow-hidden rounded-lg">
-                        <Image
-                          src={message.imageUrl}
-                          alt=""
-                          fill
-                          sizes="min(85vw, 340px)"
-                          className="object-cover"
-                          unoptimized
-                        />
-                      </span>
-                    )}
-                    {message.attachmentName && (
-                      <span className="flex items-center gap-1 text-xs font-semibold text-white/80">
-                        <IconPaperclip className="h-3.5 w-3.5 shrink-0" />
-                        {message.attachmentName}
-                      </span>
-                    )}
-                    {message.content && (
-                      <p className="whitespace-pre-wrap">{message.content}</p>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                (message.content || index !== messages.length - 1 || !status) && (
-                  <div key={index} className="flex justify-start">
-                    <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-2 text-sm text-ink">
-                      {message.content}
-                    </div>
-                  </div>
-                )
-              )
-            )}
+      <VoicePanel {...voice} />
 
-            {status && (
-              <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-brand-600" />
-                {status}
-              </div>
-            )}
-          </div>
-
-          <div className="border-t border-line px-3 py-3">
-            <VoicePanel />
-          </div>
-
-          {(attachment.file || attachment.error) && (
-            <div className="pop-in origin-bottom px-3 pt-2">
-              {attachment.file && (
-                <div className="mb-2 flex items-center gap-2 rounded-lg bg-surface-2 px-2.5 py-1.5 text-xs font-semibold text-ink">
-                  <IconPaperclip className="h-3.5 w-3.5 shrink-0 text-ink-muted" />
-                  <span className="min-w-0 flex-1 truncate">{attachment.file.name}</span>
-                  <button
-                    type="button"
-                    onClick={attachment.clear}
-                    className="icon-button grid h-6 w-6 shrink-0 place-items-center rounded-md text-ink-muted transition-colors duration-150 ease-out hover:bg-line hover:text-ink"
-                    aria-label="Remover PDF anexado"
-                  >
-                    <IconX className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              )}
-              {attachment.error && (
-                <p className="mb-2 text-xs font-semibold text-danger-700">{attachment.error}</p>
-              )}
-            </div>
-          )}
-
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              submit(input);
-            }}
-            className="flex items-center gap-2 border-t border-line px-3 py-3"
-          >
-            <ChatImageAttach value={pendingImage} onChange={setPendingImage} />
-            <input
-              ref={attachment.inputRef}
-              type="file"
-              accept="application/pdf"
-              onChange={attachment.onChange}
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={attachment.pick}
-              className="press-sm flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-line bg-surface-2 text-ink-muted transition-colors hover:text-ink focus-visible:ring-2 focus-visible:ring-brand-600"
-              aria-label="Anexar PDF"
-              title="Anexar PDF"
-            >
-              <IconPaperclip className="h-4 w-4" />
-            </button>
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              placeholder="Fala comigo…"
-              maxLength={4000}
-              className="h-11 min-w-0 flex-1 rounded-lg border border-line bg-surface-2 px-3 text-sm text-ink placeholder:text-ink-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
-            />
-            <button
-              type="submit"
-              disabled={sending || (!input.trim() && !pendingImage && !attachment.file)}
-              className="press-sm flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[linear-gradient(135deg,#7a1fff,#5c22e8)] text-white transition-opacity disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-brand-600"
-              aria-label="Enviar mensagem"
-            >
-              <IconArrowRight className="h-4 w-4" />
-            </button>
-          </form>
-        </div>
-      )}
-    </>
+      <div className="shrink-0 border-t border-white/[0.08] px-3 py-3">
+        <TimComposer
+          value={input}
+          onChange={setInput}
+          onSubmit={() => submit(input)}
+          sending={sending}
+          pendingImage={pendingImage}
+          onPendingImageChange={setPendingImage}
+          pdfAttachment={attachment}
+          voiceStatus={voice.voiceStatus}
+          onStartVoice={voice.startVoice}
+          placeholder="Fala comigo…"
+        />
+      </div>
+    </div>
   );
 }

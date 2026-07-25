@@ -240,6 +240,7 @@ export async function updateDashboardPreferencesByAi(
   };
 
   const dashboardPreferences = {
+    ...current,
     style: isDashboardStyle(input.estilo) ? input.estilo : current.style,
     accent: isDashboardAccent(input.cor) ? input.cor : current.accent,
     widgets: widgets.length > 0 ? widgets : current.widgets,
