@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LandingNav } from "@/components/landing/landing-nav";
 import { redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -34,7 +35,7 @@ export default async function LandingPage() {
   if (user) redirect("/painel");
 
   return (
-    <div className="dark relative overflow-hidden bg-od-bg">
+    <div className="dark relative bg-od-bg">
       <MouseSpotlight />
 
       {/* Glow de fundo único, atravessando hero → features → dashboard, pra costurar
@@ -51,6 +52,8 @@ export default async function LandingPage() {
       <div className="sticky top-4 z-50 px-4">
       </div>
 
+      <LandingNav />
+      <div className="relative overflow-hidden">
       <main className="mx-auto max-w-[1180px] px-8 pb-[120px] pt-10">
         <Hero animated />
 
@@ -66,7 +69,7 @@ export default async function LandingPage() {
         {/* Produto: features seguidas do preview do painel, que "destrava" com
             rotação/escala conforme o visitante rola — o momento de destaque
             da página, por isso é a única seção com respiro de scroll próprio. */}
-        <section className="pb-4">
+        <section id="recursos" className="scroll-mt-16 pb-4">
           <SectionHeading
             title="O que muda de profissão pra profissão"
             description="O núcleo é o mesmo; o que está em volta é feito pro seu trabalho. Escolha a sua."
@@ -74,6 +77,7 @@ export default async function LandingPage() {
           <FeatureTabs />
         </section>
 
+        <div id="painel" className="scroll-mt-16" />
         <ContainerScroll
           titleComponent={
             <>
@@ -100,7 +104,7 @@ export default async function LandingPage() {
         </ContainerScroll>
 
         {/* IA: spotlight e composer emendados, contando a mesma história em sequência. */}
-        <section className="pb-20">
+        <section id="ia" className="scroll-mt-16 pb-20">
           <SectionHeading
             title="Seu sócio que nunca dorme"
             description="A IA que resume o dia, aponta quem chamar primeiro e sugere o próximo passo."
@@ -137,6 +141,7 @@ export default async function LandingPage() {
           <span>© {new Date().getFullYear()} OtimizIA. Todos os direitos reservados.</span>
         </footer>
       </main>
+      </div>
     </div>
   );
 }
