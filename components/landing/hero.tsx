@@ -1,6 +1,7 @@
 import * as React from "react";
 import { ArrowRight } from "lucide-react";
 import { AnimatedShapesBackground } from "@/components/design-system/animated-shapes-background";
+import { DashboardPreview } from "@/components/landing/dashboard-preview";
 
 /**
  * Dark hero pattern: retro perspective grid + radial glow + gradient
@@ -10,7 +11,7 @@ import { AnimatedShapesBackground } from "@/components/design-system/animated-sh
  */
 export function Hero({ animated = false }: { animated?: boolean }) {
   return (
-    <section className="relative overflow-hidden border-b border-od-border bg-od-bg px-8 py-24 text-center md:py-28">
+    <section className="relative overflow-hidden border-b border-od-border bg-od-bg px-8 pt-24 text-center md:pt-28 lg:pb-0">
       <div
         className="pointer-events-none absolute inset-0 overflow-hidden opacity-25"
         aria-hidden
@@ -69,6 +70,23 @@ export function Hero({ animated = false }: { animated?: boolean }) {
           Começar grátis
           <ArrowRight className="size-4" strokeWidth={2} />
         </a>
+      </div>
+
+      {/* Teaser do produto em perspectiva. Em vez do screenshot hotlinkado da
+          referência, é o mesmo mock fiel que a seção "O painel" usa — só que
+          aqui inerte: quem quiser explorar faz isso lá embaixo, onde a
+          instrução está. `inert` tira do foco e da árvore de acessibilidade,
+          evitando dois "Visão geral" concorrendo pro leitor de tela. */}
+      <div className="relative z-10 mx-auto mt-20 hidden w-full max-w-6xl [mask-image:linear-gradient(to_bottom,black_58%,transparent_100%)] lg:block">
+        <div className="[perspective:1400px]">
+          <div className="origin-top [transform:rotateX(22deg)]">
+            <div className="mx-auto h-[620px] max-w-5xl overflow-hidden rounded-xl border border-od-border bg-od-surface p-2 shadow-od-float">
+              <div inert className="pointer-events-none h-full select-none">
+                <DashboardPreview />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
