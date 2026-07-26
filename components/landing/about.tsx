@@ -15,8 +15,8 @@ import { Check, X } from "lucide-react";
  * O conteúdo continua verificável: painéis por profissão em
  * `app/(dashboard)/painel`, WhatsApp com IA em `app/api/whatsapp`, preço de
  * `/upgrade`, exportação nas configurações da conta. A origem no fim da seção
- * foi informada pelo dono do produto; número de clientes, tamanho de time e
- * data de fundação seguem de fora até que ele os passe.
+ * foi informada e assinada pelo fundador; número de clientes, tamanho de time
+ * e data de fundação seguem de fora até que ele os passe.
  */
 const POSICOES = [
   {
@@ -94,13 +94,21 @@ export function About() {
             não o tamanho da história. */}
         <div className="mx-auto mt-14 max-w-[52ch] border-t border-od-border pt-8 text-center">
           <p className="text-[15px] leading-relaxed text-od-text-2">
-            O OtimizIA começou no sul do Brasil, criado por um jovem que não
+            Comecei o OtimizIA no sul do Brasil, ainda muito jovem, porque não
             achava certo a tecnologia andar para a frente deixando gente para
             trás. O sonho continua o mesmo:{" "}
             <span className="font-semibold text-od-text">
               que ninguém precise virar especialista em software para acompanhar
               o próprio tempo.
             </span>
+          </p>
+          {/* Assinatura sem travessão, por decisão de copy da landing: o nome
+              carrega sozinho, e o papel vem abaixo em voz mais baixa. */}
+          <p className="mt-6 text-[14px] font-semibold text-od-text">
+            Venâncio Killes
+          </p>
+          <p className="mt-0.5 text-[13px] text-od-text-3">
+            fundador do OtimizIA
           </p>
         </div>
       </div>
