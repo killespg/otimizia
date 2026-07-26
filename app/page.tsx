@@ -245,6 +245,22 @@ export default async function LandingPage() {
                     <li><Link href="/termos" className="text-od-text-2 hover:text-od-text">Termos de uso</Link></li>
                   </ul>
                 </div>
+                {/* SAC como mailto de verdade, não texto solto: no celular, um
+                    endereço que não abre o app de e-mail vira copiar e colar. */}
+                <div>
+                  <p className="text-od-label text-od-text-3">Atendimento</p>
+                  <ul className="mt-3 space-y-2 text-[13px]">
+                    <li>
+                      <a
+                        href="mailto:venancio@useotimizia.com"
+                        className="text-od-text-2 hover:text-od-text"
+                      >
+                        venancio@useotimizia.com
+                      </a>
+                    </li>
+                    <li><Link href="#duvidas" className="text-od-text-2 hover:text-od-text">Perguntas frequentes</Link></li>
+                  </ul>
+                </div>
               </div>
             </div>
             <p className="mt-10 border-t border-od-border pt-6 text-[12px] text-od-text-3">
