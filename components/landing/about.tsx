@@ -39,9 +39,13 @@ const POSICOES = [
 export function About() {
   return (
     <div>
-      <h2 className="mx-auto max-w-[24ch] text-balance text-center text-[32px] font-extrabold leading-[1.15] tracking-[-0.02em] text-od-text md:text-[40px]">
-        Ninguém perde cliente por falta de esforço. Perde porque a conversa{" "}
-        <span className="text-od-accent">sumiu no meio de outras trinta.</span>
+      {/* A primeira versão era "ninguém perde cliente por falta de esforço",
+          que serve para qualquer empresa de qualquer setor. Esta fala de uma
+          coisa só, concreta e reconhecível: a conversa que o WhatsApp empurra
+          para cima até desaparecer. */}
+      <h2 className="mx-auto max-w-[22ch] text-balance text-center text-[26px] font-extrabold leading-[1.2] tracking-[-0.02em] text-od-text md:text-[32px]">
+        O cliente não desistiu de você. A conversa dele{" "}
+        <span className="text-od-accent">só foi empurrada pra cima.</span>
       </h2>
 
       <div className="mx-auto mt-14 max-w-[900px]">
@@ -71,7 +75,7 @@ export function About() {
             primeiro o argumento racional, que é rápido de ler, e só então a
             parte que fala com quem vive isso. Sem história de fundação, que
             seria inventada; a emoção vem da rotina do usuário, não nossa. */}
-        <p className="mx-auto mt-12 max-w-[58ch] text-center text-[15px] leading-relaxed text-od-text-2">
+        <p className="mx-auto mt-12 max-w-[52ch] text-center text-[18px] leading-[1.65] text-od-text-2 md:text-[19px]">
           A gente conhece a cena. Onze da noite, o celular ainda apitando, e você
           tentando lembrar se chegou a responder aquela pessoa que parecia
           decidida.{" "}
