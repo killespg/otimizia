@@ -39,7 +39,7 @@ export function SpotlightCard({ localSpotlight = true }: { localSpotlight?: bool
       ) : null}
       <div className="relative z-[1] flex-1">
         <h3 className="mb-3 text-[28px] font-extrabold tracking-[-0.01em] text-white">
-          Sócio-Assistente em ação
+          Tim em ação
         </h3>
         {/* Ele não só responde: as tools em lib/ai/tools escrevem no banco
             (create_contact, create_deal, move_deal, schedule_property_visit).

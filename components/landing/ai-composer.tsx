@@ -20,7 +20,7 @@ export function AiComposer() {
 
         <div className="border-y border-white/[0.08]">
           <div className="px-4 py-4 text-sm text-white/60">
-            Pergunte ao sócio-assistente...
+            Mensagem para o Tim…
           </div>
           <div className="flex items-center justify-between border-t border-white/[0.06] px-3.5 py-3">
             <div className="flex gap-2">
@@ -52,7 +52,7 @@ export function AiComposer() {
 
         <div className="mt-4 flex justify-center">
           <div className="inline-flex items-center gap-2.5 text-white/60">
-            <span className="text-xs font-semibold text-white/60">Sócio-Assistente</span>
+            <span className="text-xs font-semibold text-white/60">Tim</span>
             <span className="text-[13px] text-white/60">Pensando</span>
             <span className="flex gap-1">
               {[0, 0.15, 0.3].map((delay) => (

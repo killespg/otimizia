@@ -135,8 +135,8 @@ export default async function LandingPage() {
         <Section
           id="ia"
           eyebrow="Sócio-assistente"
-          title="Seu sócio que nunca dorme"
-          description="A IA que resume o dia, aponta quem chamar primeiro e sugere o próximo passo."
+          title="Tim, o sócio que nunca dorme"
+          description="Ele não devolve conselho: cria o contato, abre a negociação e agenda o compromisso, por voz ou por escrito."
           raised
         >
           <div className="flex flex-col gap-3">
