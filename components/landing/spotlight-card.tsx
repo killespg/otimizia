@@ -41,17 +41,21 @@ export function SpotlightCard({ localSpotlight = true }: { localSpotlight?: bool
         <h3 className="mb-3 text-[28px] font-extrabold tracking-[-0.01em] text-white">
           Sócio-Assistente em ação
         </h3>
+        {/* Ele não só responde: as tools em lib/ai/tools escrevem no banco
+            (create_contact, create_deal, move_deal, schedule_property_visit).
+            Por isso os exemplos abaixo misturam pergunta e ordem — assistente
+            que só sugere é commodity. */}
         <p className="max-w-[420px] text-sm leading-relaxed text-[#a39da8]">
-          Resume o dia, aponta quem chamar primeiro e sugere o próximo passo —
-          direto no painel.
+          Fale por voz ou escreva. Ele responde e também executa no painel:
+          cria contato, move negociação e agenda compromisso.
         </p>
       </div>
       <ul className="relative z-[1] w-full flex-1 divide-y divide-od-border border-y border-od-border">
         {[
           "Quem eu preciso chamar hoje?",
-          "Resuma o que aconteceu essa semana",
-          "Quem está travado no funil há mais de 7 dias?",
-          "Escreve uma mensagem de retorno pra Carla",
+          "Cadastra a Carla e abre uma negociação",
+          "Move o negócio do João pra proposta",
+          "Agenda visita no apartamento do Sumaré sexta às 15h",
         ].map((pergunta) => (
           <li
             key={pergunta}

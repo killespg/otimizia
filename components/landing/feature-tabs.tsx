@@ -36,7 +36,9 @@ import {
 
 type Feature = { icon: LucideIcon; title: string; description: string };
 type Group = { label: string; features: Feature[] };
-type Vertical = { key: string; tab: string; headline: string; groups: Group[] };
+/** O que o Tim faz nesta profissão, com ordens de verdade que a pessoa daria. */
+type Tim = { line: string; examples: string[] };
+type Vertical = { key: string; tab: string; headline: string; tim: Tim; groups: Group[] };
 
 /**
  * O que cada profissão encontra no produto.
@@ -49,9 +51,19 @@ type Vertical = { key: string; tab: string; headline: string; groups: Group[] };
  * tirou os cards e não pôs nada no lugar, e virou parede de texto — 2200
  * caracteres cinzas sem nenhuma âncora visual.
  */
+/**
+ * Tim aparece dentro de cada vertical, não em "Em todas", porque o que ele
+ * consegue fazer muda por profissão.
+ *
+ * ATENÇÃO ao mexer aqui: hoje só o imobiliário e o de vendas correspondem ao
+ * código. As tools em `lib/ai/tools/` cobrem contato, negociação, tarefa e
+ * imóvel; nenhuma enxerga caso, processo ou prazo. A linha do jurídico está
+ * escrita para o comportamento que ainda vai ser implementado, por decisão do
+ * dono do produto (o próximo passo é fazer o Tim falar cada profissão). Se a
+ * implementação mudar de forma, ajuste a copy junto.
+ */
 const COMUM: Feature[] = [
-  { icon: MessageCircle, title: "WhatsApp no painel", description: "Responda sem trocar de app; a conversa fica ligada ao contato." },
-  { icon: Bot, title: "Tim, o sócio-assistente", description: "Resume o dia, aponta quem está travado e sugere o próximo passo." },
+  { icon: MessageCircle, title: "WhatsApp que responde sozinho", description: "A IA atende na hora e você assume a conversa quando quiser." },
   { icon: CalendarDays, title: "Calendário interativo", description: "Assine no Google ou Apple por um link que atualiza sozinho." },
   { icon: Bell, title: "Lembrete no celular", description: "Notificação antes do compromisso, com app instalável." },
   { icon: Contact, title: "Contatos e histórico", description: "Ficha completa e importação por CSV da sua base atual." },
@@ -63,6 +75,14 @@ const VERTICALS: Vertical[] = [
     key: "autonomous_seller",
     tab: "Vendedor autônomo",
     headline: "Do primeiro contato ao pós-venda, sem planilha paralela.",
+    tim: {
+      line: "Fale por voz ou escreva. Ele não devolve conselho: cria o contato, abre a negociação e move no funil enquanto você está na rua.",
+      examples: [
+        "Cadastra o João e abre negociação de R$ 4.200",
+        "Move o negócio da Carla pra proposta",
+        "Cria tarefa de retorno pra sexta",
+      ],
+    },
     groups: [
       {
         label: "Vender",
@@ -87,6 +107,14 @@ const VERTICALS: Vertical[] = [
     key: "law_office",
     tab: "Escritório de advocacia",
     headline: "Prazo, andamento e honorário no mesmo lugar.",
+    tim: {
+      line: "Fale por voz ou escreva. Ele abre o caso, registra o andamento e cria a tarefa do prazo sem você parar o que está fazendo.",
+      examples: [
+        "Abre o caso da Ana e registra a audiência",
+        "Cria tarefa de prazo pra sexta",
+        "Resume o que mudou nos processos essa semana",
+      ],
+    },
     groups: [
       {
         label: "Processos",
@@ -117,7 +145,15 @@ const VERTICALS: Vertical[] = [
   {
     key: "real_estate_broker",
     tab: "Corretor de imóveis",
-    headline: "Carteira, visita e comissão sem perder o fio.",
+    headline: "Carteira, visita e comissão sob controle.",
+    tim: {
+      line: "Fale por voz ou escreva. Ele busca na carteira, monta a vitrine e agenda a visita, inclusive dentro do carro entre um atendimento e outro.",
+      examples: [
+        "Quais imóveis batem com o perfil da Carla?",
+        "Monta uma vitrine com esses três",
+        "Agenda visita no apartamento do Sumaré sexta às 15h",
+      ],
+    },
     groups: [
       {
         label: "Carteira",
@@ -208,6 +244,39 @@ export function FeatureTabs() {
           itens ocupam a largura em duas colunas. Antes eram quatro blocos de
           alturas diferentes num grid de dois, com a base toda irregular. */}
       <div className="mt-10 divide-y divide-od-border border-y border-od-border">
+        {/* O Tim é a peça central do produto, então não pode dividir peso com
+            "Honorários" numa lista de dez. Ganha faixa própria no topo, com
+            ícone maior, texto de corpo e ordens reais. Continua sendo faixa,
+            não card: o destaque vem de escala e do acento, não de moldura. */}
+        <div className="grid gap-x-8 py-8 md:grid-cols-[160px_minmax(0,1fr)]">
+          <p className="text-od-label text-od-accent">Sócio-assistente</p>
+          <div className="min-w-0">
+            <div className="flex items-start gap-4">
+              <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-od-accent text-white">
+                <Bot className="size-5" strokeWidth={2} />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[19px] font-bold tracking-[-0.01em] text-od-text">
+                  Tim, o sócio-assistente
+                </p>
+                <p className="mt-1.5 max-w-[62ch] text-[14px] leading-relaxed text-od-text-2">
+                  {vertical.tim.line}
+                </p>
+              </div>
+            </div>
+            <ul className="mt-5 flex flex-wrap gap-2 md:pl-15">
+              {vertical.tim.examples.map((example) => (
+                <li
+                  key={example}
+                  className="rounded border border-od-border bg-od-muted-surface px-2.5 py-1.5 text-[12px] text-od-text-2"
+                >
+                  “{example}”
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
         {vertical.groups.map((group) => (
           <div key={group.label} className="grid gap-x-8 py-5 md:grid-cols-[160px_minmax(0,1fr)]">
             <p className="pt-3.5 text-od-label text-od-text-3">{group.label}</p>
