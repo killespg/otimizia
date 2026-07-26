@@ -28,7 +28,13 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR" className={`${inter.variable} h-full antialiased dark`}>
-      <body>{children}</body>
+      {/* Extensões de navegador escrevem atributos no <body> antes do React
+          hidratar (bis_register, __processed_<uuid>__ e afins), o que dispara
+          erro de hidratação em dev para a pessoa que tem a extensão, não para
+          o visitante. suppressHydrationWarning vale só para os atributos deste
+          elemento, um nível: qualquer divergência real dentro da árvore
+          continua sendo reportada. */}
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

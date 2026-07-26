@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Some o balão de indicador do Next em desenvolvimento, a pedido. Ele só
+  // existe em dev e nunca chegou a ir para produção, então isto não muda o
+  // que o visitante vê. O custo é real, porém: erro de hidratação e falha de
+  // Server Action deixam de se anunciar sozinhos na tela. Continuam aparecendo
+  // no console do navegador e no terminal do `next dev`.
+  devIndicators: false,
   images: {
     // Fotos de imóveis vivem no Storage público do Supabase. Sem liberar o
     // host aqui, next/image (usado no detalhe do imóvel e no gerenciador de
