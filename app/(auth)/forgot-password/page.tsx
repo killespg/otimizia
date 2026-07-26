@@ -21,7 +21,7 @@ export default async function ForgotPasswordPage(
           Lembrou a senha?{" "}
           <Link
             href="/login"
-            className="nav-item font-black text-brand-700 hover:text-brand-900"
+            className="nav-item font-black text-brand-700 hover:text-od-text"
           >
             Entrar
           </Link>

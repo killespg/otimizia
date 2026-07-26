@@ -3,6 +3,19 @@ import type { InputHTMLAttributes } from "react";
 import { AlertCircle, CalendarCheck2, Check, Columns3, ContactRound } from "lucide-react";
 import { LogoWordmark } from "@/components/design-system/logo";
 
+/**
+ * Moldura das telas de entrada.
+ *
+ * Estava com a paleta antiga cravada em hex (#171320, #1d1924, #120f1c) e com
+ * texto e régua em opacidade de branco (white/48, white/[0.07]). Duas
+ * consequências: os planos não acompanhavam a escada de superfícies que o
+ * resto do produto passou a usar, e qualquer ajuste de tema deixava estas
+ * quatro rotas para trás, porque não liam token nenhum.
+ *
+ * Mapeamento aplicado, seguindo a mesma leitura do painel: a coluna de
+ * apresentação é o plano mais fundo (`od-sidebar`), o formulário fica na
+ * superfície elevada (`od-surface`) e a página é o canvas (`od-bg`).
+ */
 export function AuthShell({
   title,
   subtitle,
@@ -19,37 +32,76 @@ export function AuthShell({
   footer: React.ReactNode;
 }) {
   return (
-    <main className="min-h-[100dvh] bg-[#171320] p-0 sm:grid sm:place-items-center sm:p-5">
-      <div className="mx-auto grid min-h-[100dvh] w-full max-w-6xl overflow-hidden border-white/[0.08] bg-[#1d1924] sm:min-h-[min(760px,calc(100dvh-2.5rem))] sm:rounded-lg sm:border lg:grid-cols-[1.05fr_.95fr]">
-        <section className="hidden flex-col justify-between border-r border-white/[0.07] bg-[#120f1c] p-10 lg:flex">
+    <main className="min-h-[100dvh] bg-od-bg p-0 sm:grid sm:place-items-center sm:p-5">
+      <div className="mx-auto grid min-h-[100dvh] w-full max-w-6xl overflow-hidden border-od-border bg-od-surface sm:min-h-[min(760px,calc(100dvh-2.5rem))] sm:rounded-lg sm:border lg:grid-cols-[1.05fr_.95fr]">
+        <section className="hidden flex-col justify-between border-r border-od-border bg-od-sidebar p-10 lg:flex">
           <div>
-            <Link href="/" className="inline-flex rounded-md focus-visible:ring-2 focus-visible:ring-od-accent"><LogoWordmark height={32} /></Link>
-            <h2 className="mt-16 max-w-lg text-[34px] font-extrabold leading-[1.14] tracking-[-0.025em] text-white">O que precisa da sua atenção, sem ruído.</h2>
-            <p className="mt-4 max-w-md text-[15px] leading-7 text-white/48">Contatos, vendas e lembretes no mesmo lugar, adaptados ao seu jeito de trabalhar.</p>
+            <Link
+              href="/"
+              className="inline-flex rounded-md focus-visible:ring-2 focus-visible:ring-od-accent"
+            >
+              <LogoWordmark height={32} />
+            </Link>
+            <h2 className="mt-16 max-w-lg text-[34px] font-extrabold leading-[1.14] tracking-[-0.025em] text-od-text">
+              O que precisa da sua atenção, sem ruído.
+            </h2>
+            <p className="mt-4 max-w-md text-[15px] leading-7 text-od-text-2">
+              Contatos, vendas e lembretes no mesmo lugar, adaptados ao seu jeito
+              de trabalhar.
+            </p>
           </div>
-          <div className="border-y border-white/[0.07]">
+          <div className="border-y border-od-border">
             {[
               [ContactRound, "Clientes organizados", "Histórico e próximos passos sempre à mão."],
               [Columns3, "Funil que acompanha seu processo", "Etapas, valores e responsáveis sem planilha."],
               [CalendarCheck2, "Lembretes no momento certo", "O que venceu sobe para o topo da fila."],
             ].map(([Icon, label, description]) => {
               const FeatureIcon = Icon as typeof ContactRound;
-              return <div key={String(label)} className="flex gap-4 border-t border-white/[0.06] py-5 first:border-t-0"><FeatureIcon size={18} className="mt-0.5 shrink-0 text-od-text-3" /><div><p className="text-sm font-semibold text-white/78">{String(label)}</p><p className="mt-1 text-xs leading-5 text-white/35">{String(description)}</p></div></div>;
+              return (
+                <div
+                  key={String(label)}
+                  className="flex gap-4 border-t border-od-border py-5 first:border-t-0"
+                >
+                  <FeatureIcon size={18} className="mt-0.5 shrink-0 text-od-text-3" />
+                  <div>
+                    <p className="text-sm font-semibold text-od-text">{String(label)}</p>
+                    <p className="mt-1 text-xs leading-5 text-od-text-3">{String(description)}</p>
+                  </div>
+                </div>
+              );
             })}
           </div>
         </section>
 
         <section className="flex min-h-[100dvh] items-center px-5 py-10 sm:min-h-0 sm:px-10 lg:px-14">
           <div className="mx-auto w-full max-w-md">
-            <div className="mb-10 lg:hidden"><LogoWordmark height={30} /></div>
-            <h1 className="text-[28px] font-bold tracking-[-0.02em] text-white">{title}</h1>
-            <p className="mt-2 max-w-[65ch] text-sm leading-6 text-white/48">{subtitle}</p>
+            <div className="mb-10 lg:hidden">
+              <LogoWordmark height={30} />
+            </div>
+            <h1 className="text-[28px] font-bold tracking-[-0.02em] text-od-text">{title}</h1>
+            <p className="mt-2 max-w-[65ch] text-sm leading-6 text-od-text-2">{subtitle}</p>
 
-            {error ? <div role="alert" className="mt-5 flex items-start gap-3 border border-red-400/20 bg-red-400/[0.06] p-3 text-sm text-red-200"><AlertCircle size={17} className="mt-0.5 shrink-0" /><span>{error}</span></div> : null}
-            {notice ? <div role="status" className="mt-5 flex items-start gap-3 border border-emerald-400/20 bg-emerald-400/[0.05] p-3 text-sm text-emerald-200"><Check size={17} className="mt-0.5 shrink-0" /><span>{notice}</span></div> : null}
+            {error ? (
+              <div
+                role="alert"
+                className="mt-5 flex items-start gap-3 rounded border border-danger-200 bg-danger-50 p-3 text-sm text-danger-600"
+              >
+                <AlertCircle size={17} className="mt-0.5 shrink-0" />
+                <span>{error}</span>
+              </div>
+            ) : null}
+            {notice ? (
+              <div
+                role="status"
+                className="mt-5 flex items-start gap-3 rounded border border-success-200 bg-success-50 p-3 text-sm text-success-600"
+              >
+                <Check size={17} className="mt-0.5 shrink-0" />
+                <span>{notice}</span>
+              </div>
+            ) : null}
 
             {children}
-            <p className="mt-7 border-t border-white/[0.07] pt-5 text-sm text-white/45">{footer}</p>
+            <p className="mt-7 border-t border-od-border pt-5 text-sm text-od-text-2">{footer}</p>
           </div>
         </section>
       </div>
@@ -57,10 +109,26 @@ export function AuthShell({
   );
 }
 
-export function AuthField({ label, name, required, className = "", ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string; name: string }) {
+export function AuthField({
+  label,
+  name,
+  required,
+  className = "",
+  ...props
+}: InputHTMLAttributes<HTMLInputElement> & { label: string; name: string }) {
   return (
     <div>
-      <label className="label" htmlFor={name}>{label}{required ? <><span className="ml-1 text-od-text-2" aria-hidden="true">*</span><span className="sr-only"> obrigatório</span></> : null}</label>
+      <label className="label" htmlFor={name}>
+        {label}
+        {required ? (
+          <>
+            <span className="ml-1 text-od-text-2" aria-hidden="true">
+              *
+            </span>
+            <span className="sr-only"> obrigatório</span>
+          </>
+        ) : null}
+      </label>
       <input id={name} name={name} required={required} className={`field mt-1.5 ${className}`} {...props} />
     </div>
   );

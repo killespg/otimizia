@@ -21,7 +21,7 @@ export default async function LoginPage(
           Não tem conta?{" "}
           <Link
             href="/signup"
-            className="nav-item font-black text-brand-700 hover:text-brand-900"
+            className="nav-item font-black text-brand-700 hover:text-od-text"
           >
             Criar agora
           </Link>

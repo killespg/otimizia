@@ -22,7 +22,7 @@ export default async function SignupPage(
           Já tem conta?{" "}
           <Link
             href="/login"
-            className="nav-item font-black text-brand-700 hover:text-brand-900"
+            className="nav-item font-black text-brand-700 hover:text-od-text"
           >
             Entrar
           </Link>
@@ -105,7 +105,7 @@ export default async function SignupPage(
             <Link
               href="/termos"
               target="_blank"
-              className="nav-item font-black text-brand-700 hover:text-brand-900"
+              className="nav-item font-black text-brand-700 hover:text-od-text"
             >
               Termos de Uso e o Contrato de Prestação de Serviço
             </Link>
