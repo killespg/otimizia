@@ -14,8 +14,9 @@ import { Check, X } from "lucide-react";
  *
  * O conteúdo continua verificável: painéis por profissão em
  * `app/(dashboard)/painel`, WhatsApp com IA em `app/api/whatsapp`, preço de
- * `/upgrade`, exportação nas configurações da conta. Fundação, tamanho do time
- * e cidade ficaram de fora porque só o dono do produto tem esses números.
+ * `/upgrade`, exportação nas configurações da conta. A origem no fim da seção
+ * foi informada pelo dono do produto; número de clientes, tamanho de time e
+ * data de fundação seguem de fora até que ele os passe.
  */
 const POSICOES = [
   {
@@ -85,6 +86,23 @@ export function About() {
           O OtimizIA existe para a parte chata ser da máquina, e o seu dia sobrar
           para o que você faz bem: falar com gente e fechar negócio.
         </p>
+
+        {/* Origem. Informada pelo dono do produto, então pode ser afirmada.
+            Escrita sem o registro de "startup que nasceu numa garagem": o que
+            dá credibilidade aqui é a motivação ser verificável no produto (uma
+            ferramenta que não exige a pessoa virar especialista em software),
+            não o tamanho da história. */}
+        <div className="mx-auto mt-14 max-w-[52ch] border-t border-od-border pt-8 text-center">
+          <p className="text-[15px] leading-relaxed text-od-text-2">
+            O OtimizIA começou no sul do Brasil, criado por um jovem que não
+            achava certo a tecnologia andar para a frente deixando gente para
+            trás. O sonho continua o mesmo:{" "}
+            <span className="font-semibold text-od-text">
+              que ninguém precise virar especialista em software para acompanhar
+              o próprio tempo.
+            </span>
+          </p>
+        </div>
       </div>
     </div>
   );
