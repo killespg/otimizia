@@ -51,17 +51,21 @@ export function Hero({ animated = false }: { animated?: boolean }) {
       {animated ? <AnimatedShapesBackground /> : null}
       <div className="relative z-10">
         <div className="mb-6 text-od-label text-od-text-3">
-          CRM feito para quem vende sozinho
+          CRM com WhatsApp e IA para quem toca o negócio sozinho
         </div>
-        <h1 className="mx-auto mb-5 max-w-[16ch] text-[44px] font-extrabold leading-[1.1] tracking-[-0.02em] md:max-w-none md:text-[56px]">
-          <span className="text-white">Venda sem perder </span>
+        {/* A promessa é o que o webhook faz de verdade: a IA responde a
+            conversa e a detecção de intenção abre a negociação no funil. Nada
+            aqui é roadmap. */}
+        <h1 className="mx-auto mb-5 max-w-[18ch] text-balance text-[44px] font-extrabold leading-[1.1] tracking-[-0.02em] md:max-w-[22ch] md:text-[56px]">
+          <span className="text-white">A IA atende seu WhatsApp. </span>
           <span className="text-od-accent">
-            o fio.
+            Você entra quando importa.
           </span>
         </h1>
-        <p className="mx-auto mb-9 max-w-[520px] text-base leading-relaxed text-od-text-2">
-          Contatos, vendas e lembretes numa tela simples. Você vê a prioridade
-          e age sem cavar conversa antiga.
+        <p className="mx-auto mb-9 max-w-[560px] text-base leading-relaxed text-od-text-2">
+          Ela responde na hora, percebe quem está pronto pra fechar e abre a
+          negociação no seu funil sozinha. Você assume a conversa quando quiser
+          e liga ou desliga a IA em cada uma.
         </p>
         <a
           href="/signup"
@@ -80,7 +84,7 @@ export function Hero({ animated = false }: { animated?: boolean }) {
       <div className="relative z-10 mx-auto mt-20 hidden w-full max-w-6xl [mask-image:linear-gradient(to_bottom,black_58%,transparent_100%)] lg:block">
         <div className="[perspective:1400px]">
           <div className="origin-top [transform:rotateX(22deg)]">
-            <div className="mx-auto h-[620px] max-w-5xl overflow-hidden rounded-xl border border-od-border bg-od-surface p-2 shadow-od-float">
+            <div className="mx-auto h-[620px] max-w-5xl skew-x-[.14rad] overflow-hidden rounded-xl border border-od-border bg-od-surface p-2 shadow-od-float">
               <div inert className="pointer-events-none h-full select-none">
                 <DashboardPreview />
               </div>
