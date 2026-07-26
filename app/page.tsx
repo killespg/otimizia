@@ -89,7 +89,7 @@ export default async function LandingPage() {
           <Hero animated />
           <div className="-mt-4 pb-20 pt-14">
             <p className="mb-7 text-center text-od-label text-od-text-3">
-              Feito para quem vende sozinho ou em times pequenos
+              Feito para quem trabalha sozinho e para equipes inteiras
             </p>
             <LogoMarquee bare fadeColor="var(--od-bg)" />
           </div>
@@ -179,8 +179,8 @@ export default async function LandingPage() {
                   a: "Sim. O OtimizIA é instalável direto do navegador, funciona como aplicativo e manda notificação antes dos seus compromissos. Foi pensado para quem usa em trânsito, entre um atendimento e outro.",
                 },
                 {
-                  q: "Dá para trabalhar em equipe?",
-                  a: "Dá. Você convida sócios e assistentes com cargos diferentes, controlando quem vê o financeiro, quem gerencia casos e quem só registra atendimento.",
+                  q: "Como funciona com a minha equipe?",
+                  a: "Você convida sócios e assistentes com cargos diferentes, controlando quem vê o financeiro, quem gerencia casos e quem só registra atendimento. E se hoje você trabalha sozinho, nada disso atrapalha: o painel já vem pronto para uma pessoa e a equipe entra quando você precisar.",
                 },
                 {
                   q: "E se eu quiser cancelar?",
@@ -212,7 +212,7 @@ export default async function LandingPage() {
               <div className="max-w-[320px]">
                 <p className="text-[15px] font-extrabold text-od-text">OtimizIA</p>
                 <p className="mt-2 text-[13px] leading-relaxed text-od-text-2">
-                  CRM para quem vende sozinho ou em time pequeno, com o painel da sua profissão.
+                  CRM para quem trabalha sozinho ou com equipe, com o painel da sua profissão.
                 </p>
               </div>
               <div className="flex gap-12">

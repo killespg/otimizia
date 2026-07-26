@@ -51,7 +51,7 @@ export function Hero({ animated = false }: { animated?: boolean }) {
       {animated ? <AnimatedShapesBackground /> : null}
       <div className="relative z-10">
         <div className="mb-6 text-od-label text-od-text-3">
-          CRM com WhatsApp e IA para quem toca o negócio sozinho
+          CRM com WhatsApp e IA, sozinho ou com equipe
         </div>
         {/* A promessa é o que o webhook faz de verdade: a IA responde a
             conversa e a detecção de intenção abre a negociação no funil. Nada
