@@ -94,9 +94,9 @@ export function About() {
             não o tamanho da história. */}
         <div className="mx-auto mt-14 max-w-[52ch] border-t border-od-border pt-8 text-center">
           <p className="text-[15px] leading-relaxed text-od-text-2">
-            Comecei o OtimizIA no sul do Brasil, ainda muito jovem, porque não
-            achava certo a tecnologia andar para a frente deixando gente para
-            trás. O sonho continua o mesmo:{" "}
+            Comecei o OtimizIA no sul do Brasil porque não achava certo a
+            tecnologia andar para a frente deixando gente para trás. O sonho
+            continua o mesmo:{" "}
             <span className="font-semibold text-od-text">
               que ninguém precise virar especialista em software para acompanhar
               o próprio tempo.
