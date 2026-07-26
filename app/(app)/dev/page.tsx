@@ -30,15 +30,16 @@ export default async function DevMetricsPage() {
   if (!ownProfile?.is_admin) redirect("/dashboard");
 
   const admin = createAdminClient();
-  const [{ data: profiles }, { data: contacts }, { data: deals }] = await Promise.all([
+  const [{ data: profiles }, { data: contacts }, { data: deals }, { data: tasks }] = await Promise.all([
     admin
       .from("profiles")
       .select("name,plan,plan_status,trial_ends_at,stripe_subscription_id,created_at"),
     admin.from("contacts").select("owner_id"),
-    admin.from("deals").select("owner_id,stage,value_cents"),
+    admin.from("deals").select("id,owner_id,stage,value_cents"),
+    admin.from("tasks").select("deal_id,done"),
   ]);
 
-  const metrics = computeDevMetrics(profiles ?? [], contacts ?? [], deals ?? []);
+  const metrics = computeDevMetrics(profiles ?? [], contacts ?? [], deals ?? [], tasks ?? []);
   const activationRate =
     metrics.totalUsers > 0 ? Math.round((metrics.activatedUsers / metrics.totalUsers) * 100) : 0;
 
@@ -49,6 +50,10 @@ export default async function DevMetricsPage() {
     { label: "Pagantes", value: String(metrics.planCounts.active) },
     { label: "Pagamento pendente", value: String(metrics.planCounts.past_due) },
     { label: "Grátis / expirado", value: String(metrics.planCounts.free + metrics.planCounts.expired) },
+    {
+      label: "Negócios abertos com próxima ação",
+      value: `${metrics.openDealsWithNextAction}/${metrics.openDealsCount} (${metrics.openDealsWithNextActionRate}%)`,
+    },
   ];
 
   return (

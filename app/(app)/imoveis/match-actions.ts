@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { decimalOrNull, intOrNull, keyValueListOrEmpty, moneyToCentsOrNull, requiredText, stringListOrEmpty, text } from "@/lib/form-parse";
 import { computeMatchScore } from "@/lib/real-estate-match";
+import { combineWithBehavior, type DealPropertyHistoryEntry } from "@/lib/real-estate-match-v2";
 import type { RealEstateDealPropertyStatus, RealEstateLeadPreferences, RealEstateProperty } from "@/lib/supabase/types";
 import { requireRealEstate } from "./actions";
 
@@ -82,8 +83,39 @@ export async function recalculateDealMatches(formData: FormData) {
     .in("status", MATCHABLE_STATUSES);
   const properties = (propertyRows ?? []) as RealEstateProperty[];
 
+  // 4.1 (Fase 4): histórico deste mesmo atendimento com outros imóveis —
+  // é o sinal de comportamento que o matching v2 usa pra ajustar o score
+  // determinístico do v1 (lib/real-estate-match-v2.ts). Só o próprio
+  // histórico do negócio, não de outros clientes — nada de aprendizado
+  // cruzado entre contas nesta versão.
+  const propertyById = new Map(properties.map((p) => [p.id, p]));
+  const { data: dealHistoryRows } = await supabase
+    .from("real_estate_deal_properties")
+    .select("property_id, status")
+    .eq("org_id", orgId)
+    .eq("deal_id", dealId);
+  const dealHistory: DealPropertyHistoryEntry[] = (dealHistoryRows ?? [])
+    .map((row) => {
+      const property = propertyById.get(row.property_id as string);
+      if (!property) return null;
+      return {
+        status: row.status as RealEstateDealPropertyStatus,
+        propertyType: property.property_type,
+        neighborhood: property.address_neighborhood,
+      };
+    })
+    .filter((entry): entry is DealPropertyHistoryEntry => entry !== null);
+
   const matches = properties
-    .map((property) => ({ property, result: computeMatchScore(preferences, property) }))
+    .map((property) => {
+      const base = computeMatchScore(preferences, property);
+      if (!base.matchable) return { property, result: base };
+      const hybrid = combineWithBehavior(base, dealHistory, {
+        propertyType: property.property_type,
+        neighborhood: property.address_neighborhood,
+      });
+      return { property, result: { ...base, score: hybrid.score, explanation: hybrid.explanation } };
+    })
     .filter(({ result }) => result.matchable);
 
   if (matches.length > 0) {

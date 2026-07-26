@@ -868,4 +868,624 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
 
     await admin.from("real_estate_targets").delete().eq("id", target!.id);
   });
+
+  // 0.3 (Fase 0): audit_log de mudanças em organization_members
+  // (0068_audit_log.sql) — a classe de risco priorizada é vazamento entre
+  // membros da MESMA organização, então o teste central aqui não é
+  // isolamento cross-org (já coberto acima), é: só admin lê o próprio log,
+  // e ninguém escreve nele por fora do trigger.
+  describe("audit_log (0.3)", () => {
+    it("registra member_added e member_role_changed com before/after em organization_members", async () => {
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "assistant" });
+
+      const { data: addedEntries } = await admin
+        .from("audit_log")
+        .select("*")
+        .eq("org_id", orgA)
+        .eq("resource_id", userB.userId)
+        .eq("action", "member_added");
+      expect(addedEntries).toHaveLength(1);
+      expect(addedEntries![0].after).toMatchObject({ job_role: "assistant" });
+      expect(addedEntries![0].before).toBeNull();
+
+      await admin.from("organization_members").update({ job_role: "agent" }).eq("org_id", orgA).eq("user_id", userB.userId);
+
+      const { data: changedEntries } = await admin
+        .from("audit_log")
+        .select("*")
+        .eq("org_id", orgA)
+        .eq("resource_id", userB.userId)
+        .eq("action", "member_role_changed");
+      expect(changedEntries).toHaveLength(1);
+      expect(changedEntries![0].before).toMatchObject({ job_role: "assistant" });
+      expect(changedEntries![0].after).toMatchObject({ job_role: "agent" });
+
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+
+      const { data: removedEntries } = await admin
+        .from("audit_log")
+        .select("*")
+        .eq("org_id", orgA)
+        .eq("resource_id", userB.userId)
+        .eq("action", "member_removed");
+      expect(removedEntries).toHaveLength(1);
+    });
+
+    it("não registra entrada quando um UPDATE não muda role nem job_role", async () => {
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "staff" });
+      await admin.from("audit_log").delete().eq("org_id", orgA).eq("resource_id", userB.userId);
+
+      // created_at não é role/job_role — não deve gerar member_role_changed.
+      await admin
+        .from("organization_members")
+        .update({ created_at: new Date().toISOString() })
+        .eq("org_id", orgA)
+        .eq("user_id", userB.userId);
+
+      const { data: entries } = await admin.from("audit_log").select("*").eq("org_id", orgA).eq("resource_id", userB.userId);
+      expect(entries).toHaveLength(0);
+
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+    });
+
+    it("só admin da organização lê o audit_log; membro comum não vê nada", async () => {
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "staff" });
+
+      const { data: seenByMember } = await userB.client.from("audit_log").select("*").eq("org_id", orgA);
+      expect(seenByMember).toEqual([]);
+
+      const { data: seenByAdmin } = await userA.client.from("audit_log").select("*").eq("org_id", orgA).limit(1);
+      expect(seenByAdmin!.length).toBeGreaterThan(0);
+
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+    });
+
+    it("rejeita insert/update/delete direto em audit_log por qualquer client autenticado", async () => {
+      const { error: insertError } = await userA.client.from("audit_log").insert({
+        org_id: orgA,
+        action: "forjado",
+        resource_table: "organization_members",
+      });
+      expect(insertError).not.toBeNull();
+
+      const { data: anyRow } = await admin.from("audit_log").select("id").eq("org_id", orgA).limit(1).single();
+      const { error: updateError, data: updateData } = await userA.client
+        .from("audit_log")
+        .update({ action: "adulterado" })
+        .eq("id", anyRow!.id)
+        .select();
+      expect(updateError).toBeNull();
+      expect(updateData).toEqual([]);
+
+      const { error: deleteError, data: deleteData } = await userA.client
+        .from("audit_log")
+        .delete()
+        .eq("id", anyRow!.id)
+        .select();
+      expect(deleteError).toBeNull();
+      expect(deleteData).toEqual([]);
+    });
+  });
+
+  // 1.1 (Fase 1): schema de pipelines/pipeline_stages (0069_pipelines.sql).
+  // Aditivo — a etapa mais importante a provar não é comportamento novo de
+  // produto (não existe ainda), é que o trigger de auto-provisionamento não
+  // regride o isolamento por organização que já vale pra deals/contacts.
+  describe("pipelines (1.1)", () => {
+    it("todo negócio novo nasce com um pipeline_id válido e etapas seedadas", async () => {
+      const { data: deal, error } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "real_estate_broker", title: "Negócio de teste 1.1" })
+        .select("id, pipeline_id")
+        .single();
+      expect(error).toBeNull();
+      expect(deal!.pipeline_id).not.toBeNull();
+
+      const { data: pipeline } = await userA.client
+        .from("pipelines")
+        .select("id, org_id, workspace_key, is_default")
+        .eq("id", deal!.pipeline_id)
+        .single();
+      expect(pipeline?.org_id).toEqual(orgA);
+      expect(pipeline?.workspace_key).toEqual("real_estate_broker");
+      expect(pipeline?.is_default).toEqual(true);
+
+      const { data: stages } = await userA.client
+        .from("pipeline_stages")
+        .select("key, stage_type, is_deletable")
+        .eq("pipeline_id", deal!.pipeline_id)
+        .order("position");
+      expect(stages?.map((s) => s.key)).toEqual(["novo", "em_contato", "negociacao", "ganho", "perdido"]);
+      expect(stages?.every((s) => s.is_deletable === false)).toEqual(true);
+      expect(stages?.find((s) => s.key === "ganho")?.stage_type).toEqual("ganho");
+      expect(stages?.find((s) => s.key === "perdido")?.stage_type).toEqual("perdido");
+
+      // Um segundo negócio no mesmo org+workspace reaproveita o mesmo
+      // pipeline padrão, não cria um novo a cada insert.
+      const { data: deal2 } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "real_estate_broker", title: "Negócio de teste 1.1 (b)" })
+        .select("id, pipeline_id")
+        .single();
+      expect(deal2!.pipeline_id).toEqual(deal!.pipeline_id);
+
+      await admin.from("deals").delete().eq("id", deal!.id);
+      await admin.from("deals").delete().eq("id", deal2!.id);
+    });
+
+    it("isola pipelines e pipeline_stages entre organizações", async () => {
+      const { data: dealA } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", title: "Negócio A" })
+        .select("pipeline_id")
+        .single();
+
+      const { data: seenByB } = await userB.client
+        .from("pipelines")
+        .select("*")
+        .eq("id", dealA!.pipeline_id)
+        .maybeSingle();
+      expect(seenByB).toBeNull();
+
+      const { data: stagesSeenByB } = await userB.client
+        .from("pipeline_stages")
+        .select("*")
+        .eq("pipeline_id", dealA!.pipeline_id);
+      expect(stagesSeenByB).toEqual([]);
+
+      await admin.from("deals").delete().eq("org_id", orgA).eq("workspace_key", "autonomous_seller");
+    });
+
+    it("rejeita pipeline_stages forjado com org_id de uma organização e pipeline_id de outra", async () => {
+      const { data: dealB } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "consultant", title: "Negócio para forjar" })
+        .select("pipeline_id")
+        .single();
+      const orgB = await getPersonalOrgId(admin, userB.userId);
+
+      const { error } = await userB.client.from("pipeline_stages").insert({
+        org_id: orgB,
+        pipeline_id: dealB!.pipeline_id,
+        key: "invasao",
+        label: "Invasão",
+      });
+      expect(error).not.toBeNull();
+
+      await admin.from("deals").delete().eq("org_id", orgA).eq("workspace_key", "consultant");
+    });
+  });
+
+  // 3.1 (Fase 3): automation_rules/automation_executions
+  // (0075_automation_engine.sql) — substitui deal_followup_rules (1.4).
+  describe("automation_rules e automation_executions (3.1)", () => {
+    it("isola regras entre organizações e todo membro da org pode gerenciar", async () => {
+      const { data: ruleRow, error } = await userA.client
+        .from("automation_rules")
+        .insert({
+          org_id: orgA,
+          workspace_key: "autonomous_seller",
+          trigger_kind: "deal_inactive",
+          trigger_params: { inactivity_days: 3 },
+          action_type: "create_task",
+          action_params: { title_template: "Retomar contato — {{deal.title}}" },
+        })
+        .select("id")
+        .single();
+      expect(error).toBeNull();
+
+      const { data: seenByB } = await userB.client.from("automation_rules").select("*").eq("id", ruleRow!.id).maybeSingle();
+      expect(seenByB).toBeNull();
+
+      const { data: seenByA } = await userA.client.from("automation_rules").select("*").eq("id", ruleRow!.id).maybeSingle();
+      expect(seenByA?.trigger_params).toMatchObject({ inactivity_days: 3 });
+
+      await admin.from("automation_rules").delete().eq("id", ruleRow!.id);
+    });
+
+    it("só admin lê automation_executions da própria organização", async () => {
+      const { data: rule } = await admin
+        .from("automation_rules")
+        .insert({
+          org_id: orgA,
+          workspace_key: "autonomous_seller",
+          trigger_kind: "deal_inactive",
+          trigger_params: { inactivity_days: 3 },
+          action_type: "create_task",
+          action_params: {},
+        })
+        .select("id")
+        .single();
+      const { data: execution } = await admin
+        .from("automation_executions")
+        .insert({ org_id: orgA, rule_id: rule!.id, status: "success" })
+        .select("id")
+        .single();
+
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "staff" });
+      const { data: seenByMember } = await userB.client.from("automation_executions").select("*").eq("id", execution!.id);
+      expect(seenByMember).toEqual([]);
+
+      const { data: seenByAdmin } = await userA.client.from("automation_executions").select("*").eq("id", execution!.id).maybeSingle();
+      expect(seenByAdmin?.status).toEqual("success");
+
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+      await admin.from("automation_executions").delete().eq("id", execution!.id);
+      await admin.from("automation_rules").delete().eq("id", rule!.id);
+    });
+
+    it("mudança de etapa emite deal.stage_changed em crm_domain_events (o cron do motor consome isso à parte, não testado aqui)", async () => {
+      const { data: rule } = await admin
+        .from("automation_rules")
+        .insert({
+          org_id: orgA,
+          workspace_key: "autonomous_seller",
+          trigger_kind: "deal_stage_changed",
+          stage_key: "ganho",
+          action_type: "create_task",
+          action_params: { title_template: "Comemorar — {{deal.title}}" },
+        })
+        .select("id")
+        .single();
+
+      const { data: deal } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", title: "Negócio 3.1" })
+        .select("id")
+        .single();
+      await userA.client.from("deals").update({ stage: "ganho" }).eq("id", deal!.id);
+
+      const { data: event } = await admin
+        .from("crm_domain_events")
+        .select("id")
+        .eq("event_type", "deal.stage_changed")
+        .eq("aggregate_id", deal!.id)
+        .maybeSingle();
+      expect(event).not.toBeNull();
+
+      await admin.from("crm_domain_events").delete().eq("aggregate_id", deal!.id);
+      await admin.from("deals").delete().eq("id", deal!.id);
+      await admin.from("automation_rules").delete().eq("id", rule!.id);
+    });
+  });
+
+  // 2.6 (Fase 2): call_logs (0071_call_logs.sql).
+  describe("call_logs (2.6)", () => {
+    it("isola registros de ligação entre organizações e valida a FK composta de contact_id", async () => {
+      const { data: contactA } = await userA.client
+        .from("contacts")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", name: "Cliente da ligação" })
+        .select("id")
+        .single();
+
+      const { data: callLog, error } = await userA.client
+        .from("call_logs")
+        .insert({
+          org_id: orgA,
+          workspace_key: "autonomous_seller",
+          contact_id: contactA!.id,
+          created_by: userA.userId,
+          duration_minutes: 5,
+          outcome: "Vai pensar",
+        })
+        .select("id")
+        .single();
+      expect(error).toBeNull();
+
+      const { data: seenByB } = await userB.client.from("call_logs").select("*").eq("id", callLog!.id).maybeSingle();
+      expect(seenByB).toBeNull();
+
+      const orgB = await getPersonalOrgId(admin, userB.userId);
+      const { error: forgedError } = await userB.client.from("call_logs").insert({
+        org_id: orgB,
+        workspace_key: "autonomous_seller",
+        contact_id: contactA!.id,
+        created_by: userB.userId,
+        outcome: "Tentativa de invasão",
+      });
+      expect(forgedError).not.toBeNull();
+
+      await admin.from("call_logs").delete().eq("id", callLog!.id);
+      await admin.from("contacts").delete().eq("id", contactA!.id);
+    });
+  });
+
+  // 2.1 (Fase 2): email_logs (0072_email_contact.sql).
+  describe("email_logs (2.1)", () => {
+    it("isola registros de e-mail entre organizações e valida a FK composta de contact_id", async () => {
+      const { data: contactA } = await userA.client
+        .from("contacts")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", name: "Cliente do e-mail", email: "cliente@exemplo.com" })
+        .select("id")
+        .single();
+
+      const { data: emailLog, error } = await userA.client
+        .from("email_logs")
+        .insert({
+          org_id: orgA,
+          workspace_key: "autonomous_seller",
+          contact_id: contactA!.id,
+          created_by: userA.userId,
+          subject: "Proposta enviada",
+          status: "sent",
+        })
+        .select("id")
+        .single();
+      expect(error).toBeNull();
+
+      const { data: seenByB } = await userB.client.from("email_logs").select("*").eq("id", emailLog!.id).maybeSingle();
+      expect(seenByB).toBeNull();
+
+      const orgB = await getPersonalOrgId(admin, userB.userId);
+      const { error: forgedError } = await userB.client.from("email_logs").insert({
+        org_id: orgB,
+        workspace_key: "autonomous_seller",
+        contact_id: contactA!.id,
+        created_by: userB.userId,
+        subject: "Tentativa de invasão",
+      });
+      expect(forgedError).not.toBeNull();
+
+      await admin.from("email_logs").delete().eq("id", emailLog!.id);
+      await admin.from("contacts").delete().eq("id", contactA!.id);
+    });
+  });
+
+  // 2.4 (Fase 2): webhooks de saída + API pública (0074_webhooks_and_api_keys.sql).
+  describe("webhooks e API pública (2.4)", () => {
+    it("emite deal.created e deal.stage_changed em crm_domain_events, e enfileira entrega pros endpoints ativos que assinam", async () => {
+      const { data: endpoint } = await admin
+        .from("webhook_endpoints")
+        .insert({ org_id: orgA, url: "https://example.com/hook", secret: "whsec_teste", event_types: ["deal.created", "deal.stage_changed"] })
+        .select("id")
+        .single();
+
+      const { data: deal } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", title: "Negócio 2.4" })
+        .select("id")
+        .single();
+
+      const { data: createdEvent } = await admin
+        .from("crm_domain_events")
+        .select("id")
+        .eq("event_type", "deal.created")
+        .eq("aggregate_id", deal!.id)
+        .maybeSingle();
+      expect(createdEvent).not.toBeNull();
+
+      const { data: createdDelivery } = await admin
+        .from("webhook_deliveries")
+        .select("id, status")
+        .eq("endpoint_id", endpoint!.id)
+        .eq("event_id", createdEvent!.id)
+        .maybeSingle();
+      expect(createdDelivery?.status).toEqual("pending");
+
+      await userA.client.from("deals").update({ stage: "em_contato" }).eq("id", deal!.id);
+
+      const { data: stageEvent } = await admin
+        .from("crm_domain_events")
+        .select("id")
+        .eq("event_type", "deal.stage_changed")
+        .eq("aggregate_id", deal!.id)
+        .maybeSingle();
+      expect(stageEvent).not.toBeNull();
+
+      await admin.from("webhook_deliveries").delete().eq("endpoint_id", endpoint!.id);
+      await admin.from("crm_domain_events").delete().eq("aggregate_id", deal!.id);
+      await admin.from("webhook_endpoints").delete().eq("id", endpoint!.id);
+      await admin.from("deals").delete().eq("id", deal!.id);
+    });
+
+    it("só admin gerencia webhook_endpoints e api_keys; membro comum não vê nem escreve", async () => {
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "staff" });
+
+      const { error: insertAsMemberError } = await userB.client.from("webhook_endpoints").insert({
+        org_id: orgA,
+        url: "https://example.com/tentativa",
+        secret: "whsec_x",
+        event_types: ["deal.created"],
+      });
+      expect(insertAsMemberError).not.toBeNull();
+
+      const { data: endpoint } = await userA.client
+        .from("webhook_endpoints")
+        .insert({ org_id: orgA, url: "https://example.com/admin-only", secret: "whsec_admin", event_types: ["deal.created"] })
+        .select("id")
+        .single();
+      const { data: seenByMember } = await userB.client.from("webhook_endpoints").select("*").eq("id", endpoint!.id).maybeSingle();
+      expect(seenByMember).toBeNull();
+
+      const { error: insertKeyAsMemberError } = await userB.client
+        .from("api_keys")
+        .insert({ org_id: orgA, name: "Tentativa", key_hash: "hash_falso", key_prefix: "otz_fals" });
+      expect(insertKeyAsMemberError).not.toBeNull();
+
+      await admin.from("webhook_endpoints").delete().eq("id", endpoint!.id);
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+    });
+
+    it("isola webhook_endpoints e api_keys entre organizações", async () => {
+      const { data: endpoint } = await userA.client
+        .from("webhook_endpoints")
+        .insert({ org_id: orgA, url: "https://example.com/orgA", secret: "whsec_a", event_types: ["deal.created"] })
+        .select("id")
+        .single();
+      const { data: seenByB } = await userB.client.from("webhook_endpoints").select("*").eq("id", endpoint!.id).maybeSingle();
+      expect(seenByB).toBeNull();
+
+      const { data: key } = await userA.client
+        .from("api_keys")
+        .insert({ org_id: orgA, name: "Chave A", key_hash: "hash_a", key_prefix: "otz_aaaa" })
+        .select("id")
+        .single();
+      const { data: keySeenByB } = await userB.client.from("api_keys").select("*").eq("id", key!.id).maybeSingle();
+      expect(keySeenByB).toBeNull();
+
+      await admin.from("webhook_endpoints").delete().eq("id", endpoint!.id);
+      await admin.from("api_keys").delete().eq("id", key!.id);
+    });
+  });
+
+  // 3.4 (Fase 3): RBAC granular por flag (0076_granular_rbac.sql). O ponto
+  // central a provar não é "a restrição funciona" isoladamente — é que ela
+  // é zero-regressão com o flag desligado (comportamento de hoje, toda
+  // organização existente) e só passa a restringir com o flag ligado.
+  describe("RBAC granular por flag (3.4)", () => {
+    it("com o flag desligado (padrão), staff continua editando negócio de outro dono — comportamento inalterado", async () => {
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "staff" });
+
+      const { data: deal } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", title: "Negócio de A" })
+        .select("id")
+        .single();
+
+      const { data: updated, error } = await userB.client
+        .from("deals")
+        .update({ title: "Editado por staff sem RBAC granular" })
+        .eq("id", deal!.id)
+        .select();
+      expect(error).toBeNull();
+      expect(updated).toHaveLength(1);
+
+      await admin.from("deals").delete().eq("id", deal!.id);
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+    });
+
+    it("com o flag ligado, staff só edita negócio próprio; broker continua editando qualquer um", async () => {
+      await admin.from("organizations").update({ granular_rbac_enabled: true }).eq("id", orgA);
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "staff" });
+
+      const { data: dealOfA } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", title: "Negócio de A (RBAC ligado)" })
+        .select("id")
+        .single();
+
+      const { data: blockedUpdate, error: blockedError } = await userB.client
+        .from("deals")
+        .update({ title: "Tentativa de staff" })
+        .eq("id", dealOfA!.id)
+        .select();
+      expect(blockedError).toBeNull();
+      expect(blockedUpdate).toEqual([]);
+
+      const { data: dealOfB } = await userB.client
+        .from("deals")
+        .insert({ owner_id: userB.userId, org_id: orgA, workspace_key: "autonomous_seller", title: "Negócio do próprio staff" })
+        .select("id")
+        .single();
+      const { error: ownUpdateError } = await userB.client
+        .from("deals")
+        .update({ title: "Staff editando o próprio" })
+        .eq("id", dealOfB!.id);
+      expect(ownUpdateError).toBeNull();
+
+      await admin.from("organization_members").update({ job_role: "broker" }).eq("org_id", orgA).eq("user_id", userB.userId);
+      const { data: brokerUpdate, error: brokerError } = await userB.client
+        .from("deals")
+        .update({ title: "Broker edita qualquer um" })
+        .eq("id", dealOfA!.id)
+        .select();
+      expect(brokerError).toBeNull();
+      expect(brokerUpdate).toHaveLength(1);
+
+      await admin.from("deals").delete().eq("id", dealOfA!.id);
+      await admin.from("deals").delete().eq("id", dealOfB!.id);
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+      await admin.from("organizations").update({ granular_rbac_enabled: false }).eq("id", orgA);
+    });
+
+    it("visualização continua liberada pra todo membro com o flag ligado (só 'gerenciar' é restrito)", async () => {
+      await admin.from("organizations").update({ granular_rbac_enabled: true }).eq("id", orgA);
+      await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "staff" });
+
+      const { data: deal } = await userA.client
+        .from("deals")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", title: "Negócio visível" })
+        .select("id")
+        .single();
+
+      const { data: seenByStaff } = await userB.client.from("deals").select("*").eq("id", deal!.id).maybeSingle();
+      expect(seenByStaff?.id).toEqual(deal!.id);
+
+      await admin.from("deals").delete().eq("id", deal!.id);
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+      await admin.from("organizations").update({ granular_rbac_enabled: false }).eq("id", orgA);
+    });
+  });
+
+  // 4.4 (Fase 4): log_ai_confirmed_delete (0077_ai_confirmed_delete_log.sql)
+  // — usado por lib/ai/tools/write.ts (deleteRow) depois de uma exclusão
+  // confirmada pelo copiloto.
+  describe("log_ai_confirmed_delete (4.4)", () => {
+    it("registra a exclusão confirmada em audit_log, visível só pro admin da própria org", async () => {
+      const { error } = await userA.client.rpc("log_ai_confirmed_delete", {
+        p_org_id: orgA,
+        p_resource_table: "deals",
+        p_resource_id: "00000000-0000-0000-0000-000000000000",
+      });
+      expect(error).toBeNull();
+
+      const { data: entry } = await admin
+        .from("audit_log")
+        .select("*")
+        .eq("org_id", orgA)
+        .eq("action", "ai_confirmed_delete")
+        .eq("resource_id", "00000000-0000-0000-0000-000000000000")
+        .maybeSingle();
+      expect(entry?.actor_id).toEqual(userA.userId);
+
+      await admin.from("audit_log").delete().eq("id", entry!.id);
+    });
+
+    it("rejeita chamada de quem não é membro da organização", async () => {
+      const { error } = await userB.client.rpc("log_ai_confirmed_delete", {
+        p_org_id: orgA,
+        p_resource_table: "deals",
+        p_resource_id: "00000000-0000-0000-0000-000000000000",
+      });
+      expect(error).not.toBeNull();
+    });
+
+    it("rejeita nome de tabela fora da lista permitida", async () => {
+      const { error } = await userA.client.rpc("log_ai_confirmed_delete", {
+        p_org_id: orgA,
+        p_resource_table: "organizations",
+        p_resource_id: "00000000-0000-0000-0000-000000000000",
+      });
+      expect(error).not.toBeNull();
+    });
+  });
+
+  // 5.2 (Fase 5): get_network_benchmark (0078_multiunidade.sql). O ponto
+  // central a provar é que isso nunca vaza dado bruto — só quem é admin
+  // da matriz recebe contagens, nunca linha de contato/negócio, e nunca
+  // pra quem não é admin da matriz.
+  describe("get_network_benchmark (5.2)", () => {
+    it("admin da matriz recebe contagens agregadas da própria org e das unidades vinculadas", async () => {
+      const orgB = await getPersonalOrgId(admin, userB.userId);
+      await admin.from("organizations").update({ parent_org_id: orgA }).eq("id", orgB);
+
+      await userA.client
+        .from("contacts")
+        .insert({ owner_id: userA.userId, org_id: orgA, workspace_key: "autonomous_seller", name: "Contato da matriz" });
+
+      const { data, error } = await userA.client.rpc("get_network_benchmark", { p_parent_org_id: orgA });
+      expect(error).toBeNull();
+      expect(data!.length).toBeGreaterThanOrEqual(2);
+      expect(data!.some((row: { org_id: string }) => row.org_id === orgA)).toBe(true);
+      expect(data!.some((row: { org_id: string }) => row.org_id === orgB)).toBe(true);
+
+      await admin.from("organizations").update({ parent_org_id: null }).eq("id", orgB);
+      await admin.from("contacts").delete().eq("org_id", orgA).eq("name", "Contato da matriz");
+    });
+
+    it("rejeita chamada de quem não é admin da organização matriz", async () => {
+      const { error } = await userB.client.rpc("get_network_benchmark", { p_parent_org_id: orgA });
+      expect(error).not.toBeNull();
+    });
+  });
 });

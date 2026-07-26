@@ -67,7 +67,23 @@ export type Organization = {
   real_estate_v2_enabled: boolean;
   real_estate_public_page_enabled: boolean;
   real_estate_public_page_token: string;
+  // 3.4 (Fase 3): rollout por flag do RBAC granular (0076_granular_rbac.sql).
+  // Sem policy de UPDATE pra authenticated — mesmo padrão de
+  // real_estate_v2_enabled, controlado só pela operação via service role.
+  granular_rbac_enabled: boolean;
+  // 5.2 (Fase 5): vínculo de rede/multiunidade (0078_multiunidade.sql).
+  // Vincular é ação de operação (service role), não self-service.
+  parent_org_id: string | null;
   created_at: string;
+};
+
+export type NetworkBenchmarkRow = {
+  org_id: string;
+  org_name: string;
+  total_contacts: number;
+  total_deals: number;
+  open_deals: number;
+  won_deals_30d: number;
 };
 
 export type OrganizationMember = {
@@ -448,6 +464,10 @@ export type Contact = {
   details: Record<string, string>;
   whatsapp_opt_out: boolean;
   whatsapp_opt_out_at: string | null;
+  // 2.1 (Fase 2): mesmo padrão do opt-out de WhatsApp acima, aplicado a
+  // e-mail (0072_email_contact.sql).
+  email_opt_out: boolean;
+  email_opt_out_at: string | null;
   created_at: string;
 };
 
@@ -462,10 +482,40 @@ export type Deal = {
   title: string;
   value_cents: number | null;
   stage: DealStage;
+  // Schema da 1.1 (Fase 1): preenchido automaticamente por um trigger no
+  // insert (ensure_default_pipeline, 0069_pipelines.sql). Nenhuma leitura
+  // hoje depende disso — deal.stage continua a fonte de verdade até a 3.3
+  // liberar múltiplos funis de verdade na UI.
+  pipeline_id: string | null;
   position: number;
   details: Record<string, string>;
   created_at: string;
   closed_at: string | null;
+};
+
+export type PipelineStageType = "aberto" | "ganho" | "perdido";
+
+export type Pipeline = {
+  id: string;
+  org_id: string;
+  workspace_key: string;
+  name: string;
+  is_default: boolean;
+  position: number;
+  created_at: string;
+};
+
+export type PipelineStage = {
+  id: string;
+  org_id: string;
+  pipeline_id: string;
+  key: string;
+  label: string;
+  stage_type: PipelineStageType;
+  color: string | null;
+  position: number;
+  is_deletable: boolean;
+  created_at: string;
 };
 
 export type Task = {
@@ -487,6 +537,11 @@ export type Task = {
   done: boolean;
   recurrence: "none" | "daily" | "weekly" | "monthly";
   recurrence_spawned: boolean;
+  // 1.4 (Fase 1): marca tarefas criadas automaticamente por
+  // deal_followup_rules (0070_deal_followup_rules.sql), não preenchido em
+  // tarefas criadas manualmente.
+  source: "followup_rule" | null;
+  source_rule_id: string | null;
   created_at: string;
 };
 
@@ -497,6 +552,19 @@ export type Interaction = {
   workspace_key: string;
   contact_id: string;
   body: string;
+  created_at: string;
+};
+
+export type CallLog = {
+  id: string;
+  org_id: string;
+  workspace_key: string;
+  contact_id: string;
+  deal_id: string | null;
+  created_by: string;
+  duration_minutes: number | null;
+  outcome: string | null;
+  next_step: string | null;
   created_at: string;
 };
 
@@ -536,6 +604,8 @@ export type WhatsappConversation = {
   phone_number: string;
   contact_name: string | null;
   ia_active: boolean;
+  // 2.2 (Fase 2): atribuição manual do inbox comercial (0073_whatsapp_inbox_assignment.sql).
+  assignee_id: string | null;
   last_message_at: string;
   created_at: string;
 };

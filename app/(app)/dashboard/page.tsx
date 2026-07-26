@@ -693,14 +693,15 @@ function MetricCard({
 // fundadora (is_admin), por isso usa o admin client em vez de filtrar por org.
 async function loadFounderMetrics(): Promise<DevMetrics> {
   const admin = createAdminClient();
-  const [{ data: profiles }, { data: contacts }, { data: deals }] = await Promise.all([
+  const [{ data: profiles }, { data: contacts }, { data: deals }, { data: tasks }] = await Promise.all([
     admin
       .from("profiles")
       .select("name,plan,plan_status,trial_ends_at,stripe_subscription_id,created_at"),
     admin.from("contacts").select("owner_id"),
-    admin.from("deals").select("owner_id,stage,value_cents"),
+    admin.from("deals").select("id,owner_id,stage,value_cents"),
+    admin.from("tasks").select("deal_id,done"),
   ]);
-  return computeDevMetrics(profiles ?? [], contacts ?? [], deals ?? []);
+  return computeDevMetrics(profiles ?? [], contacts ?? [], deals ?? [], tasks ?? []);
 }
 
 function FounderMetricsPanel({ metrics }: { metrics: DevMetrics }) {

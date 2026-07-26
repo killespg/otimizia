@@ -69,13 +69,22 @@ export function ContactsExplorer({
           <p className="mt-2 hidden max-w-xl text-sm font-medium leading-relaxed text-ink-soft sm:block">
             {description}
           </p>
-          <Link
-            href="/contacts/import"
-            className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-brand-700 hover:text-brand-800"
-          >
-            Importar contatos via CSV
-            <IconArrowRight className="h-4 w-4" />
-          </Link>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+            <Link
+              href="/contacts/import"
+              className="inline-flex items-center gap-1 text-sm font-bold text-brand-700 hover:text-brand-800"
+            >
+              Importar contatos via CSV
+              <IconArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/contacts/duplicidades"
+              className="inline-flex items-center gap-1 text-sm font-bold text-brand-700 hover:text-brand-800"
+            >
+              Ver possíveis duplicatas
+              <IconArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
 
         <div className="flex h-11 w-full items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] lg:w-[360px]">

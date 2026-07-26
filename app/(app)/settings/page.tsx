@@ -146,6 +146,36 @@ export default async function SettingsPage({
             <span aria-hidden="true">→</span>
           </Link>
 
+          {isOrgAdmin && (
+            <Link
+              href="/settings/integracoes"
+              className="row-link flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3 text-sm font-bold text-ink-soft hover:border-brand-400 hover:text-brand-700"
+            >
+              Chaves de API e webhooks ficam em Integrações
+              <span aria-hidden="true">→</span>
+            </Link>
+          )}
+
+          {isOrgAdmin && (
+            <Link
+              href="/settings/automacoes"
+              className="row-link flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3 text-sm font-bold text-ink-soft hover:border-brand-400 hover:text-brand-700"
+            >
+              Regras automáticas ficam em Automações
+              <span aria-hidden="true">→</span>
+            </Link>
+          )}
+
+          {isOrgAdmin && (
+            <Link
+              href="/settings/rede"
+              className="row-link flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3 text-sm font-bold text-ink-soft hover:border-brand-400 hover:text-brand-700"
+            >
+              Comparativo entre unidades fica em Rede
+              <span aria-hidden="true">→</span>
+            </Link>
+          )}
+
           <SectionCard
             title="Notificações"
             description="Como e quando você quer ser avisado de quem precisa de retorno."

@@ -10,7 +10,8 @@ type ProfileRow = {
 };
 
 type ContactRow = { owner_id: string };
-type DealRow = { owner_id: string; stage: string; value_cents: number };
+type DealRow = { id: string; owner_id: string; stage: string; value_cents: number };
+type TaskRow = { deal_id: string | null; done: boolean };
 
 export type DevMetrics = {
   totalUsers: number;
@@ -21,6 +22,12 @@ export type DevMetrics = {
   totalDeals: number;
   openDealsValueCents: number;
   recentSignups: { name: string | null; createdAt: string; status: PlanStatus }[];
+  // Camada "Hábitos" da 0.1 (seção 2 do roadmap): % de negócios abertos com
+  // próxima ação definida. É proxy de "pipeline não fica parado", não
+  // substitui o "limite operacional" completo (isso depende de 1.1/1.3b).
+  openDealsCount: number;
+  openDealsWithNextAction: number;
+  openDealsWithNextActionRate: number;
 };
 
 const SIGNUP_WINDOW_DAYS = 30;
@@ -29,6 +36,7 @@ export function computeDevMetrics(
   profiles: ProfileRow[],
   contacts: ContactRow[],
   deals: DealRow[],
+  tasks: TaskRow[] = [],
   now: Date = new Date()
 ): DevMetrics {
   const planCounts: Record<PlanStatus, number> = {
@@ -58,9 +66,14 @@ export function computeDevMetrics(
   for (const contact of contacts) activatedOwners.add(contact.owner_id);
   for (const deal of deals) activatedOwners.add(deal.owner_id);
 
-  const openDealsValueCents = deals
-    .filter((deal) => deal.stage !== "ganho" && deal.stage !== "perdido")
-    .reduce((sum, deal) => sum + deal.value_cents, 0);
+  const openDeals = deals.filter((deal) => deal.stage !== "ganho" && deal.stage !== "perdido");
+  const openDealsValueCents = openDeals.reduce((sum, deal) => sum + deal.value_cents, 0);
+
+  const dealIdsWithOpenTask = new Set<string>();
+  for (const task of tasks) {
+    if (task.deal_id && !task.done) dealIdsWithOpenTask.add(task.deal_id);
+  }
+  const openDealsWithNextAction = openDeals.filter((deal) => dealIdsWithOpenTask.has(deal.id)).length;
 
   const recentSignups = [...profiles]
     .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
@@ -80,5 +93,9 @@ export function computeDevMetrics(
     totalDeals: deals.length,
     openDealsValueCents,
     recentSignups,
+    openDealsCount: openDeals.length,
+    openDealsWithNextAction,
+    openDealsWithNextActionRate:
+      openDeals.length > 0 ? Math.round((openDealsWithNextAction / openDeals.length) * 100) : 0,
   };
 }

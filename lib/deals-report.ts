@@ -1,4 +1,4 @@
-import type { Deal } from "@/lib/supabase/types";
+import { DEAL_STAGES, type Deal, type DealStage } from "@/lib/supabase/types";
 
 export type MonthlyDealStats = {
   monthKey: string;
@@ -88,4 +88,91 @@ export function dealsToCsv(deals: Deal[]): string {
 function csvEscape(value: string): string {
   if (/[",\n]/.test(value)) return '"' + value.replace(/"/g, '""') + '"';
   return value;
+}
+
+export type StageBreakdownRow = {
+  stage: DealStage;
+  deals: Deal[];
+  openValueCents: number;
+  // Proxy, não histórico real de mudança de etapa (não existe uma tabela
+  // de stage_changed hoje — ver docs/roadmap-imobiliario/1.5-relatorios-acionaveis.md).
+  // Usa created_at do negócio, então mede "tempo em aberto", não "tempo
+  // nesta etapa especificamente".
+  avgDaysOpen: number | null;
+};
+
+// 1.5 (Fase 1): "tempo por etapa" e "aging". Só cobre as etapas abertas —
+// ganho/perdido não têm "aging" (já fecharam).
+export function buildStageBreakdown(deals: Deal[], now: Date = new Date()): StageBreakdownRow[] {
+  const byStage = new Map<DealStage, Deal[]>();
+  for (const deal of deals) {
+    if (deal.stage === "ganho" || deal.stage === "perdido") continue;
+    const arr = byStage.get(deal.stage) ?? [];
+    arr.push(deal);
+    byStage.set(deal.stage, arr);
+  }
+
+  return DEAL_STAGES.filter((s) => s.key !== "ganho" && s.key !== "perdido").map((s) => {
+    const arr = byStage.get(s.key) ?? [];
+    const totalDays = arr.reduce((sum, d) => sum + (now.getTime() - new Date(d.created_at).getTime()) / 86_400_000, 0);
+    return {
+      stage: s.key,
+      deals: arr,
+      openValueCents: arr.reduce((sum, d) => sum + (d.value_cents ?? 0), 0),
+      avgDaysOpen: arr.length > 0 ? Math.round(totalDays / arr.length) : null,
+    };
+  });
+}
+
+export type GroupedConversionRow<K extends string> = {
+  key: K;
+  deals: Deal[];
+  won: number;
+  conversionRate: number | null;
+  wonValueCents: number;
+};
+
+// Só negócios fechados (ganho ou perdido) entram na taxa de conversão —
+// negócio aberto ainda não tem resultado pra contar.
+function groupClosedDeals<K extends string>(deals: Deal[], keyOf: (deal: Deal) => K): GroupedConversionRow<K>[] {
+  const byKey = new Map<K, Deal[]>();
+  for (const deal of deals) {
+    if (deal.stage !== "ganho" && deal.stage !== "perdido") continue;
+    const key = keyOf(deal);
+    const arr = byKey.get(key) ?? [];
+    arr.push(deal);
+    byKey.set(key, arr);
+  }
+  return Array.from(byKey.entries())
+    .map(([key, arr]) => {
+      const won = arr.filter((d) => d.stage === "ganho");
+      return {
+        key,
+        deals: arr,
+        won: won.length,
+        conversionRate: arr.length > 0 ? Math.round((won.length / arr.length) * 100) : null,
+        wonValueCents: won.reduce((sum, d) => sum + (d.value_cents ?? 0), 0),
+      };
+    })
+    .sort((a, b) => b.deals.length - a.deals.length);
+}
+
+// 1.5: conversão por origem. `contactSourceById` vem de fora (busca de
+// contacts é responsabilidade de quem chama, mesmo padrão do resto do
+// arquivo — esta função não depende do Supabase).
+export function buildOriginBreakdown(
+  deals: Deal[],
+  contactSourceById: Map<string, string | null>
+): GroupedConversionRow<string>[] {
+  return groupClosedDeals(
+    deals,
+    (deal) => (deal.contact_id && contactSourceById.get(deal.contact_id)) || "Sem origem registrada"
+  );
+}
+
+// 1.5: conversão por corretor/responsável (assignee_id, com fallback pro
+// dono do negócio — mesmo fallback usado em todo o resto do código, ver
+// lib/stalled-deals.ts e lib/today.ts).
+export function buildOwnerBreakdown(deals: Deal[]): GroupedConversionRow<string>[] {
+  return groupClosedDeals(deals, (deal) => deal.assignee_id ?? deal.owner_id);
 }

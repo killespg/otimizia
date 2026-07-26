@@ -109,11 +109,11 @@ export async function executeTool(
     case "update_organization_context":
       return updateOrganizationContextByAi(supabase, orgId, input);
     case "delete_contact":
-      return deleteRow(supabase, orgId, workspaceKey, "contacts", str(input.contato_id, "contato_id"), "Contato excluído.");
+      return deleteRow(supabase, orgId, workspaceKey, "contacts", str(input.contato_id, "contato_id"), "Contato excluído.", Boolean(input.confirmado));
     case "delete_deal":
-      return deleteRow(supabase, orgId, workspaceKey, "deals", str(input.venda_id, "venda_id"), "Venda excluída.");
+      return deleteRow(supabase, orgId, workspaceKey, "deals", str(input.venda_id, "venda_id"), "Venda excluída.", Boolean(input.confirmado));
     case "delete_task":
-      return deleteRow(supabase, orgId, workspaceKey, "tasks", str(input.lembrete_id, "lembrete_id"), "Lembrete excluído.");
+      return deleteRow(supabase, orgId, workspaceKey, "tasks", str(input.lembrete_id, "lembrete_id"), "Lembrete excluído.", Boolean(input.confirmado));
     default:
       throw new Error(`Ferramenta desconhecida: ${name}`);
   }
