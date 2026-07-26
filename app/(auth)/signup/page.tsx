@@ -120,8 +120,8 @@ export default async function SignupPage(
             className="mt-0.5 h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
           />
           <span>
-            Estou ciente de que o teste gratis dura 30 dias e que, depois disso,
-            sera necessario contratar um plano pago para continuar usando o
+            Estou ciente de que o teste grátis dura 30 dias e que, depois disso,
+            será necessário contratar um plano pago para continuar usando o{" "}
             <BrandName />.
           </span>
         </label>

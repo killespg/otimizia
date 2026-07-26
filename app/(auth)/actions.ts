@@ -67,7 +67,7 @@ export async function signup(formData: FormData) {
   if (!trialNoticeAccepted) {
     redirectWithError(
       "/signup",
-      "E necessario confirmar que o teste gratis dura 30 dias e que depois sera preciso pagar."
+      "É necessário confirmar que o teste grátis dura 30 dias e que depois será preciso pagar."
     );
   }
 

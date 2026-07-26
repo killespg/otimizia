@@ -13,6 +13,8 @@ import { FaqAccordion } from "@/components/FaqAccordion";
 import { SpotlightCard } from "@/components/landing/spotlight-card";
 import { AiComposer } from "@/components/landing/ai-composer";
 import { ContainerScroll } from "@/components/landing/container-scroll-animation";
+import { About } from "@/components/landing/about";
+import { LogoWordmark } from "@/components/design-system/logo";
 
 /**
  * Faixa de seção de largura total.
@@ -32,7 +34,9 @@ function Section({
 }: {
   id?: string;
   eyebrow: string;
-  title: string;
+  /** Opcional: seções cujo próprio conteúdo abre com um título maior passam
+   *  sem ele, para não empilhar um h2 pequeno em cima de uma frase grande. */
+  title?: string;
   description?: string;
   raised?: boolean;
   children: React.ReactNode;
@@ -46,7 +50,7 @@ function Section({
       <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-8 py-20 md:py-24">
         <Reveal className="mx-auto mb-12 max-w-[560px] text-center">
           <p className="text-od-label text-od-text-3">{eyebrow}</p>
-          <h2 className="mt-3 text-od-title text-od-text">{title}</h2>
+          {title ? <h2 className="mt-3 text-od-title text-od-text">{title}</h2> : null}
           {description ? (
             <p className="mt-3 text-[15px] leading-relaxed text-od-text-2">{description}</p>
           ) : null}
@@ -155,6 +159,7 @@ export default async function LandingPage() {
         </Section>
 
         <Section
+          id="duvidas"
           eyebrow="Dúvidas"
           title="Perguntas frequentes"
           raised
@@ -191,6 +196,13 @@ export default async function LandingPage() {
           </div>
         </Section>
 
+        <Section
+          id="sobre"
+          eyebrow="Sobre nós"
+        >
+          <About />
+        </Section>
+
         <section className="border-t border-od-border bg-od-muted-surface">
           <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-8 py-24 text-center">
             <h2 className="mx-auto mb-4 max-w-[520px] text-od-title text-od-text">
@@ -210,8 +222,8 @@ export default async function LandingPage() {
           <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-8 py-12">
             <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
               <div className="max-w-[320px]">
-                <p className="text-[15px] font-extrabold text-od-text">OtimizIA</p>
-                <p className="mt-2 text-[13px] leading-relaxed text-od-text-2">
+                <LogoWordmark height={24} />
+                <p className="mt-3 text-[13px] leading-relaxed text-od-text-2">
                   CRM para quem trabalha sozinho ou com equipe, com o painel da sua profissão.
                 </p>
               </div>
@@ -222,6 +234,7 @@ export default async function LandingPage() {
                     <li><Link href="#recursos" className="text-od-text-2 hover:text-od-text">Recursos</Link></li>
                     <li><Link href="#painel" className="text-od-text-2 hover:text-od-text">O painel</Link></li>
                     <li><Link href="#planos" className="text-od-text-2 hover:text-od-text">Planos</Link></li>
+                    <li><Link href="#sobre" className="text-od-text-2 hover:text-od-text">Sobre nós</Link></li>
                   </ul>
                 </div>
                 <div>

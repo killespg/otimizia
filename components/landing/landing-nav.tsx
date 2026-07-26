@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard, Sparkles, Wallet } from "lucide-react";
+import { Building2, HelpCircle, LayoutDashboard, Sparkles, Tag, Wallet } from "lucide-react";
 import { NavBar } from "@/components/ui/tubelight-navbar";
+import { LogoWordmark } from "@/components/design-system/logo";
 
 /**
  * Os itens vivem aqui, e não na página.
@@ -16,10 +17,18 @@ import { NavBar } from "@/components/ui/tubelight-navbar";
 export function LandingNav() {
   return (
     <NavBar
+      brand={
+        <Link href="/" aria-label="OtimizIA, início" className="flex items-center">
+          <LogoWordmark height={22} />
+        </Link>
+      }
       items={[
         { name: "Recursos", url: "#recursos", icon: Wallet },
         { name: "O painel", url: "#painel", icon: LayoutDashboard },
         { name: "Sócio-assistente", url: "#ia", icon: Sparkles },
+        { name: "Planos", url: "#planos", icon: Tag },
+        { name: "Dúvidas", url: "#duvidas", icon: HelpCircle },
+        { name: "Sobre nós", url: "#sobre", icon: Building2 },
       ]}
       actions={
         <>
