@@ -108,7 +108,7 @@ export function About() {
             Venâncio Killes
           </p>
           <p className="mt-0.5 text-[13px] text-od-text-3">
-            fundador do OtimizIA
+            Fundador do OtimizIA
           </p>
         </div>
       </div>
