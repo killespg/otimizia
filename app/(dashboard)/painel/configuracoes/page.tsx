@@ -390,6 +390,21 @@ export default async function SettingsPage(
         <DataExportButton />
       </SectionCard>
 
+      {/* Fica antes da zona de risco de propósito: quem chegou até aqui pensando
+          em excluir a conta encontra um jeito de falar com alguém primeiro. O
+          assunto vem preenchido para você separar suporte do resto da caixa. */}
+      <SectionCard
+        title="Atendimento"
+        description="Dúvida, problema ou sugestão: escreva direto para quem cuida do produto."
+      >
+        <a
+          href="mailto:venancio@useotimizia.com?subject=Suporte%20OtimizIA"
+          className="text-[13px] font-semibold text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"
+        >
+          venancio@useotimizia.com
+        </a>
+      </SectionCard>
+
       <SectionCard title="Zona de risco" description="Ações permanentes, sem volta." danger>
         <DeleteAccountForm action={deleteAccount} />
       </SectionCard>
