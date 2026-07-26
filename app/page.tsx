@@ -89,7 +89,7 @@ export default async function LandingPage() {
           <Hero animated />
           <div className="-mt-4 pb-20 pt-14">
             <p className="mb-7 text-center text-od-label text-od-text-3">
-              Feito para quem vende sozinho — ou em times pequenos
+              Feito para quem vende sozinho ou em times pequenos
             </p>
             <LogoMarquee bare fadeColor="var(--od-bg)" />
           </div>
@@ -168,7 +168,7 @@ export default async function LandingPage() {
                 },
                 {
                   q: "Serve para a minha profissão?",
-                  a: "Hoje o OtimizIA tem painel próprio para vendedor autônomo, escritório de advocacia e corretor de imóveis. Cada um vem com as telas e os termos daquele trabalho — carteira e visitas no imobiliário, prazos e processos no jurídico, funil e pedidos nas vendas.",
+                  a: "Hoje o OtimizIA tem painel próprio para vendedor autônomo, escritório de advocacia e corretor de imóveis. Cada um vem com as telas e os termos daquele trabalho: carteira e visitas no imobiliário, prazos e processos no jurídico, funil e pedidos nas vendas.",
                 },
                 {
                   q: "Como funciona o WhatsApp?",
@@ -176,7 +176,7 @@ export default async function LandingPage() {
                 },
                 {
                   q: "Consigo usar no celular?",
-                  a: "Sim. O OtimizIA é instalável direto do navegador, funciona como aplicativo e manda notificação antes dos seus compromissos — foi pensado para quem usa em trânsito, entre um atendimento e outro.",
+                  a: "Sim. O OtimizIA é instalável direto do navegador, funciona como aplicativo e manda notificação antes dos seus compromissos. Foi pensado para quem usa em trânsito, entre um atendimento e outro.",
                 },
                 {
                   q: "Dá para trabalhar em equipe?",
@@ -197,7 +197,7 @@ export default async function LandingPage() {
               Pronto pra parar de perder negócio por esquecimento?
             </h2>
             <p className="mx-auto mb-8 max-w-[440px] text-[15px] text-od-text-2">
-              Comece grátis hoje — sem cartão de crédito, sem complicação.
+              Comece grátis hoje, sem cartão de crédito e sem complicação.
             </p>
             <Link href="/signup" className="btn inline-flex items-center gap-2">
               Começar grátis
@@ -212,7 +212,7 @@ export default async function LandingPage() {
               <div className="max-w-[320px]">
                 <p className="text-[15px] font-extrabold text-od-text">OtimizIA</p>
                 <p className="mt-2 text-[13px] leading-relaxed text-od-text-2">
-                  CRM para quem vende sozinho ou em time pequeno — com o painel da sua profissão.
+                  CRM para quem vende sozinho ou em time pequeno, com o painel da sua profissão.
                 </p>
               </div>
               <div className="flex gap-12">
