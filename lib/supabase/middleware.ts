@@ -2,6 +2,20 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  const isAuthPage =
+    path.startsWith("/login") ||
+    path.startsWith("/signup") ||
+    path.startsWith("/forgot-password");
+  const isProtected =
+    path.startsWith("/painel") ||
+    path.startsWith("/onboarding") ||
+    path.startsWith("/upgrade");
+
+  if (!isProtected && !isAuthPage) {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -34,27 +48,6 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const path = request.nextUrl.pathname;
-  const isAuthPage =
-    path.startsWith("/login") ||
-    path.startsWith("/signup") ||
-    path.startsWith("/forgot-password");
-  const isProtected =
-    path.startsWith("/painel") ||
-    path.startsWith("/painel/contatos") ||
-    path.startsWith("/painel/funil") ||
-    path.startsWith("/painel/tarefas") ||
-    path.startsWith("/painel/calendario") ||
-    path.startsWith("/painel/assistente") ||
-    path.startsWith("/painel/whatsapp") ||
-    path.startsWith("/painel/configuracoes") ||
-    path.startsWith("/painel/equipe") ||
-    path.startsWith("/painel/financeiro") ||
-    path.startsWith("/painel/juridico/processos") ||
-    path.startsWith("/painel/imoveis") ||
-    path.startsWith("/onboarding") ||
-    path.startsWith("/upgrade");
 
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
