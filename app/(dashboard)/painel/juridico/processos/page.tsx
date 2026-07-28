@@ -6,7 +6,7 @@ import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, LegalCase } from "@/lib/supabase/types";
 import { getWorkspaceKey } from "@/lib/workspaces";
-import { IconAlert, IconColumns, IconPlus, IconSearch, IconUsers, IconWallet } from "../../icons";
+import { IconAlert, IconColumns, IconPlus, IconSearch, IconUsers } from "../../icons";
 import { createLegalCase } from "../actions";
 
 export default async function LawPage(props: { searchParams?: Promise<{ busca?: string; novo?: string }> }) {
@@ -61,8 +61,10 @@ export default async function LawPage(props: { searchParams?: Promise<{ busca?: 
     label: member.user_id === user!.id ? "Eu" : member.name ?? "Sem nome",
   }));
   const activeCases = allCases.filter((item) => ["intake", "active", "waiting", "suspended"].includes(item.status));
+  const deadlineThreshold = new Date();
+  deadlineThreshold.setDate(deadlineThreshold.getDate() + 7);
   const deadlines = activeCases.filter(
-    (item) => item.next_deadline_at && new Date(item.next_deadline_at) < new Date(Date.now() + 7 * 86_400_000)
+    (item) => item.next_deadline_at && new Date(item.next_deadline_at) < deadlineThreshold
   );
   const memberName = new Map(members.map((member) => [member.user_id, member.name ?? "Sem nome"]));
   const query = searchParams?.busca?.trim().toLocaleLowerCase("pt-BR") ?? "";
@@ -138,7 +140,7 @@ export default async function LawPage(props: { searchParams?: Promise<{ busca?: 
                 <span
                   className={
                     "text-xs font-semibold " +
-                    (item.next_deadline_at && new Date(item.next_deadline_at) < new Date(Date.now() + 7 * 86_400_000)
+                    (item.next_deadline_at && new Date(item.next_deadline_at) < deadlineThreshold
                       ? "text-[#fb7767]"
                       : "text-white/52")
                   }
@@ -212,33 +214,6 @@ function NewCaseForm({
         </PendingButton>
       </div>
     </form>
-  );
-}
-
-function QuickLink({
-  href,
-  label,
-  description,
-  icon: Icon,
-}: {
-  href: string;
-  label: string;
-  description: string;
-  icon: (p: { className?: string }) => React.ReactElement;
-}) {
-  return (
-    <Link
-      href={href}
-      className="nav-item panel flex min-h-[6rem] items-start gap-3 p-4 hover:border-brand-300 hover:bg-brand-50 focus-visible:ring-2 focus-visible:ring-brand-600"
-    >
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-700">
-        <Icon className="h-5 w-5" />
-      </span>
-      <span className="min-w-0">
-        <span className="block text-sm font-black text-ink">{label}</span>
-        <span className="mt-1 block text-xs font-semibold leading-relaxed text-ink-muted">{description}</span>
-      </span>
-    </Link>
   );
 }
 

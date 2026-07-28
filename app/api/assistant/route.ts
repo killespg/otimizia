@@ -7,6 +7,7 @@ import { getActiveOrgId } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset, type ProfessionPreset } from "@/lib/professions";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
+import { confirmDeletionFromUserMessage } from "@/lib/ai/deletion-confirmation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { CRM_TOOLS, executeTool, isMutatingTool } from "@/lib/ai/tools";
@@ -30,9 +31,9 @@ const MAX_MESSAGE_CHARS = 4000;
 // cliente jamais enviaria de propósito.
 const MAX_PDF_BASE64_CHARS = 4_500_000;
 
-// Reaproveita o bucket já usado pelas fotos de negócio — mesma política de
-// tamanho/tipo, só muda o prefixo do caminho.
-const CHAT_PHOTOS_BUCKET = "deal-photos";
+// Bucket exclusivo e privado para anexos do Tim. A URL assinada dura apenas
+// o tempo necessário para o provedor analisar a imagem.
+const CHAT_PHOTOS_BUCKET = "assistant-attachments";
 const CHAT_IMAGE_MAX_BYTES = 6 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
@@ -53,9 +54,9 @@ async function uploadChatImage(
   orgId: string,
   userId: string,
   image: IncomingImage
-): Promise<string> {
+): Promise<{ signedUrl: string; storagePath: string }> {
   const extension = image.mediaType.split("/")[1] || "jpg";
-  const path = `${orgId}/assistant/${userId}/${randomUUID()}.${extension}`;
+  const path = `${orgId}/${userId}/${randomUUID()}.${extension}`;
   const bytes = Buffer.from(image.data, "base64");
   const admin = createAdminClient();
   const { error } = await admin.storage.from(CHAT_PHOTOS_BUCKET).upload(path, bytes, {
@@ -63,8 +64,22 @@ async function uploadChatImage(
     upsert: false,
   });
   if (error) throw error;
-  const { data } = admin.storage.from(CHAT_PHOTOS_BUCKET).getPublicUrl(path);
-  return data.publicUrl;
+
+  const { error: metadataError } = await admin.from("assistant_attachments").insert({
+    org_id: orgId,
+    user_id: userId,
+    storage_path: path,
+  });
+  if (metadataError) {
+    await admin.storage.from(CHAT_PHOTOS_BUCKET).remove([path]);
+    throw metadataError;
+  }
+
+  const { data, error: signedUrlError } = await admin.storage
+    .from(CHAT_PHOTOS_BUCKET)
+    .createSignedUrl(path, 600);
+  if (signedUrlError) throw signedUrlError;
+  return { signedUrl: data.signedUrl, storagePath: path };
 }
 
 type OrganizationAiContext = {
@@ -129,17 +144,21 @@ export async function POST(req: Request) {
   // cada chamada, e o resto já foi salvo em requisições anteriores.
   const lastIncoming = history[history.length - 1];
   let uploadedImageUrl: string | null = null;
+  let uploadedImagePath: string | null = null;
   if (lastIncoming.role === "user" && typeof lastIncoming.content === "string") {
+    await confirmDeletionFromUserMessage(supabase, lastIncoming.content);
     if (image) {
       try {
-        uploadedImageUrl = await uploadChatImage(orgId, user.id, image);
+        const uploaded = await uploadChatImage(orgId, user.id, image);
+        uploadedImageUrl = uploaded.signedUrl;
+        uploadedImagePath = uploaded.storagePath;
       } catch (err) {
         console.error("[api/assistant] upload de imagem falhou", err);
       }
     }
     const textForHistory = [
       lastIncoming.content,
-      uploadedImageUrl ? `[imagem:${uploadedImageUrl}]` : "",
+      uploadedImagePath ? `[imagem privada:${uploadedImagePath}]` : "",
     ]
       .filter(Boolean)
       .join("\n\n");

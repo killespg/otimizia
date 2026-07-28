@@ -1,4 +1,8 @@
-import { commissionsToCsv } from "@/lib/real-estate-commissions";
+import {
+  commissionPeriodOrFilter,
+  commissionsToCsv,
+  normalizeCommissionPeriod,
+} from "@/lib/real-estate-commissions";
 import { getActiveOrgId } from "@/lib/org";
 import { canViewRealEstate } from "@/lib/real-estate";
 import { createClient } from "@/lib/supabase/server";
@@ -26,7 +30,21 @@ export async function GET(request: Request) {
     return Response.json({ error: "Sem acesso." }, { status: 403 });
   }
 
-  const { data } = await supabase.from("real_estate_commissions").select("*").eq("org_id", orgId).order("created_at", { ascending: true });
+  const url = new URL(request.url);
+  const period = normalizeCommissionPeriod(
+    url.searchParams.get("from"),
+    url.searchParams.get("to"),
+  );
+  const broker = url.searchParams.get("broker")?.trim() ?? "";
+  let query = supabase
+    .from("real_estate_commissions")
+    .select("*")
+    .eq("org_id", orgId)
+    .or(commissionPeriodOrFilter(period));
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(broker)) {
+    query = query.eq("broker_id", broker);
+  }
+  const { data } = await query.order("due_at", { ascending: true });
   const csv = commissionsToCsv((data ?? []) as RealEstateCommission[]);
 
   return new Response(csv, {

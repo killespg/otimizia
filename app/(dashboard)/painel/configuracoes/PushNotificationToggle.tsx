@@ -18,13 +18,21 @@ export function PushNotificationToggle({ vapidPublicKey }: { vapidPublicKey: str
 
   useEffect(() => {
     if (!("serviceWorker" in navigator) || !("PushManager" in window) || !vapidPublicKey) {
-      setStatus("unsupported");
-      return;
+      const frame = window.requestAnimationFrame(() => setStatus("unsupported"));
+      return () => window.cancelAnimationFrame(frame);
     }
+    let cancelled = false;
     navigator.serviceWorker.ready
       .then((registration) => registration.pushManager.getSubscription())
-      .then((sub) => setStatus(sub ? "on" : "off"))
-      .catch(() => setStatus("off"));
+      .then((sub) => {
+        if (!cancelled) setStatus(sub ? "on" : "off");
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("off");
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [vapidPublicKey]);
 
   async function enable() {

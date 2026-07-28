@@ -828,6 +828,8 @@ function CasesTable({
   contacts: Map<string, string>;
   members: Map<string, string>;
 }) {
+  const urgentLimit = new Date();
+  urgentLimit.setDate(urgentLimit.getDate() + 7);
   return (
     <section className="overflow-hidden rounded-xl border border-od-border bg-od-surface p-5">
       <div className="mb-4 flex items-center justify-between border-b border-white/[0.08] pb-4">
@@ -863,8 +865,7 @@ function CasesTable({
             : item.title;
           const urgent = Boolean(
             item.next_deadline_at &&
-            new Date(item.next_deadline_at) <=
-              new Date(Date.now() + 7 * 86_400_000),
+            new Date(item.next_deadline_at) <= urgentLimit,
           );
           return (
             <Link

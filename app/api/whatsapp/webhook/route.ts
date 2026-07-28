@@ -7,16 +7,46 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createDealIfNeeded, findOrCreateContact } from "@/lib/whatsapp-contacts";
 import { isOptOutKeyword, markWhatsappOptOut, OPT_OUT_CONFIRMATION_TEXT } from "@/lib/whatsapp-opt-out";
 import { extractMessageText, resolveWhatsappPhone } from "@/lib/whatsapp-jid";
+import { verifyEvolutionWebhookAuthorization } from "@/lib/evolution-webhook";
 
 export const runtime = "nodejs";
+const MAX_WEBHOOK_BYTES = 1_000_000;
+
+type EvolutionWebhookPayload = {
+  event?: unknown;
+  instance?: unknown;
+  data?: {
+    key?: {
+      id?: unknown;
+      fromMe?: unknown;
+      remoteJid?: unknown;
+      remoteJidAlt?: unknown;
+    };
+    pushName?: unknown;
+    message?: unknown;
+  };
+};
 
 // Webhook da Evolution API (sem sessão de usuário — sempre createAdminClient).
 // Evento tratado: messages.upsert (mensagem recebida). Demais eventos
 // (connection.update, etc.) só são confirmados, sem processamento.
 export async function POST(request: Request) {
-  let body: any;
+  if (!verifyEvolutionWebhookAuthorization(request.headers.get("authorization"))) {
+    return Response.json({ error: "Não autorizado." }, { status: 401 });
+  }
+
+  const contentLength = Number(request.headers.get("content-length") ?? "0");
+  if (Number.isFinite(contentLength) && contentLength > MAX_WEBHOOK_BYTES) {
+    return Response.json({ error: "Payload muito grande." }, { status: 413 });
+  }
+
+  let body: EvolutionWebhookPayload;
   try {
-    body = await request.json();
+    const rawBody = await request.text();
+    if (Buffer.byteLength(rawBody, "utf8") > MAX_WEBHOOK_BYTES) {
+      return Response.json({ error: "Payload muito grande." }, { status: 413 });
+    }
+    body = JSON.parse(rawBody) as EvolutionWebhookPayload;
   } catch (error) {
     logError("api/whatsapp/webhook.invalid-json", error);
     return Response.json({ error: "JSON inválido." }, { status: 400 });
@@ -28,8 +58,8 @@ export async function POST(request: Request) {
   }
 
   const data = body?.data;
-  const messageId = data?.key?.id;
-  const instanceName = body?.instance;
+  const messageId = typeof data?.key?.id === "string" ? data.key.id : "";
+  const instanceName = typeof body.instance === "string" ? body.instance : "";
   if (!messageId || !instanceName) {
     return Response.json({ received: true });
   }
@@ -55,7 +85,11 @@ export async function POST(request: Request) {
     return Response.json({ received: true });
   }
 
-  const phoneNumber = resolveWhatsappPhone(data?.key?.remoteJid, data?.key?.remoteJidAlt);
+  const remoteJid =
+    typeof data?.key?.remoteJid === "string" ? data.key.remoteJid : null;
+  const remoteJidAlt =
+    typeof data?.key?.remoteJidAlt === "string" ? data.key.remoteJidAlt : null;
+  const phoneNumber = resolveWhatsappPhone(remoteJid, remoteJidAlt);
   if (!phoneNumber) {
     // Grupo, ou @lid sem remoteJidAlt resolvível — fora de escopo do MVP.
     return Response.json({ received: true });

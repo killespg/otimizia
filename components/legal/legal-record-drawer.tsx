@@ -18,7 +18,10 @@ export function LegalRecordDrawer() {
   const pathname = usePathname(); const searchParams = useSearchParams(); const router = useRouter();
   const type = searchParams.get("novo") ?? ""; const config = configs[type]; const detail = searchParams.get("detalhe");
   const [saved, setSaved] = useState(false);
-  useEffect(() => setSaved(false), [type]);
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setSaved(false));
+    return () => window.cancelAnimationFrame(frame);
+  }, [type]);
   function close() { const params = new URLSearchParams(searchParams.toString()); params.delete("novo"); params.delete("detalhe"); params.delete("horario"); params.delete("tipo"); router.replace(`${pathname}${params.size ? `?${params}` : ""}`, { scroll: false }); }
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

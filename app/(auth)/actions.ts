@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth-constants";
 import { isValidCPF, onlyDigits } from "@/lib/cpf";
 import { resolveDemoCredentials } from "@/lib/demo-account";
+import { safeInternalPath } from "@/lib/invitations";
 import { normalizeProfession, type ProfessionType } from "@/lib/professions";
 import { resolveOrigin } from "@/lib/request-origin";
 import { createClient } from "@/lib/supabase/server";
@@ -13,6 +14,9 @@ import { TURNSTILE_TOKEN_FIELD, clientIpFromHeaders, verifyTurnstile } from "@/l
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
+  const nextPath = safeInternalPath(formData.get("next"));
+  const loginPath =
+    nextPath === "/painel" ? "/login" : `/login?next=${encodeURIComponent(nextPath)}`;
   const rawEmail = textField(formData.get("email"), 160).toLowerCase();
   const rawPassword = passwordField(formData.get("password"));
   const demoCredentials = resolveDemoCredentials(rawEmail, rawPassword);
@@ -20,22 +24,25 @@ export async function login(formData: FormData) {
   const password = demoCredentials?.password ?? rawPassword;
 
   if (!email || !password) {
-    redirectWithError("/login", "Preencha e-mail e senha.");
+    redirectWithError(loginPath, "Preencha e-mail e senha.");
   }
 
   await requireTurnstile(formData, "/login");
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    redirectWithError("/login", "Não foi possível entrar. Confira os dados.");
+    redirectWithError(loginPath, "Não foi possível entrar. Confira os dados.");
   }
 
   revalidatePath("/", "layout");
-  redirect("/painel");
+  redirect(nextPath);
 }
 
 export async function signup(formData: FormData) {
   const supabase = await createClient();
+  const nextPath = safeInternalPath(formData.get("next"));
+  const signupPath =
+    nextPath === "/painel" ? "/signup" : `/signup?next=${encodeURIComponent(nextPath)}`;
   const email = emailField(formData.get("email"));
   const password = passwordField(formData.get("password"));
   const name = textField(formData.get("name"), 120);
@@ -46,27 +53,27 @@ export async function signup(formData: FormData) {
   const trialNoticeAccepted = formData.get("trial_notice_accepted") === "on";
 
   if (!email || !password) {
-    redirectWithError("/signup", "Preencha e-mail e senha.");
+    redirectWithError(signupPath, "Preencha e-mail e senha.");
   }
 
   if (password.length < MIN_PASSWORD_LENGTH) {
     redirectWithError(
-      "/signup",
+      signupPath,
       `Use uma senha com pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`
     );
   }
 
   if (!isValidCPF(cpf)) {
-    redirectWithError("/signup", "CPF inválido.");
+    redirectWithError(signupPath, "CPF inválido.");
   }
 
   if (!termsAccepted) {
-    redirectWithError("/signup", "É necessário aceitar os termos para criar a conta.");
+    redirectWithError(signupPath, "É necessário aceitar os termos para criar a conta.");
   }
 
   if (!trialNoticeAccepted) {
     redirectWithError(
-      "/signup",
+      signupPath,
       "É necessário confirmar que o teste grátis dura 30 dias e que depois será preciso pagar."
     );
   }
@@ -87,22 +94,22 @@ export async function signup(formData: FormData) {
         terms_accepted: "true",
         trial_notice_accepted: "true",
       },
-      emailRedirectTo: `${origin}/login`,
+      emailRedirectTo: `${origin}${nextPath}`,
     },
   });
   if (error) {
-    redirectWithError("/signup", signupErrorMessage(error));
+    redirectWithError(signupPath, signupErrorMessage(error));
   }
 
   revalidatePath("/", "layout");
   if (!data.session) {
     redirectWithMessage(
-      "/login",
+      nextPath === "/painel" ? "/login" : `/login?next=${encodeURIComponent(nextPath)}`,
       "Conta criada. Confirme seu e-mail antes de entrar."
     );
   }
 
-  redirect("/painel");
+  redirect(nextPath);
 }
 
 export async function requestPasswordReset(formData: FormData) {
@@ -175,10 +182,10 @@ function professionTypeFields(formData: FormData): ProfessionType[] {
 }
 
 function redirectWithError(path: string, message: string): never {
-  redirect(`${path}?error=${encodeURIComponent(message)}`);
+  redirect(`${path}${path.includes("?") ? "&" : "?"}error=${encodeURIComponent(message)}`);
 }
 function redirectWithMessage(path: string, message: string): never {
-  redirect(`${path}?message=${encodeURIComponent(message)}`);
+  redirect(`${path}${path.includes("?") ? "&" : "?"}message=${encodeURIComponent(message)}`);
 }
 
 function signupErrorMessage(error: { message?: string; status?: number; code?: string }) {

@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { CookieConsent } from "@/components/CookieConsent";
+import { SiteAnalytics } from "@/components/SiteAnalytics";
+import { siteUrl } from "@/lib/request-origin";
 import "./globals.css";
 
 const inter = Inter({
@@ -9,6 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl()),
   title: "OtimizIA",
   description: "CRM multiprofissões para organizar contatos, vendas, tarefas e operações especializadas.",
   manifest: "/manifest.webmanifest",
@@ -34,7 +38,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           o visitante. suppressHydrationWarning vale só para os atributos deste
           elemento, um nível: qualquer divergência real dentro da árvore
           continua sendo reportada. */}
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        {children}
+        <CookieConsent />
+        <SiteAnalytics />
+      </body>
     </html>
   );
 }

@@ -45,7 +45,7 @@ export default async function DeadlinesPage() {
 
   const cases = (rows ?? []) as LegalCase[];
   const now = new Date();
-  const week = new Date(Date.now() + 7 * 86_400_000);
+  const week = new Date(now.getTime() + 7 * 86_400_000);
   const overdue = cases.filter((item) => item.next_deadline_at && new Date(item.next_deadline_at) < now);
   const upcoming = cases.filter((item) => {
     if (!item.next_deadline_at) return false;

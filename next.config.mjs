@@ -28,6 +28,26 @@ const nextConfig = {
     // has one persistent shell, so one inlined prefetch response is cheaper.
     prefetchInlining: true,
   },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       { source: "/dashboard", destination: "/painel", permanent: true },
@@ -54,6 +74,7 @@ const nextConfig = {
       { source: "/dashboard-juridico/core/whatsapp", destination: "/painel/whatsapp", permanent: true },
       { source: "/dashboard-juridico/core/calendario", destination: "/painel/calendario", permanent: true },
       { source: "/dashboard-juridico/core/tarefas", destination: "/painel/tarefas", permanent: true },
+      { source: "/dashboard-juridico/core/:path*", destination: "/painel", permanent: true },
       { source: "/dashboard-juridico/processos/:path*", destination: "/painel/juridico/processos/:path*", permanent: true },
       { source: "/dashboard-juridico/consulta-datajud", destination: "/painel/juridico/consulta", permanent: true },
       { source: "/dashboard-juridico/agenda/calculadora", destination: "/painel/juridico/prazos/calculadora", permanent: true },
@@ -65,6 +86,7 @@ const nextConfig = {
       { source: "/dashboard-juridico/socio-assistente/:path*", destination: "/painel/assistente/:path*", permanent: true },
       { source: "/dashboard-juridico/configuracoes/:path*", destination: "/painel/configuracoes/:path*", permanent: true },
       { source: "/dashboard-juridico/workspaces/:path*", destination: "/painel/workspaces/:path*", permanent: true },
+      { source: "/dashboard-juridico/workspaces", destination: "/painel/workspaces", permanent: true },
       { source: "/dashboard-juridico", destination: "/painel/juridico", permanent: true },
     ];
   },

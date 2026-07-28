@@ -153,11 +153,14 @@ export function WhatsappInbox({
 
   // Trocou de conversa: zera busca interna, anexo e menu de ações.
   useEffect(() => {
-    setThreadQuery("");
-    setThreadSearchOpen(false);
-    setPendingImage(null);
-    setAttachError(null);
-    setActionsOpen(false);
+    const frame = window.requestAnimationFrame(() => {
+      setThreadQuery("");
+      setThreadSearchOpen(false);
+      setPendingImage(null);
+      setAttachError(null);
+      setActionsOpen(false);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [selectedId]);
 
   useEffect(() => {
@@ -166,7 +169,9 @@ export function WhatsappInbox({
       return () => window.cancelAnimationFrame(frame);
     }
     let cancelled = false;
-    setMessagesLoading(true);
+    const loadingFrame = window.requestAnimationFrame(() => {
+      if (!cancelled) setMessagesLoading(true);
+    });
     supabase
       .from("whatsapp_messages")
       .select("*")
@@ -216,6 +221,7 @@ export function WhatsappInbox({
 
     return () => {
       cancelled = true;
+      window.cancelAnimationFrame(loadingFrame);
       supabase.removeChannel(channel);
     };
   }, [supabase, selectedId]);

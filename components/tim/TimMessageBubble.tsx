@@ -17,7 +17,6 @@ function formatTime(iso?: string) {
 export function TimMessageBubble({
   message,
   isFirstInGroup = true,
-  isLastInGroup = true,
   imageSizes,
 }: {
   message: ChatMessage;

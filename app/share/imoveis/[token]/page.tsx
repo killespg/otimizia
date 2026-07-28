@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { PropertyReactionButtons } from "@/components/real-estate/PropertyReactionButtons";
 import { centsToReais } from "@/lib/real-estate";
@@ -77,10 +78,13 @@ export default async function SharedPropertyCollectionPage(props: { params: Prom
                 {property.photos.length > 0 && (
                   <div className="flex gap-2 overflow-x-auto p-3">
                     {property.photos.map((path) => (
-                      <img
+                      <Image
                         key={path}
                         src={supabase.storage.from("property-photos").getPublicUrl(path).data.publicUrl}
-                        alt=""
+                        alt={`Foto de ${property.title}`}
+                        width={224}
+                        height={160}
+                        unoptimized
                         className="h-40 w-56 shrink-0 rounded-lg object-cover"
                       />
                     ))}

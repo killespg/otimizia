@@ -47,7 +47,7 @@ export function PropertySelectableList({ rows, selectable = true }: { rows: Prop
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 {row.coverUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element -- thumbnail vem de storage público
-                  <img src={row.coverUrl} alt="" className="h-12 w-12 shrink-0 rounded-md border border-line object-cover" />
+                  <img src={row.coverUrl} alt={`Foto de capa de ${row.title}`} className="h-12 w-12 shrink-0 rounded-md border border-line object-cover" />
                 ) : (
                   <span className="grid h-12 w-12 shrink-0 place-items-center rounded-md border border-line bg-surface-2 text-ink-muted/60">
                     <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden fill="none">

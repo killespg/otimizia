@@ -49,9 +49,14 @@ export function LegalProductNavigation({ displayName, organizationName, canViewF
   const [sidebarWidth, setSidebarWidth] = useState(255);
 
   useEffect(() => {
-    setCollapsed(window.localStorage.getItem("otimizia-legal-sidebar-collapsed") === "1");
-    const savedWidth = Number(window.localStorage.getItem("otimizia-legal-sidebar-width"));
-    if (Number.isFinite(savedWidth) && savedWidth >= 220 && savedWidth <= 360) setSidebarWidth(savedWidth);
+    const frame = window.requestAnimationFrame(() => {
+      setCollapsed(window.localStorage.getItem("otimizia-legal-sidebar-collapsed") === "1");
+      const savedWidth = Number(window.localStorage.getItem("otimizia-legal-sidebar-width"));
+      if (Number.isFinite(savedWidth) && savedWidth >= 220 && savedWidth <= 360) {
+        setSidebarWidth(savedWidth);
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   function toggle() {

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   BadgeCheck,
   Bell,
@@ -38,7 +38,14 @@ type Feature = { icon: LucideIcon; title: string; description: string };
 type Group = { label: string; features: Feature[] };
 /** O que o Tim faz nesta profissão, com ordens de verdade que a pessoa daria. */
 type Tim = { line: string; examples: string[] };
-type Vertical = { key: string; tab: string; headline: string; tim: Tim; groups: Group[] };
+type Vertical = {
+  key: string;
+  tab: string;
+  mobileTab: string;
+  headline: string;
+  tim: Tim;
+  groups: Group[];
+};
 
 /**
  * O que cada profissão encontra no produto.
@@ -74,6 +81,7 @@ const VERTICALS: Vertical[] = [
   {
     key: "autonomous_seller",
     tab: "Vendedor autônomo",
+    mobileTab: "Vendas",
     headline: "Do primeiro contato ao pós-venda, sem planilha paralela.",
     tim: {
       line: "Fale por voz ou escreva. Ele não devolve conselho: cria o contato, abre a negociação e move no funil enquanto você está na rua.",
@@ -106,6 +114,7 @@ const VERTICALS: Vertical[] = [
   {
     key: "law_office",
     tab: "Escritório de advocacia",
+    mobileTab: "Advocacia",
     headline: "Prazo, andamento e honorário no mesmo lugar.",
     tim: {
       line: "Fale por voz ou escreva. Ele abre o caso, registra o andamento e cria a tarefa do prazo sem você parar o que está fazendo.",
@@ -145,6 +154,7 @@ const VERTICALS: Vertical[] = [
   {
     key: "real_estate_broker",
     tab: "Corretor de imóveis",
+    mobileTab: "Imóveis",
     headline: "Carteira, visita e comissão sob controle.",
     tim: {
       line: "Fale por voz ou escreva. Ele busca na carteira, monta a vitrine e agenda a visita, inclusive dentro do carro entre um atendimento e outro.",
@@ -186,11 +196,10 @@ const VERTICALS: Vertical[] = [
 
 function FeatureRow({ feature, index }: { feature: Feature; index: number }) {
   const Icon = feature.icon;
-  const reduceMotion = useReducedMotion();
   return (
     <motion.div
       className="flex min-w-0 gap-3 py-3.5"
-      initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+      initial={false}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1], delay: Math.min(index, 5) * 0.045 }}
@@ -226,13 +235,15 @@ export function FeatureTabs() {
               key={item.key}
               type="button"
               role="tab"
+              aria-label={item.tab}
               aria-selected={selected}
               onClick={() => setActiveKey(item.key)}
-              className={`min-w-0 flex-1 truncate rounded px-3 py-2.5 text-[13px] font-semibold transition-colors ${
+              className={`flex min-h-11 min-w-0 flex-1 items-center justify-center rounded px-2 text-[13px] font-semibold transition-colors sm:px-3 ${
                 selected ? "bg-od-surface text-od-text" : "text-od-text-3 hover:text-od-text-2"
               }`}
             >
-              {item.tab}
+              <span className="sm:hidden" aria-hidden>{item.mobileTab}</span>
+              <span className="hidden sm:inline" aria-hidden>{item.tab}</span>
             </button>
           );
         })}

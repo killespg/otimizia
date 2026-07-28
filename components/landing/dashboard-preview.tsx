@@ -396,6 +396,49 @@ export function DashboardPreview() {
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="grid gap-2 border-b border-white/[0.07] p-2 md:hidden">
+          <label>
+            <span className="sr-only">Profissão exibida</span>
+            <select
+              aria-label="Profissão exibida"
+              value={professionIndex}
+              onChange={(event) => chooseProfession(Number(event.target.value))}
+              className="h-11 w-full rounded border border-white/[0.1] bg-od-sidebar px-3 text-xs font-semibold text-white"
+            >
+              {PROFESSIONS.map((item, index) => (
+                <option key={item.key} value={index}>
+                  {item.role}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="grid grid-cols-4 gap-1" aria-label="Tela da demonstração">
+            {[
+              ...topItems,
+              { label: "Lista", screen: "list" as const },
+            ].map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => {
+                  if (item.screen === "list") {
+                    setScreen("list");
+                    setNavLabel(profession.listNav);
+                  } else {
+                    open(item);
+                  }
+                }}
+                className={`min-h-11 rounded px-1 text-[10px] font-semibold ${
+                  screen === item.screen
+                    ? "bg-od-accent text-white"
+                    : "border border-white/[0.08] text-white/58"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
           <div className="flex min-w-0 flex-1 items-center gap-2 border-b border-white/[0.12] py-1.5 md:w-64 md:flex-none">
             <Search className="size-3.5 shrink-0 text-white/40" strokeWidth={2} />

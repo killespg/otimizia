@@ -237,12 +237,12 @@ export default async function ImovelDetailPage(props: { params: Promise<{ id: st
             Nenhuma foto ainda — a vitrine fica bem mais atraente com pelo menos uma.
           </p>
         ) : canManage ? (
-          <PropertyPhotoManager propertyId={property.id} photos={photoUrls} />
+          <PropertyPhotoManager propertyId={property.id} propertyTitle={property.title} photos={photoUrls} />
         ) : (
           <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3">
             {photoUrls.map((photo) => (
               // eslint-disable-next-line @next/next/no-img-element -- vem de storage público, sem next/image configurado
-              (<img key={photo.id} src={photo.url} alt="" className="aspect-square w-full rounded-lg border border-line object-cover" />)
+              (<img key={photo.id} src={photo.url} alt={`Foto de ${property.title}`} className="aspect-square w-full rounded-lg border border-line object-cover" />)
             ))}
           </div>
         )}
@@ -432,4 +432,3 @@ function Info({ label, value }: { label: string; value: React.ReactNode }) {
     </div>
   );
 }
-

@@ -2,13 +2,14 @@ import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
 import { CaptchaField } from "@/components/CaptchaField";
 import { PendingButton } from "@/components/PendingButton";
+import { MIN_PASSWORD_LENGTH } from "@/lib/auth-constants";
 import { PROFESSION_OPTIONS } from "@/lib/professions";
 import { signup } from "../actions";
 import { AuthShell, AuthField } from "../AuthShell";
 
 export default async function SignupPage(
   props: {
-    searchParams: Promise<{ error?: string }>;
+    searchParams: Promise<{ error?: string; next?: string }>;
   }
 ) {
   const searchParams = await props.searchParams;
@@ -21,8 +22,8 @@ export default async function SignupPage(
         <>
           Já tem conta?{" "}
           <Link
-            href="/login"
-            className="nav-item font-black text-brand-700 hover:text-od-text"
+            href={searchParams.next ? `/login?next=${encodeURIComponent(searchParams.next)}` : "/login"}
+            className="nav-item inline-flex min-h-11 items-center font-black text-brand-700 hover:text-od-text"
           >
             Entrar
           </Link>
@@ -30,6 +31,7 @@ export default async function SignupPage(
       }
     >
       <form action={signup} className="mt-6 space-y-4">
+        {searchParams.next ? <input type="hidden" name="next" value={searchParams.next} /> : null}
         <AuthField
           name="name"
           label="Seu nome"
@@ -49,7 +51,7 @@ export default async function SignupPage(
           label="Senha"
           type="password"
           required
-          minLength={6}
+          minLength={MIN_PASSWORD_LENGTH}
           maxLength={200}
           autoComplete="new-password"
         />
@@ -93,7 +95,7 @@ export default async function SignupPage(
             ))}
           </div>
         </fieldset>
-        <label className="flex items-start gap-2.5 text-sm font-medium text-ink-soft">
+        <label className="flex min-h-11 items-start gap-2.5 text-sm font-medium text-ink-soft">
           <input
             type="checkbox"
             name="terms_accepted"
@@ -105,14 +107,14 @@ export default async function SignupPage(
             <Link
               href="/termos"
               target="_blank"
-              className="nav-item font-black text-brand-700 hover:text-od-text"
+              className="nav-item inline-flex min-h-11 items-center font-black text-brand-700 hover:text-od-text"
             >
               Termos de Uso e o Contrato de Prestação de Serviço
             </Link>
             .
           </span>
         </label>
-        <label className="flex items-start gap-2.5 rounded-lg border border-line bg-surface-2 p-3 text-sm font-medium text-ink-soft">
+        <label className="flex min-h-11 items-start gap-2.5 rounded-lg border border-line bg-surface-2 p-3 text-sm font-medium text-ink-soft">
           <input
             type="checkbox"
             name="trial_notice_accepted"

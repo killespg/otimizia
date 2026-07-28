@@ -6,7 +6,7 @@ import { AuthShell, AuthField } from "../AuthShell";
 
 export default async function LoginPage(
   props: {
-    searchParams: Promise<{ error?: string; message?: string }>;
+    searchParams: Promise<{ error?: string; message?: string; next?: string }>;
   }
 ) {
   const searchParams = await props.searchParams;
@@ -20,8 +20,8 @@ export default async function LoginPage(
         <>
           Não tem conta?{" "}
           <Link
-            href="/signup"
-            className="nav-item font-black text-brand-700 hover:text-od-text"
+            href={searchParams.next ? `/signup?next=${encodeURIComponent(searchParams.next)}` : "/signup"}
+            className="nav-item inline-flex min-h-11 items-center font-black text-brand-700 hover:text-od-text"
           >
             Criar agora
           </Link>
@@ -29,6 +29,7 @@ export default async function LoginPage(
       }
     >
       <form action={login} className="mt-6 space-y-4">
+        {searchParams.next ? <input type="hidden" name="next" value={searchParams.next} /> : null}
         <AuthField
           name="email"
           label="E-mail"
@@ -48,7 +49,7 @@ export default async function LoginPage(
           />
           <Link
             href="/forgot-password"
-            className="nav-item mt-1.5 inline-block text-xs font-bold text-ink-muted hover:text-brand-700"
+            className="nav-item mt-1.5 inline-flex min-h-11 items-center text-xs font-bold text-ink-muted hover:text-brand-700"
           >
             Esqueci minha senha
           </Link>

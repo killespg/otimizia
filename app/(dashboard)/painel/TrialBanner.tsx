@@ -11,11 +11,12 @@ export function TrialBanner({ trialDaysLeft }: { trialDaysLeft: number }) {
   const [closing, setClosing] = useState(false);
 
   useEffect(() => {
-    if (mandatory) {
-      setVisible(true);
-      return;
-    }
-    setVisible(window.localStorage.getItem(dismissKey) !== "1");
+    const frame = window.requestAnimationFrame(() => {
+      setVisible(
+        mandatory || window.localStorage.getItem(dismissKey) !== "1",
+      );
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [dismissKey, mandatory]);
 
   if (!visible) return null;
@@ -29,7 +30,10 @@ export function TrialBanner({ trialDaysLeft }: { trialDaysLeft: number }) {
         (mandatory ? "bg-brand-700 text-white" : "border-b border-line bg-surface-2 text-ink")
       }
     >
-      <Link href="/painel/configuracoes" className="nav-item">
+      <Link
+        href="/painel/configuracoes"
+        className="nav-item -my-2 inline-flex min-h-11 items-center"
+      >
         Faltam {trialDaysLeft} {trialDaysLeft === 1 ? "dia" : "dias"} no seu
         teste grátis — Assinar agora
       </Link>

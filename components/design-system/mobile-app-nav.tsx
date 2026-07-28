@@ -49,8 +49,11 @@ export function MobileAppNav({ tabs, timHref, groups, quickActions, ariaLabel }:
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
-    setOpen(false);
-    setPendingHref(null);
+    const frame = window.requestAnimationFrame(() => {
+      setOpen(false);
+      setPendingHref(null);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [pathname]);
 
   // Rede de segurança: se a navegação não acontecer (erro, cancelada), limpa

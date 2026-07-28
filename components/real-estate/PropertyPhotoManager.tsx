@@ -6,7 +6,7 @@ import { IconTrash } from "@/app/(dashboard)/painel/icons";
 
 type Photo = { id: string; url: string };
 
-export function PropertyPhotoManager({ propertyId, photos }: { propertyId: string; photos: Photo[] }) {
+export function PropertyPhotoManager({ propertyId, propertyTitle, photos }: { propertyId: string; propertyTitle: string; photos: Photo[] }) {
   const [order, setOrder] = useOptimistic(photos, (_current, next: Photo[]) => next);
   const [dragId, setDragId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
@@ -52,7 +52,7 @@ export function PropertyPhotoManager({ propertyId, photos }: { propertyId: strin
           }
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- vem de storage público, sem next/image configurado */}
-          <img src={photo.url} alt="" className="aspect-square w-full select-none object-cover" draggable={false} />
+          <img src={photo.url} alt={`${propertyTitle}, foto ${index + 1}`} className="aspect-square w-full select-none object-cover" draggable={false} />
           <span className="absolute left-1.5 top-1.5 grid h-5 min-w-5 place-items-center rounded bg-black/60 px-1 text-[10px] font-semibold text-white">
             {index + 1}
           </span>

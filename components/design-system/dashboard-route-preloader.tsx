@@ -4,22 +4,19 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 /**
- * Warms every primary dashboard route as soon as the shell hydrates and warms
- * dynamic destinations as soon as the user points at or focuses a link.
- * The App Router keeps the shell mounted and reuses the prefetched RSC result.
+ * Prefetch only on clear intent. Loading every module on hydration multiplied
+ * authenticated database work before the user chose a destination.
  */
-export function DashboardRoutePreloader({ routes }: { routes: string[] }) {
+export function DashboardRoutePreloader() {
   const router = useRouter();
-  const routeKey = routes.join("|");
 
   useEffect(() => {
+    const warmed = new Set<string>();
     const warm = (route: string) => {
+      if (warmed.has(route)) return;
+      warmed.add(route);
       router.prefetch(route);
     };
-
-    for (const route of routeKey.split("|").filter(Boolean)) {
-      warm(route);
-    }
 
     const warmLinkedRoute = (event: Event) => {
       const target = event.target;
@@ -31,14 +28,12 @@ export function DashboardRoutePreloader({ routes }: { routes: string[] }) {
 
     document.addEventListener("pointerover", warmLinkedRoute, true);
     document.addEventListener("focusin", warmLinkedRoute, true);
-    document.addEventListener("touchstart", warmLinkedRoute, true);
 
     return () => {
       document.removeEventListener("pointerover", warmLinkedRoute, true);
       document.removeEventListener("focusin", warmLinkedRoute, true);
-      document.removeEventListener("touchstart", warmLinkedRoute, true);
     };
-  }, [routeKey, router]);
+  }, [router]);
 
   return null;
 }

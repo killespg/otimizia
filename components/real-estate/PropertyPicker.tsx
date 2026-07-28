@@ -82,7 +82,7 @@ export function PropertyPicker({
               />
               {property.cover_url ? (
                 // eslint-disable-next-line @next/next/no-img-element -- thumbnail vem de storage público
-                <img src={property.cover_url} alt="" className="h-10 w-10 shrink-0 rounded-md border border-line object-cover" />
+                <img src={property.cover_url} alt={`Foto de capa de ${property.title}`} className="h-10 w-10 shrink-0 rounded-md border border-line object-cover" />
               ) : (
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-line bg-surface-2 text-ink-muted/60">
                   <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden fill="none">

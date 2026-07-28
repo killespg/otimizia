@@ -208,6 +208,22 @@ p { text-wrap: pretty; }
 
 .product-content { min-width: 0; flex: 1; }
 
+@media (max-width: 767px), (pointer: coarse) {
+  .product-workspace button,
+  .product-workspace [role="button"],
+  .product-workspace input:not([type="hidden"]),
+  .product-workspace select,
+  .product-workspace textarea {
+    min-height: 44px;
+  }
+
+  .product-workspace button[aria-label],
+  .product-workspace a[aria-label] {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
 /*
  * Guarda de migração do workspace jurídico: nenhum conteúdo operacional
  * pode voltar à microtipografia do frontend anterior. Avatares e navegação
@@ -513,8 +529,6 @@ select option { background: #1d1924; color: #faf9f8; }
   /* No celular a barra de rolagem lateral fica visível o tempo todo em
      alguns navegadores e parece um "arrastando". Some com ela (a rolagem por
      toque continua normal) — comportamento de app nativo. */
-  * { scrollbar-width: none; }
-  *::-webkit-scrollbar { width: 0; height: 0; display: none; }
 }
 
 @media (min-width: 1280px) {

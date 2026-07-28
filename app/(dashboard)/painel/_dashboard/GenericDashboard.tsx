@@ -33,7 +33,7 @@ import {
 import { formatBRL, formatDate } from "@/lib/format";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { buildSellerCommercialInsights } from "@/lib/seller-insights";
-import { claimDeal, claimTask, createTask, dismissChecklist, dismissRealEstateV2Intro } from "../actions";
+import { claimDeal, claimTask, dismissChecklist, dismissRealEstateV2Intro } from "../actions";
 import { updateDashboardPreferences } from "./actions";
 import { ReminderModal as ReminderModalClient } from "./ReminderModal";
 import { RevenueLineChart } from "./RevenueLineChart";
@@ -362,11 +362,12 @@ export default async function DashboardPage() {
       dailyWonCents[dayIndex] += dealValueOrZero(deal);
     }
   }
-  let runningCents = 0;
-  const wonSeries = dailyWonCents.map((cents, index) => {
-    runningCents += cents;
-    return { day: index + 1, cumulativeCents: runningCents };
-  });
+  const wonSeries = dailyWonCents.map((_, index) => ({
+    day: index + 1,
+    cumulativeCents: dailyWonCents
+      .slice(0, index + 1)
+      .reduce((total, cents) => total + cents, 0),
+  }));
 
   const overdue = openTasks
     .filter((task) => task.due_at && new Date(task.due_at) < now)
@@ -586,10 +587,10 @@ export default async function DashboardPage() {
               <span aria-hidden="true">•</span>
               <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long" }).format(now)}</time>
             </div>
-            <h1 className="mt-2 text-[28px] font-black tracking-[-0.035em] text-ink sm:text-[2.15rem]">
+            <h1 className="mt-2 text-[28px] font-black tracking-[-0.035em] text-od-text sm:text-[2.15rem]">
               Olá, {displayName}!
             </h1>
-            <p className="mt-1 text-sm font-semibold leading-relaxed text-ink-soft sm:text-base">
+            <p className="mt-1 text-sm font-semibold leading-relaxed text-od-text-2 sm:text-base">
               {greeting}
             </p>
           </div>
@@ -597,7 +598,7 @@ export default async function DashboardPage() {
           <div className="flex shrink-0 items-center gap-2 sm:hidden">
             <Link
               href="/painel/tarefas"
-              className="nav-item relative grid h-10 w-10 place-items-center rounded-lg border border-line bg-white text-ink-soft shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] hover:text-brand-700"
+              className="nav-item relative grid h-11 w-11 place-items-center rounded-md border border-od-border bg-od-surface text-od-text-2 hover:text-brand-700"
               aria-label="Ver lembretes"
             >
               <IconBell className="h-[18px] w-[18px]" />
@@ -614,9 +615,9 @@ export default async function DashboardPage() {
 
         <form
           action="/painel/contatos"
-          className="flex h-11 w-full min-w-0 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:hidden"
+          className="flex h-11 w-full min-w-0 items-center gap-2 rounded-md border border-od-border bg-od-surface px-3 text-sm sm:hidden"
         >
-          <IconSearch className="h-5 w-5 shrink-0 text-ink-muted" />
+          <IconSearch className="h-5 w-5 shrink-0 text-od-text-3" />
           <label className="sr-only" htmlFor="dashboard-contact-search-mobile">
             Buscar contatos
           </label>
@@ -625,16 +626,16 @@ export default async function DashboardPage() {
             name="q"
             type="search"
             placeholder="Buscar contatos, empresas..."
-            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-ink outline-none placeholder:text-ink-muted"
+            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-od-text outline-none placeholder:text-od-text-3"
           />
         </form>
 
         <div className="hidden flex-col gap-3 sm:flex sm:flex-row sm:items-center">
           <form
             action="/painel/contatos"
-            className="flex h-11 w-full min-w-0 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] sm:w-[430px]"
+            className="flex h-11 w-full min-w-0 items-center gap-2 rounded-md border border-od-border bg-od-surface px-3 text-sm sm:w-[430px]"
           >
-            <IconSearch className="h-5 w-5 shrink-0 text-ink-muted" />
+            <IconSearch className="h-5 w-5 shrink-0 text-od-text-3" />
             <label className="sr-only" htmlFor="dashboard-contact-search">
               Buscar contatos
             </label>
@@ -643,11 +644,11 @@ export default async function DashboardPage() {
               name="q"
               type="search"
               placeholder="Buscar contatos, empresas..."
-              className="min-w-0 flex-1 bg-transparent text-sm font-medium text-ink outline-none placeholder:text-ink-muted"
+              className="min-w-0 flex-1 bg-transparent text-sm font-medium text-od-text outline-none placeholder:text-od-text-3"
             />
             <button
               type="submit"
-              className="rounded-md bg-surface-2 px-2 py-1 text-[11px] font-bold text-ink-muted hover:bg-brand-50 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-600"
+              className="rounded-md bg-od-muted-surface px-2 py-1 text-[11px] font-bold text-od-text-3 hover:bg-brand-50 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-600"
             >
               Buscar
             </button>
@@ -656,7 +657,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/painel/tarefas"
-              className="nav-item relative grid h-11 w-11 place-items-center rounded-lg border border-line bg-white text-ink-soft shadow-[0_10px_30px_-24px_rgba(15,23,42,0.55)] hover:text-brand-700"
+              className="nav-item relative grid h-11 w-11 place-items-center rounded-md border border-od-border bg-od-surface text-od-text-2 hover:text-brand-700"
               aria-label="Ver lembretes"
             >
               <IconBell className="h-5 w-5" />
@@ -703,7 +704,7 @@ export default async function DashboardPage() {
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-success-50 text-success-700">
             <IconCheckCircle className="h-5 w-5" />
           </span>
-          <p className="text-sm font-bold text-ink-soft">
+          <p className="text-sm font-bold text-od-text-2">
             Nenhum processo consultado recentemente teve alteração.
           </p>
         </section>
@@ -711,8 +712,8 @@ export default async function DashboardPage() {
 
       {workspaceKey === "law_office" && (
         <section className="panel p-4 sm:p-5">
-          <h2 className="text-sm font-black text-ink">Consultar processo</h2>
-          <p className="mt-1 text-xs font-medium text-ink-muted">
+          <h2 className="text-sm font-black text-od-text">Consultar processo</h2>
+          <p className="mt-1 text-xs font-medium text-od-text-3">
             Busque um processo no DataJud (CNJ) sem sair do painel.
           </p>
           <div className="mt-3">
@@ -791,18 +792,18 @@ function MetricCard({
   return (
     <article
       data-dashboard-metric={metricKey}
-      className="enter relative min-h-[96px] overflow-hidden rounded-lg border border-line bg-white p-3 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.75)] sm:min-h-[150px] sm:p-5"
+      className="enter relative min-h-[96px] overflow-hidden rounded-md border border-od-border bg-od-surface p-3 sm:min-h-[150px] sm:p-5"
       style={{ display: visible ? undefined : "none", order }}
     >
       <div className="flex items-start justify-between gap-2 sm:gap-3">
         <div className="min-w-0">
           <p
             data-dashboard-metric-label={metricKey}
-            className="text-xs font-semibold text-ink-soft sm:text-sm"
+            className="text-xs font-semibold text-od-text-2 sm:text-sm"
           >
             {label}
           </p>
-          <p className="text-safe mt-2 text-xl font-black leading-none tracking-[-0.03em] text-ink sm:mt-3 sm:text-2xl">
+          <p className="text-safe mt-2 text-xl font-black leading-none tracking-[-0.03em] text-od-text sm:mt-3 sm:text-2xl">
             {value}
           </p>
         </div>
@@ -814,7 +815,7 @@ function MetricCard({
       {(delta || compare) && (
         <div className="relative z-10 mt-3 hidden flex-wrap items-center gap-1.5 text-xs font-bold sm:mt-4 sm:flex sm:gap-2">
           {delta && <span className={`rounded-md px-2 py-1 ${toneClass.badge}`}>{delta}</span>}
-          {compare && <span className="text-ink-muted">{compare}</span>}
+          {compare && <span className="text-od-text-3">{compare}</span>}
         </div>
       )}
     </article>
@@ -846,7 +847,7 @@ function FounderMetricsPanel({ metrics }: { metrics: DevMetrics }) {
   ];
 
   return (
-    <section className="enter rounded-lg border border-brand-200 bg-brand-50 p-4 sm:p-5">
+    <section className="enter rounded-md border border-brand-200 bg-brand-50 p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-black text-brand-800">Métricas do <BrandName /></p>
         <Link
@@ -859,9 +860,9 @@ function FounderMetricsPanel({ metrics }: { metrics: DevMetrics }) {
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
         {tiles.map((tile) => (
-          <div key={tile.label} className="rounded-lg border border-brand-200 bg-white p-3">
-            <p className="text-xs font-semibold text-ink-soft">{tile.label}</p>
-            <p className="mt-1 text-lg font-black leading-none tracking-[-0.02em] text-ink">
+          <div key={tile.label} className="rounded-md border border-brand-200 bg-od-surface p-3">
+            <p className="text-xs font-semibold text-od-text-2">{tile.label}</p>
+            <p className="mt-1 text-lg font-black leading-none tracking-[-0.02em] text-od-text">
               {tile.value}
             </p>
           </div>
@@ -883,15 +884,15 @@ function OpenClaimsPanel({
   if (tasks.length === 0 && deals.length === 0) return null;
 
   return (
-    <section className="enter rounded-lg border border-brand-200 bg-brand-50 p-4 sm:p-5">
+    <section className="enter rounded-md border border-brand-200 bg-brand-50 p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-sm font-black text-brand-800">Disponíveis pra pegar</p>
-          <p className="mt-1 text-xs font-medium text-ink-muted">
+          <p className="mt-1 text-xs font-medium text-od-text-3">
             Deixados em aberto pelo admin — quem pegar primeiro fica com o item.
           </p>
         </div>
-        <span className="rounded-md bg-white px-2.5 py-1 text-xs font-black text-brand-700">
+        <span className="rounded-md bg-od-surface px-2.5 py-1 text-xs font-black text-brand-700">
           {String(tasks.length + deals.length).padStart(2, "0")}
         </span>
       </div>
@@ -899,11 +900,11 @@ function OpenClaimsPanel({
         {tasks.map((task) => (
           <li
             key={`task-${task.id}`}
-            className="flex items-center justify-between gap-3 rounded-lg border border-brand-200 bg-white px-3 py-2.5"
+            className="flex items-center justify-between gap-3 rounded-md border border-brand-200 bg-od-surface px-3 py-2.5"
           >
             <div className="min-w-0">
-              <p className="clip-1 text-safe text-sm font-black text-ink">{task.title}</p>
-              <p className="mt-0.5 text-xs font-semibold text-ink-muted">
+              <p className="clip-1 text-safe text-sm font-black text-od-text">{task.title}</p>
+              <p className="mt-0.5 text-xs font-semibold text-od-text-3">
                 Tarefa{task.due_at ? ` · ${formatDate(task.due_at)}` : ""}
               </p>
             </div>
@@ -922,11 +923,11 @@ function OpenClaimsPanel({
         {deals.map((deal) => (
           <li
             key={`deal-${deal.id}`}
-            className="flex items-center justify-between gap-3 rounded-lg border border-brand-200 bg-white px-3 py-2.5"
+            className="flex items-center justify-between gap-3 rounded-md border border-brand-200 bg-od-surface px-3 py-2.5"
           >
             <div className="min-w-0">
-              <p className="clip-1 text-safe text-sm font-black text-ink">{deal.title}</p>
-              <p className="mt-0.5 text-xs font-semibold text-ink-muted">
+              <p className="clip-1 text-safe text-sm font-black text-od-text">{deal.title}</p>
+              <p className="mt-0.5 text-xs font-semibold text-od-text-3">
                 {capitalize(preset.dealSingular)} · {formatBRL(deal.value_cents ?? 0)}
               </p>
             </div>
@@ -989,15 +990,15 @@ function RevenueChart({
   return (
     <section
       id="valor"
-      className="enter relative overflow-hidden rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:min-h-[382px] sm:p-6"
+      className="enter relative overflow-hidden rounded-md border border-od-border bg-od-surface p-4 sm:min-h-[382px] sm:p-6"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Receita</p>
-          <h2 className="mt-0.5 text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
+          <h2 className="mt-0.5 text-base font-black tracking-[-0.02em] text-od-text sm:text-lg">
             {preset.wonLabel} no mês (R$)
           </h2>
-          <p className="mt-1 text-xs font-medium text-ink-muted sm:text-sm">
+          <p className="mt-1 text-xs font-medium text-od-text-3 sm:text-sm">
             Total aberto: {formatBRL(openValue)} - recebido no mês:{" "}
             {formatBRL(wonValue)}
           </p>
@@ -1008,97 +1009,6 @@ function RevenueChart({
 
       <ReminderModalClient contacts={contacts} defaultDueAt={defaultDueAt} />
     </section>
-  );
-}
-
-function ReminderModal({
-  contacts,
-  defaultDueAt,
-}: {
-  contacts: ContactOption[];
-  defaultDueAt: string;
-}) {
-  return (
-    <form
-      action={createTask}
-      className="absolute bottom-6 right-6 z-10 hidden w-[360px] rounded-lg border border-line bg-white p-5 shadow-[0_22px_60px_-28px_rgba(15,23,42,0.65)] lg:block"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-700">
-            <IconBell className="h-5 w-5" />
-          </span>
-          <h3 className="text-base font-black text-ink">Novo lembrete</h3>
-        </div>
-        <button
-          type="button"
-          className="nav-item grid h-8 w-8 place-items-center rounded-md text-xl leading-none text-ink-muted hover:bg-surface-2 hover:text-ink"
-          aria-label="Fechar"
-        >
-          x
-        </button>
-      </div>
-
-      <div className="mt-4 space-y-3">
-        <label className="block">
-          <span className="text-xs font-bold text-ink-soft">Título do lembrete *</span>
-          <input
-            name="title"
-            required
-            placeholder="Ex.: Ligar para cliente"
-            className="mt-1 h-10 w-full rounded-md border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
-          />
-        </label>
-        <label className="block">
-          <span className="text-xs font-bold text-ink-soft">Data e hora *</span>
-          <input
-            name="due_at"
-            type="datetime-local"
-            defaultValue={defaultDueAt}
-            className="mt-1 h-10 w-full rounded-md border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
-          />
-        </label>
-        <label className="block">
-          <span className="text-xs font-bold text-ink-soft">Relacionado a</span>
-          <select
-            name="contact_id"
-            className="mt-1 h-10 w-full rounded-md border border-line bg-white px-3 text-sm font-medium text-ink outline-none transition focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
-            defaultValue=""
-          >
-            <option value="">Selecione um contato ou empresa</option>
-            {contacts.map((contact) => (
-              <option key={contact.id} value={contact.id}>
-                {contact.company ? `${contact.name} - ${contact.company}` : contact.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="block">
-          <span className="text-xs font-bold text-ink-soft">Observação opcional</span>
-          <textarea
-            name="notes"
-            rows={2}
-            placeholder="Detalhes adicionais..."
-            className="mt-1 w-full resize-none rounded-md border border-line bg-white px-3 py-2 text-sm font-medium text-ink outline-none transition placeholder:text-ink-muted focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
-          />
-        </label>
-      </div>
-
-      <div className="mt-4 flex justify-end gap-2">
-        <button
-          type="button"
-          className="nav-item rounded-md border border-line bg-white px-4 py-2 text-sm font-bold text-ink-soft hover:bg-surface-2 hover:text-ink"
-        >
-          Cancelar
-        </button>
-        <PendingButton
-          className="nav-item rounded-md bg-brand-700 px-5 py-2 text-sm font-black text-white shadow-[0_14px_30px_-16px_rgba(109,40,217,0.9)] hover:bg-brand-800 focus-visible:ring-2 focus-visible:ring-brand-600"
-          pendingLabel="Salvando"
-        >
-          Salvar
-        </PendingButton>
-      </div>
-    </form>
   );
 }
 
@@ -1114,11 +1024,11 @@ function DealsTable({
   const recent = deals.slice(0, 4);
 
   return (
-    <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
+    <section className="enter rounded-md border border-od-border bg-od-surface p-4 sm:p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Pipeline</p>
-          <h2 className="mt-0.5 text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
+          <h2 className="mt-0.5 text-base font-black tracking-[-0.02em] text-od-text sm:text-lg">
             Negócios recentes
           </h2>
         </div>
@@ -1132,7 +1042,7 @@ function DealsTable({
       </div>
 
       {recent.length === 0 ? (
-        <p className="mt-4 rounded-lg border border-dashed border-line bg-[#f8fbff] px-3 py-8 text-center text-sm font-medium text-ink-muted">
+        <p className="mt-4 rounded-md border border-dashed border-od-border bg-[#f8fbff] px-3 py-8 text-center text-sm font-medium text-od-text-3">
           Nenhum negócio aberto ainda.
         </p>
       ) : (
@@ -1146,10 +1056,10 @@ function DealsTable({
               return (
                 <li
                   key={deal.id}
-                  className="rounded-lg border border-line bg-white p-3 shadow-[0_8px_28px_-24px_rgba(15,23,42,0.55)]"
+                  className="rounded-md border border-od-border bg-od-surface p-3"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="clip-2 text-safe min-w-0 text-sm font-black leading-snug text-ink">
+                    <p className="clip-2 text-safe min-w-0 text-sm font-black leading-snug text-od-text">
                       {deal.title}
                     </p>
                     <span className={`shrink-0 rounded-md px-2 py-1 text-[11px] font-black ${stage.className}`}>
@@ -1157,14 +1067,14 @@ function DealsTable({
                     </span>
                   </div>
                   <div className="mt-2 flex items-center justify-between gap-2">
-                    <span className="truncate text-xs font-bold text-ink-muted">
+                    <span className="truncate text-xs font-bold text-od-text-3">
                       {contact?.company ?? contact?.name ?? "Sem contato"}
                     </span>
                     <span className="shrink-0 text-sm font-black tabular-nums text-brand-700">
                       {formatBRL(deal.value_cents ?? 0)}
                     </span>
                   </div>
-                  <p className="mt-1 text-[11px] font-semibold text-ink-muted">
+                  <p className="mt-1 text-[11px] font-semibold text-od-text-3">
                     {formatDate(deal.created_at)}
                   </p>
                 </li>
@@ -1173,10 +1083,10 @@ function DealsTable({
           </ul>
 
           {/* Tablet/desktop: tabela completa. */}
-          <div className="mt-4 hidden overflow-x-auto rounded-lg border border-line sm:block">
+          <div className="mt-4 hidden overflow-x-auto rounded-md border border-od-border sm:block">
             <table className="w-full min-w-[620px] border-collapse text-left">
               <thead className="bg-[#f8faff]">
-                <tr className="text-[11px] font-bold text-ink-muted">
+                <tr className="text-[11px] font-bold text-od-text-3">
                   <th className="px-3 py-3">Negócio</th>
                   <th className="px-3 py-3">Cliente</th>
                   <th className="px-3 py-3">Etapa</th>
@@ -1184,13 +1094,13 @@ function DealsTable({
                   <th className="px-3 py-3">Previsão</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line bg-white">
+              <tbody className="divide-y divide-line bg-od-surface">
                 {recent.map((deal) => {
                   const stage = stageMeta(deal.stage, preset);
                   const contact = deal.contact_id ? contactMap.get(deal.contact_id) : null;
                   return (
-                    <tr key={deal.id} className="text-xs font-semibold text-ink-soft">
-                      <td className="px-3 py-3 text-ink">{deal.title}</td>
+                    <tr key={deal.id} className="text-xs font-semibold text-od-text-2">
+                      <td className="px-3 py-3 text-od-text">{deal.title}</td>
                       <td className="px-3 py-3">
                         {contact?.company ?? contact?.name ?? "-"}
                       </td>
@@ -1223,24 +1133,24 @@ function TaskQueue({
   now: Date;
 }) {
   return (
-    <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
+    <section className="enter rounded-md border border-od-border bg-od-surface p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Agenda</p>
-          <h2 className="mt-0.5 text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
+          <h2 className="mt-0.5 text-base font-black tracking-[-0.02em] text-od-text sm:text-lg">
             Fila de tarefas
           </h2>
         </div>
-        <span className="rounded-md bg-surface-2 px-2.5 py-1 text-xs font-black text-ink-muted">
+        <span className="rounded-md bg-od-muted-surface px-2.5 py-1 text-xs font-black text-od-text-3">
           {tasks.length} pendentes
         </span>
       </div>
 
       {tasks.length === 0 ? (
-        <div className="mt-4 rounded-lg border border-dashed border-line bg-[#f8faff] p-5 text-center">
+        <div className="mt-4 rounded-md border border-dashed border-od-border bg-[#f8faff] p-5 text-center">
           <IconCheckCircle className="mx-auto h-8 w-8 text-brand-700" />
-          <p className="mt-3 text-sm font-black text-ink">Tudo em dia por aqui.</p>
-          <p className="mt-1 text-sm font-medium text-ink-muted">
+          <p className="mt-3 text-sm font-black text-od-text">Tudo em dia por aqui.</p>
+          <p className="mt-1 text-sm font-medium text-od-text-3">
             Os próximos lembretes vão aparecer nesta fila.
           </p>
         </div>
@@ -1251,14 +1161,14 @@ function TaskQueue({
             return (
               <li
                 key={task.id}
-                className="flex items-center gap-3 rounded-lg border border-line bg-white px-3 py-3 shadow-[0_8px_28px_-24px_rgba(15,23,42,0.55)]"
+                className="flex items-center gap-3 rounded-md border border-od-border bg-od-surface px-3 py-3"
               >
-                <span className="h-4 w-4 shrink-0 rounded-full border border-line bg-white" />
+                <span className="h-4 w-4 shrink-0 rounded-full border border-od-border bg-od-surface" />
                 <div className="min-w-0 flex-1">
-                  <p className="clip-1 text-safe text-sm font-black text-ink">
+                  <p className="clip-1 text-safe text-sm font-black text-od-text">
                     {task.title}
                   </p>
-                  <p className="mt-1 text-xs font-semibold text-ink-muted">
+                  <p className="mt-1 text-xs font-semibold text-od-text-3">
                     {task.due_at ? dueLabel(task.due_at, now) : "Sem data"}
                   </p>
                 </div>
@@ -1312,11 +1222,11 @@ function CalendarWidget({
     .slice(0, 4);
 
   return (
-    <section className="enter rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
+    <section className="enter rounded-md border border-od-border bg-od-surface p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Agenda</p>
-          <h2 className="mt-0.5 text-base font-black capitalize tracking-[-0.02em] text-ink sm:text-lg">
+          <h2 className="mt-0.5 text-base font-black capitalize tracking-[-0.02em] text-od-text sm:text-lg">
             {monthLabel}
           </h2>
         </div>
@@ -1329,7 +1239,7 @@ function CalendarWidget({
         </Link>
       </div>
 
-      <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-[0.04em] text-ink-muted">
+      <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-[0.04em] text-od-text-3">
         {CALENDAR_WEEKDAY_LABELS.map((label, index) => (
           <div key={index}>{label}</div>
         ))}
@@ -1349,7 +1259,7 @@ function CalendarWidget({
                     ? "bg-brand-700 text-white"
                     : dayItems.length > 0
                       ? "bg-brand-50 text-brand-700"
-                      : "text-ink-soft")
+                      : "text-od-text-2")
               }
             >
               {day && <span className="grid h-full place-items-center">{day}</span>}
@@ -1359,7 +1269,7 @@ function CalendarWidget({
       </div>
 
       {upcoming.length === 0 ? (
-        <p className="mt-4 rounded-lg border border-dashed border-line bg-[#f8faff] px-3 py-6 text-center text-xs font-medium text-ink-muted">
+        <p className="mt-4 rounded-md border border-dashed border-od-border bg-[#f8faff] px-3 py-6 text-center text-xs font-medium text-od-text-3">
           Nada agendado por enquanto.
         </p>
       ) : (
@@ -1368,9 +1278,9 @@ function CalendarWidget({
             <li key={index}>
               <Link
                 href={item.href}
-                className="row-link flex items-center justify-between gap-2 rounded-lg border border-line px-3 py-2 hover:border-brand-300 hover:bg-brand-50"
+                className="row-link flex items-center justify-between gap-2 rounded-md border border-od-border px-3 py-2 hover:border-brand-300 hover:bg-brand-50"
               >
-                <span className="clip-1 text-safe min-w-0 text-xs font-bold text-ink">{item.title}</span>
+                <span className="clip-1 text-safe min-w-0 text-xs font-bold text-od-text">{item.title}</span>
                 <span className={"shrink-0 text-[11px] font-black " + calendarToneClass(item.tone)}>
                   {formatDate(item.date.toISOString())}
                 </span>
@@ -1463,10 +1373,10 @@ function OnboardingChecklist({
   if (steps.every((step) => step.done)) return null;
 
   return (
-    <section className="enter relative rounded-lg border border-brand-200 bg-brand-50 p-5">
+    <section className="enter relative rounded-md border border-brand-200 bg-brand-50 p-5">
       <form action={dismissChecklist} className="absolute right-3 top-3">
         <PendingButton
-          className="nav-item grid h-8 w-8 place-items-center rounded-md text-ink-muted hover:bg-white/60 hover:text-ink"
+          className="nav-item grid h-8 w-8 place-items-center rounded-md text-od-text-3 hover:bg-od-surface/60 hover:text-od-text"
           aria-label="Fechar painel de primeiros passos"
           iconOnly
           pendingLabel="Fechando"
@@ -1477,7 +1387,7 @@ function OnboardingChecklist({
       </form>
 
       <p className="text-sm font-black text-brand-800">Primeiros passos</p>
-      <h2 className="mt-2 max-w-lg text-2xl font-black tracking-[-0.03em] text-ink">
+      <h2 className="mt-2 max-w-lg text-2xl font-black tracking-[-0.03em] text-od-text">
         Deixe seu painel pronto pra valer.
       </h2>
 
@@ -1489,10 +1399,10 @@ function OnboardingChecklist({
               key={step.key}
               href={step.href}
               className={
-                "row-link relative rounded-lg border p-4 " +
+                "row-link relative rounded-md border p-4 " +
                 (step.done
-                  ? "border-success-200 bg-white/70"
-                  : "border-brand-200 bg-white hover:border-brand-400")
+                  ? "border-success-200 bg-od-surface/70"
+                  : "border-brand-200 bg-od-surface hover:border-brand-400")
               }
             >
               <div className="flex items-center justify-between gap-2">
@@ -1502,12 +1412,12 @@ function OnboardingChecklist({
               <p
                 className={
                   "mt-4 text-sm font-black " +
-                  (step.done ? "text-ink-muted line-through" : "text-ink")
+                  (step.done ? "text-od-text-3 line-through" : "text-od-text")
                 }
               >
                 {step.title}
               </p>
-              <p className="mt-1 text-sm font-medium leading-relaxed text-ink-muted">
+              <p className="mt-1 text-sm font-medium leading-relaxed text-od-text-3">
                 {step.desc}
               </p>
             </Link>
@@ -1534,10 +1444,10 @@ const REAL_ESTATE_V2_HIGHLIGHTS = [
 // corretor da equipe vê e dispensa a própria vez.
 function RealEstateV2IntroCard() {
   return (
-    <section className="enter relative rounded-lg border border-brand-200 bg-brand-50 p-5">
+    <section className="enter relative rounded-md border border-brand-200 bg-brand-50 p-5">
       <form action={dismissRealEstateV2Intro} className="absolute right-3 top-3">
         <PendingButton
-          className="nav-item grid h-8 w-8 place-items-center rounded-md text-ink-muted hover:bg-white/60 hover:text-ink"
+          className="nav-item grid h-8 w-8 place-items-center rounded-md text-od-text-3 hover:bg-od-surface/60 hover:text-od-text"
           aria-label="Fechar novidades da carteira de imóveis"
           iconOnly
           pendingLabel="Fechando"
@@ -1548,7 +1458,7 @@ function RealEstateV2IntroCard() {
       </form>
 
       <p className="text-sm font-black text-brand-800">Novidades na carteira de imóveis</p>
-      <h2 className="mt-2 max-w-lg text-2xl font-black tracking-[-0.03em] text-ink">
+      <h2 className="mt-2 max-w-lg text-2xl font-black tracking-[-0.03em] text-od-text">
         Sua carteira ganhou match, visitas, propostas e comissão.
       </h2>
 
@@ -1559,11 +1469,11 @@ function RealEstateV2IntroCard() {
             <Link
               key={item.title}
               href={item.href}
-              className="row-link relative rounded-lg border border-brand-200 bg-white p-4 hover:border-brand-400"
+              className="row-link relative rounded-md border border-brand-200 bg-od-surface p-4 hover:border-brand-400"
             >
               <Icon className="h-6 w-6 text-brand-700" />
-              <p className="mt-4 text-sm font-black text-ink">{item.title}</p>
-              <p className="mt-1 text-sm font-medium leading-relaxed text-ink-muted">{item.desc}</p>
+              <p className="mt-4 text-sm font-black text-od-text">{item.title}</p>
+              <p className="mt-1 text-sm font-medium leading-relaxed text-od-text-3">{item.desc}</p>
             </Link>
           );
         })}

@@ -1,5 +1,76 @@
 import type { RealEstateCommission } from "@/lib/supabase/types";
 
+export type CommissionPeriod = {
+  from: string;
+  to: string;
+  fromIso: string;
+  toIso: string;
+};
+
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+function firstOfMonth(date: Date): string {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1))
+    .toISOString()
+    .slice(0, 10);
+}
+
+function lastOfMonth(date: Date): string {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0))
+    .toISOString()
+    .slice(0, 10);
+}
+
+function validDate(value: string | null | undefined): value is string {
+  return Boolean(value && DATE_PATTERN.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`)));
+}
+
+export function normalizeCommissionPeriod(
+  rawFrom: string | null | undefined,
+  rawTo: string | null | undefined,
+  now = new Date(),
+): CommissionPeriod {
+  const fallbackFrom = firstOfMonth(now);
+  const fallbackTo = lastOfMonth(now);
+  const from = validDate(rawFrom) ? rawFrom : fallbackFrom;
+  const to = validDate(rawTo) && rawTo >= from ? rawTo : fallbackTo;
+  return {
+    from,
+    to,
+    fromIso: `${from}T00:00:00.000Z`,
+    toIso: `${to}T23:59:59.999Z`,
+  };
+}
+
+export function commissionPeriodOrFilter(period: CommissionPeriod): string {
+  return [
+    `and(due_at.gte.${period.fromIso},due_at.lte.${period.toIso})`,
+    `and(received_at.gte.${period.fromIso},received_at.lte.${period.toIso})`,
+  ].join(",");
+}
+
+export function isCommissionDueInPeriod(
+  commission: Pick<RealEstateCommission, "due_at">,
+  period: CommissionPeriod,
+): boolean {
+  return Boolean(
+    commission.due_at &&
+      commission.due_at >= period.fromIso &&
+      commission.due_at <= period.toIso,
+  );
+}
+
+export function isCommissionReceivedInPeriod(
+  commission: Pick<RealEstateCommission, "received_at">,
+  period: CommissionPeriod,
+): boolean {
+  return Boolean(
+    commission.received_at &&
+      commission.received_at >= period.fromIso &&
+      commission.received_at <= period.toIso,
+  );
+}
+
 function csvEscape(value: string): string {
   if (/[",\n]/.test(value)) return '"' + value.replace(/"/g, '""') + '"';
   return value;

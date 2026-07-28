@@ -18,7 +18,7 @@ export function LandingNav() {
   return (
     <NavBar
       brand={
-        <Link href="/" aria-label="OtimizIA, início" className="flex items-center">
+        <Link href="/" aria-label="OtimizIA, início" className="flex min-h-11 items-center">
           <LogoWordmark height={22} />
         </Link>
       }
@@ -34,13 +34,29 @@ export function LandingNav() {
         <>
           <Link
             href="/login"
-            className="flex min-h-9 items-center rounded-md px-3 text-[13px] font-semibold text-od-text-2 transition-colors hover:text-od-text"
+            className="hidden min-h-11 items-center rounded-md px-3 text-[13px] font-semibold text-od-text-2 transition-colors hover:text-od-text lg:flex"
           >
             Entrar
           </Link>
           <Link
             href="/signup"
-            className="flex min-h-9 items-center rounded-md bg-od-accent px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-od-accent-hover"
+            className="hidden min-h-11 items-center rounded-md bg-od-accent px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-od-accent-hover min-[360px]:flex"
+          >
+            Criar conta
+          </Link>
+        </>
+      }
+      mobileActions={
+        <>
+          <Link
+            href="/login"
+            className="flex min-h-11 items-center justify-center rounded border border-od-border text-[13px] font-semibold text-od-text-2"
+          >
+            Entrar
+          </Link>
+          <Link
+            href="/signup"
+            className="flex min-h-11 items-center justify-center rounded bg-od-accent px-3 text-[13px] font-semibold text-white"
           >
             Criar conta
           </Link>

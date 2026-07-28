@@ -29,10 +29,13 @@ export function clientIpFromHeaders(h: Headers): string | null {
 export async function verifyTurnstile(token: string, remoteIp: string | null): Promise<TurnstileOutcome> {
   const secret = process.env.TURNSTILE_SECRET;
 
-  // Sem segredo no ambiente = proteção ainda não ligada no backend. Deixa
-  // passar pra não travar login/signup antes da configuração terminar. Assim
-  // que TURNSTILE_SECRET existe, a verificação vira obrigatória.
-  if (!secret) return { ok: true, skipped: true };
+  // Sem segredo, falha fechado em produção. O bypass existe apenas no ambiente
+  // local para que login/signup possam ser desenvolvidos sem credenciais reais.
+  if (!secret) {
+    return process.env.NODE_ENV === "production"
+      ? { ok: false, reason: "verification_failed" }
+      : { ok: true, skipped: true };
+  }
 
   if (!token) return { ok: false, reason: "missing_token" };
 

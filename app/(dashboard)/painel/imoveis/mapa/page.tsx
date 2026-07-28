@@ -81,7 +81,7 @@ export default async function ImoveisMapaPage() {
       longitude: p.longitude as number,
       coverUrl: coverByPropertyId.get(p.id as string) ?? null,
       priceLabel: cents != null ? (isRent ? `${money(cents)}/mês` : money(cents)) : "Sob consulta",
-      neighborhood: (p.address_neighborhood as string | null) ?? "São Paulo",
+      neighborhood: (p.address_neighborhood as string | null) ?? "Localização não informada",
       typeLabel: TYPE_LABEL[p.property_type as string] ?? "Imóvel",
       statusLabel: STATUS_LABEL[p.status as string] ?? "",
       facts,

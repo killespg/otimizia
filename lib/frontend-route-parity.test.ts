@@ -193,7 +193,8 @@ describe("frontend route parity", () => {
     // Textura, nao superficie: canvas transparente (clearRect, sem fillRect de
     // fundo), atras do shader (z-0 contra z-[1]) e sem capturar ponteiro.
     expect(ambientParticles).toContain("context.clearRect(0, 0, width, height)");
-    expect(ambientParticles).toContain("pointer-events-none fixed inset-0 z-0");
+    expect(ambientParticles).toContain("pointer-events-none inset-0 z-0");
+    expect(ambientParticles).toContain('contained ? "absolute" : "fixed"');
     expect(ambientParticles).toContain('aria-hidden="true"');
     // Acessibilidade e custo: para com movimento reduzido e com a aba oculta.
     expect(ambientParticles).toContain('matchMedia("(prefers-reduced-motion: reduce)")');

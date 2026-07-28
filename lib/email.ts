@@ -10,16 +10,111 @@ function getResend(): Resend | null {
   return resendClient;
 }
 
-export async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
+// Dois remetentes de propósito. "human" é para e-mail que faz sentido a pessoa
+// responder (convite, boas-vindas) — a resposta chega em alguém. "automated" é
+// para disparo em massa e recorrente (resumo diário, alerta de venda parada):
+// vai do alias noreply@, que existe justamente para não acumular respostas num
+// endereço que ninguém lê e para separar a reputação de envio dos dois fluxos.
+export type EmailSender = "human" | "automated";
+
+function fromAddress(sender: EmailSender): string {
+  const human = process.env.RESEND_FROM_EMAIL || "OtimizIA <avisos@useotimizia.com>";
+  if (sender === "human") return human;
+  return process.env.RESEND_NOREPLY_EMAIL || "OtimizIA <noreply@useotimizia.com>";
+}
+
+export async function sendEmail(
+  to: string,
+  subject: string,
+  html: string,
+  sender: EmailSender = "automated"
+): Promise<boolean> {
   const resend = getResend();
   if (!resend) return false;
-  const from = process.env.RESEND_FROM_EMAIL || "OtimizIA <avisos@useotimizia.com>";
-  const { error } = await resend.emails.send({ from, to, subject, html });
+  const { error } = await resend.emails.send({ from: fromAddress(sender), to, subject, html });
   if (error) {
     logError("email.send-failed", error, { to, subject });
     return false;
   }
   return true;
+}
+
+export function organizationInvitationEmail(params: {
+  organizationName: string;
+  inviterName: string;
+  invitationUrl: string;
+  expiresInDays: number;
+}): { subject: string; html: string } {
+  const organizationName = escapeHtml(params.organizationName);
+  const inviterName = escapeHtml(params.inviterName);
+  const invitationUrl = escapeHtml(params.invitationUrl);
+  const subject = `${params.inviterName} convidou você para o OtimizIA`;
+
+  return {
+    subject,
+    html: `<!doctype html>
+<html lang="pt-BR">
+  <body style="margin:0;padding:24px;background:#151419;font-family:Arial,Helvetica,sans-serif;color:#f7f5f9;">
+    <span style="display:none;">Convite para participar de ${organizationName} no OtimizIA.</span>
+    <div style="max-width:520px;margin:0 auto;background:#1e1d22;padding:32px;border:1px solid rgba(255,255,255,.1);">
+      <p style="margin:0 0 12px;font-size:13px;color:#a9a2b1;">OtimizIA</p>
+      <h1 style="margin:0;font-size:24px;line-height:1.25;">Entre na equipe de ${organizationName}</h1>
+      <p style="margin:18px 0 0;font-size:15px;line-height:1.6;color:#c9c3cf;">
+        ${inviterName} convidou você para compartilhar contatos, negociações e lembretes dessa organização.
+        O acesso só será ativado depois que você entrar ou criar sua conta com este mesmo e-mail.
+      </p>
+      <a href="${invitationUrl}" style="display:inline-block;margin-top:24px;background:#5c22e8;color:#fff;text-decoration:none;padding:12px 20px;border-radius:4px;font-weight:700;font-size:14px;">
+        Revisar e aceitar convite
+      </a>
+      <p style="margin:20px 0 0;font-size:12px;line-height:1.5;color:#918a97;">
+        Este convite expira em ${params.expiresInDays} dias e só pode ser usado uma vez.
+        Se você não esperava este e-mail, ignore-o.
+      </p>
+    </div>
+  </body>
+</html>`,
+  };
+}
+
+export function welcomeEmail(params: {
+  name: string | null;
+  siteUrl: string;
+  trialDays: number;
+}): { subject: string; html: string } {
+  const firstName = (params.name ?? "").trim().split(/\s+/)[0];
+  const greeting = firstName ? `Boas-vindas, ${escapeHtml(firstName)}!` : "Boas-vindas!";
+  const subject = "Sua conta no OtimizIA está pronta";
+
+  return {
+    subject,
+    html: `<!doctype html>
+<html lang="pt-BR">
+  <body style="margin:0;padding:24px;background:#151419;font-family:Arial,Helvetica,sans-serif;color:#f7f5f9;">
+    <span style="display:none;">Três coisas para fazer nos primeiros minutos no OtimizIA.</span>
+    <div style="max-width:520px;margin:0 auto;background:#1e1d22;padding:32px;border:1px solid rgba(255,255,255,.1);">
+      <p style="margin:0 0 12px;font-size:13px;color:#a9a2b1;">OtimizIA</p>
+      <h1 style="margin:0;font-size:24px;line-height:1.25;">${greeting}</h1>
+      <p style="margin:18px 0 0;font-size:15px;line-height:1.6;color:#c9c3cf;">
+        Sua conta está ativa e o teste de ${params.trialDays} dias já começou — sem cartão,
+        sem cobrança automática no fim. O jeito mais rápido de sentir se o sistema serve
+        para você é fazer estas três coisas hoje:
+      </p>
+      <ol style="margin:18px 0 0;padding-left:20px;font-size:15px;line-height:1.8;color:#c9c3cf;">
+        <li>Cadastre <strong>um</strong> cliente de verdade, não um teste.</li>
+        <li>Crie a negociação dele e marque o próximo retorno.</li>
+        <li>Deixe o painel aberto amanhã de manhã: ele abre no que está atrasado.</li>
+      </ol>
+      <a href="${escapeHtml(params.siteUrl)}/painel" style="display:inline-block;margin-top:24px;background:#5c22e8;color:#fff;text-decoration:none;padding:12px 20px;border-radius:4px;font-weight:700;font-size:14px;">
+        Abrir meu painel
+      </a>
+      <p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:#918a97;">
+        Ficou com dúvida ou faltou alguma coisa? Responda este e-mail — ele chega em uma
+        pessoa, não numa caixa automática.
+      </p>
+    </div>
+  </body>
+</html>`,
+  };
 }
 
 function emailShell(preheader: string, bodyHtml: string): string {

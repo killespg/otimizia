@@ -24,20 +24,13 @@ export function Reveal({
   delay?: number;
   className?: string;
 }) {
-  const reduceMotion = useReducedMotion();
-
-  if (reduceMotion) return <div className={className}>{children}</div>;
-
   return (
-    <motion.div
+    <div
       className={className}
-      initial={{ opacity: 0, y: 14 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay }}
+      data-reveal-delay={delay}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 

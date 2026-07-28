@@ -312,7 +312,7 @@ function SellerCommercialIndicators({
           <h2 className="text-sm font-semibold text-white">Indicadores comerciais</h2>
           <p className="mt-1 text-xs text-white/44">Conversão, eficiência financeira e esforço da operação.</p>
         </div>
-        <Link href="/painel/funil/relatorio" className="shrink-0 text-xs font-semibold text-od-text-2 hover:text-od-text">Ver relatório</Link>
+        <Link href="/painel/funil/relatorio" className="-my-3 inline-flex min-h-11 shrink-0 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Ver relatório</Link>
       </header>
       <div className="grid divide-y divide-white/[0.08] lg:grid-cols-3 lg:divide-x lg:divide-y-0">
         <InsightGroup
@@ -415,7 +415,7 @@ function SellerPriorities({ tasks, overdue, now, contacts }: { tasks: Task[]; ov
             <h2 className="text-od-subtitle text-white">Prioridades de hoje</h2>
             <p className="mt-1 text-xs text-white/45">{tasks.length ? `${tasks.length} ${tasks.length === 1 ? "item exige" : "itens exigem"} sua atenção` : "Nenhum retorno pendente agora"}</p>
           </div>
-          <Link href="/painel/tarefas" className="text-xs font-semibold text-od-text-2 hover:text-od-text">Ver meu dia</Link>
+          <Link href="/painel/tarefas" className="-my-3 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Ver meu dia</Link>
         </div>
         {tasks.length === 0 ? (
           <div className="flex min-h-28 items-center gap-3 px-4 py-5">
@@ -467,10 +467,10 @@ function SellerDeals({ deals, contacts, preset }: { deals: Deal[]; contacts: Map
     <section data-dashboard-card className="h-full overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)]">
       <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-4 py-4">
         <div><h2 className="text-sm font-semibold text-white">Vendas em acompanhamento</h2><p className="mt-1 text-xs text-white/42">Ordenadas pela atividade mais recente</p></div>
-        <Link href="/painel/funil" className="inline-flex items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text">Ver funil <ArrowRight size={13} /></Link>
+        <Link href="/painel/funil" className="-my-3 inline-flex min-h-11 items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text">Ver funil <ArrowRight size={13} /></Link>
       </div>
       {recent.length === 0 ? (
-        <div className="px-4 py-8 text-center"><Handshake size={24} className="mx-auto text-od-text-3" /><p className="mt-3 text-sm font-semibold text-white">Nenhuma venda aberta ainda.</p><Link href="/painel/funil#new-deal" className="mt-2 inline-block text-xs font-semibold text-od-accent">Criar primeira venda</Link></div>
+        <div className="px-4 py-8 text-center"><Handshake size={24} className="mx-auto text-od-text-3" /><p className="mt-3 text-sm font-semibold text-white">Nenhuma venda aberta ainda.</p><Link href="/painel/funil#new-deal" className="mt-2 inline-flex min-h-11 items-center text-xs font-semibold text-od-accent">Criar primeira venda</Link></div>
       ) : (
         <div>
           <div className="hidden grid-cols-[minmax(0,1.2fr)_9rem_8rem_8rem] gap-3 border-b border-white/[0.07] px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-white/30 sm:grid"><span>Cliente / venda</span><span>Etapa</span><span>Valor</span><span>Entrada</span></div>
@@ -525,7 +525,7 @@ function SellerRevenue({ openValue, wonValue, series, conversionRate, avgTicketC
                 <span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><TrendingUp size={17} /></span>
                 <div><p className="text-sm font-semibold text-white/76">Seu gráfico começa com a primeira venda ganha.</p><p className="mt-1 text-xs text-white/42">Mova uma oportunidade para ganha no funil.</p></div>
               </div>
-              <Link href="/painel/funil" className="text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir funil</Link>
+              <Link href="/painel/funil" className="inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir funil</Link>
             </div>
             <div className="mt-4 grid divide-y divide-white/[0.08] border-y border-white/[0.08] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
               <MiniStat label="Em aberto" value={formatBRL(openValue)} />
@@ -588,8 +588,8 @@ function SellerAgenda({ now, items }: { now: Date; items: CalendarItem[] }) {
   const upcoming = items.filter((item) => item.date >= now || item.tone === "danger").sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 6);
   return (
     <section data-dashboard-card className="h-full rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] p-4">
-      <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Próximos lembretes</h2><p className="mt-1 text-xs text-white/42">Quem chamar e quando</p></div><Link href="/painel/calendario" className="text-xs font-semibold text-od-text-2 hover:text-od-text">Calendário</Link></div>
-      {upcoming.length === 0 ? <div className="mt-4 flex flex-col gap-3 border-t border-white/[0.07] pt-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3"><Clock3 size={18} className="shrink-0 text-white/32" /><div><p className="text-sm font-medium text-white/62">Sua agenda está livre.</p><p className="mt-1 text-xs text-white/40">Crie um lembrete para não perder o próximo retorno.</p></div></div><Link href="#novo-lembrete" className="text-xs font-semibold text-od-text-2 hover:text-od-text">Criar lembrete</Link></div> : <ul className="mt-4 divide-y divide-white/[0.07]">{upcoming.map((item, index) => <li key={`${item.title}-${index}`}><Link href={item.href} className="flex items-center gap-3 py-3 hover:text-white"><span className={`size-2 rounded-full ${item.tone === "danger" ? "bg-[#fb7767]" : item.tone === "warning" ? "bg-amber-300" : "bg-od-text-3"}`} /><span className="min-w-0 flex-1 truncate text-xs font-medium text-white/68">{item.title}</span><span className="text-[11px] text-white/38">{formatDate(item.date.toISOString())}</span></Link></li>)}</ul>}
+      <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Próximos lembretes</h2><p className="mt-1 text-xs text-white/42">Quem chamar e quando</p></div><Link href="/painel/calendario" className="-my-1 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Calendário</Link></div>
+      {upcoming.length === 0 ? <div className="mt-4 flex flex-col gap-3 border-t border-white/[0.07] pt-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3"><Clock3 size={18} className="shrink-0 text-white/32" /><div><p className="text-sm font-medium text-white/62">Sua agenda está livre.</p><p className="mt-1 text-xs text-white/40">Crie um lembrete para não perder o próximo retorno.</p></div></div><Link href="#novo-lembrete" className="inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Criar lembrete</Link></div> : <ul className="mt-4 divide-y divide-white/[0.07]">{upcoming.map((item, index) => <li key={`${item.title}-${index}`}><Link href={item.href} className="flex items-center gap-3 py-3 hover:text-white"><span className={`size-2 rounded-full ${item.tone === "danger" ? "bg-[#fb7767]" : item.tone === "warning" ? "bg-amber-300" : "bg-od-text-3"}`} /><span className="min-w-0 flex-1 truncate text-xs font-medium text-white/68">{item.title}</span><span className="text-[11px] text-white/38">{formatDate(item.date.toISOString())}</span></Link></li>)}</ul>}
     </section>
   );
 }

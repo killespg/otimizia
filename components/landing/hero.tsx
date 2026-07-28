@@ -4,29 +4,13 @@ import { AnimatedShapesBackground } from "@/components/design-system/animated-sh
 import { DashboardPreview } from "@/components/landing/dashboard-preview";
 
 /**
- * Dark hero pattern: retro perspective grid + radial glow + gradient
- * headline + pill CTA with an animated gradient border.
+ * Dark hero pattern: restrained radial glow, animated shapes and a direct CTA.
  * `animated` layers in the floating-shapes background (opt-in — the
  * design-system showcase page keeps the plain grid, the landing turns it on).
  */
 export function Hero({ animated = false }: { animated?: boolean }) {
   return (
-    <section className="relative overflow-hidden border-b border-od-border bg-od-bg px-8 pt-24 text-center md:pt-28 lg:pb-0">
-      <div
-        className="pointer-events-none absolute inset-0 overflow-hidden opacity-25"
-        aria-hidden
-      >
-        <div
-          className="absolute -inset-1/2"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, #5c22e8 1px, transparent 1px), linear-gradient(to bottom, #5c22e8 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-            transform: "perspective(300px) rotateX(60deg)",
-            transformOrigin: "50% 0",
-          }}
-        />
-      </div>
+    <section className="relative overflow-hidden border-b border-od-border bg-od-bg pt-24 text-center md:pt-28 lg:pb-0">
       <div
         className="pointer-events-none absolute inset-0"
         style={{
@@ -56,7 +40,7 @@ export function Hero({ animated = false }: { animated?: boolean }) {
         {/* A promessa é o que o webhook faz de verdade: a IA responde a
             conversa e a detecção de intenção abre a negociação no funil. Nada
             aqui é roadmap. */}
-        <h1 className="mx-auto mb-5 max-w-[18ch] text-balance text-[44px] font-extrabold leading-[1.1] tracking-[-0.02em] md:max-w-[22ch] md:text-[56px]">
+        <h1 className="mx-auto mb-5 max-w-[18ch] text-balance text-[40px] font-extrabold leading-[1.1] tracking-[-0.02em] sm:text-[44px] md:max-w-[22ch] md:text-[56px]">
           <span className="text-white">A IA atende seu WhatsApp. </span>
           <span className="text-od-accent">
             Você entra quando importa.

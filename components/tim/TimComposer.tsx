@@ -46,7 +46,15 @@ export function TimComposer({
   className?: string;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const hasContent = value.trim().length > 0 || Boolean(pendingImage) || Boolean(pdfAttachment.file);
+  const {
+    file: pendingPdf,
+    error: pdfError,
+    inputRef: pdfInputRef,
+    pick: pickPdf,
+    onChange: onPdfChange,
+    clear: clearPdf,
+  } = pdfAttachment;
+  const hasContent = value.trim().length > 0 || Boolean(pendingImage) || Boolean(pendingPdf);
 
   function autoGrow() {
     const el = textareaRef.current;
@@ -72,15 +80,15 @@ export function TimComposer({
 
   return (
     <div className={`shrink-0 space-y-2 ${className ?? ""}`}>
-      {(pdfAttachment.file || pdfAttachment.error) && (
+      {(pendingPdf || pdfError) && (
         <div>
-          {pdfAttachment.file && (
+          {pendingPdf && (
             <div className="flex items-center gap-2 rounded bg-white/[0.04] px-2.5 py-1.5 text-xs font-semibold text-white/80">
               <IconPaperclip className="h-3.5 w-3.5 shrink-0 text-white/50" />
-              <span className="min-w-0 flex-1 truncate">{pdfAttachment.file.name}</span>
+              <span className="min-w-0 flex-1 truncate">{pendingPdf.name}</span>
               <button
                 type="button"
-                onClick={pdfAttachment.clear}
+                onClick={clearPdf}
                 className="grid h-6 w-6 shrink-0 place-items-center rounded text-white/50 hover:bg-white/[0.06] hover:text-white"
                 aria-label="Remover PDF anexado"
               >
@@ -88,7 +96,7 @@ export function TimComposer({
               </button>
             </div>
           )}
-          {pdfAttachment.error && <p className="mt-1 text-xs font-semibold text-red-400">{pdfAttachment.error}</p>}
+          {pdfError && <p className="mt-1 text-xs font-semibold text-red-400">{pdfError}</p>}
         </div>
       )}
 
@@ -101,15 +109,15 @@ export function TimComposer({
       >
         <ChatImageAttach value={pendingImage} onChange={onPendingImageChange} />
         <input
-          ref={pdfAttachment.inputRef}
+          ref={pdfInputRef}
           type="file"
           accept="application/pdf"
-          onChange={pdfAttachment.onChange}
+          onChange={onPdfChange}
           className="hidden"
         />
         <button
           type="button"
-          onClick={pdfAttachment.pick}
+          onClick={pickPdf}
           className="grid size-10 shrink-0 place-items-center rounded-full text-white/45 hover:bg-white/[0.06] hover:text-white/70"
           aria-label="Anexar PDF"
           title="Anexar PDF"

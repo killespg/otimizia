@@ -3,8 +3,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 
 export async function proxy(request: NextRequest) {
   if (
-    request.nextUrl.pathname === "/" ||
-    request.nextUrl.pathname.startsWith("/dashboard-juridico")
+    request.nextUrl.pathname === "/"
   ) {
     return NextResponse.next();
   }
@@ -14,6 +13,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api/health|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!api/health|sitemap.xml|robots.txt|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

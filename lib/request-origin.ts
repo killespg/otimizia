@@ -9,6 +9,13 @@
 // return_url do Portal). Por isso, em produção SITE_URL é a fonte de
 // verdade e os headers nunca chegam a ser usados; eles só entram como
 // fallback em dev, quando SITE_URL normalmente não está configurado.
+// Para o que é gerado fora do ciclo de uma requisição do usuário (sitemap,
+// robots, metadataBase): não há header confiável para consultar, então SITE_URL
+// é a única fonte. Sem ela, em dev, cai em localhost.
+export function siteUrl(): string {
+  return (process.env.SITE_URL ?? "http://localhost:3000").replace(/\/+$/, "");
+}
+
 export function resolveOrigin(headers: { get(name: string): string | null }): string {
   const configured = process.env.SITE_URL;
   if (configured) return configured.replace(/\/+$/, "");

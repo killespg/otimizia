@@ -1,9 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { resolveOrigin } from "@/lib/request-origin";
 import { createClient } from "@/lib/supabase/server";
+import { sendWelcomeEmailOnce } from "@/lib/welcome-email";
 
 async function requireOrgAdmin() {
   const supabase = await createClient();
@@ -14,11 +17,18 @@ async function requireOrgAdmin() {
   const orgId = await getActiveOrgId(supabase, user.id);
   const role = await getOrgRole(supabase, orgId, user.id);
   if (role !== "admin") redirect("/painel");
-  return { supabase, orgId };
+  return { supabase, orgId, userId: user.id };
+}
+
+// Fim do onboarding — completo ou pulado — é o primeiro momento em que a conta
+// existe de verdade e a pessoa está logada. Mandar antes disso significaria
+// dar boas-vindas a quem ainda não confirmou o e-mail.
+async function welcome(userId: string): Promise<void> {
+  await sendWelcomeEmailOnce(userId, resolveOrigin(await headers()));
 }
 
 export async function completeOnboarding(formData: FormData) {
-  const { supabase, orgId } = await requireOrgAdmin();
+  const { supabase, orgId, userId } = await requireOrgAdmin();
 
   const name = requiredText(formData.get("organization_name"), "Nome da empresa", 120);
   const industry = text(formData.get("industry"), 120);
@@ -52,12 +62,13 @@ export async function completeOnboarding(formData: FormData) {
     throw new Error("Não deu para salvar a empresa.");
   }
 
+  await welcome(userId);
   revalidatePath("/", "layout");
   redirect("/painel");
 }
 
 export async function skipOnboarding() {
-  const { supabase, orgId } = await requireOrgAdmin();
+  const { supabase, orgId, userId } = await requireOrgAdmin();
 
   const { error } = await supabase
     .from("organizations")
@@ -68,6 +79,7 @@ export async function skipOnboarding() {
     throw new Error("Não deu para continuar.");
   }
 
+  await welcome(userId);
   revalidatePath("/", "layout");
   redirect("/painel");
 }

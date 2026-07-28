@@ -3,7 +3,7 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { type LucideIcon } from "lucide-react";
+import { Menu, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface NavItem {
@@ -19,6 +19,8 @@ interface NavBarProps {
   brand?: React.ReactNode;
   /** Ação à direita: entrar, criar conta. */
   actions?: React.ReactNode;
+  /** Ações repetidas dentro do menu compacto. */
+  mobileActions?: React.ReactNode;
 }
 
 /**
@@ -35,8 +37,14 @@ interface NavBarProps {
  * de resize e nunca usado: a troca de rótulo por ícone já era feita por
  * breakpoint no CSS. Saiu.
  */
-export function NavBar({ items, className, brand, actions }: NavBarProps) {
+export function NavBar({ items, className, brand, actions, mobileActions }: NavBarProps) {
   const [activeTab, setActiveTab] = React.useState(items[0]?.name ?? "");
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+
+  function selectItem(name: string) {
+    setActiveTab(name);
+    setMobileOpen(false);
+  }
 
   return (
     <header
@@ -45,10 +53,10 @@ export function NavBar({ items, className, brand, actions }: NavBarProps) {
         className,
       )}
     >
-      <nav className="mx-auto flex h-14 max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] items-center gap-4 px-5 sm:px-8">
-        {brand ? <div className="mr-2 flex shrink-0 items-center">{brand}</div> : null}
+      <nav className="mx-auto flex h-16 max-w-[1180px] items-center gap-3 px-5 sm:px-8 min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px]">
+        {brand ? <div className="flex min-h-11 shrink-0 items-center lg:mr-2">{brand}</div> : null}
 
-        <ul className="flex min-w-0 flex-1 items-center gap-1">
+        <ul className="hidden min-w-0 flex-1 items-center gap-1 lg:flex">
           {items.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.name;
@@ -57,16 +65,15 @@ export function NavBar({ items, className, brand, actions }: NavBarProps) {
               <li key={item.name}>
                 <Link
                   href={item.url}
-                  onClick={() => setActiveTab(item.name)}
+                  onClick={() => selectItem(item.name)}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "relative flex min-h-9 items-center gap-2 rounded-md px-3 text-[13px] font-semibold transition-colors",
+                    "relative flex min-h-11 items-center gap-2 rounded-md px-3 text-[13px] font-semibold transition-colors",
                     isActive ? "text-od-text" : "text-od-text-3 hover:text-od-text-2",
                   )}
                 >
-                  <Icon size={15} strokeWidth={2} className="shrink-0 md:hidden" />
-                  <span className="hidden md:inline">{item.name}</span>
-                  <span className="sr-only md:hidden">{item.name}</span>
+                  <Icon size={15} strokeWidth={2} className="shrink-0 xl:hidden" />
+                  <span>{item.name}</span>
 
                   {isActive ? (
                     <motion.span
@@ -87,7 +94,53 @@ export function NavBar({ items, className, brand, actions }: NavBarProps) {
           })}
         </ul>
 
-        {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          {actions}
+          <div className="relative lg:hidden">
+            <button
+              type="button"
+              aria-label="Abrir menu"
+              aria-expanded={mobileOpen}
+              onClick={() => setMobileOpen((current) => !current)}
+              className="grid size-11 place-items-center rounded-md border border-od-border text-od-text-2 transition-colors hover:border-od-border-hover hover:text-od-text"
+            >
+              <Menu className="size-5" strokeWidth={2} />
+            </button>
+            {mobileOpen ? (
+              <div className="absolute right-0 top-[calc(100%+8px)] w-[min(320px,calc(100vw-40px))] rounded-lg border border-od-border bg-od-surface p-2">
+              <ul className="space-y-1">
+                {items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.name;
+                  return (
+                    <li key={item.name}>
+                      <Link
+                        href={item.url}
+                        onClick={() => selectItem(item.name)}
+                        aria-current={isActive ? "page" : undefined}
+                        className={cn(
+                          "flex min-h-11 items-center gap-3 rounded px-3 text-sm font-semibold transition-colors",
+                          isActive
+                            ? "bg-od-accent-tint text-od-text"
+                            : "text-od-text-2 hover:bg-white/[0.04] hover:text-od-text",
+                        )}
+                      >
+                        <Icon className="size-4 shrink-0" strokeWidth={2} />
+                        {item.name}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+              {mobileActions ? (
+                <div className="mt-2 grid grid-cols-2 gap-2 border-t border-od-border pt-2">
+                  {mobileActions}
+                </div>
+              ) : null}
+              </div>
+            ) : null}
+          </div>
+        </div>
       </nav>
     </header>
   );

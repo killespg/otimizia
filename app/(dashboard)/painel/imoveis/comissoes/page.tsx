@@ -2,20 +2,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Download, HandCoins, Target, TriangleAlert, WalletCards } from "lucide-react";
 import { canManageRealEstate, canViewRealEstate, isRealEstateV2Enabled } from "@/lib/real-estate";
-import { isCommissionOverdue } from "@/lib/real-estate-commissions";
+import {
+  commissionPeriodOrFilter,
+  isCommissionDueInPeriod,
+  isCommissionOverdue,
+  isCommissionReceivedInPeriod,
+  normalizeCommissionPeriod,
+} from "@/lib/real-estate-commissions";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import type { RealEstateCommission, RealEstateTarget } from "@/lib/supabase/types";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { CommissionPanel, TargetsPanel } from "../dashboard/RealEstateDashboard";
-
-function firstOfMonth(date: Date): string {
-  return new Date(date.getFullYear(), date.getMonth(), 1).toISOString().slice(0, 10);
-}
-
-function lastOfMonth(date: Date): string {
-  return new Date(date.getFullYear(), date.getMonth() + 1, 0).toISOString().slice(0, 10);
-}
 
 function centsToReais(cents: number): string {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -54,18 +52,15 @@ export default async function RealEstateCommissionsPage({
   if (!canViewRealEstate(membership?.job_role, isAdmin) || !isRealEstateV2Enabled(organization)) notFound();
 
   const now = new Date();
-  const from = filters.from || firstOfMonth(now);
-  const to = filters.to || lastOfMonth(now);
+  const period = normalizeCommissionPeriod(filters.from, filters.to, now);
+  const { from, to } = period;
   const brokerFilter = filters.broker || "";
-  const fromIso = `${from}T00:00:00.000Z`;
-  const toIso = `${to}T23:59:59.999Z`;
 
   let commissionsQuery = supabase
     .from("real_estate_commissions")
     .select("*")
     .eq("org_id", orgId)
-    .gte("created_at", fromIso)
-    .lte("created_at", toIso);
+    .or(commissionPeriodOrFilter(period));
   let targetsQuery = supabase
     .from("real_estate_targets")
     .select("*")
@@ -88,16 +83,26 @@ export default async function RealEstateCommissionsPage({
   const commissions = (commissionRows ?? []) as RealEstateCommission[];
   const targets = (targetRows ?? []) as RealEstateTarget[];
   const activeCommissions = commissions.filter((commission) => commission.status !== "cancelled");
-  const expectedTotal = activeCommissions.reduce((sum, commission) => sum + commission.expected_amount_cents, 0);
-  const receivedTotal = activeCommissions.reduce((sum, commission) => sum + commission.received_amount_cents, 0);
-  const outstandingTotal = Math.max(0, expectedTotal - receivedTotal);
-  const overdueCount = activeCommissions.filter(isCommissionOverdue).length;
+  const dueCommissions = activeCommissions.filter((commission) =>
+    isCommissionDueInPeriod(commission, period),
+  );
+  const receivedCommissions = activeCommissions.filter((commission) =>
+    isCommissionReceivedInPeriod(commission, period),
+  );
+  const expectedTotal = dueCommissions.reduce((sum, commission) => sum + commission.expected_amount_cents, 0);
+  const receivedTotal = receivedCommissions.reduce((sum, commission) => sum + commission.received_amount_cents, 0);
+  const outstandingTotal = dueCommissions.reduce(
+    (sum, commission) =>
+      sum + Math.max(0, commission.expected_amount_cents - commission.received_amount_cents),
+    0,
+  );
+  const overdueCount = dueCommissions.filter(isCommissionOverdue).length;
   const targetTotal = targets.reduce((sum, target) => sum + target.target_amount_cents, 0);
   const canManage = canManageRealEstate(membership?.job_role, isAdmin);
 
   const summary = [
-    { label: "Comissão prevista", value: centsToReais(expectedTotal), note: `${activeCommissions.length} lançamentos`, icon: HandCoins },
-    { label: "Recebida", value: centsToReais(receivedTotal), note: expectedTotal > 0 ? `${Math.round((receivedTotal / expectedTotal) * 100)}% da previsão` : "sem previsão no período", icon: WalletCards },
+    { label: "Comissão prevista", value: centsToReais(expectedTotal), note: `${dueCommissions.length} vencimentos no período`, icon: HandCoins },
+    { label: "Recebida", value: centsToReais(receivedTotal), note: `${receivedCommissions.length} recebimentos no período`, icon: WalletCards },
     { label: "A receber", value: centsToReais(outstandingTotal), note: overdueCount > 0 ? `${overdueCount} vencidas` : "nenhuma pendência vencida", icon: TriangleAlert },
     { label: "Meta do período", value: targetTotal > 0 ? centsToReais(targetTotal) : "Não definida", note: targetTotal > 0 ? "objetivo vigente" : "configure abaixo", icon: Target },
   ];
@@ -110,7 +115,7 @@ export default async function RealEstateCommissionsPage({
           <h1 className="mt-4 text-od-title text-white">Comissões e metas</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/52">Registre previsões, acompanhe recebimentos e defina objetivos para a equipe ou para cada corretor.</p>
         </div>
-        <a href="/api/reports/real-estate-commissions" download className="inline-flex min-h-11 items-center justify-center gap-2 rounded border border-white/[0.1] px-4 text-[13px] font-semibold text-white/68 hover:bg-white/[0.04] hover:text-white"><Download size={15} /> Baixar relatório</a>
+        <a href={`/api/reports/real-estate-commissions?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}${brokerFilter ? `&broker=${encodeURIComponent(brokerFilter)}` : ""}`} download className="inline-flex min-h-11 items-center justify-center gap-2 rounded border border-white/[0.1] px-4 text-[13px] font-semibold text-white/68 hover:bg-white/[0.04] hover:text-white"><Download size={15} /> Baixar relatório filtrado</a>
       </header>
 
       {/* Barra de controle, nao modulo: fica aberta e colada no cabecalho, com

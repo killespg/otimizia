@@ -39,8 +39,10 @@ export function InstallAppPrompt() {
     }
 
     const dismissedThisSession = sessionStorage.getItem(DISMISSED_KEY) === "true";
-    setDismissed(dismissedThisSession);
-    setReady(isMobileViewport() && !isStandalone());
+    const frame = window.requestAnimationFrame(() => {
+      setDismissed(dismissedThisSession);
+      setReady(isMobileViewport() && !isStandalone());
+    });
 
     function onBeforeInstallPrompt(event: Event) {
       event.preventDefault();
@@ -56,6 +58,7 @@ export function InstallAppPrompt() {
     window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
     window.addEventListener("appinstalled", onAppInstalled);
     return () => {
+      window.cancelAnimationFrame(frame);
       window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
       window.removeEventListener("appinstalled", onAppInstalled);
     };

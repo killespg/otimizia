@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 // Widget do Cloudflare Turnstile para os formulários de auth (login, signup,
 // reset). Fica escondido atrás de NEXT_PUBLIC_TURNSTILE_SITE_KEY: sem a chave,
-// não renderiza nada e o formulário segue funcionando igual — assim o código
-// pode ir pra produção antes de a proteção ser ligada no dashboard do Supabase.
+// não renderiza nada. Isso é aceito só no desenvolvimento local; em produção,
+// o backend bloqueia a autenticação quando TURNSTILE_SECRET não está configurado.
 //
 // Quando a chave existe, o token do desafio é injetado num input escondido
 // `cf-turnstile-response`, que as Server Actions leem e validam no backend via

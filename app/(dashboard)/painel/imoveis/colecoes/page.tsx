@@ -222,7 +222,7 @@ export default async function ColecoesPage() {
                           <div className="relative aspect-[16/10] bg-white/[0.03]">
                             {cover ? (
                               // eslint-disable-next-line @next/next/no-img-element
-                              <img src={cover} alt="" loading="lazy" className="h-full w-full object-cover" />
+                              <img src={cover} alt={`Foto de capa de ${item.title}`} loading="lazy" className="h-full w-full object-cover" />
                             ) : (
                               <div className="flex h-full w-full items-center justify-center text-ink-muted/40">
                                 <IconImage className="h-7 w-7" />

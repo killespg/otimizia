@@ -16,6 +16,8 @@ next-dev-*.err.log
 /.vercel
 /supabase/.branches
 /supabase/.temp
+/playwright-report/
+/test-results/
 
 # Ignore local and tool-specific files
 .agents/

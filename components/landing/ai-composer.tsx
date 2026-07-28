@@ -41,7 +41,7 @@ export function AiComposer() {
             </div>
             <button
               type="button"
-              className="flex items-center gap-1.5 rounded-lg bg-white/[0.06] px-4 py-2 text-[13px] font-semibold text-white/30"
+              className="flex min-h-11 items-center gap-1.5 rounded bg-white/[0.06] px-4 text-[13px] font-semibold text-white/30"
               disabled
             >
               Enviar

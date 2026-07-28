@@ -9,7 +9,7 @@ import type { Organization } from "@/lib/supabase/types";
 import { normalizeProfession } from "@/lib/professions";
 import type { JobRole } from "@/lib/supabase/types";
 import { IconPlus, IconTrash, IconUsers } from "../icons";
-import { inviteMember, removeMember, updateMemberJobRole, updateMemberRole, updateOrganizationContext } from "./actions";
+import { inviteMember, removeMember, revokeInvitation, updateMemberJobRole, updateMemberRole, updateOrganizationContext } from "./actions";
 
 function memberJobRoleLabel(role: JobRole, professionType: string) {
   return normalizeProfession(professionType) === "real_estate_broker"
@@ -30,10 +30,18 @@ export default async function TeamPage(
   if (!user) redirect("/login");
 
   const orgId = await getActiveOrgId(supabase, user.id);
-  const [members, role, { data: orgData }] = await Promise.all([
+  const [members, role, { data: orgData }, { data: invitationRows }] = await Promise.all([
     getOrgMembers(supabase, orgId),
     getOrgRole(supabase, orgId, user.id),
     supabase.from("organizations").select("*").eq("id", orgId).maybeSingle(),
+    supabase
+      .from("organization_invitations")
+      .select("id, email, job_role, expires_at")
+      .eq("org_id", orgId)
+      .is("accepted_at", null)
+      .is("revoked_at", null)
+      .gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false }),
   ]);
   const org = orgData as Organization | null;
   const isAdmin = role === "admin";
@@ -200,6 +208,34 @@ export default async function TeamPage(
               Convidar
             </PendingButton>
           </form>
+          {(invitationRows?.length ?? 0) > 0 ? (
+            <div className="border-t border-white/[0.08] pt-3">
+              <p className="text-xs font-semibold text-white/52">Aguardando aceite</p>
+              <ul className="mt-2 divide-y divide-white/[0.06]">
+                {invitationRows!.map((invitation) => (
+                  <li key={invitation.id} className="flex min-h-11 items-center gap-3 py-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-semibold text-white">{invitation.email}</p>
+                      <p className="mt-0.5 text-xs text-white/45">
+                        {memberJobRoleLabel(invitation.job_role as JobRole, selfMember?.profession_type ?? "autonomous_seller")}
+                        {" · expira em "}
+                        {new Intl.DateTimeFormat("pt-BR").format(new Date(invitation.expires_at))}
+                      </p>
+                    </div>
+                    <form action={revokeInvitation}>
+                      <input type="hidden" name="invitation_id" value={invitation.id} />
+                      <PendingButton
+                        className="btn-secondary min-h-11"
+                        pendingLabel="Cancelando"
+                      >
+                        Cancelar
+                      </PendingButton>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </section>
       )}
 

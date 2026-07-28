@@ -104,19 +104,37 @@ export async function searchDatajudProcess(
         : `DataJud respondeu ${response.status} para ${tribunalAlias}: ${body.slice(0, 300)}`;
     throw new DatajudApiError(friendly, response.status);
   }
-  const data = await response.json();
+  const data = (await response.json()) as {
+    hits?: {
+      hits?: Array<{
+        _source?: {
+          numeroProcesso?: string;
+          dataAjuizamento?: string | null;
+          classe?: { codigo: number; nome: string };
+          orgaoJulgador?: { nome: string };
+          movimentos?: unknown[];
+        };
+      }>;
+    };
+  };
   const hit = data?.hits?.hits?.[0]?._source;
   if (!hit) return null;
 
   return {
-    numeroProcesso: hit.numeroProcesso,
+    numeroProcesso: hit.numeroProcesso ?? numeroProcesso,
     dataAjuizamento: hit.dataAjuizamento ?? null,
     classe: hit.classe ? { codigo: hit.classe.codigo, nome: hit.classe.nome } : null,
     orgaoJulgador: hit.orgaoJulgador ? { nome: hit.orgaoJulgador.nome } : null,
     movimentos: Array.isArray(hit.movimentos)
       ? hit.movimentos
-          .filter((m: unknown) => m && typeof m === "object")
-          .map((m: any) => ({ codigo: m.codigo, nome: m.nome, dataHora: m.dataHora }))
+          .filter((movement): movement is Record<string, unknown> =>
+            Boolean(movement) && typeof movement === "object",
+          )
+          .map((movement) => ({
+            codigo: Number(movement.codigo ?? 0),
+            nome: String(movement.nome ?? ""),
+            dataHora: String(movement.dataHora ?? ""),
+          }))
       : [],
   };
 }

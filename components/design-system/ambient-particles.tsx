@@ -5,11 +5,22 @@ import * as React from "react";
 interface AmbientParticlesProps {
   className?: string;
   color?: string;
-  /** Uma partícula a cada N pixels² de viewport. Maior = mais esparso. */
+  /** Uma partícula a cada N pixels² de área. Maior = mais esparso. */
   density?: number;
   /** Teto absoluto, pra tela ultrawide não virar campo de estrelas. */
   maxParticles?: number;
   speed?: number;
+  /**
+   * Preenche o elemento pai em vez da janela.
+   *
+   * Por padrão o canvas é `fixed inset-0` e se mede pela viewport, que é o que
+   * o shell autenticado precisa. Dentro de uma coluna isso vaza: o elemento
+   * continua colado na janela e a contagem de partículas é calculada para uma
+   * área que não é a dele. Com `contained` ele vira `absolute inset-0`, mede o
+   * pai e reage a mudanças de tamanho dele. O pai precisa criar contexto de
+   * posicionamento (`relative`) e recortar (`overflow-hidden`).
+   */
+  contained?: boolean;
 }
 
 type Particle = {
@@ -37,6 +48,7 @@ export function AmbientParticles({
   density = 9000,
   maxParticles = 220,
   speed = 1,
+  contained = false,
 }: AmbientParticlesProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
@@ -128,9 +140,11 @@ export function AmbientParticles({
       isRunning = false;
     };
 
+    const host = contained ? canvas.parentElement : null;
+
     const resize = () => {
-      width = Math.max(1, window.innerWidth);
-      height = Math.max(1, window.innerHeight);
+      width = Math.max(1, host ? host.clientWidth : window.innerWidth);
+      height = Math.max(1, host ? host.clientHeight : window.innerHeight);
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
       canvas.width = Math.round(width * dpr);
@@ -147,8 +161,20 @@ export function AmbientParticles({
     };
 
     const handleVisibilityChange = () => {
-      if (document.hidden) stopAnimation();
-      else startAnimation();
+      if (document.hidden) {
+        stopAnimation();
+        return;
+      }
+
+      // Página montada numa aba em segundo plano não faz layout: tudo mede 0 e
+      // o campo nasce vazio. Ao voltar, remede antes de animar. A comparação
+      // evita refazer as partículas a cada troca de aba, que reposicionaria o
+      // campo inteiro sem motivo.
+      const currentWidth = Math.max(1, host ? host.clientWidth : window.innerWidth);
+      const currentHeight = Math.max(1, host ? host.clientHeight : window.innerHeight);
+      if (currentWidth !== width || currentHeight !== height) resize();
+
+      startAnimation();
     };
 
     resize();
@@ -156,19 +182,26 @@ export function AmbientParticles({
     window.addEventListener("resize", resize);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
+    // Contido, o pai muda de tamanho sem a janela mudar: coluna que aparece só
+    // a partir de `lg`, formulário que cresce ao exibir um alerta. `resize` da
+    // janela não cobre esses casos.
+    const observer = host ? new ResizeObserver(() => resize()) : null;
+    observer?.observe(host!);
+
     return () => {
       stopAnimation();
+      observer?.disconnect();
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [color, density, maxParticles, speed]);
+  }, [color, density, maxParticles, speed, contained]);
 
   return (
     <canvas
       ref={canvasRef}
       aria-hidden="true"
       data-ambient-particles="true"
-      className={`pointer-events-none fixed inset-0 z-0 h-full w-full ${className ?? ""}`}
+      className={`pointer-events-none inset-0 z-0 h-full w-full ${contained ? "absolute" : "fixed"} ${className ?? ""}`}
     />
   );
 }

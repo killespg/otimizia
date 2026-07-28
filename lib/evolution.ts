@@ -1,3 +1,5 @@
+import { evolutionWebhookSecret } from "@/lib/evolution-webhook";
+
 // Cliente mínimo para a Evolution API (self-hosted). Contrato do v2:
 // - POST /instance/create -> { qrcode: { base64 } }, aceita webhook inline
 // - GET  /instance/connectionState/{instance} -> { instance: { state } }
@@ -58,6 +60,9 @@ export async function createEvolutionInstance(
       webhook: {
         enabled: true,
         url: webhookUrl,
+        headers: {
+          Authorization: `Bearer ${evolutionWebhookSecret()}`,
+        },
         events: ["MESSAGES_UPSERT"],
       },
     }),

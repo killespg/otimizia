@@ -10,6 +10,7 @@ import { DashboardPreview } from "@/components/landing/dashboard-preview";
 import { Pricing } from "@/components/landing/pricing";
 import { Glow, Reveal } from "@/components/landing/reveal";
 import { FaqAccordion } from "@/components/FaqAccordion";
+import { CookiePreferencesLink } from "@/components/CookieConsent";
 import { SpotlightCard } from "@/components/landing/spotlight-card";
 import { AiComposer } from "@/components/landing/ai-composer";
 import { ContainerScroll } from "@/components/landing/container-scroll-animation";
@@ -26,14 +27,12 @@ import { LogoWordmark } from "@/components/design-system/logo";
  */
 function Section({
   id,
-  eyebrow,
   title,
   description,
   raised = false,
   children,
 }: {
   id?: string;
-  eyebrow: string;
   /** Opcional: seções cujo próprio conteúdo abre com um título maior passam
    *  sem ele, para não empilhar um h2 pequeno em cima de uma frase grande. */
   title?: string;
@@ -47,14 +46,15 @@ function Section({
       className={`relative isolate scroll-mt-16 overflow-hidden border-t border-od-border ${raised ? "bg-od-muted-surface" : "bg-od-bg"}`}
     >
       <Glow className="-top-40 left-1/2 -translate-x-1/2" size={640} intensity={0.1} pulse />
-      <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-8 py-20 md:py-24">
-        <Reveal className="mx-auto mb-12 max-w-[560px] text-center">
-          <p className="text-od-label text-od-text-3">{eyebrow}</p>
-          {title ? <h2 className="mt-3 text-od-title text-od-text">{title}</h2> : null}
-          {description ? (
-            <p className="mt-3 text-[15px] leading-relaxed text-od-text-2">{description}</p>
-          ) : null}
-        </Reveal>
+      <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-20 sm:px-8 md:py-24">
+        {title || description ? (
+          <Reveal className="mx-auto mb-12 max-w-[560px] text-center">
+            {title ? <h2 className="text-od-title text-od-text">{title}</h2> : null}
+            {description ? (
+              <p className="mt-3 text-[15px] leading-relaxed text-od-text-2">{description}</p>
+            ) : null}
+          </Reveal>
+        ) : null}
         <Reveal delay={0.08}>{children}</Reveal>
       </div>
     </section>
@@ -89,7 +89,7 @@ export default async function LandingPage() {
       <main className="relative overflow-hidden">
         {/* Abertura: hero e prova social continuam emendados, sem regua entre
             eles — sao um bloco de entrada, nao duas categorias. */}
-        <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-8 pt-10">
+        <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 pt-10 sm:px-8">
           <Hero animated />
           <div className="-mt-4 pb-20 pt-14">
             <p className="mb-7 text-center text-od-label text-od-text-3">
@@ -101,7 +101,6 @@ export default async function LandingPage() {
 
         <Section
           id="recursos"
-          eyebrow="Recursos"
           title="O que muda de profissão pra profissão"
           description="O núcleo é o mesmo; o que está em volta é feito pro seu trabalho. Escolha a sua."
           raised
@@ -123,14 +122,14 @@ export default async function LandingPage() {
                     organizacao e o WorkspaceSwitcher do produto, e destaca-lo
                     quebraria a fidelidade da sidebar. */}
                 <p className="mx-auto mt-5 max-w-[440px] pb-10 text-[13px] leading-relaxed text-od-text-2">
-                  O exemplo abaixo é navegável: clique nos itens do menu para trocar de tela,
-                  e no <strong className="font-semibold text-od-text">nome do negócio</strong>, no topo
-                  da barra lateral, para ver o painel de outra profissão.
+                  O exemplo abaixo é navegável: use os controles para trocar de tela e o{" "}
+                  <strong className="font-semibold text-od-text">nome do negócio</strong> para
+                  conhecer o painel de outra profissão.
                 </p>
               </>
             }
           >
-            <div className="h-full w-full overflow-auto rounded-2xl bg-od-bg p-4">
+            <div className="h-full w-full overflow-auto rounded bg-od-bg p-2 sm:p-4">
               <DashboardPreview />
             </div>
           </ContainerScroll>
@@ -138,7 +137,6 @@ export default async function LandingPage() {
 
         <Section
           id="ia"
-          eyebrow="Sócio-assistente"
           title="Tim, o sócio que nunca dorme"
           description="Ele não devolve conselho: cria o contato, abre a negociação e agenda o compromisso, por voz ou por escrito."
           raised
@@ -151,7 +149,6 @@ export default async function LandingPage() {
 
         <Section
           id="planos"
-          eyebrow="Planos"
           title="Um preço, tudo incluso"
           description="Sem módulo pago à parte: a profissão que você escolhe já vem completa."
         >
@@ -160,7 +157,6 @@ export default async function LandingPage() {
 
         <Section
           id="duvidas"
-          eyebrow="Dúvidas"
           title="Perguntas frequentes"
           raised
         >
@@ -198,13 +194,12 @@ export default async function LandingPage() {
 
         <Section
           id="sobre"
-          eyebrow="Sobre nós"
         >
           <About />
         </Section>
 
         <section className="border-t border-od-border bg-od-muted-surface">
-          <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-8 py-24 text-center">
+          <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-24 text-center sm:px-8">
             <h2 className="mx-auto mb-4 max-w-[520px] text-od-title text-od-text">
               Pronto pra parar de perder negócio por esquecimento?
             </h2>
@@ -219,7 +214,7 @@ export default async function LandingPage() {
         </section>
 
         <footer className="border-t border-od-border bg-od-bg">
-          <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-8 py-12">
+          <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-12 sm:px-8">
             <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
               <div className="max-w-[320px]">
                 <LogoWordmark height={24} />
@@ -227,22 +222,26 @@ export default async function LandingPage() {
                   CRM para quem trabalha sozinho ou com equipe, com o painel da sua profissão.
                 </p>
               </div>
-              <div className="flex gap-12">
+              <div className="grid gap-x-8 gap-y-6 min-[560px]:grid-cols-3">
                 <div>
                   <p className="text-od-label text-od-text-3">Produto</p>
                   <ul className="mt-3 space-y-2 text-[13px]">
-                    <li><Link href="#recursos" className="text-od-text-2 hover:text-od-text">Recursos</Link></li>
-                    <li><Link href="#painel" className="text-od-text-2 hover:text-od-text">O painel</Link></li>
-                    <li><Link href="#planos" className="text-od-text-2 hover:text-od-text">Planos</Link></li>
-                    <li><Link href="#sobre" className="text-od-text-2 hover:text-od-text">Sobre nós</Link></li>
+                    <li><Link href="#recursos" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">Recursos</Link></li>
+                    <li><Link href="#painel" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">O painel</Link></li>
+                    <li><Link href="#planos" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">Planos</Link></li>
+                    <li><Link href="#sobre" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">Sobre nós</Link></li>
                   </ul>
                 </div>
                 <div>
                   <p className="text-od-label text-od-text-3">Conta</p>
                   <ul className="mt-3 space-y-2 text-[13px]">
-                    <li><Link href="/login" className="text-od-text-2 hover:text-od-text">Entrar</Link></li>
-                    <li><Link href="/signup" className="text-od-text-2 hover:text-od-text">Criar conta</Link></li>
-                    <li><Link href="/termos" className="text-od-text-2 hover:text-od-text">Termos de uso</Link></li>
+                    <li><Link href="/login" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">Entrar</Link></li>
+                    <li><Link href="/signup" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">Criar conta</Link></li>
+                    <li><Link href="/termos" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">Termos de uso</Link></li>
+                    <li><Link href="/privacidade" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">Privacidade</Link></li>
+                    <li>
+                      <CookiePreferencesLink className="inline-flex min-h-11 items-center text-left text-od-text-2 hover:text-od-text" />
+                    </li>
                   </ul>
                 </div>
                 {/* SAC como mailto de verdade, não texto solto: no celular, um
@@ -253,12 +252,12 @@ export default async function LandingPage() {
                     <li>
                       <a
                         href="mailto:venancio@useotimizia.com"
-                        className="text-od-text-2 hover:text-od-text"
+                        className="inline-flex min-h-11 items-center break-all text-od-text-2 hover:text-od-text"
                       >
                         venancio@useotimizia.com
                       </a>
                     </li>
-                    <li><Link href="#duvidas" className="text-od-text-2 hover:text-od-text">Perguntas frequentes</Link></li>
+                    <li><Link href="#duvidas" className="inline-flex min-h-11 items-center text-od-text-2 hover:text-od-text">Perguntas frequentes</Link></li>
                   </ul>
                 </div>
               </div>

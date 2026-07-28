@@ -12,7 +12,6 @@ import { SellerDashboardBackground } from "@/components/design-system/seller-das
 import NeuralBackground from "@/components/design-system/neural-background";
 import { DashboardRoutePreloader } from "@/components/design-system/dashboard-route-preloader";
 import { DashboardNavigationFeedback } from "@/components/design-system/dashboard-navigation-feedback";
-import { AppSplash } from "@/components/design-system/app-splash";
 import { AssistantChatProvider } from "@/lib/ai/AssistantChatProvider";
 import { getDashboardPreferences } from "@/lib/dashboard-preferences";
 import { canViewFinance, canViewLegal } from "@/lib/law-office";
@@ -156,81 +155,10 @@ export default async function PainelLayout({
     collections: realEstateCountRows?.[2].count ?? 0,
     deals: realEstateCountRows?.[3].count ?? 0,
   };
-  const preloadRoutes = isLawOffice
-    ? [
-        "/painel/juridico",
-        "/painel/juridico/movimentacoes",
-        "/painel/juridico/processos",
-        "/painel/juridico/prazos",
-        "/painel/juridico/prazos/calendario",
-        "/painel/juridico/consulta",
-        "/painel/juridico/documentos",
-        ...(lawOfficeAccess.canViewFinance ? ["/painel/financeiro"] : []),
-        "/painel/contatos",
-        "/painel/assistente",
-        "/painel/equipe",
-        "/painel/funil",
-        "/painel/funil/relatorio",
-        "/painel/funil/relatorio",
-        "/painel/tarefas",
-        "/painel/calendario",
-        "/painel/whatsapp",
-        "/painel/configuracoes",
-      ]
-    : isAutonomousSeller
-      ? [
-          "/painel",
-          "/painel/contatos",
-          "/painel/funil",
-          "/painel/produtos",
-          "/painel/colecoes",
-          "/painel/pedidos",
-          "/painel/pos-venda",
-          "/painel/operacao/configuracoes",
-          "/painel/assistente",
-          "/painel/tarefas",
-          "/painel/calendario",
-          "/painel/whatsapp",
-          "/painel/equipe",
-          "/painel/configuracoes",
-        ]
-      : isRealEstateBroker
-        ? [
-            "/painel/imoveis/dashboard",
-            "/painel/imoveis",
-            "/painel/imoveis/novo",
-            "/painel/imoveis/mapa",
-            "/painel/imoveis/visitas",
-            "/painel/imoveis/colecoes",
-            "/painel/imoveis/colecoes/nova",
-            "/painel/imoveis/comissoes",
-            "/painel/contatos",
-            "/painel/funil",
-            "/painel/funil/relatorio",
-            "/painel/assistente",
-            "/painel/calendario",
-            "/painel/whatsapp",
-            "/painel/equipe",
-            "/painel/configuracoes",
-          ]
-      : [
-        "/painel",
-        "/painel/contatos",
-        "/painel/funil",
-        "/painel/assistente",
-        "/painel/tarefas",
-        "/painel/calendario",
-        "/painel/whatsapp",
-        "/painel/equipe",
-        "/painel/financeiro",
-        "/painel/configuracoes",
-      ];
-
   return (
     <AssistantChatProvider>
       <div className={`dark product-workspace workspace-${preset.key}`}>
-        <AppSplash />
-        <DashboardRoutePreloader routes={preloadRoutes} />
+        <DashboardRoutePreloader />
         <DashboardNavigationFeedback />
         {isLawOffice ? (
           <LegalProductNavigation

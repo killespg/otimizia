@@ -22,8 +22,10 @@ export function ThemeToggle({ className = "", compact = false }: ThemeToggleProp
     const stored = window.localStorage.getItem(STORAGE_KEY);
     const next = stored ? stored === "dark" : media.matches;
 
-    applyTheme(next);
-    setIsDark(next);
+    const frame = window.requestAnimationFrame(() => {
+      applyTheme(next);
+      setIsDark(next);
+    });
 
     const handleStorage = (event: StorageEvent) => {
       if (event.key !== STORAGE_KEY) return;
@@ -43,6 +45,7 @@ export function ThemeToggle({ className = "", compact = false }: ThemeToggleProp
     media.addEventListener("change", handleSystemTheme);
 
     return () => {
+      window.cancelAnimationFrame(frame);
       window.removeEventListener("storage", handleStorage);
       media.removeEventListener("change", handleSystemTheme);
     };

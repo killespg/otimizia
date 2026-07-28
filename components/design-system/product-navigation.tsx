@@ -53,7 +53,10 @@ export function ProductNavigation(props: Props) {
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
-    setCollapsed(window.localStorage.getItem("otimizia-sidebar-collapsed") === "1");
+    const frame = window.requestAnimationFrame(() => {
+      setCollapsed(window.localStorage.getItem("otimizia-sidebar-collapsed") === "1");
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   function toggleCollapsed() {

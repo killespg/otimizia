@@ -22,6 +22,7 @@ export type Profile = {
   is_admin: boolean;
   cpf: string | null;
   terms_accepted_at: string | null;
+  welcome_email_sent_at: string | null;
   active_org_id: string | null;
   checklist_dismissed_at: string | null;
   dashboard_preferences: Record<string, unknown>;

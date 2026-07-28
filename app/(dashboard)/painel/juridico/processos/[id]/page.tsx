@@ -8,7 +8,7 @@ import type { LegalCase, LegalCaseEvent, LegalCaseMember, LegalCaseShareLink, Le
 import { formatBRL } from "@/lib/format";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import { DATAJUD_TRIBUNALS, sortTribunalsByFavorites } from "@/lib/datajud-tribunals";
-import { IconAlert, IconArrowRight, IconBot, IconCheckCircle, IconClock, IconPaperclip, IconPlus, IconTrash, IconWallet } from "../../../icons";
+import { IconArrowRight, IconBot, IconCheckCircle, IconClock, IconPaperclip, IconPlus, IconTrash, IconWallet } from "../../../icons";
 import { addLegalCaseMember, completeLegalDeadline, createCaseShareLink, createLegalDeadline, createLegalDocumentLink, createLegalEvent, generateLegalDocumentDraft, linkDatajudProcess, removeLegalCaseMember, revokeCaseShareLink, syncDatajudProcessNow, toggleDeadlineVisibility, toggleDocumentVisibility, toggleEventVisibility, updateLegalCaseStatus, uploadLegalDocument } from "../../actions";
 import { DocumentLink } from "@/components/law/DocumentLink";
 import { DocumentDraftViewer } from "@/components/law/DocumentDraftViewer";

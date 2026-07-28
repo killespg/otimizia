@@ -50,7 +50,7 @@ export function ExpandableCard({ title, src, description, children, className, c
       <AnimatePresence>
         {active ? (
           <div className="fixed inset-0 z-[80] grid place-items-center p-4 sm:p-8" role="dialog" aria-modal="true" aria-labelledby={titleId}>
-            <motion.div layoutId={`card-${title}-${id}`} ref={cardRef} className={cn("relative flex max-h-[calc(100vh-64px)] w-full max-w-[760px] flex-col overflow-auto bg-[#141117] shadow-[0_24px_80px_rgba(0,0,0,.5)] [scrollbar-width:none]", classNameExpanded)}>
+            <motion.div layoutId={`card-${title}-${id}`} ref={cardRef} className={cn("relative flex max-h-[calc(100vh-64px)] w-full max-w-[760px] flex-col overflow-auto bg-[#141117] shadow-[0_24px_80px_rgba(0,0,0,.5)]", classNameExpanded)}>
               <motion.div layoutId={`image-${title}-${id}`} className="relative shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={src} alt="" className="h-48 w-full object-cover object-center opacity-65 sm:h-60" />

@@ -3,9 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { syncOrganizationSeats } from "@/lib/billing/organization-seats";
+import { organizationInvitationEmail, sendEmail } from "@/lib/email";
+import { createInvitationToken } from "@/lib/invitations";
 import { ALL_KNOWN_JOB_ROLES } from "@/lib/job-roles";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
-import { getStripe } from "@/lib/stripe";
+import { resolveOrigin } from "@/lib/request-origin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { JobRole } from "@/lib/supabase/types";
@@ -84,72 +87,97 @@ export async function updateOrganizationContext(formData: FormData) {
 }
 
 export async function inviteMember(formData: FormData) {
-  const { orgId } = await requireOrgAdmin();
+  const { user, orgId } = await requireOrgAdmin();
   const email = emailField(formData.get("email"));
   const jobRole = jobRoleField(formData.get("job_role"));
   if (!email) throw new Error("Informe um e-mail válido.");
 
   const admin = createAdminClient();
-  const headersList = await headers();
-  const host = headersList.get("x-forwarded-host") ?? headersList.get("host");
-  const protocol = headersList.get("x-forwarded-proto") ?? (host?.startsWith("localhost") ? "http" : "https");
-
-  const { error } = await admin.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `${protocol}://${host}/reset-password`,
-    data: { invited_org_id: orgId, invited_job_role: jobRole },
-  });
-
-  if (error) {
-    const message = (error.message ?? "").toLowerCase();
-    if (message.includes("already") || message.includes("registered")) {
-      await addExistingUserToOrg(admin, orgId, email, jobRole);
-    } else {
-      console.error("[team/invite]", error);
-      throw new Error("Não deu para enviar o convite.");
-    }
-  }
-
-  await syncSeats(orgId);
-  revalidatePath("/painel/equipe");
-}
-
-// Quando o e-mail já tem conta, inviteUserByEmail falha (é feito pra gente
-// nova) — nesse caso adicionamos a pessoa direto na organização em vez de
-// bloquear o convite.
-async function addExistingUserToOrg(
-  admin: ReturnType<typeof createAdminClient>,
-  orgId: string,
-  email: string,
-  jobRole: JobRole
-) {
-  const { data: existing } = await admin
+  const { data: existingProfile } = await admin
     .from("profiles")
     .select("id")
     .ilike("email", email)
     .maybeSingle();
-  if (!existing) {
-    throw new Error("Esse e-mail já tem uma conta, mas não encontrei o cadastro. Tente de novo.");
+  if (existingProfile) {
+    const { data: membership } = await admin
+      .from("organization_members")
+      .select("org_id")
+      .eq("org_id", orgId)
+      .eq("user_id", existingProfile.id)
+      .maybeSingle();
+    if (membership) throw new Error("Essa pessoa já faz parte da equipe.");
   }
 
-  const { data: membership } = await admin
-    .from("organization_members")
-    .select("org_id")
+  const [{ data: organization }, { data: inviterProfile }] = await Promise.all([
+    admin.from("organizations").select("name").eq("id", orgId).maybeSingle(),
+    admin.from("profiles").select("name").eq("id", user.id).maybeSingle(),
+  ]);
+  if (!organization) throw new Error("Organização não encontrada.");
+
+  const now = new Date();
+  const expiresInDays = 7;
+  const expiresAt = new Date(now.getTime() + expiresInDays * 24 * 60 * 60 * 1000);
+  const { token, tokenHash } = createInvitationToken();
+
+  await admin
+    .from("organization_invitations")
+    .update({ revoked_at: now.toISOString() })
     .eq("org_id", orgId)
-    .eq("user_id", existing.id)
-    .maybeSingle();
-  if (membership) {
-    throw new Error("Essa pessoa já faz parte da equipe.");
+    .ilike("email", email)
+    .is("accepted_at", null)
+    .is("revoked_at", null);
+
+  const { data: invitation, error: invitationError } = await admin
+    .from("organization_invitations")
+    .insert({
+      org_id: orgId,
+      email,
+      token_hash: tokenHash,
+      job_role: jobRole,
+      invited_by: user.id,
+      expires_at: expiresAt.toISOString(),
+    })
+    .select("id")
+    .single();
+  if (invitationError || !invitation) {
+    console.error("[team/invitation-create]", invitationError);
+    throw new Error("Não deu para criar o convite.");
   }
 
-  const { error: memberError } = await admin
-    .from("organization_members")
-    .insert({ org_id: orgId, user_id: existing.id, role: "member", job_role: jobRole });
-  if (memberError) {
-    console.error("[team/invite-existing]", memberError);
-    throw new Error("Não deu para adicionar essa pessoa à equipe.");
+  const origin = resolveOrigin(await headers());
+  const invitationUrl = `${origin}/convite?token=${encodeURIComponent(token)}`;
+  const message = organizationInvitationEmail({
+    organizationName: organization.name,
+    inviterName: inviterProfile?.name || user.email || "Um administrador",
+    invitationUrl,
+    expiresInDays,
+  });
+  const sent = await sendEmail(email, message.subject, message.html, "human");
+  if (!sent) {
+    await admin.from("organization_invitations").delete().eq("id", invitation.id);
+    throw new Error("O convite não foi enviado. Verifique a configuração de e-mail.");
   }
 
-  await admin.from("profiles").update({ active_org_id: orgId }).eq("id", existing.id);
+  revalidatePath("/painel/equipe");
+}
+
+export async function revokeInvitation(formData: FormData) {
+  const { supabase, orgId } = await requireOrgAdmin();
+  const invitationId = String(formData.get("invitation_id") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(invitationId)) throw new Error("Convite inválido.");
+
+  const { error } = await supabase
+    .from("organization_invitations")
+    .update({ revoked_at: new Date().toISOString() })
+    .eq("id", invitationId)
+    .eq("org_id", orgId)
+    .is("accepted_at", null)
+    .is("revoked_at", null);
+  if (error) {
+    console.error("[team/invitation-revoke]", error);
+    throw new Error("Não deu para cancelar o convite.");
+  }
+  revalidatePath("/painel/equipe");
 }
 
 export async function updateMemberRole(formData: FormData) {
@@ -211,32 +239,8 @@ export async function removeMember(formData: FormData) {
     console.error("[team/remove]", error);
     throw new Error("Não deu para remover o membro.");
   }
-  await syncSeats(orgId);
+  await syncOrganizationSeats(orgId);
   revalidatePath("/painel/equipe");
-}
-
-// Mantém a quantidade de seats da assinatura Stripe igual ao número de
-// membros da organização. Sem efeito se a org ainda não tem assinatura ativa
-// (o checkout já cobra pela quantidade atual de membros nesse caso).
-async function syncSeats(orgId: string) {
-  const admin = createAdminClient();
-  const [{ data: org }, { count }] = await Promise.all([
-    admin.from("organizations").select("stripe_subscription_id").eq("id", orgId).maybeSingle(),
-    admin
-      .from("organization_members")
-      .select("user_id", { count: "exact", head: true })
-      .eq("org_id", orgId),
-  ]);
-  if (!org?.stripe_subscription_id) return;
-
-  const stripe = getStripe();
-  const subscription = await stripe.subscriptions.retrieve(org.stripe_subscription_id);
-  const item = subscription.items.data[0];
-  if (!item) return;
-
-  await stripe.subscriptions.update(org.stripe_subscription_id, {
-    items: [{ id: item.id, quantity: Math.max(count ?? 1, 1) }],
-  });
 }
 
 async function ensureNotLastAdmin(
