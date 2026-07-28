@@ -1,4 +1,11 @@
+import { existsSync } from "node:fs";
 import { defineConfig, devices } from "@playwright/test";
+
+// O Playwright roda fora do Next, então não herda o .env.local que o app lê
+// sozinho. Sem isto, E2E_EMAIL/E2E_PASSWORD ficam indefinidos e os testes
+// autenticados são PULADOS em silêncio — a suíte termina verde sem ter
+// exercitado nada que dependa de sessão, que é justamente o que interessa.
+if (existsSync(".env.local")) process.loadEnvFile(".env.local");
 
 const baseURL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:3100";
 const consentCookieName = process.env.E2E_CONSENT_COOKIE_NAME;
