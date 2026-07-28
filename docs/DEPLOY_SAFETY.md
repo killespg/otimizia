@@ -45,8 +45,8 @@ Access token not provided`.
 sua porque tem custo:
 1. Criar um segundo projeto no dashboard do Supabase (plano free cobre isso,
    mas ele pausa depois de dias sem uso — não é "sempre ligado" de graça).
-2. Rodar todas as 64 migrations de `supabase/migrations/` nesse projeto novo
-   (na ordem, do zero).
+2. Rodar todas as migrations de `supabase/migrations/` nesse projeto novo
+   (na ordem, do zero). Hoje são 72 — não fixe o número aqui, ele envelhece.
 3. Criar um segundo projeto na Vercel (ou um Environment separado) apontando
    pra esse banco, com as próprias env vars.
 4. Popular com `supabase/seed.sql` em vez de dados reais.
@@ -62,9 +62,9 @@ Rodar sempre, nessa ordem, antes de dar push na branch de produção:
 1. **`npm run typecheck`** — sem erro.
 2. **`npm run lint`** — sem erro novo (warnings pré-existentes de `<img>`
    em `imoveis/[id]` e `share/imoveis/[token]` são conhecidos, não bloqueiam).
-3. **`npm run test`** — sem regressão nova. (Hoje há uma falha pré-existente
-   em `lib/deals-report.test.ts` não relacionada a datas relativas — não
-   é uma regressão nova, mas vale revisar se realmente ainda é esperada.)
+3. **`npm run test`** — sem regressão nova. Em 28/07/2026 a suíte estava
+   inteira verde (246 testes). A falha pré-existente em
+   `lib/deals-report.test.ts` que este documento citava não existe mais.
 4. **Se a mudança incluir migration nova em `supabase/migrations/`**:
    revisar o diff procurando especificamente por:
    - `DROP TABLE`, `DROP COLUMN`, `TRUNCATE` — sempre destrutivo, sempre
