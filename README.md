@@ -1,29 +1,14 @@
-# OtimizIA — nova base
+# OtimizIA
 
-Base local reconstruída do OtimizIA. O backend original foi preservado e o
-frontend anterior foi removido. Toda interface adicionada a partir daqui deve
-ser construída exclusivamente com o design system atual e com as regras deste
-documento.
+CRM para empreendedor solo brasileiro: centraliza clientes, vendas em etapas e
+lembretes para que a pessoa lembre de chamar cada cliente na hora certa. Além do
+CRM geral, atende duas verticais com regras próprias — advocacia e imobiliário.
 
-## O que foi preservado
+Next.js (App Router) + TypeScript + Tailwind + Supabase, em produção na Vercel.
+O produto é inteiro em português do Brasil.
 
-- Rotas HTTP em `app/api/`.
-- Assistente de IA e ferramentas do CRM em `lib/ai/`.
-- Integrações com Supabase, Stripe, Resend, OpenAI, Anthropic, Evolution,
-  DataJud e Autentique.
-- Webhooks, tarefas agendadas, relatórios e feed de calendário.
-- Regras de negócio dos workspaces jurídico, imobiliário e CRM geral.
-- Migrations, RLS e configuração do Supabase em `supabase/`.
-- Scripts de importação e seed em `scripts/`.
-- Testes unitários e de integração que não dependem da interface.
-
-## O que foi removido da origem
-
-- Páginas públicas, autenticação visual e área autenticada.
-- Componentes React de interface e hooks exclusivos do navegador.
-- CSS, componentes, imagens e padrões visuais do frontend anterior.
-- Projeto Android/Capacitor.
-- Testes end-to-end da interface e Playwright.
+Toda interface deve ser construída com o design system atual e com as regras
+deste documento.
 
 ## Rodar localmente
 
@@ -65,28 +50,22 @@ scripts/             importadores e seeds
 test/                testes de integração do backend
 ```
 
-## Interface atual
+## Interface
 
-A nova interface começa pela dashboard jurídica em:
+A área autenticada vive sob `/painel`, com a navegação montada conforme a
+profissão e as workspaces habilitadas para a organização.
 
-```text
-GET /dashboard-juridico
-```
+- `/painel` — painel operacional, abre no que está atrasado e no que é hoje
+- `/painel/contatos`, `/painel/funil`, `/painel/tarefas` — o núcleo do CRM
+- `/painel/assistente` — o Tim, sócio-assistente, com voz e anexos
+- `/painel/whatsapp` — canal de atendimento pela Evolution API
+- `/painel/financeiro`, `/painel/metricas`, `/painel/equipe`
+- `/painel/juridico/*` — processos, prazos, documentos e consulta ao DataJud
+- `/painel/imoveis/*` — imóveis, visitas, propostas, match e comissões
+- `/painel/configuracoes` — preferências, integrações e conta
 
-### Módulos do produto jurídico
-
-- `/dashboard-juridico` — visão operacional do escritório
-- `/dashboard-juridico/processos` — carteira processual e detalhe do caso
-- `/dashboard-juridico/clientes` — clientes e relacionamento
-- `/dashboard-juridico/agenda` — audiências, compromissos e prazos
-- `/dashboard-juridico/documentos` — documentos, revisão e assinatura
-- `/dashboard-juridico/financeiro` — honorários, recebíveis, pagamentos e despesas
-- `/dashboard-juridico/equipe` — equipe, cargos e escopo de acesso
-- `/dashboard-juridico/socio-assistente` — assistência contextual do escritório
-- `/dashboard-juridico/configuracoes` — preferências e integrações
-
-Ela é uma implementação nova sobre o backend preservado. Não reutilizar telas,
-componentes ou decisões visuais do frontend removido.
+Fora do painel: a landing em `/`, o fluxo de entrada em `/login` e `/signup`,
+as páginas públicas de compartilhamento em `/share/*` e os documentos legais.
 
 ## Acordo visual — evitar “cara de IA”
 
@@ -170,15 +149,11 @@ Se uma alteração contrariar este acordo, ela precisa ser discutida explicitame
 antes de ser implementada. Não reinterpretar silenciosamente uma decisão visual
 já aprovada.
 
-## Observação de arquitetura
+## Deploy
 
-O projeto continua usando Next.js como servidor HTTP para manter as rotas já
-existentes e hospedar a nova interface. O frontend novo deve evoluir de forma
-gradual, sem misturar novamente a base visual antiga com os serviços preservados.
+`useotimizia.com`, na Vercel, a partir da branch de produção. Não há staging: o
+push na branch de produção vai direto pro ar. O runbook obrigatório antes de
+qualquer push que vá pra produção está em [docs/DEPLOY_SAFETY.md](docs/DEPLOY_SAFETY.md).
 
-## Pendência herdada
-
-O clone ainda usa Next.js `14.2.15`, como o repositório de origem. O
-`npm audit --omit=dev` recomenda uma atualização principal do Next para tratar
-vulnerabilidades conhecidas. Essa migração deve ser feita em uma etapa própria,
-porque altera APIs do framework e merece validação de todas as rotas.
+As tarefas agendadas (sincronização do DataJud, lembretes, resumo diário) são
+crons da Vercel declarados em `vercel.json` e autenticados por `CRON_SECRET`.
