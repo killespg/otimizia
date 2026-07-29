@@ -175,15 +175,11 @@ describe("frontend route parity", () => {
       resolve(process.cwd(), "components/design-system/ambient-particles.tsx"),
       "utf8",
     );
-    const shells = [
-      "app/(dashboard)/painel/layout.tsx",
-      "components/legal/legal-app-shell.tsx",
-      "components/platform/platform-shell.tsx",
-    ];
+    const shells = ["app/(dashboard)/painel/layout.tsx"];
 
-    // Os tres shells autenticados montam a mesma poeira: painel, workspace
-    // juridico e shell de plataforma. Se um deixar de montar, a area fica sem
-    // o fundo que as outras tem.
+    // A area autenticada tem um shell so. Os shells antigos (legal-app-shell e
+    // platform-shell) ficavam aqui, mas nenhuma rota os montava desde que tudo
+    // passou a viver sob /painel, entao o guard so protegia arquivo morto.
     for (const shell of shells) {
       const source = readFileSync(resolve(process.cwd(), shell), "utf8");
       expect(source).toContain("<AmbientParticles />");
