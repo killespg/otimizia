@@ -1,12 +1,18 @@
 # Handoff — sessão de design system, acesso e landing
 
-Olá! Este documento resume uma sessão longa de trabalho no `headless-base`, para
-quem for continuar daqui — humano ou agente. A intenção é economizar o seu tempo
-de arqueologia e, principalmente, evitar que decisões sejam desfeitas sem
-querer, porque várias delas contrariam o que o código parecia dizer antes.
+> **Registro histórico.** Escrito durante a troca de design system, quando a
+> interface nova vivia numa branch separada (`headless-base`) e a antiga ainda
+> estava no ar. Essa migração terminou: a versão 2.0 foi promovida e existe um
+> OtimizIA só. As referências a branch e a "frontend antigo" ficaram para
+> explicar o contexto da época — o valor que sobrou aqui são as **decisões de
+> design e os porquês**, que continuam valendo.
 
-Tudo já está commitado e publicado em `killespg/otimizia`, branch
-`headless-base`. Estado ao final: `tsc --noEmit` limpo, ESLint com 0 erros
+Este documento resume uma sessão longa de trabalho, para quem for continuar
+daqui — humano ou agente. A intenção é economizar o seu tempo de arqueologia e,
+principalmente, evitar que decisões sejam desfeitas sem querer, porque várias
+delas contrariam o que o código parecia dizer antes.
+
+Estado ao final daquela sessão: `tsc --noEmit` limpo, ESLint com 0 erros
 (26 avisos pré-existentes), 229 testes passando.
 
 ---

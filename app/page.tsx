@@ -63,8 +63,7 @@ function Section({
 
 export default async function LandingPage() {
   // Quem ja tem sessao nao precisa da pagina de venda: vai direto pro produto.
-  // Antes daqui existia so o redirect, e a landing nunca chegou a ser
-  // reconstruida no headless — a origem dela e o catalogo do design system.
+  // A landing veio do catalogo do design system, nao do frontend anterior.
   const supabase = await createClient();
   const {
     data: { user },

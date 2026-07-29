@@ -23,6 +23,33 @@ function fromAddress(sender: EmailSender): string {
   return process.env.RESEND_NOREPLY_EMAIL || "OtimizIA <noreply@useotimizia.com>";
 }
 
+// O endereço vem de `profiles.email`, que aceita o que a pessoa digitou no
+// cadastro. Endereço sem domínio válido ("corretor@corretor") é recusado pelo
+// Resend com 422 — uma chamada de rede queimada por dia, todo dia, e um
+// `email.send-failed` no log que se mistura com falha de entrega de verdade.
+// A checagem é de forma, não de existência: só descarta o que nunca poderia
+// ser entregue. Validar e-mail por regex "completa" é um caminho conhecido de
+// falso negativo, então o critério fica no mínimo.
+//
+// O Resend também aceita `Nome <pessoa@dominio.com>`, mas aqui não: todo
+// chamador passa um endereço puro vindo do cadastro, e um `<` no meio do que
+// deveria ser só o endereço é sinal de dado sujo, não de destinatário nomeado.
+export function isDeliverableAddress(value: string): boolean {
+  const endereco = value.trim();
+  if (endereco.length === 0 || endereco.length > 254) return false;
+  if (/[\s<>,;]/.test(endereco)) return false;
+
+  const arroba = endereco.lastIndexOf("@");
+  if (arroba <= 0 || arroba === endereco.length - 1) return false;
+
+  const dominio = endereco.slice(arroba + 1);
+  // Sem ponto no domínio não existe TLD, então não há para onde entregar.
+  if (!dominio.includes(".")) return false;
+  if (dominio.startsWith(".") || dominio.endsWith(".") || dominio.includes("..")) return false;
+
+  return true;
+}
+
 export async function sendEmail(
   to: string,
   subject: string,
@@ -31,6 +58,12 @@ export async function sendEmail(
 ): Promise<boolean> {
   const resend = getResend();
   if (!resend) return false;
+  if (!isDeliverableAddress(to)) {
+    // Escopo próprio de propósito: isto é cadastro errado, não indisponibilidade
+    // do provedor, e os dois pedem ações diferentes de quem lê o log.
+    logError("email.invalid-address", new Error("Endereço sem formato entregável"), { to, subject });
+    return false;
+  }
   const { error } = await resend.emails.send({ from: fromAddress(sender), to, subject, html });
   if (error) {
     logError("email.send-failed", error, { to, subject });
