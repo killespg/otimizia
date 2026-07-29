@@ -338,7 +338,12 @@ describe("frontend route parity", () => {
     expect(page).toContain("isRealEstate={isRealEstate}");
     expect(page).toContain("{usesFlatPipeline ? (");
     expect(board).toContain("flat?: boolean");
-    expect(board).toContain('(flat\n                  ? "flex min-w-');
+    // Regex, e nao toContain com a quebra de linha dentro: o que importa e que
+    // `flat` seja o que escolhe a classe da coluna, nao a indentacao com que o
+    // Prettier quebrou o ternario. A versao literal casava tambem o `\n`, entao
+    // falhava em qualquer checkout Windows com autocrlf e voltava a falhar a
+    // cada reformatacao do arquivo. Nao troque de volta.
+    expect(board).toMatch(/\(flat\s*\?\s*"flex min-w-/);
     expect(board).toContain('isRealEstate ? "Sem atendimentos"');
     expect(board).toContain('if (isSeller && stageFromList(targetList) === "ganho")');
   });

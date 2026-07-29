@@ -1,3 +1,14 @@
+# O codigo-fonte fica em LF no disco, nao so no repositorio. Sem isto, um
+# checkout no Windows com core.autocrlf=true reescreve tudo em CRLF, e os
+# testes que casam trecho de fonte com quebra de linha dentro passam a falhar
+# so nessa maquina. Os blobs ja estao todos em LF, entao isto nao muda nada no
+# que esta commitado — muda o que o git escreve no working copy.
+*.ts text eol=lf
+*.tsx text eol=lf
+*.mjs text eol=lf
+*.css text eol=lf
+*.json text eol=lf
+
 .githooks/* text eol=lf
 *.ps1 text eol=crlf
 
