@@ -31,7 +31,8 @@ export type MetricKey =
   | "overdue_tasks"
   | "conversations_today"
   | "conversion_rate"
-  | "avg_ticket";
+  | "avg_ticket"
+  | "commission_open";
 
 export type MetricSpec = {
   key: MetricKey;
@@ -112,10 +113,10 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
       { key: "proximo_passo", label: "Próximo passo", type: "text", placeholder: "Ex: Enviar proposta por WhatsApp" },
     ],
     metrics: [
-      { key: "open_value", label: "Valor aberto" },
-      { key: "open_deals", label: "Vendas em andamento" },
-      { key: "won_value_month", label: "Ganhas no mês" },
-      { key: "overdue_tasks", label: "Follow-ups atrasados" },
+      { key: "open_value", label: "Potencial em aberto" },
+      { key: "won_value_month", label: "Vendido no mês" },
+      { key: "conversion_rate", label: "Conversão no mês" },
+      { key: "commission_open", label: "Comissão prevista" },
     ],
     messageTemplates: [
       {
@@ -686,10 +687,39 @@ export const PROFESSION_PRESETS: Record<ProfessionType, ProfessionPreset> = {
   },
 };
 
+/**
+ * Profissões liberadas para escolha nova.
+ *
+ * As demais continuam válidas — quem já as tem segue usando — mas saem do
+ * cadastro e do seletor até a experiência ficar pronta: hoje elas caem no
+ * dashboard genérico, sem shell nem painel próprios.
+ */
+const SIGNUP_ENABLED: ReadonlySet<ProfessionType> = new Set<ProfessionType>([
+  "autonomous_seller",
+  "law_office",
+  "real_estate_broker",
+]);
+
 // "founder" nunca aparece aqui — é um preset interno, atribuído só por
 // is_admin (ver lib/workspaces.ts), nunca selecionável por conta comum.
-export const PROFESSION_OPTIONS = Object.values(PROFESSION_PRESETS)
-  .filter((preset) => preset.key !== "founder")
+const assignablePresets = Object.values(PROFESSION_PRESETS).filter((preset) => preset.key !== "founder");
+
+/**
+ * Toda profissão atribuível, incluindo as desativadas para novos cadastros.
+ *
+ * É contra esta lista que se valida entrada e se monta o seletor de workspace
+ * de quem já tem a profissão. Validar contra a lista do cadastro faria
+ * `normalizeProfession` rebaixar um consultor existente para vendedor autônomo
+ * silenciosamente, trocando a workspace dele sem aviso.
+ */
+export const ASSIGNABLE_PROFESSION_OPTIONS = assignablePresets.map((preset) => ({
+  value: preset.key,
+  label: preset.signupLabel,
+}));
+
+/** O que aparece para escolher: cadastro e troca de profissão. */
+export const PROFESSION_OPTIONS = assignablePresets
+  .filter((preset) => SIGNUP_ENABLED.has(preset.key))
   .map((preset) => ({
     value: preset.key,
     label: preset.signupLabel,
@@ -699,7 +729,7 @@ export const PROFESSION_OPTIONS = Object.values(PROFESSION_PRESETS)
 // usuário (formulário ou chamada direta à API) resolva para "founder".
 export function normalizeProfession(value: unknown): ProfessionType {
   return typeof value === "string" &&
-    PROFESSION_OPTIONS.some((option) => option.value === value)
+    ASSIGNABLE_PROFESSION_OPTIONS.some((option) => option.value === value)
     ? (value as ProfessionType)
     : "autonomous_seller";
 }

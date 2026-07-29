@@ -17,7 +17,7 @@ export function FormSection({
 }) {
   return (
     <div className={className}>
-      <h2 className="text-sm font-black text-ink">{title}</h2>
+      <h2 className="text-sm font-semibold text-ink">{title}</h2>
       {description && <p className="mt-0.5 text-xs font-medium text-ink-muted">{description}</p>}
       <div className="mt-3 grid gap-3 md:grid-cols-2">{children}</div>
     </div>

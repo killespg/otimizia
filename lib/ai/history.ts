@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ChatMessage } from "@/lib/ai/AssistantChatProvider";
+import type { ChatMessage } from "@/lib/ai/types";
 
 const DEFAULT_LIMIT = 30;
 
@@ -23,7 +23,7 @@ export async function getRecentAssistantMessages(
 ): Promise<ChatMessage[]> {
   const { data, error } = await supabase
     .from("assistant_messages")
-    .select("role, content")
+    .select("role, content, created_at")
     .eq("user_id", userId)
     .eq("org_id", orgId)
     .order("created_at", { ascending: false })
@@ -39,6 +39,7 @@ export async function getRecentAssistantMessages(
     .reverse()
     .map((row) => ({
       role: row.role as ChatMessage["role"],
+      createdAt: (row.created_at as string | null) ?? undefined,
       ...parseStoredContent(row.content as string),
     }));
 }

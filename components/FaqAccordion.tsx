@@ -1,76 +1,84 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { IconChevronRight } from "@/app/(app)/icons";
+import { useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { IconChevronRight } from "@/app/(dashboard)/painel/icons";
 
 type FaqItem = {
   q: string;
   a: string;
 };
 
+/**
+ * Abre e fecha com animação de altura.
+ *
+ * A versão anterior era feita à mão: dois mapas de estado (aberto e fechando) e
+ * um setTimeout de 260ms só para atrasar a desmontagem — que é exatamente o que
+ * AnimatePresence resolve. Aquele arranjo tinha dois defeitos reais: os timers
+ * nunca eram limpos ao desmontar, e clicar rápido dessincronizava os dois mapas,
+ * deixando o item preso no estado "fechando".
+ *
+ * 200ms com ease-out: o registro de produto pede 150–250ms, porque quem está
+ * lendo não deve esperar coreografia. Com prefers-reduced-motion a transição
+ * vira instantânea.
+ */
 export function FaqAccordion({ items }: { items: FaqItem[] }) {
   const [openItems, setOpenItems] = useState<Record<number, boolean>>({});
-  const [closingItems, setClosingItems] = useState<Record<number, boolean>>({});
-  const timers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
+  const reduceMotion = useReducedMotion();
 
   function toggle(index: number) {
-    const isOpen = openItems[index];
-
-    window.clearTimeout(timers.current[index]);
-
-    if (isOpen) {
-      setClosingItems((current) => ({ ...current, [index]: true }));
-      timers.current[index] = setTimeout(() => {
-        setOpenItems((current) => ({ ...current, [index]: false }));
-        setClosingItems((current) => ({ ...current, [index]: false }));
-      }, 260);
-      return;
-    }
-
-    setOpenItems((current) => ({ ...current, [index]: true }));
-    setClosingItems((current) => ({ ...current, [index]: false }));
+    setOpenItems((current) => ({ ...current, [index]: !current[index] }));
   }
 
+  const transition = reduceMotion
+    ? { duration: 0 }
+    : { duration: 0.2, ease: [0.16, 1, 0.3, 1] as const };
+
   return (
-    <div className="faq-list divide-y divide-line border-y border-line" data-reveal>
+    <div className="faq-list divide-y divide-od-border border-y border-od-border">
       {items.map((faq, index) => {
         const isOpen = !!openItems[index];
-        const isClosing = !!closingItems[index];
 
         return (
-          <div
-            key={faq.q}
-            className="faq-item group"
-            data-open={isOpen ? "true" : undefined}
-            data-closing={isClosing ? "true" : undefined}
-          >
+          <div key={faq.q} className="group" data-open={isOpen ? "true" : undefined}>
             <button
               type="button"
-              className="faq-summary flex w-full cursor-pointer list-none items-center justify-between gap-4 py-5 text-left"
-              aria-expanded={isOpen && !isClosing}
+              className="flex w-full cursor-pointer items-center justify-between gap-4 py-5 text-left"
+              aria-expanded={isOpen}
               aria-controls={`faq-answer-${index}`}
               onClick={() => toggle(index)}
             >
-              <span className="faq-question text-base font-black text-ink transition-colors group-data-[open=true]:text-brand-800 sm:text-lg">
+              <span className="text-[15px] font-semibold text-od-text sm:text-base">
                 {faq.q}
               </span>
-              <span className="faq-icon grid h-8 w-8 shrink-0 place-items-center rounded-full border border-line text-ink-muted">
+              <motion.span
+                aria-hidden="true"
+                animate={{ rotate: isOpen ? 90 : 0 }}
+                transition={transition}
+                className="grid size-7 shrink-0 place-items-center text-od-text-3"
+              >
                 <IconChevronRight className="h-4 w-4" />
-              </span>
+              </motion.span>
             </button>
 
-            {isOpen ? (
-              <div
-                id={`faq-answer-${index}`}
-                className="faq-answer"
-                role="region"
-                aria-hidden={isClosing}
-              >
-                <p className="max-w-2xl pb-5 text-sm font-medium leading-relaxed text-ink-soft sm:text-base">
-                  {faq.a}
-                </p>
-              </div>
-            ) : null}
+            <AnimatePresence initial={false}>
+              {isOpen ? (
+                <motion.div
+                  key="answer"
+                  id={`faq-answer-${index}`}
+                  role="region"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={transition}
+                  className="overflow-hidden"
+                >
+                  <p className="max-w-[68ch] pb-5 text-[14px] leading-relaxed text-od-text-2">
+                    {faq.a}
+                  </p>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
           </div>
         );
       })}

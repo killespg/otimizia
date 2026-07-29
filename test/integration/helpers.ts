@@ -45,7 +45,8 @@ export function adminClient(config: LocalSupabaseConfig): SupabaseClient {
 // já plantada) — é assim que exercitamos RLS de verdade, não a service role.
 export async function createTestUser(
   config: LocalSupabaseConfig,
-  admin: SupabaseClient
+  admin: SupabaseClient,
+  userMetadata?: Record<string, unknown>,
 ): Promise<{ userId: string; email: string; client: SupabaseClient }> {
   const email = `rls-test-${randomUUID()}@example.com`;
   const password = `Test-${randomUUID()}`;
@@ -54,6 +55,7 @@ export async function createTestUser(
     email,
     password,
     email_confirm: true,
+    user_metadata: userMetadata,
   });
   if (error || !data.user) {
     throw new Error(`Falha ao criar usuário de teste: ${error?.message}`);

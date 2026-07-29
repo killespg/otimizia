@@ -1,9 +1,8 @@
-import { canViewLegal } from "@/lib/law-office";
+import { canViewLegal, hasLegalWorkspace } from "@/lib/law-office";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
 import { createClient } from "@/lib/supabase/server";
 import { DatajudApiError, searchDatajudProcess } from "@/lib/datajud";
 import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/datajud-tribunals";
-import { getWorkspaceKey } from "@/lib/workspaces";
 import { logError } from "@/lib/logger";
 import { trackWatchedProcess } from "@/lib/law-watched-processes";
 
@@ -13,7 +12,7 @@ export const runtime = "nodejs";
 // lista de acompanhamento (legal_watched_processes) na primeira vez que é
 // pesquisado, pra alimentar o cartão "Mudanças recentes" no painel.
 export async function POST(request: Request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -22,11 +21,12 @@ export async function POST(request: Request) {
   }
 
   const [{ data: profile }, orgId] = await Promise.all([
-    supabase.from("profiles").select("profession_type, is_admin").eq("id", user.id).maybeSingle(),
+    supabase.from("profiles").select("profession_type, profession_types, is_admin").eq("id", user.id).maybeSingle(),
     getActiveOrgId(supabase, user.id),
   ]);
-  const workspaceKey = getWorkspaceKey(profile?.profession_type, user.user_metadata?.profession_type, profile?.is_admin);
-  if (workspaceKey !== "law_office") {
+  // Mesma regra do layout de /painel/juridico: profession_types (plural), não a
+  // workspace ativa — quem é advogado e corretor não precisa alternar antes.
+  if (!profile || !hasLegalWorkspace(profile)) {
     return Response.json({ error: "Disponível apenas no workspace de advocacia." }, { status: 403 });
   }
   const [orgRole, { data: membership }] = await Promise.all([

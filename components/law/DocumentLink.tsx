@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getLegalDocumentSignedUrl } from "@/app/(app)/law/actions";
+import { getLegalDocumentSignedUrl } from "@/app/(dashboard)/painel/juridico/actions";
 
 export function DocumentLink({ documentId, className, children }: { documentId: string; className?: string; children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);

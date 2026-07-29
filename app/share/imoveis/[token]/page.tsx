@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { PropertyReactionButtons } from "@/components/real-estate/PropertyReactionButtons";
 import { centsToReais } from "@/lib/real-estate";
@@ -43,7 +44,8 @@ type SharedCollection = {
   properties: SharedProperty[];
 };
 
-export default async function SharedPropertyCollectionPage({ params }: { params: { token: string } }) {
+export default async function SharedPropertyCollectionPage(props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   if (!/^[0-9a-f-]{36}$/i.test(params.token)) notFound();
 
   const supabase = createSupabaseClient(
@@ -76,10 +78,13 @@ export default async function SharedPropertyCollectionPage({ params }: { params:
                 {property.photos.length > 0 && (
                   <div className="flex gap-2 overflow-x-auto p-3">
                     {property.photos.map((path) => (
-                      <img
+                      <Image
                         key={path}
                         src={supabase.storage.from("property-photos").getPublicUrl(path).data.publicUrl}
-                        alt=""
+                        alt={`Foto de ${property.title}`}
+                        width={224}
+                        height={160}
+                        unoptimized
                         className="h-40 w-56 shrink-0 rounded-lg object-cover"
                       />
                     ))}

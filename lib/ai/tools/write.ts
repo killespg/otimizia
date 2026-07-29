@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createDeletionCode, hashDeletionCode } from "@/lib/ai/deletion-confirmation";
 import { cleanDashboardText, getDashboardPreferences, isDashboardAccent, isDashboardStyle, isDashboardWidgetKey, isMetricKey, mergeScopedPreferences } from "@/lib/dashboard-preferences";
 import { getProfessionPreset } from "@/lib/professions";
 import { cleanWorkspaceLabel, parseWorkspacePreferences } from "@/lib/workspace-preferences";
@@ -240,6 +241,7 @@ export async function updateDashboardPreferencesByAi(
   };
 
   const dashboardPreferences = {
+    ...current,
     style: isDashboardStyle(input.estilo) ? input.estilo : current.style,
     accent: isDashboardAccent(input.cor) ? input.cor : current.accent,
     widgets: widgets.length > 0 ? widgets : current.widgets,
@@ -342,12 +344,42 @@ export async function updateOrganizationContextByAi(
 
 export async function deleteRow(
   supabase: SupabaseClient,
+  userId: string,
   orgId: string,
   workspaceKey: string,
   table: "contacts" | "deals" | "tasks",
   id: string,
   message: string
 ) {
+  const { data: confirmed, error: confirmationError } = await supabase.rpc(
+    "consume_assistant_deletion_confirmation",
+    {
+      p_org_id: orgId,
+      p_workspace_key: workspaceKey,
+      p_entity_table: table,
+      p_entity_id: id,
+    },
+  );
+  ensureOk(confirmationError);
+
+  if (confirmed !== true) {
+    const code = createDeletionCode();
+    const { error: requestError } = await supabase.rpc(
+      "request_assistant_deletion_confirmation",
+      {
+        p_org_id: orgId,
+        p_workspace_key: workspaceKey,
+        p_entity_table: table,
+        p_entity_id: id,
+        p_code_hash: hashDeletionCode(code),
+      },
+    );
+    ensureOk(requestError);
+    throw new Error(
+      `A exclusão ainda não foi autorizada. Peça ao usuário para digitar exatamente EXCLUIR ${code}. O código expira em 10 minutos.`,
+    );
+  }
+
   const { error, count } = await supabase
     .from(table)
     .delete({ count: "exact" })

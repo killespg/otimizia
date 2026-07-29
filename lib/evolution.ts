@@ -1,3 +1,5 @@
+import { evolutionWebhookSecret } from "@/lib/evolution-webhook";
+
 // Cliente mínimo para a Evolution API (self-hosted). Contrato do v2:
 // - POST /instance/create -> { qrcode: { base64 } }, aceita webhook inline
 // - GET  /instance/connectionState/{instance} -> { instance: { state } }
@@ -58,6 +60,9 @@ export async function createEvolutionInstance(
       webhook: {
         enabled: true,
         url: webhookUrl,
+        headers: {
+          Authorization: `Bearer ${evolutionWebhookSecret()}`,
+        },
         events: ["MESSAGES_UPSERT"],
       },
     }),
@@ -83,6 +88,26 @@ export async function sendEvolutionText(
   await evolutionFetch(`/message/sendText/${instanceName}`, {
     method: "POST",
     body: JSON.stringify({ number, text }),
+  });
+}
+
+// POST /message/sendMedia/{instance} -> { number, mediatype, media, caption }
+// `media` aceita URL pública (é o que usamos: a imagem sobe primeiro pro
+// Storage e mandamos o link) ou base64.
+export async function sendEvolutionMedia(
+  instanceName: string,
+  number: string,
+  mediaUrl: string,
+  caption?: string
+): Promise<void> {
+  await evolutionFetch(`/message/sendMedia/${instanceName}`, {
+    method: "POST",
+    body: JSON.stringify({
+      number,
+      mediatype: "image",
+      media: mediaUrl,
+      ...(caption ? { caption } : {}),
+    }),
   });
 }
 

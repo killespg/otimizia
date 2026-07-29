@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   const stripe = getStripe();
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   const orgId = await getActiveOrgId(supabase, user.id);
   const role = await getOrgRole(supabase, orgId, user.id);
   if (role !== "admin") {
-    return NextResponse.redirect(new URL("/settings?checkout=forbidden", request.url));
+    return NextResponse.redirect(new URL("/painel/configuracoes?checkout=forbidden", request.url));
   }
 
   const [{ data: org }, { count: seatCount }] = await Promise.all([
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       .eq("id", orgId);
     if (error) {
       logError("billing/checkout.link-customer", error, { userId: user.id });
-      return NextResponse.redirect(new URL("/settings?checkout=error", request.url));
+      return NextResponse.redirect(new URL("/painel/configuracoes?checkout=error", request.url));
     }
   }
 
@@ -57,12 +57,21 @@ export async function POST(request: Request) {
       metadata: { supabase_org_id: orgId },
     },
     line_items: [{ price: process.env.STRIPE_PRICE_ID_PRO!, quantity: Math.max(seatCount ?? 1, 1) }],
-    success_url: `${origin}/settings?checkout=success`,
-    cancel_url: `${origin}/settings?checkout=cancel`,
+    // Dados fiscais coletados no próprio checkout: sem CPF/CNPJ e endereço não
+    // há como emitir nota fiscal, e cobrar antes de ter esses campos é correr
+    // atrás do cliente depois. tax_id_collection aceita CPF e CNPJ nos
+    // formatos br_cpf / br_cnpj.
+    tax_id_collection: { enabled: true, required: "if_supported" },
+    billing_address_collection: "required",
+    // Sem isso o Stripe guarda os dados só na sessão; com isso eles sobem para
+    // o Customer e passam a sair impressos em toda fatura seguinte.
+    customer_update: { name: "auto", address: "auto" },
+    success_url: `${origin}/painel/configuracoes?checkout=success`,
+    cancel_url: `${origin}/painel/configuracoes?checkout=cancel`,
   });
 
   if (!session.url) {
-    return NextResponse.redirect(new URL("/settings?checkout=error", request.url));
+    return NextResponse.redirect(new URL("/painel/configuracoes?checkout=error", request.url));
   }
   return NextResponse.redirect(session.url, 303);
 }

@@ -10,13 +10,9 @@ import {
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
+import type { ChatMessage } from "@/lib/ai/types";
 
-export type ChatMessage = {
-  role: "user" | "assistant";
-  content: string;
-  imageUrl?: string;
-  attachmentName?: string;
-};
+export type { ChatMessage };
 
 export type PendingChatImage = { dataUrl: string; mediaType: string; base64: string };
 
@@ -38,23 +34,24 @@ function readFileAsBase64(file: File): Promise<string> {
   });
 }
 
-// Rótulos amigáveis mostrados enquanto uma ferramenta do CRM está rodando.
+// Rótulos amigáveis mostrados enquanto uma ferramenta do CRM está rodando —
+// o Tim narra o que está fazendo, não o nome técnico da ferramenta.
 export const ASSISTANT_TOOL_LABELS: Record<string, string> = {
-  list_contacts: "Consultando contatos…",
-  get_contact: "Abrindo contato…",
-  list_deals: "Consultando o funil…",
-  list_tasks: "Consultando lembretes…",
-  get_business_summary: "Calculando o resumo do negócio…",
+  list_contacts: "Consultando seus clientes…",
+  get_contact: "Abrindo o contato…",
+  list_deals: "Olhando seu funil…",
+  list_tasks: "Consultando seus lembretes…",
+  get_business_summary: "Analisando seu negócio…",
   create_contact: "Criando contato…",
-  update_contact: "Atualizando contato…",
-  log_interaction: "Registrando conversa…",
-  create_deal: "Criando venda…",
-  move_deal: "Movendo venda…",
-  create_task: "Criando lembrete…",
-  toggle_task: "Atualizando lembrete…",
-  delete_contact: "Excluindo contato…",
-  delete_deal: "Excluindo venda…",
-  delete_task: "Excluindo lembrete…",
+  update_contact: "Atualizando seu painel…",
+  log_interaction: "Registrando a conversa…",
+  create_deal: "Criando a venda…",
+  move_deal: "Atualizando seu painel…",
+  create_task: "Criando o lembrete…",
+  toggle_task: "Atualizando seu painel…",
+  delete_contact: "Excluindo o contato…",
+  delete_deal: "Excluindo a venda…",
+  delete_task: "Excluindo o lembrete…",
 };
 
 type StreamEvent = {
@@ -134,7 +131,7 @@ export function AssistantChatProvider({
       hasLocalActivityRef.current = true;
       sendingRef.current = true;
       setSending(true);
-      setStatus(file ? "Lendo o PDF…" : "Pensando…");
+      setStatus(file ? "Lendo o PDF…" : "Tim está digitando…");
 
       // O PDF só é anexado nesta mensagem: depois de enviado, ele não fica
       // guardado no histórico local (só o nome, pra exibir), então turnos
@@ -157,14 +154,20 @@ export function AssistantChatProvider({
 
       const displayText = trimmed || (file ? `Dá uma olhada nesse PDF: ${file.name}` : "");
       const priorHistory = messagesRef.current;
+      const now = new Date().toISOString();
       const userMessage: ChatMessage = {
         role: "user",
         content: file ? displayText : trimmed,
         imageUrl: !file ? image?.dataUrl : undefined,
         attachmentName: file?.name,
+        createdAt: now,
       };
-      updateMessages(() => [...priorHistory, userMessage, { role: "assistant", content: "" }]);
-      setStatus("Pensando…");
+      updateMessages(() => [
+        ...priorHistory,
+        userMessage,
+        { role: "assistant", content: "", createdAt: now },
+      ]);
+      setStatus("Tim está digitando…");
 
       const appendToAssistant = (chunk: string) => {
         updateMessages((prev) => {
@@ -212,7 +215,7 @@ export function AssistantChatProvider({
 
         if (!res.ok || !res.body) {
           const data = await res.json().catch(() => null);
-          appendToAssistant(data?.error ?? "Não consegui falar com o assistente agora.");
+          appendToAssistant(data?.error ?? "Não consegui falar com o Tim agora. Tente novamente em instantes.");
           return;
         }
 
@@ -244,7 +247,7 @@ export function AssistantChatProvider({
                 if (event.text) appendToAssistant(event.text);
                 break;
               case "thinking":
-                setStatus("Pensando…");
+                setStatus("Analisando seu negócio…");
                 break;
               case "tool":
                 setStatus(ASSISTANT_TOOL_LABELS[event.name ?? ""] ?? "Trabalhando nisso…");

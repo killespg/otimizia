@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { logout } from "../(auth)/actions";
 
 export default async function UpgradePage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -20,14 +20,14 @@ export default async function UpgradePage() {
   ]);
   const isAdmin = role === "admin";
 
-  if (access.hasAccess) redirect("/dashboard");
+  if (access.hasAccess) redirect("/painel");
 
   const title =
     access.status === "expired" ? "Seu teste grátis acabou" : "Assine pra continuar";
 
   return (
-    <main className="flex min-h-[100dvh] items-center justify-center bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-4">
-      <div className="panel w-full max-w-md space-y-5 p-8 text-center">
+    <main className="flex min-h-[100dvh] items-center justify-center bg-[#171320] p-4">
+      <div className="w-full max-w-md border-y border-white/[0.09] py-10 text-center">
         <div>
           <p className="text-sm font-black text-ink"><BrandName /></p>
           <h1 className="mt-2 text-2xl font-black tracking-[-0.03em] text-ink">

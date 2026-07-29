@@ -8,15 +8,16 @@ next-env.d.ts
 .next-dev.err.log
 .next-dev-*.log
 .next-dev-*.err.log
+next-dev-*.log
+next-dev-*.err.log
 .env
 .env*.local
 .DS_Store
 /.vercel
 /supabase/.branches
 /supabase/.temp
-/test-results/
 /playwright-report/
-/playwright/.cache/
+/test-results/
 
 # Ignore local and tool-specific files
 .agents/
@@ -42,3 +43,10 @@ hook.cache.json
 # Instaladores baixados por engano para public/ (nao devem ser servidos pelo site)
 /public/*.exe
 /public/*.msi
+
+# Local development logs
+dashboard-dev.*.log
+next-dev.*.log
+next-start-*.log
+next-start.*.log
+.codex-logs/

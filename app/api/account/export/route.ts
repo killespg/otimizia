@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 // extra por owner_id para não misturar com o que colegas de organização
 // registraram.
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

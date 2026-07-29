@@ -36,7 +36,7 @@ function sanitizeHistory(raw: unknown): FilterChatTurn[] {
 // checagem de real_estate_v2_enabled: os campos de filtro que ele preenche
 // já são os mesmos que o formulário manual desta página sempre aceitou.
 export async function POST(req: Request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

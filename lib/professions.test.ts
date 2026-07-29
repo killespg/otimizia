@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PROFESSION_OPTIONS, getProfessionPreset, normalizeProfession } from "./professions";
+import { ASSIGNABLE_PROFESSION_OPTIONS, PROFESSION_OPTIONS, getProfessionPreset, normalizeProfession } from "./professions";
 
 describe("normalizeProfession", () => {
   it("accepts any publicly listed profession value", () => {
@@ -32,5 +32,29 @@ describe("getProfessionPreset", () => {
 
   it("falls back to autonomous_seller for an unrecognized key", () => {
     expect(getProfessionPreset("bogus" as never).key).toBe("autonomous_seller");
+  });
+});
+
+describe("profissoes desativadas para novos cadastros", () => {
+  const desativadas = ["service_provider", "consultant", "freelancer", "livestock_producer", "small_business", "other"];
+
+  it("nao aparecem no cadastro", () => {
+    const ofertadas = PROFESSION_OPTIONS.map((option) => option.value);
+    expect(ofertadas).toEqual(["autonomous_seller", "law_office", "real_estate_broker"]);
+    for (const key of desativadas) expect(ofertadas).not.toContain(key);
+  });
+
+  // O ponto da separacao: validar contra a lista do cadastro rebaixaria um
+  // consultor existente para vendedor autonomo, trocando a workspace dele sem
+  // aviso na primeira vez que o perfil fosse lido.
+  it("continuam validas para quem ja as tem", () => {
+    for (const key of desativadas) expect(normalizeProfession(key)).toBe(key);
+  });
+
+  it("seguem na lista atribuivel, mas nunca incluem founder", () => {
+    const atribuiveis = ASSIGNABLE_PROFESSION_OPTIONS.map((option) => option.value);
+    for (const key of desativadas) expect(atribuiveis).toContain(key);
+    expect(atribuiveis).not.toContain("founder");
+    expect(normalizeProfession("founder")).toBe("autonomous_seller");
   });
 });

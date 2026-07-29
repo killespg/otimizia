@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 // "conectado". Também é chamada pela própria tela de configurações pra
 // mostrar o estado atual.
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -6,7 +6,12 @@ loadEnvFile(join(process.cwd(), ".env.local"));
 if (process.env.SEED_ENV_FILE) loadEnvFile(join(process.cwd(), process.env.SEED_ENV_FILE));
 
 const AUTH_EMAIL = process.env.BROKER_DEMO_AUTH_EMAIL ?? "corretor.demo.otimizia@gmail.com";
-const AUTH_PASSWORD = process.env.BROKER_DEMO_AUTH_PASSWORD ?? "OtimizIA-demo-corretor-2026!";
+// Sem valor padrao: este arquivo e versionado em repositorio publico e o script
+// tem poder de definir a senha da conta demo no banco real.
+const AUTH_PASSWORD = process.env.BROKER_DEMO_AUTH_PASSWORD;
+if (!AUTH_PASSWORD) {
+  throw new Error("Defina BROKER_DEMO_AUTH_PASSWORD em .env.local antes de rodar o seed.");
+}
 const WORKSPACE = "real_estate_broker";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

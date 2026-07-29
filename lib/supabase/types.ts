@@ -22,6 +22,7 @@ export type Profile = {
   is_admin: boolean;
   cpf: string | null;
   terms_accepted_at: string | null;
+  welcome_email_sent_at: string | null;
   active_org_id: string | null;
   checklist_dismissed_at: string | null;
   dashboard_preferences: Record<string, unknown>;
@@ -431,6 +432,209 @@ export type RealEstateTarget = {
   target_amount_cents: number;
   created_by: string;
   created_at: string;
+};
+
+export type SellerSalesModel =
+  | "general"
+  | "fashion"
+  | "durable"
+  | "consumable"
+  | "made_to_order"
+  | "commercial_representative";
+
+export type SellerModule =
+  | "catalog"
+  | "collections"
+  | "variants"
+  | "inventory"
+  | "orders"
+  | "warranties"
+  | "consumables"
+  | "made_to_order"
+  | "commissions"
+  | "delivery";
+
+export type SellerBusinessProfile = {
+  org_id: string;
+  workspace_key: "autonomous_seller";
+  sales_models: SellerSalesModel[];
+  enabled_modules: SellerModule[];
+  default_warranty_days: number;
+  low_stock_threshold: number;
+  allow_negative_stock: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SellerCollection = {
+  id: string;
+  org_id: string;
+  workspace_key: "autonomous_seller";
+  name: string;
+  status: "draft" | "active" | "archived";
+  starts_on: string | null;
+  ends_on: string | null;
+  description: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SellerProduct = {
+  id: string;
+  org_id: string;
+  workspace_key: "autonomous_seller";
+  collection_id: string | null;
+  name: string;
+  sku: string | null;
+  category: string | null;
+  brand: string | null;
+  kind: SellerSalesModel;
+  status: "draft" | "active" | "inactive";
+  description: string | null;
+  base_price_cents: number;
+  cost_cents: number | null;
+  track_stock: boolean;
+  stock_quantity: number;
+  reserved_quantity: number;
+  low_stock_threshold: number | null;
+  warranty_days: number;
+  requires_serial: boolean;
+  reorder_interval_days: number | null;
+  default_lead_time_days: number | null;
+  default_commission_percent: number | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SellerProductVariant = {
+  id: string;
+  org_id: string;
+  product_id: string;
+  name: string;
+  sku: string | null;
+  attributes: Record<string, string>;
+  price_cents: number | null;
+  stock_quantity: number;
+  reserved_quantity: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SellerProductMedia = {
+  id: string;
+  org_id: string;
+  product_id: string;
+  storage_path: string;
+  alt_text: string | null;
+  position: number;
+  created_by: string;
+  created_at: string;
+};
+
+export type SellerInventoryMovement = {
+  id: string;
+  org_id: string;
+  product_id: string;
+  variant_id: string | null;
+  order_id: string | null;
+  movement_type: "initial" | "sale" | "adjustment" | "return" | "reservation" | "reservation_release";
+  quantity_delta: number;
+  balance_after: number;
+  reason: string | null;
+  created_by: string;
+  created_at: string;
+};
+
+export type SellerOrder = {
+  id: string;
+  org_id: string;
+  workspace_key: "autonomous_seller";
+  deal_id: string | null;
+  contact_id: string | null;
+  order_number: string;
+  status: "draft" | "confirmed" | "preparing" | "ready" | "delivered" | "completed" | "cancelled";
+  payment_status: "pending" | "partial" | "paid" | "refunded";
+  payment_method: "cash" | "pix" | "card" | "installments" | "bank_transfer" | "payment_link" | "other" | null;
+  delivery_method: "pickup" | "local_delivery" | "carrier" | "customer_address" | "digital" | "other" | null;
+  subtotal_cents: number;
+  discount_cents: number;
+  shipping_cents: number;
+  total_cents: number;
+  notes: string | null;
+  confirmed_at: string | null;
+  delivered_at: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SellerOrderItem = {
+  id: string;
+  org_id: string;
+  order_id: string;
+  product_id: string | null;
+  variant_id: string | null;
+  product_name_snapshot: string;
+  sku_snapshot: string | null;
+  variant_snapshot: string | null;
+  collection_name_snapshot: string | null;
+  quantity: number;
+  unit_price_cents: number;
+  discount_cents: number;
+  warranty_days_snapshot: number;
+  serial_number: string | null;
+  customization_notes: string | null;
+  promised_on: string | null;
+  reorder_due_on: string | null;
+  commission_percent: number;
+  commission_cents: number;
+  line_total_cents: number;
+  created_at: string;
+};
+
+export type SellerWarranty = {
+  id: string;
+  org_id: string;
+  order_item_id: string;
+  contact_id: string | null;
+  product_id: string | null;
+  serial_number: string | null;
+  starts_on: string;
+  expires_on: string;
+  status: "active" | "void";
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SellerWarrantyClaim = {
+  id: string;
+  org_id: string;
+  warranty_id: string;
+  title: string;
+  issue_description: string;
+  status: "open" | "analysis" | "assistance" | "replacement_approved" | "refund_approved" | "resolved" | "cancelled";
+  resolution: string | null;
+  opened_at: string;
+  resolved_at: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SellerCustomerProfile = {
+  org_id: string;
+  contact_id: string;
+  clothing_sizes: Record<string, string>;
+  measurements: Record<string, string>;
+  preferred_colors: string[];
+  style_notes: string | null;
+  shoe_size: number | null;
+  reorder_interval_days: number | null;
+  updated_at: string;
 };
 
 export type Contact = {

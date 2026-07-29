@@ -1,4 +1,4 @@
-self.addEventListener("install", (event) => {
+self.addEventListener("install", () => {
   self.skipWaiting();
 });
 
@@ -21,8 +21,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: "/otimizia-mark.png",
-      badge: "/otimizia-mark.png",
+      icon: "/otimizia-app-icon-2026.png",
+      badge: "/otimizia-mark-2026.png",
       data: { url: data.url || "/tasks" },
     })
   );

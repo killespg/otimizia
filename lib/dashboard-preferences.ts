@@ -42,6 +42,14 @@ export const ALL_DASHBOARD_METRICS: { key: MetricKey; fallbackLabel: string }[] 
   { key: "conversations_today", fallbackLabel: "Conversas hoje" },
   { key: "conversion_rate", fallbackLabel: "Conversão" },
   { key: "avg_ticket", fallbackLabel: "Ticket médio" },
+  { key: "commission_open", fallbackLabel: "Comissão prevista" },
+];
+
+const LEGACY_AUTONOMOUS_SELLER_METRICS: MetricKey[] = [
+  "open_value",
+  "open_deals",
+  "won_value_month",
+  "overdue_tasks",
 ];
 
 export type DashboardPreferences = {
@@ -50,11 +58,20 @@ export type DashboardPreferences = {
   metrics: MetricKey[];
   metricLabels: Partial<Record<MetricKey, string>>;
   widgets: DashboardWidgetKey[];
+  showAnimatedBackground: boolean;
+  salesMarketingCostCents?: number;
 };
 
 // Campos da forma "achatada" (legada), guardados direto na raiz do JSON antes
 // de as preferências passarem a ser separadas por workspace.
-const LEGACY_PREFERENCE_FIELDS = ["style", "accent", "metrics", "metricLabels", "widgets"];
+const LEGACY_PREFERENCE_FIELDS = [
+  "style",
+  "accent",
+  "metrics",
+  "metricLabels",
+  "widgets",
+  "showAnimatedBackground",
+];
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -94,13 +111,21 @@ export function getDashboardPreferences(
     ? (scoped as Partial<DashboardPreferences>)
     : {};
   const presetMetrics = preset.metrics.map((metric) => metric.key);
+  const metricLabels = normalizeMetricLabels(raw.metricLabels);
+  const normalizedMetrics = normalizeMetricKeys(raw.metrics, presetMetrics);
+  const shouldUpgradeSellerDefaults =
+    workspaceKey === "autonomous_seller" &&
+    Object.keys(metricLabels).length === 0 &&
+    sameKeys(normalizedMetrics, LEGACY_AUTONOMOUS_SELLER_METRICS);
 
   return {
     style: isDashboardStyle(raw.style) ? raw.style : "glow",
     accent: isDashboardAccent(raw.accent) ? raw.accent : "purple",
-    metrics: normalizeMetricKeys(raw.metrics, presetMetrics),
-    metricLabels: normalizeMetricLabels(raw.metricLabels),
+    metrics: shouldUpgradeSellerDefaults ? presetMetrics : normalizedMetrics,
+    metricLabels,
     widgets: normalizeWidgetKeys(raw.widgets),
+    showAnimatedBackground: raw.showAnimatedBackground !== false,
+    salesMarketingCostCents: normalizeNonNegativeNumber(raw.salesMarketingCostCents),
   };
 }
 
@@ -163,4 +188,12 @@ function normalizeMetricLabels(value: unknown): Partial<Record<MetricKey, string
 
 function unique<T extends string>(values: T[]): T[] {
   return values.filter((value, index) => values.indexOf(value) === index);
+}
+
+function sameKeys(left: MetricKey[], right: MetricKey[]) {
+  return left.length === right.length && left.every((key, index) => key === right[index]);
+}
+
+function normalizeNonNegativeNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? Math.round(value) : 0;
 }

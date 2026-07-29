@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# Commit history is useful even when the change was made outside Codex.
+# Logging must never block a successful Git commit.
+powershell.exe -NoProfile -ExecutionPolicy Bypass \
+  -File "$PWD/scripts/obsidian-log.ps1" \
+  -Mode commit \
+  -Repository "$PWD"
+
+status=$?
+if [ "$status" -ne 0 ]; then
+  echo "Aviso: não foi possível registrar o commit no Obsidian." >&2
+fi
+
+exit 0
+

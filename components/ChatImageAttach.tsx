@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import Image from "next/image";
-import { IconImage, IconX } from "@/app/(app)/icons";
+import { IconImage, IconX } from "@/app/(dashboard)/painel/icons";
 
 export type PendingImage = { dataUrl: string; mediaType: string; base64: string };
 
@@ -68,7 +68,7 @@ export function ChatImageAttach({
           onClick={() => inputRef.current?.click()}
           aria-label="Anexar foto"
           title="Anexar foto"
-          className="press-sm flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-line bg-white text-ink-muted transition-colors duration-150 ease-out hover:border-brand-300 hover:text-brand-700"
+          className="press-sm flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-line bg-od-surface text-ink-muted transition-colors duration-150 ease-out hover:border-brand-300 hover:text-brand-700"
         >
           <IconImage className="h-5 w-5" />
         </button>

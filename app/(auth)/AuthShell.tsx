@@ -1,8 +1,22 @@
 import Link from "next/link";
-import Image from "next/image";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { IconAlert, IconBell, IconBot, IconCheck, IconColumns } from "../(app)/icons";
+import type { InputHTMLAttributes } from "react";
+import { AlertCircle, CalendarCheck2, Check, Columns3, ContactRound } from "lucide-react";
+import { LogoWordmark } from "@/components/design-system/logo";
+import { AmbientParticles } from "@/components/design-system/ambient-particles";
 
+/**
+ * Moldura das telas de entrada.
+ *
+ * Estava com a paleta antiga cravada em hex (#171320, #1d1924, #120f1c) e com
+ * texto e régua em opacidade de branco (white/48, white/[0.07]). Duas
+ * consequências: os planos não acompanhavam a escada de superfícies que o
+ * resto do produto passou a usar, e qualquer ajuste de tema deixava estas
+ * quatro rotas para trás, porque não liam token nenhum.
+ *
+ * Mapeamento aplicado, seguindo a mesma leitura do painel: a coluna de
+ * apresentação é o plano mais fundo (`od-sidebar`), o formulário fica na
+ * superfície elevada (`od-surface`) e a página é o canvas (`od-bg`).
+ */
 export function AuthShell({
   title,
   subtitle,
@@ -19,105 +33,91 @@ export function AuthShell({
   footer: React.ReactNode;
 }) {
   return (
-    <main className="min-h-[100dvh] bg-[linear-gradient(135deg,#b518ff_0%,#5c22e8_43%,#0bbfe8_100%)] p-2 sm:p-5 md:p-6">
-      <div className="relative mx-auto grid min-h-[calc(100dvh-1rem)] max-w-6xl overflow-hidden rounded-2xl bg-white shadow-[0_32px_90px_-42px_rgba(7,8,28,0.85)] md:min-h-[calc(100dvh-3rem)] lg:grid-cols-[1.05fr_0.95fr]">
-        <ThemeToggle compact className="absolute right-4 top-4 z-20" />
-
-        <section className="hidden bg-[#f8fbff] p-8 lg:block">
-          <Link href="/" className="nav-item inline-flex items-center rounded-md">
-            <Image
-              src="/otimizia-logo.png"
-              alt="OtimizIA"
-              width={206}
-              height={60}
-              priority
-              sizes="206px"
-              className="h-10 w-auto dark:hidden"
-            />
-            <Image
-              src="/otimizia-logo-dark.png"
-              alt="OtimizIA"
-              width={216}
-              height={61}
-              priority
-              sizes="216px"
-              className="hidden h-10 w-auto dark:block"
-            />
-          </Link>
-
-          <div className="mt-16 max-w-xl">
-            <p className="text-sm font-black text-brand-700">CRM com IA</p>
-            <h2 className="mt-4 text-[clamp(2.5rem,6vw,4.5rem)] font-black leading-[0.94] tracking-[-0.04em] text-ink">
-              Sua rotina de vendas em ordem.
+    <main className="min-h-[100dvh] bg-od-bg p-0 sm:grid sm:place-items-center sm:p-5">
+      <div className="mx-auto grid min-h-[100dvh] w-full max-w-6xl overflow-hidden border-od-border bg-od-surface sm:min-h-[min(760px,calc(100dvh-2.5rem))] sm:rounded-lg sm:border lg:grid-cols-[1.05fr_.95fr]">
+        {/* A mesma poeira da área autenticada, contida em cada coluna. Densidade
+            mais esparsa que no painel: aqui ela preenche o vazio entre o texto
+            e a lista, não deve competir com o formulário. */}
+        <section className="relative hidden flex-col justify-between overflow-hidden border-r border-od-border bg-od-sidebar p-10 lg:flex">
+          <AmbientParticles contained density={11000} maxParticles={70} />
+          <div className="relative z-10">
+            <Link
+              href="/"
+              className="inline-flex min-h-11 items-center rounded-md focus-visible:ring-2 focus-visible:ring-od-accent"
+            >
+              <LogoWordmark height={32} />
+            </Link>
+            <h2 className="mt-16 max-w-lg text-[34px] font-extrabold leading-[1.14] tracking-[-0.025em] text-od-text">
+              O que precisa da sua atenção, sem ruído.
             </h2>
-            <p className="mt-5 max-w-md text-base font-medium leading-relaxed text-ink-soft">
-              Entre para ver clientes para chamar, vendas abertas e lembretes em
-              uma tela simples.
+            <p className="mt-4 max-w-md text-[15px] leading-7 text-od-text-2">
+              Contatos, vendas e lembretes no mesmo lugar, adaptados ao seu jeito
+              de trabalhar.
             </p>
           </div>
-
-          <div className="enter mt-12 grid max-w-xl gap-3">
-            <PreviewItem icon={IconBell} title="Fila do dia" body="Quem precisa de resposta aparece primeiro." />
-            <PreviewItem icon={IconColumns} title="Vendas abertas" body="Etapas claras para cada negócio." />
-            <PreviewItem icon={IconBot} title="Sócio-Assistente" body="Ajuda para resumir e decidir o próximo passo." />
+          <div className="relative z-10 border-y border-od-border">
+            {[
+              [ContactRound, "Clientes organizados", "Histórico e próximos passos sempre à mão."],
+              [Columns3, "Funil que acompanha seu processo", "Etapas, valores e responsáveis sem planilha."],
+              [CalendarCheck2, "Lembretes no momento certo", "O que venceu sobe para o topo da fila."],
+            ].map(([Icon, label, description]) => {
+              const FeatureIcon = Icon as typeof ContactRound;
+              return (
+                <div
+                  key={String(label)}
+                  className="flex gap-4 border-t border-od-border py-5 first:border-t-0"
+                >
+                  <FeatureIcon size={18} className="mt-0.5 shrink-0 text-od-text-3" />
+                  <div>
+                    <p className="text-sm font-semibold text-od-text">{String(label)}</p>
+                    <p className="mt-1 text-xs leading-5 text-od-text-3">{String(description)}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
-        <section className="flex items-center justify-center px-5 py-10 sm:px-8">
-          <div className="hero-rise w-full max-w-[420px]">
-            <Link
-              href="/"
-              className="nav-item mx-auto mb-8 flex w-max items-center gap-2.5 hover:opacity-80 lg:hidden"
-            >
-              <Image
-                src="/otimizia-logo.png"
-                alt="OtimizIA"
-                width={204}
-                height={60}
-                priority
-                sizes="204px"
-                className="h-10 w-auto dark:hidden"
-              />
-              <Image
-                src="/otimizia-logo-dark.png"
-                alt="OtimizIA"
-                width={216}
-                height={61}
-                priority
-                sizes="216px"
-                className="hidden h-10 w-auto dark:block"
-              />
-            </Link>
-
-            <div className="panel overflow-hidden">
-              <div className="border-b border-line px-6 pb-5 pt-6 sm:px-8">
-                <h1 className="text-3xl font-black tracking-[-0.03em] text-ink">
-                  {title}
-                </h1>
-                <p className="mt-2 text-sm font-medium text-ink-soft">{subtitle}</p>
-              </div>
-
-              <div className="px-6 py-6 sm:px-8">
-                {error && (
-                  <div className="banner-in mb-5 flex items-start gap-2 rounded-md border border-danger-200 bg-danger-50 px-3.5 py-3 text-sm font-bold text-danger-700">
-                    <IconAlert className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span className="min-w-0 text-safe">{error}</span>
-                  </div>
-                )}
-                {notice && (
-                  <div className="banner-in mb-5 flex items-start gap-2 rounded-md border border-success-200 bg-success-50 px-3.5 py-3 text-sm font-bold text-success-700">
-                    <IconCheck className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span className="min-w-0 text-safe">{notice}</span>
-                  </div>
-                )}
-
-                {children}
-              </div>
-
-              <div className="border-t border-line bg-[#f8fbff] px-6 py-4 text-center text-sm font-medium text-ink-soft sm:px-8">
-                {footer}
-              </div>
+        <section className="relative flex min-h-[100dvh] items-center overflow-hidden px-5 py-10 sm:min-h-0 sm:px-10 lg:px-14">
+          {/* No celular esta coluna é a tela inteira, então ela precisa da
+              própria poeira: a de cima só existe a partir de `lg`. Mais rala
+              ainda, porque o plano é mais claro e o campo fica atrás de campos
+              de formulário. */}
+          <AmbientParticles contained density={16000} maxParticles={45} />
+          <div className="relative z-10 mx-auto w-full max-w-md">
+            <div className="mb-10 lg:hidden">
+              <Link
+                href="/"
+                aria-label="OtimizIA, início"
+                className="inline-flex min-h-11 items-center rounded-md focus-visible:ring-2 focus-visible:ring-od-accent"
+              >
+                <LogoWordmark height={30} />
+              </Link>
             </div>
+            <h1 className="text-[28px] font-bold tracking-[-0.02em] text-od-text">{title}</h1>
+            <p className="mt-2 max-w-[65ch] text-sm leading-6 text-od-text-2">{subtitle}</p>
+
+            {error ? (
+              <div
+                role="alert"
+                className="mt-5 flex items-start gap-3 rounded border border-danger-200 bg-danger-50 p-3 text-sm text-danger-600"
+              >
+                <AlertCircle size={17} className="mt-0.5 shrink-0" />
+                <span>{error}</span>
+              </div>
+            ) : null}
+            {notice ? (
+              <div
+                role="status"
+                className="mt-5 flex items-start gap-3 rounded border border-success-200 bg-success-50 p-3 text-sm text-success-600"
+              >
+                <Check size={17} className="mt-0.5 shrink-0" />
+                <span>{notice}</span>
+              </div>
+            ) : null}
+
+            {children}
+            <p className="mt-7 border-t border-od-border pt-5 text-sm text-od-text-2">{footer}</p>
           </div>
         </section>
       </div>
@@ -125,70 +125,27 @@ export function AuthShell({
   );
 }
 
-function PreviewItem({
-  icon: Icon,
-  title,
-  body,
-}: {
-  icon: (props: { className?: string }) => JSX.Element;
-  title: string;
-  body: string;
-}) {
-  return (
-    <article className="flex items-start gap-3 rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)]">
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-700">
-        <Icon className="h-5 w-5" />
-      </span>
-      <div>
-        <h3 className="text-sm font-black text-ink">{title}</h3>
-        <p className="mt-1 text-sm font-medium leading-relaxed text-ink-muted">
-          {body}
-        </p>
-      </div>
-    </article>
-  );
-}
-
 export function AuthField({
-  name,
   label,
-  type = "text",
-  required = false,
-  minLength,
-  autoComplete,
-  maxLength,
-}: {
-  name: string;
-  label: string;
-  type?: string;
-  required?: boolean;
-  minLength?: number;
-  autoComplete?: string;
-  maxLength?: number;
-}) {
+  name,
+  required,
+  className = "",
+  ...props
+}: InputHTMLAttributes<HTMLInputElement> & { label: string; name: string }) {
   return (
     <div>
       <label className="label" htmlFor={name}>
         {label}
-        {required && (
+        {required ? (
           <>
-            <span className="ml-1 text-brand-700" aria-hidden="true">
+            <span className="ml-1 text-od-text-2" aria-hidden="true">
               *
             </span>
             <span className="sr-only"> obrigatório</span>
           </>
-        )}
+        ) : null}
       </label>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        required={required}
-        minLength={minLength}
-        maxLength={maxLength}
-        autoComplete={autoComplete}
-        className="field mt-1.5"
-      />
+      <input id={name} name={name} required={required} className={`field mt-1.5 ${className}`} {...props} />
     </div>
   );
 }

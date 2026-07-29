@@ -11,7 +11,7 @@ export const runtime = "nodejs";
 // Code para o usuário escanear. Uma instância por org (unique(org_id) na
 // migration 0038) — reconectar reusa o mesmo instance_name.
 export async function POST() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -38,7 +38,7 @@ export async function POST() {
 
   let qrcodeBase64: string | null;
   try {
-    const webhookUrl = `${resolveOrigin(headers())}/api/whatsapp/webhook`;
+    const webhookUrl = `${resolveOrigin(await headers())}/api/whatsapp/webhook`;
     const result = await createEvolutionInstance(instanceName, webhookUrl);
     qrcodeBase64 = result.qrcodeBase64;
   } catch (error) {

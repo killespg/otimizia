@@ -19,7 +19,8 @@ function centsToReais(cents: number | null): string {
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 }
 
-export default async function PublicBrokerPage({ params }: { params: { token: string } }) {
+export default async function PublicBrokerPage(props: { params: Promise<{ token: string }> }) {
+  const params = await props.params;
   if (!/^[0-9a-f-]{36}$/i.test(params.token)) notFound();
   const admin = createAdminClient();
 

@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 // Cria um caso já vinculado ao processo, direto do resultado de uma busca —
 // sem precisar preencher o formulário completo de "Abrir novo caso".
 export async function POST(request: Request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

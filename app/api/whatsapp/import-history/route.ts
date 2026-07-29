@@ -16,7 +16,7 @@ const PAGE_SIZE = 100;
 // de qualquer webhook novo). Idempotente por conversa: se a conversa já tem
 // mensagens, pula — não reimporta nem duplica.
 export async function POST() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

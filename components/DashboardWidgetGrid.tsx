@@ -14,11 +14,12 @@ import {
   type DashboardPreferences,
   type DashboardWidgetKey,
 } from "@/lib/dashboard-preferences";
-import { IconGrip } from "@/app/(app)/icons";
+import { IconGrip } from "@/app/(dashboard)/painel/icons";
 
 type DashboardWidgetGridProps = {
   preferences: DashboardPreferences;
   action: (formData: FormData) => void | Promise<void>;
+  layout?: "grid" | "stack" | "balanced";
   items: {
     id: DashboardWidgetKey;
     className: string;
@@ -29,6 +30,7 @@ type DashboardWidgetGridProps = {
 export function DashboardWidgetGrid({
   preferences,
   action,
+  layout = "grid",
   items,
 }: DashboardWidgetGridProps) {
   const itemIds = useMemo(() => items.map((item) => item.id), [items]);
@@ -70,6 +72,10 @@ export function DashboardWidgetGrid({
     const formData = new FormData();
     formData.set("dashboard_style", preferences.style);
     formData.set("dashboard_accent", preferences.accent);
+    formData.set(
+      "dashboard_animated_background",
+      preferences.showAnimatedBackground ? "1" : "0",
+    );
     preferences.metrics.forEach((metric) => formData.append("dashboard_metrics", metric));
     Object.entries(preferences.metricLabels).forEach(([key, label]) => {
       if (label) formData.set(`metric_label_${key}`, label);
@@ -178,7 +184,14 @@ export function DashboardWidgetGrid({
   return (
     <section
       ref={listRef}
-      className="dashboard-widget-grid grid items-start gap-4 sm:gap-5 xl:grid-cols-12"
+      className={
+        layout === "stack"
+          ? "dashboard-widget-grid flex flex-col gap-4 sm:gap-6"
+          : layout === "balanced"
+            ? "dashboard-widget-grid grid items-stretch gap-4 sm:gap-6 xl:grid-flow-row-dense xl:grid-cols-12"
+            : "dashboard-widget-grid grid items-start gap-4 sm:gap-6 xl:grid-cols-12"
+      }
+      data-layout={layout}
       data-editing={editMode ? "true" : undefined}
       data-saving={isSaving ? "true" : undefined}
     >
@@ -187,7 +200,7 @@ export function DashboardWidgetGrid({
           key={item.id}
           data-dashboard-widget={item.id}
           data-drop-target={dropTargetId === item.id ? "true" : undefined}
-          className={`${item.className} self-start widget-item dashboard-widget-shell ${
+          className={`${item.className} ${layout === "stack" ? "w-full" : layout === "balanced" ? "self-stretch" : "self-start"} widget-item dashboard-widget-shell ${
             draggingId === item.id ? "widget-dragging dashboard-widget-dragging" : ""
           }`}
         >

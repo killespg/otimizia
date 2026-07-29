@@ -37,6 +37,68 @@ describe.skipIf(!config)("RLS multi-tenancy (contra Supabase local)", () => {
     expect(orgA).not.toEqual(orgB);
   });
 
+  it("ignora metadados forjados de convite no cadastro", async () => {
+    const attacker = await createTestUser(config!, admin, {
+      invited_org_id: orgA,
+      invited_job_role: "owner",
+    });
+    try {
+      const personalOrg = await getPersonalOrgId(admin, attacker.userId);
+      const { data: forgedMembership } = await admin
+        .from("organization_members")
+        .select("org_id")
+        .eq("org_id", orgA)
+        .eq("user_id", attacker.userId)
+        .maybeSingle();
+      expect(personalOrg).not.toEqual(orgA);
+      expect(forgedMembership).toBeNull();
+    } finally {
+      await deleteTestUser(admin, attacker.userId);
+    }
+  });
+
+  it("exige e consome uma confirmação de exclusão no servidor", async () => {
+    const { data: contact } = await userA.client
+      .from("contacts")
+      .insert({
+        owner_id: userA.userId,
+        org_id: orgA,
+        workspace_key: "autonomous_seller",
+        name: "Contato para confirmação",
+      })
+      .select("id")
+      .single();
+    const codeHash = "a".repeat(64);
+
+    const request = await userA.client.rpc("request_assistant_deletion_confirmation", {
+      p_org_id: orgA,
+      p_workspace_key: "autonomous_seller",
+      p_entity_table: "contacts",
+      p_entity_id: contact!.id,
+      p_code_hash: codeHash,
+    });
+    expect(request.error).toBeNull();
+
+    const consume = () =>
+      userA.client.rpc("consume_assistant_deletion_confirmation", {
+        p_org_id: orgA,
+        p_workspace_key: "autonomous_seller",
+        p_entity_table: "contacts",
+        p_entity_id: contact!.id,
+      });
+
+    expect((await consume()).data).toBe(false);
+    expect(
+      (
+        await userA.client.rpc("confirm_assistant_deletion", {
+          p_code_hash: codeHash,
+        })
+      ).data,
+    ).toBe(true);
+    expect((await consume()).data).toBe(true);
+    expect((await consume()).data).toBe(false);
+  });
+
   it("impede ler contatos de outra organização", async () => {
     const { data: contact, error: insertError } = await userA.client
       .from("contacts")

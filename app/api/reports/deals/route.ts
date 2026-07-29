@@ -5,7 +5,7 @@ import type { Deal } from "@/lib/supabase/types";
 import { getWorkspaceKey } from "@/lib/workspaces";
 
 export async function GET(request: Request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
