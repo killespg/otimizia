@@ -88,18 +88,66 @@ Rodar sempre, nessa ordem, antes de dar push na branch de produção:
    `ANTHROPIC_API_KEY` já está configurada no ambiente certo da Vercel
    (hoje só existe em Production — testar localmente exige pedir a chave
    ao usuário ou aceitar não testar a chamada real, só o resto do pipeline).
-7. Depois do push: conferir com `vercel ls otimizia` e `vercel inspect
-   <url> --logs` que o deploy saiu `Ready` e foi construído a partir do
-   commit esperado — não assumir que "dar push" implica "deploy no ar"
-   (é exatamente o que já falhou antes).
+7. **Depois do push**: confirmar que o deploy saiu `Ready` **e** que foi
+   construído a partir do commit esperado. Não assumir que "dar push" implica
+   "deploy no ar" — é exatamente o que já falhou antes. São duas checagens
+   diferentes e nenhuma substitui a outra:
+
+   **a) Qual commit está no ar** — só dá para ver no painel da Vercel:
+
+   <https://vercel.com/killesvenancio-2557s-projects/otimizia/deployments>
+
+   O deployment do topo com `Production` precisa estar `Ready` e mostrar o
+   sha do commit que você acabou de empurrar. Se estiver `Error`, abrir o
+   deployment e ler o build log ali mesmo.
+
+   Não existe atalho por `curl` para esta parte: nenhum header da resposta
+   identifica o build. Verificado em 29/07/2026 — `x-vercel-id` é id de
+   requisição, `x-vercel-cache` é estado de cache e `x-matched-path` é a rota.
+   Nenhum carrega o sha. Se algum dia quiser essa checagem por linha de
+   comando, o caminho é a aplicação publicar `VERCEL_GIT_COMMIT_SHA` (a Vercel
+   injeta essa variável no build) em `/api/health`; hoje ela não publica.
+
+   **b) Se o site responde** — isso sim roda em qualquer máquina, e é o que
+   pega o modo de falha que originou este documento (deploy some, site cai):
+
+   ```bash
+   curl -s -o /dev/null -w "%{http_code} %{time_total}s\n" https://useotimizia.com/ && curl -s https://useotimizia.com/api/health && curl -s -o /dev/null -w "\nlogin %{http_code}\n" https://useotimizia.com/login
+   ```
+
+   Esperado: `200` na landing, `{"service":"otimizia","status":"ok",...}` no
+   health e `200` no login.
+
+   **Sobre a CLI da Vercel**: as versões anteriores deste runbook mandavam
+   rodar `vercel ls` e `vercel inspect`, mas a CLI **não está instalada** na
+   máquina de desenvolvimento — quem seguia o passo ao pé da letra travava com
+   `command not found`. Ela continua sendo uma alternativa válida ao item (a),
+   e não uma dependência: instalar exige `npm i -g vercel` e um `vercel login`
+   interativo. Enquanto isso não for feito, use o painel.
 
 ## Rollback rápido se algo quebrar em produção
 
-Não precisa reverter commit primeiro pra recuperar o ar:
+Não precisa reverter commit primeiro pra recuperar o ar.
 
+**Pelo painel** (funciona sem instalar nada, é o caminho a usar sob pressão):
+abrir a lista de deployments, achar o último `Ready` bom, e usar
+`Instant Rollback` no menu de três pontos dele. O alias de produção reaponta
+na hora.
+
+<https://vercel.com/killesvenancio-2557s-projects/otimizia/deployments>
+
+Nem todo deployment serve de alvo: a API marca os elegíveis com
+`isRollbackCandidate`. Na prática são os que já foram produção.
+
+**Pela CLI**, se ela estiver instalada e autenticada (ver a ressalva no item 7
+do checklist — hoje não está):
+
+```bash
+vercel ls otimizia
 ```
-vercel ls otimizia                       # achar o deployment Ready anterior
-vercel rollback <url-do-deployment-bom>  # reaponta o alias de produção pra ele na hora
+
+```bash
+vercel rollback <url-do-deployment-bom>
 ```
 
 Depois, com calma, reverter o commit problemático no Git (`git revert`) pra
