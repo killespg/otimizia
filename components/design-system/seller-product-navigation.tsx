@@ -129,8 +129,8 @@ export function SellerProductNavigation({ workspaceKey, workspaceOptions, displa
     { label: "Gestão", items: management },
   ];
 
-  const mobileTabs: [NavItem, NavItem, NavItem] = [overview[0], crm[3], crm[1]];
-  const barHrefs = new Set([overview[0].href, crm[3].href, crm[1].href, overview[1].href]);
+  const mobileTabs: [NavItem, NavItem, NavItem] = [overview[0], crm[2], crm[3]];
+  const barHrefs = new Set([overview[0].href, crm[2].href, crm[3].href, overview[1].href]);
   const mobileGroups = [
     { label: "CRM", items: crm },
     { label: "Operação", items: operation },

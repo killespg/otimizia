@@ -21,11 +21,11 @@ const preset = {
 describe("getDashboardPreferences", () => {
   it("falls back to defaults when no stored value exists", () => {
     const prefs = getDashboardPreferences(undefined, preset);
-    expect(prefs.style).toBe("glow");
+    expect(prefs.style).toBe("clean");
     expect(prefs.accent).toBe("purple");
     expect(prefs.metrics).toEqual(["open_value", "contacts"]);
     expect(prefs.widgets).toEqual([...DASHBOARD_WIDGETS]);
-    expect(prefs.showAnimatedBackground).toBe(true);
+    expect(prefs.showAnimatedBackground).toBe(false);
   });
 
   it("keeps only known metric/widget keys from stored value", () => {
@@ -48,7 +48,7 @@ describe("getDashboardPreferences", () => {
 
   it("ignores garbage input and falls back to defaults", () => {
     const prefs = getDashboardPreferences("not an object", preset);
-    expect(prefs.style).toBe("glow");
+    expect(prefs.style).toBe("clean");
     expect(prefs.metrics).toEqual(["open_value", "contacts"]);
   });
 
@@ -60,7 +60,7 @@ describe("getDashboardPreferences", () => {
     expect(getDashboardPreferences(stored, preset, "law_office").style).toBe("compact");
     expect(getDashboardPreferences(stored, preset, "autonomous_seller").style).toBe("executive");
     // Área ainda não personalizada cai nos defaults, não na config de outra área.
-    expect(getDashboardPreferences(stored, preset, "consultant").style).toBe("glow");
+    expect(getDashboardPreferences(stored, preset, "consultant").style).toBe("clean");
   });
 
   it("uses legacy flat preferences as a fallback for every workspace", () => {
@@ -72,6 +72,35 @@ describe("getDashboardPreferences", () => {
   it("preserves an explicitly disabled animated background", () => {
     const prefs = getDashboardPreferences({ showAnimatedBackground: false }, preset);
     expect(prefs.showAnimatedBackground).toBe(false);
+  });
+
+  it("preserves an explicitly enabled animated background", () => {
+    const prefs = getDashboardPreferences({ showAnimatedBackground: true }, preset);
+    expect(prefs.showAnimatedBackground).toBe(true);
+  });
+
+  it("upgrades the legacy dashboard order to action-first defaults", () => {
+    const prefs = getDashboardPreferences(
+      {
+        widgets: [
+          "metrics",
+          "calendar",
+          "chart",
+          "deals",
+          "tasks",
+          "assistant",
+          "open_claims",
+          "onboarding",
+        ],
+      },
+      preset,
+    );
+    expect(prefs.widgets.slice(0, 4)).toEqual([
+      "onboarding",
+      "tasks",
+      "open_claims",
+      "calendar",
+    ]);
   });
 
   it("upgrades the old seller statistics to useful commercial defaults", () => {

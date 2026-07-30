@@ -215,7 +215,7 @@ test.describe("fluxos críticos autenticados", () => {
   test("mantém os controles essenciais utilizáveis no mobile", async ({ page }, testInfo) => {
     test.skip(!testInfo.project.name.startsWith("mobile"));
     await expectHealthyProductPage(page, "/painel");
-    const smallTargets = await page.locator("button:visible, a:visible").evaluateAll((elements) =>
+    const smallTargets = await page.locator("button:visible, a:visible, summary:visible").evaluateAll((elements) =>
       elements
         .map((element) => {
           const rect = element.getBoundingClientRect();
@@ -224,6 +224,21 @@ test.describe("fluxos críticos autenticados", () => {
         .filter(({ width, height }) => width > 0 && height > 0 && (width < 44 || height < 44)),
     );
     expect(smallTargets, JSON.stringify(smallTargets.slice(0, 10))).toEqual([]);
+
+    const clippedMobileLabels = await page.locator("[data-mobile-nav] a span:last-child").evaluateAll(
+      (elements) =>
+        elements
+          .filter((element) => element.scrollWidth > element.clientWidth + 1)
+          .map((element) => element.textContent),
+    );
+    expect(clippedMobileLabels).toEqual([]);
+
+    const moreButton = page.getByRole("button", { name: "Mais" });
+    await moreButton.click();
+    await expect(page.getByRole("dialog", { name: "Todas as áreas" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog", { name: "Todas as áreas" })).toHaveCount(0);
+    await expect(moreButton).toBeFocused();
   });
 });
 

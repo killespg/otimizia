@@ -178,19 +178,6 @@ export function SellerDashboard({
         </div>
       </header>
 
-      <section className="border-y border-white/[0.08] py-1">
-        <Link href="/painel/assistente" className="group flex min-h-14 items-center gap-3 text-sm text-white/52 hover:text-white/80">
-          <Sparkles size={17} className="text-od-accent" />
-          <span className="min-w-0 flex-1 truncate">Pergunte ao Tim sobre seus clientes e vendas</span>
-          <ArrowRight size={16} className="text-od-text-3 transition-transform group-hover:translate-x-0.5 group-hover:text-od-text" />
-        </Link>
-      </section>
-
-      <SellerOperationsPulse operations={operations} />
-
-      {founderMetrics ? <SellerFounderMetrics metrics={founderMetrics} /> : null}
-
-      <DashboardCustomizePanel preferences={preferences} preset={preset} action={updateDashboardPreferences} />
       <DashboardWidgetGrid
         preferences={preferences}
         action={updateDashboardPreferences}
@@ -203,6 +190,20 @@ export function SellerDashboard({
           }))
           .filter((item): item is { id: DashboardWidgetKey; className: string; node: ReactElement } => Boolean(item.node))}
       />
+
+      <SellerOperationsPulse operations={operations} />
+
+      <section className="border-y border-white/[0.08] py-1">
+        <Link href="/painel/assistente" className="group flex min-h-14 items-center gap-3 text-sm text-od-text-2 hover:text-od-text">
+          <Sparkles size={17} className="text-od-accent" />
+          <span className="min-w-0 flex-1">Pergunte ao Tim sobre seus clientes e vendas</span>
+          <ArrowRight size={16} className="text-od-text-3 transition-transform group-hover:translate-x-0.5 group-hover:text-od-text" />
+        </Link>
+      </section>
+
+      {founderMetrics ? <SellerFounderMetrics metrics={founderMetrics} /> : null}
+
+      <DashboardCustomizePanel preferences={preferences} preset={preset} action={updateDashboardPreferences} />
     </div>
   );
 }

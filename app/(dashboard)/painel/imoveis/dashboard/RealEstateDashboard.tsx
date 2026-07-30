@@ -229,7 +229,7 @@ function DashboardFilters({
 }: Pick<Props, "from" | "to" | "brokerFilter" | "members" | "showAnimatedBackground">) {
   return (
     <details className="group relative self-start sm:self-auto">
-      <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded border border-white/[0.1] px-3 text-xs font-semibold text-white/58 hover:bg-white/[0.04] hover:text-white">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded border border-od-border px-3 text-xs font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text">
         <Settings2 size={15} /> Personalizar painel
       </summary>
       <div className="absolute right-0 top-12 z-30 w-[min(38rem,calc(100vw-2rem))] rounded border border-white/[0.1] bg-[#1b191f] p-4 shadow-lg">

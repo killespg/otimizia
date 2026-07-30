@@ -109,9 +109,9 @@ export function ProductNavigation(props: Props) {
     groups.push({ label: "Administração", items: [{ href: "/painel/metricas", label: "Métricas", icon: ChartNoAxesCombined }] });
   }
 
-  const mobileTabs: [NavItem, NavItem, NavItem] = [core[0], core[3], core[2]];
+  const mobileTabs: [NavItem, NavItem, NavItem] = [core[0], core[5], core[3]];
   const timHref = "/painel/assistente";
-  const barHrefs = new Set([core[0].href, core[3].href, core[2].href, timHref]);
+  const barHrefs = new Set([core[0].href, core[5].href, core[3].href, timHref]);
   const mobileGroups = [
     ...groups,
     { label: "Conta", items: [{ href: "/painel/configuracoes", label: "Configurações", icon: Settings }] },
