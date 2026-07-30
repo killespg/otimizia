@@ -3,6 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Stripe from "stripe";
+import {
+  buildAccountDeletionPlan,
+  type OrganizationMembership,
+} from "@/lib/account-deletion";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth-constants";
 import { logError } from "@/lib/logger";
 import { getActiveOrgId, getOrgRole } from "@/lib/org";
@@ -129,50 +133,89 @@ export async function deleteAccount(formData: FormData) {
   }
 
   const admin = createAdminClient();
-  const orgId = await getActiveOrgId(admin, user.id);
-  const { count: memberCount } = await admin
+  const { data: ownMemberships, error: ownMembershipsError } = await admin
     .from("organization_members")
-    .select("user_id", { count: "exact", head: true })
-    .eq("org_id", orgId);
+    .select("org_id,user_id,role")
+    .eq("user_id", user.id);
+  ensureOk(ownMembershipsError, "Não deu para conferir suas empresas.");
 
-  // Billing é da organização, não da pessoa. Se ainda houver outros membros
-  // depois que essa conta sair (org de empresa), a assinatura continua
-  // sendo deles — só mexe nela quando essa conta é a última na organização.
-  if ((memberCount ?? 0) <= 1) {
-    const { data: org } = await admin
-      .from("organizations")
-      .select("stripe_subscription_id")
-      .eq("id", orgId)
-      .maybeSingle();
+  const organizationIds = (ownMemberships ?? []).map((membership) => membership.org_id);
+  let allMemberships = (ownMemberships ?? []) as OrganizationMembership[];
+  if (organizationIds.length > 0) {
+    const { data, error } = await admin
+      .from("organization_members")
+      .select("org_id,user_id,role")
+      .in("org_id", organizationIds);
+    ensureOk(error, "Não deu para conferir os administradores das suas empresas.");
+    allMemberships = (data ?? []) as OrganizationMembership[];
+  }
 
-    if (org?.stripe_subscription_id) {
-      try {
-        // Confere o status antes de cancelar: se a assinatura já está
-        // cancelada ou não existe mais no Stripe, não há cobrança recorrente
-        // para órfão — não bloqueia a exclusão da conta por isso.
-        const subscription = await getStripe().subscriptions.retrieve(
-          org.stripe_subscription_id
+  const deletionPlan = buildAccountDeletionPlan(user.id, allMemberships);
+  if (deletionPlan.organizationsNeedingAdminTransfer.length > 0) {
+    throw new Error(
+      "Antes de excluir sua conta, torne outra pessoa administradora das empresas que ainda têm equipe.",
+    );
+  }
+
+  const { data: soleOrganizations, error: organizationsError } =
+    deletionPlan.soleMemberOrganizationIds.length > 0
+      ? await admin
+          .from("organizations")
+          .select("id,stripe_subscription_id")
+          .in("id", deletionPlan.soleMemberOrganizationIds)
+      : { data: [], error: null };
+  ensureOk(organizationsError, "Não deu para conferir as assinaturas das suas empresas.");
+
+  // Primeiro valida todas as assinaturas. Nenhuma conta ou empresa é apagada
+  // se o Stripe estiver indisponível ou devolver um erro inesperado.
+  const subscriptionsToCancel: Array<{ orgId: string; subscriptionId: string }> = [];
+  for (const organization of soleOrganizations ?? []) {
+    if (!organization.stripe_subscription_id) continue;
+    try {
+      const subscription = await getStripe().subscriptions.retrieve(
+        organization.stripe_subscription_id,
+      );
+      if (subscription.status !== "canceled") {
+        subscriptionsToCancel.push({
+          orgId: organization.id,
+          subscriptionId: organization.stripe_subscription_id,
+        });
+      }
+    } catch (err) {
+      const alreadyGone =
+        err instanceof Stripe.errors.StripeError && err.code === "resource_missing";
+      logError(
+        alreadyGone
+          ? "settings.delete-account.subscription-already-gone"
+          : "settings.delete-account.inspect-subscription",
+        err,
+        { userId: user.id, orgId: organization.id },
+      );
+      if (!alreadyGone) {
+        throw new Error(
+          "Não foi possível conferir sua assinatura agora. Tente novamente em instantes ou contate o suporte.",
         );
-        if (subscription.status !== "canceled") {
-          await getStripe().subscriptions.cancel(org.stripe_subscription_id);
-        }
-      } catch (err) {
-        const alreadyGone = err instanceof Stripe.errors.StripeError && err.code === "resource_missing";
-        logError(
-          alreadyGone
-            ? "settings.delete-account.subscription-already-gone"
-            : "settings.delete-account.cancel-subscription",
-          err,
-          { userId: user.id, orgId }
+      }
+    }
+  }
+
+  for (const subscription of subscriptionsToCancel) {
+    try {
+      await getStripe().subscriptions.cancel(subscription.subscriptionId);
+    } catch (err) {
+      const alreadyGone =
+        err instanceof Stripe.errors.StripeError && err.code === "resource_missing";
+      logError(
+        alreadyGone
+          ? "settings.delete-account.subscription-already-gone"
+          : "settings.delete-account.cancel-subscription",
+        err,
+        { userId: user.id, orgId: subscription.orgId },
+      );
+      if (!alreadyGone) {
+        throw new Error(
+          "Não foi possível cancelar sua assinatura agora. Tente novamente em instantes ou contate o suporte.",
         );
-        if (!alreadyGone) {
-          // Não apaga a conta se não conseguirmos cancelar a assinatura:
-          // apagar o usuário deixa a organização órfã (sem membros) e a
-          // cobrança recorrente ficaria sem ninguém para cancelá-la depois.
-          throw new Error(
-            "Não foi possível cancelar sua assinatura agora. Tente novamente em instantes ou contate o suporte."
-          );
-        }
       }
     }
   }
@@ -180,15 +223,22 @@ export async function deleteAccount(formData: FormData) {
   const { error } = await admin.auth.admin.deleteUser(user.id);
   ensureOk(error, "Não deu para excluir a conta.");
 
-  // Best-effort: se essa era a última pessoa da organização, ela fica órfã
-  // (organization_members já foi zerada pelo cascade acima). Tenta limpar a
-  // linha também — se houver algo com FK sem cascade (ex. instância de
-  // WhatsApp), a exclusão da conta já aconteceu de qualquer forma, então só
-  // registra e segue; não é motivo para falhar a exclusão da conta.
-  if ((memberCount ?? 0) <= 1) {
-    const { error: orgDeleteError } = await admin.from("organizations").delete().eq("id", orgId);
+  // A migration 0077 torna todas as dependências da organização cascata. A
+  // limpeza deixa de ser best-effort: uma empresa vazia nunca passa
+  // silenciosamente como exclusão concluída.
+  if (deletionPlan.soleMemberOrganizationIds.length > 0) {
+    const { error: orgDeleteError } = await admin
+      .from("organizations")
+      .delete()
+      .in("id", deletionPlan.soleMemberOrganizationIds);
     if (orgDeleteError) {
-      logError("settings.delete-account.orphan-org-cleanup", orgDeleteError, { orgId });
+      logError("settings.delete-account.orphan-org-cleanup", orgDeleteError, {
+        userId: user.id,
+        orgIds: deletionPlan.soleMemberOrganizationIds,
+      });
+      throw new Error(
+        "Sua conta foi excluída, mas a limpeza final precisa do suporte. Nenhuma assinatura continuará ativa.",
+      );
     }
   }
 
@@ -228,4 +278,3 @@ function ensureOk(error: unknown, fallback: string) {
   logError("settings.action", error);
   throw new Error(fallback);
 }
-

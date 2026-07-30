@@ -66,8 +66,11 @@ Antes de aplicar migrations em staging ou produção:
 - policies devem manter `org_id`, workspace e cargo;
 - mudanças em buckets privados precisam de teste de acesso direto ao Storage.
 
-As migrations `0075` e `0076` são pré-requisito para esta versão: elas
-restringem escrita nas fotos imobiliárias e criam anexos privados do WhatsApp.
+As migrations `0075`, `0076` e `0077` são pré-requisito para esta versão: elas
+restringem escrita nas fotos imobiliárias, criam anexos privados do WhatsApp e
+substituem grants implícitos de funções RPC por allowlists explícitas. A `0077`
+também garante que a exclusão de uma organização remova os vínculos legados do
+WhatsApp sem deixar dados órfãos.
 
 ## Crons
 
