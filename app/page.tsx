@@ -71,7 +71,7 @@ export default async function LandingPage() {
   if (user) redirect("/painel");
 
   return (
-    <div className="dark relative bg-od-bg">
+    <div className="landing-page dark relative bg-od-bg">
 
       {/* Glow de fundo único, atravessando hero → features → dashboard, pra costurar
           as seções em vez de cada uma "recomeçar" visualmente do zero. */}
@@ -115,7 +115,7 @@ export default async function LandingPage() {
                 <h2 className="text-4xl font-extrabold leading-none tracking-tight text-od-text md:text-6xl">
                   Um painel só,
                   <br />
-                  <span className="text-od-accent">sem planilha escondida.</span>
+                  <span className="text-od-accent-hover">sem planilha escondida.</span>
                 </h2>
                 {/* A instrucao fica aqui fora: dentro do card, o bloco da
                     organizacao e o WorkspaceSwitcher do produto, e destaca-lo

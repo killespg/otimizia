@@ -75,7 +75,7 @@ export function RecentProcessChanges({ initialItems }: { initialItems: WatchedPr
                   type="button"
                   onClick={() => markSeen(item.id)}
                   disabled={dismissing === item.id}
-                  className="rounded-md bg-surface-2 px-2 py-1 text-[11px] font-black text-ink-muted hover:bg-brand-50 hover:text-brand-700"
+                  className="rounded-md bg-surface-2 px-2 py-1 text-xs font-black text-ink-muted hover:bg-brand-50 hover:text-brand-700"
                 >
                   Marcar como visto
                 </button>

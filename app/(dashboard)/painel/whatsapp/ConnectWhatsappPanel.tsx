@@ -90,7 +90,7 @@ export function ConnectWhatsappPanel({
       </span>
       <div>
         <p className="text-[15px] font-semibold text-white">Conectar WhatsApp</p>
-        <p className="mt-1 max-w-sm text-[11px] leading-5 text-white/45">
+        <p className="mt-1 max-w-sm text-xs leading-5 text-od-text-3">
           Escaneie o QR Code com o WhatsApp do número que vai atender seus clientes. As mensagens
           passam a aparecer aqui e a IA pode responder automaticamente.
         </p>

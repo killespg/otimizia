@@ -301,7 +301,7 @@ export default function Board({
             <IconChevronRight className="h-4 w-4 rotate-180" />
             Anterior
           </button>
-          <span className="shrink-0 rounded-md bg-brand-50 px-2.5 py-1 text-[11px] font-black text-brand-700">
+          <span className="shrink-0 rounded-md bg-brand-50 px-2.5 py-1 text-xs font-black text-brand-700">
             {columns.length} listas
           </span>
           <button
@@ -503,7 +503,7 @@ export default function Board({
                               <input type="hidden" name="id" value={deal.id} />
                               <input type="hidden" name="return_to" value="/painel/funil" />
                               <label className="block">
-                                <span className="text-[11px] font-black text-ink-soft">Etiquetas</span>
+                                <span className="text-xs font-black text-ink-soft">Etiquetas</span>
                                 <input
                                   name="labels"
                                   defaultValue={deal.details?.labels ?? ""}
@@ -513,7 +513,7 @@ export default function Board({
                                 />
                               </label>
                               <label className="block">
-                                <span className="text-[11px] font-black text-ink-soft">Link externo</span>
+                                <span className="text-xs font-black text-ink-soft">Link externo</span>
                                 <input
                                   name="external_url"
                                   defaultValue={deal.details?.external_url ?? ""}
@@ -523,7 +523,7 @@ export default function Board({
                                 />
                               </label>
                               <label className="block">
-                                <span className="text-[11px] font-black text-ink-soft">Comissão (%)</span>
+                                <span className="text-xs font-black text-ink-soft">Comissão (%)</span>
                                 <input
                                   name="commission_percent"
                                   type="number"
@@ -538,7 +538,7 @@ export default function Board({
                               </label>
                               {deal.stage === "perdido" ? (
                                 <label className="block">
-                                  <span className="text-[11px] font-black text-ink-soft">Motivo da perda</span>
+                                  <span className="text-xs font-black text-ink-soft">Motivo da perda</span>
                                   <input
                                     name="loss_reason"
                                     defaultValue={deal.details?.loss_reason ?? ""}
@@ -560,7 +560,7 @@ export default function Board({
                               <input type="hidden" name="id" value={deal.id} />
                               <input type="hidden" name="return_to" value="/painel/funil" />
                               <label className="block">
-                                <span className="text-[11px] font-black text-ink-soft">Foto</span>
+                                <span className="text-xs font-black text-ink-soft">Foto</span>
                                 <input
                                   name="photo"
                                   type="file"
@@ -609,7 +609,7 @@ export default function Board({
                             {dealLabels(deal).map((label) => (
                               <span
                                 key={label}
-                                className={`min-h-5 max-w-full truncate rounded px-2 py-0.5 text-[11px] font-black ${labelClass(label)}`}
+                                className={`min-h-5 max-w-full truncate rounded px-2 py-0.5 text-xs font-black ${labelClass(label)}`}
                               >
                                 {label}
                               </span>
@@ -646,7 +646,7 @@ export default function Board({
                               {formatDealValue(deal)}
                             </p>
                             {formatCommission(deal) && (
-                              <p className="mt-0.5 text-[11px] font-bold text-ink-muted">
+                              <p className="mt-0.5 text-xs font-bold text-ink-muted">
                                 Comissão {formatPercent(getCommissionPercent(deal))}:{" "}
                                 <span className="tabular-nums text-ink">{formatCommission(deal)}</span>
                               </p>
@@ -703,7 +703,7 @@ function DealAssignee({
   const otherMembers = members.filter((m) => m.user_id !== deal.assignee_id);
 
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-bold text-ink-muted">
+    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold text-ink-muted">
       {assigneeName && <span className="tag bg-surface-2 text-ink-muted">Com {assigneeName}</span>}
 
       {!deal.assignee_id && (
@@ -713,7 +713,7 @@ function DealAssignee({
             <input type="hidden" name="deal_id" value={deal.id} />
             <input type="hidden" name="return_to" value="/painel/funil" />
             <PendingButton
-              className="rounded-md bg-brand-700 px-2 py-1 text-[11px] font-black text-white hover:bg-brand-800"
+              className="rounded-md bg-brand-700 px-2 py-1 text-xs font-black text-white hover:bg-brand-800"
               pendingLabel="Pegando"
             >
               Pegar
@@ -730,7 +730,7 @@ function DealAssignee({
               <input type="hidden" name="deal_id" value={deal.id} />
               <input type="hidden" name="return_to" value="/painel/funil" />
               <PendingButton
-                className="rounded-md bg-brand-700 px-2 py-1 text-[11px] font-black text-white hover:bg-brand-800"
+                className="rounded-md bg-brand-700 px-2 py-1 text-xs font-black text-white hover:bg-brand-800"
                 pendingLabel="Aceitando"
               >
                 Aceitar
@@ -740,7 +740,7 @@ function DealAssignee({
               <input type="hidden" name="deal_id" value={deal.id} />
               <input type="hidden" name="return_to" value="/painel/funil" />
               <PendingButton
-                className="rounded-md border border-line bg-white px-2 py-1 text-[11px] font-black text-ink-soft hover:bg-surface-2"
+                className="rounded-md border border-line bg-white px-2 py-1 text-xs font-black text-ink-soft hover:bg-surface-2"
                 pendingLabel="Recusando"
               >
                 Recusar
@@ -757,7 +757,7 @@ function DealAssignee({
         <button
           type="button"
           onClick={onToggle}
-          className="nav-item text-[11px] font-black text-brand-700 hover:text-brand-900"
+          className="nav-item text-xs font-black text-brand-700 hover:text-brand-900"
         >
           {isAdmin ? "Reatribuir" : "Passar para..."}
         </button>

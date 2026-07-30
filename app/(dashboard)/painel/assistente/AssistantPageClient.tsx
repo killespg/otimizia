@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAssistantChat } from "@/lib/ai/AssistantChatProvider";
 import { usePdfAttachment } from "@/lib/ai/usePdfAttachment";
 import { useVoiceCall } from "@/lib/ai/useVoiceCall";
@@ -15,37 +15,70 @@ import { useLockedHeight } from "@/components/tim/useLockedHeight";
 import type { Organization } from "@/lib/supabase/types";
 
 type TaskRow = { id: string; title: string; due_at: string | null; done: boolean };
+type TodayData = {
+  summary: {
+    total_contatos: number;
+    ganho_no_mes_centavos: number;
+    lembretes_atrasados: number;
+  } | null;
+  overdueTasks: TaskRow[];
+  todayTasks: TaskRow[];
+};
 
 export function AssistantPageClient({
   firstName,
   org,
   isAdmin,
-  summary,
-  overdueTasks,
-  todayTasks,
 }: {
   firstName?: string;
   org: Organization | null;
   isAdmin: boolean;
-  summary: { total_contatos: number; ganho_no_mes_centavos: number; lembretes_atrasados: number } | null;
-  overdueTasks: TaskRow[];
-  todayTasks: TaskRow[];
 }) {
   const [input, setInput] = useState("");
   const [pendingImage, setPendingImage] = useState<PendingImage | null>(null);
   const [personalizeOpen, setPersonalizeOpen] = useState(false);
+  const [todayData, setTodayData] = useState<TodayData | null>(null);
+  const [todayLoaded, setTodayLoaded] = useState(false);
   const { messages, status, sending, send } = useAssistantChat();
   const attachment = usePdfAttachment();
   const voice = useVoiceCall();
   const { ref: shellRef, height } = useLockedHeight<HTMLDivElement>();
 
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+    fetch("/api/assistant/today", {
+      signal: controller.signal,
+      cache: "no-store",
+    })
+      .then(async (response) => {
+        if (!response.ok) return null;
+        return (await response.json()) as TodayData;
+      })
+      .then((data) => {
+        if (active && data) setTodayData(data);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setTodayLoaded(true);
+      });
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, []);
+
   // O painel "Hoje" só aparece quando tem o que mostrar. Sem tarefas
   // atrasadas, sem prazo pra hoje e sem números, ele viraria uma coluna
   // vazia à direita — melhor sumir e deixar o chat ocupar tudo.
   const hasTodayContent =
-    overdueTasks.length > 0 ||
-    todayTasks.length > 0 ||
-    (summary != null && (summary.total_contatos > 0 || summary.ganho_no_mes_centavos > 0));
+    !todayLoaded ||
+    (todayData != null &&
+      (todayData.overdueTasks.length > 0 ||
+        todayData.todayTasks.length > 0 ||
+        (todayData.summary != null &&
+          (todayData.summary.total_contatos > 0 ||
+            todayData.summary.ganho_no_mes_centavos > 0))));
 
   function submit(text: string) {
     if (!text.trim() && !attachment.file && !pendingImage) return;
@@ -63,6 +96,7 @@ export function AssistantPageClient({
       style={{ height: height ?? undefined }}
       className="assistant-page-shell -mx-4 -mt-4 -mb-6 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden bg-[#1e1d22] md:-mx-8 md:-mt-8 md:-mb-8"
     >
+      <h1 className="sr-only">Tim, seu assistente de negócios</h1>
       <TimHeader status={status} onPersonalize={() => setPersonalizeOpen(true)} />
 
       <div className="flex min-h-0 flex-1">
@@ -98,7 +132,12 @@ export function AssistantPageClient({
         </div>
 
         {hasTodayContent ? (
-          <TimTodayPanel summary={summary} overdueTasks={overdueTasks} todayTasks={todayTasks} />
+          <TimTodayPanel
+            loading={!todayLoaded}
+            summary={todayData?.summary ?? null}
+            overdueTasks={todayData?.overdueTasks ?? []}
+            todayTasks={todayData?.todayTasks ?? []}
+          />
         ) : null}
       </div>
 

@@ -67,7 +67,7 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
           {params.stock ? <input type="hidden" name="stock" value={params.stock} /> : null}
           <label className="relative min-w-0 flex-1">
             <span className="sr-only">Buscar produto</span>
-            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/38" />
+            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-od-text-3" />
             <input name="q" defaultValue={params.q} placeholder="Buscar produto, SKU ou coleção" className="field pl-10" />
           </label>
           {usesCollections ? <select name="collection" defaultValue={collectionFilter} className="field sm:max-w-64" aria-label="Filtrar por coleção">
@@ -98,7 +98,7 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
       ) : (
         <div className="grid min-w-0 gap-4 2xl:grid-cols-[minmax(0,1fr)_280px]">
           <section className="min-w-0 overflow-hidden border border-white/[0.09] bg-[#1e1d22]/90">
-            <div className="seller-product-grid hidden gap-3 border-b border-white/[0.08] px-4 py-2 text-xs font-semibold text-white/40 xl:grid" style={productGridStyle}>
+            <div className="seller-product-grid hidden gap-3 border-b border-white/[0.08] px-4 py-2 text-xs font-semibold text-od-text-3 xl:grid" style={productGridStyle}>
               <span>Produto</span>{usesCollections ? <span>Coleção</span> : null}{usesVariants ? <span>Variações</span> : null}<span>Preço</span>{usesInventory ? <span>Estoque</span> : null}<span className="text-right">Ações</span>
             </div>
             {filtered.length === 0 ? <SellerEmptyState title="Nenhum produto encontrado" description="Revise a busca ou remova o filtro de coleção." /> : (
@@ -113,17 +113,17 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
                       <div className="seller-product-grid grid gap-3 xl:items-center" style={productGridStyle}>
                         <Link href={`/painel/produtos/${product.id}`} className="flex min-w-0 items-center gap-3">
                           <ProductThumb src={image} name={product.name} />
-                          <span className="min-w-0"><strong className="block truncate text-sm font-semibold text-white/88">{product.name}</strong><span className="mt-1 block truncate text-xs text-white/40">SKU: {product.sku || "não informado"}</span></span>
+                          <span className="min-w-0"><strong className="block truncate text-sm font-semibold text-white/88">{product.name}</strong><span className="mt-1 block truncate text-xs text-od-text-3">SKU: {product.sku || "não informado"}</span></span>
                         </Link>
-                        {usesCollections ? <span className="text-xs text-white/54"><span className="mb-1 block text-[11px] font-medium text-white/50 xl:hidden">Coleção</span>{collection?.name ?? "Sem coleção"}</span> : null}
-                        {usesVariants ? <span className="text-xs text-white/54"><span className="mb-1 block text-[11px] font-medium text-white/50 xl:hidden">Variações</span>{product.seller_product_variants.length || "—"}</span> : null}
-                        <span className="text-sm font-medium tabular-nums text-white/78"><span className="mb-1 block text-[11px] font-medium text-white/50 xl:hidden">Preço</span>{money(product.base_price_cents)}</span>
-                        {usesInventory ? <span className={`text-sm font-semibold tabular-nums ${product.track_stock && stock <= threshold ? "text-amber-300" : "text-white/70"}`}><span className="mb-1 block text-[11px] font-medium text-white/50 xl:hidden">Estoque</span>{product.track_stock ? `${stock} un.` : "Livre"}</span> : null}
+                        {usesCollections ? <span className="text-xs text-white/54"><span className="mb-1 block text-xs font-medium text-od-text-3 xl:hidden">Coleção</span>{collection?.name ?? "Sem coleção"}</span> : null}
+                        {usesVariants ? <span className="text-xs text-white/54"><span className="mb-1 block text-xs font-medium text-od-text-3 xl:hidden">Variações</span>{product.seller_product_variants.length || "—"}</span> : null}
+                        <span className="text-sm font-medium tabular-nums text-white/78"><span className="mb-1 block text-xs font-medium text-od-text-3 xl:hidden">Preço</span>{money(product.base_price_cents)}</span>
+                        {usesInventory ? <span className={`text-sm font-semibold tabular-nums ${product.track_stock && stock <= threshold ? "text-amber-300" : "text-white/70"}`}><span className="mb-1 block text-xs font-medium text-od-text-3 xl:hidden">Estoque</span>{product.track_stock ? `${stock} un.` : "Livre"}</span> : null}
                         <Link href={`/painel/produtos/${product.id}`} className="flex min-h-11 items-center justify-end text-xs font-semibold text-od-text-2">Detalhes <ChevronRight size={14} /></Link>
                       </div>
                       {usesVariants && product.seller_product_variants.length > 0 ? (
                         <div className="mt-3 hidden border-t border-white/[0.06] pt-2 xl:block">
-                          <div className="flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-white/38">{product.seller_product_variants.slice(0, 6).map((variant) => <span key={variant.id}>{variant.name}: <strong className="font-semibold text-white/58">{variant.stock_quantity - variant.reserved_quantity} un.</strong></span>)}</div>
+                          <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-od-text-3">{product.seller_product_variants.slice(0, 6).map((variant) => <span key={variant.id}>{variant.name}: <strong className="font-semibold text-white/58">{variant.stock_quantity - variant.reserved_quantity} un.</strong></span>)}</div>
                         </div>
                       ) : null}
                     </article>
@@ -136,14 +136,14 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
           <aside className="space-y-3">
             {usesCollections ? <section className="border border-white/[0.09] bg-[#1e1d22]/90 p-4">
               <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-semibold text-white">Coleções ativas</h2><Layers3 size={16} className="text-od-text-3" /></div>
-              {activeCollections.length ? <ul className="mt-3 divide-y divide-white/[0.07]">{activeCollections.map((collection) => <li key={collection.id}><Link href={`/painel/colecoes#${collection.id}`} className="flex min-h-12 items-center justify-between gap-3 text-xs text-white/66"><span className="truncate">{collection.name}</span><SellerStatus tone="success">Ativa</SellerStatus></Link></li>)}</ul> : <p className="mt-3 text-xs leading-relaxed text-white/42">Nenhuma coleção ativa. Use coleções para organizar lançamentos sem apagar o histórico.</p>}
+              {activeCollections.length ? <ul className="mt-3 divide-y divide-white/[0.07]">{activeCollections.map((collection) => <li key={collection.id}><Link href={`/painel/colecoes#${collection.id}`} className="flex min-h-12 items-center justify-between gap-3 text-xs text-white/66"><span className="truncate">{collection.name}</span><SellerStatus tone="success">Ativa</SellerStatus></Link></li>)}</ul> : <p className="mt-3 text-xs leading-relaxed text-od-text-3">Nenhuma coleção ativa. Use coleções para organizar lançamentos sem apagar o histórico.</p>}
               <Link href="/painel/colecoes" className="mt-3 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2">Gerenciar coleções <ChevronRight size={14} /></Link>
             </section> : null}
             {usesInventory ? <section className="border border-white/[0.09] bg-[#1e1d22]/90 p-4">
               <div className="flex items-center gap-2"><TriangleAlert size={16} className="text-amber-300" /><h2 className="text-sm font-semibold text-white">Estoque baixo</h2></div>
-              {lowStock.length ? <ul className="mt-3 divide-y divide-white/[0.07]">{lowStock.slice(0, 8).map((product) => <li key={product.id}><Link href={`/painel/produtos/${product.id}`} className="flex min-h-11 items-center justify-between gap-3 text-xs"><span className="truncate text-white/62">{product.name}</span><strong className="tabular-nums text-amber-300">{availableStock(product)} un.</strong></Link></li>)}</ul> : <p className="mt-3 text-xs text-white/42">Nenhum produto abaixo do limite configurado.</p>}
+              {lowStock.length ? <ul className="mt-3 divide-y divide-white/[0.07]">{lowStock.slice(0, 8).map((product) => <li key={product.id}><Link href={`/painel/produtos/${product.id}`} className="flex min-h-11 items-center justify-between gap-3 text-xs"><span className="truncate text-white/62">{product.name}</span><strong className="tabular-nums text-amber-300">{availableStock(product)} un.</strong></Link></li>)}</ul> : <p className="mt-3 text-xs text-od-text-3">Nenhum produto abaixo do limite configurado.</p>}
             </section> : null}
-            <section className="border border-white/[0.09] bg-[#1e1d22]/90 p-4"><div className="flex items-center gap-2"><Archive size={16} className="text-white/42" /><h2 className="text-sm font-semibold text-white">Inativos</h2></div><p className="mt-2 text-2xl font-semibold tabular-nums text-white/80">{products.filter((product) => product.status === "inactive").length}</p></section>
+            <section className="border border-white/[0.09] bg-[#1e1d22]/90 p-4"><div className="flex items-center gap-2"><Archive size={16} className="text-od-text-3" /><h2 className="text-sm font-semibold text-white">Inativos</h2></div><p className="mt-2 text-2xl font-semibold tabular-nums text-white/80">{products.filter((product) => product.status === "inactive").length}</p></section>
           </aside>
         </div>
       )}

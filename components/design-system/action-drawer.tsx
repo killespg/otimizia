@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 type ActionDrawerProps = {
@@ -25,11 +26,13 @@ export function ActionDrawer({
   const [open, setOpen] = useState(initialOpen);
   const dialogId = useId();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
 
     const previousOverflow = document.body.style.overflow;
+    const trigger = triggerRef.current;
     document.body.style.overflow = "hidden";
     closeButtonRef.current?.focus();
 
@@ -41,12 +44,14 @@ export function ActionDrawer({
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
+      trigger?.focus();
     };
   }, [open]);
 
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         aria-expanded={open}
         aria-controls={dialogId}
@@ -60,8 +65,9 @@ export function ActionDrawer({
         {label}
       </button>
 
-      {open ? (
-        <div className="fixed inset-0 z-[80]" id={dialogId}>
+      {open && typeof document !== "undefined"
+        ? createPortal(
+          <div className="fixed inset-0 z-[var(--z-modal)]" id={dialogId}>
           <button
             type="button"
             aria-label="Fechar painel"
@@ -79,7 +85,7 @@ export function ActionDrawer({
                 <h2 id={`${dialogId}-title`} className="text-[17px] font-semibold tracking-[-0.02em] text-od-text">
                   {title}
                 </h2>
-                {description ? <p className="mt-1 text-[11px] leading-relaxed text-od-text-2">{description}</p> : null}
+                {description ? <p className="mt-1 text-xs leading-relaxed text-od-text-2">{description}</p> : null}
               </div>
               <button
                 ref={closeButtonRef}
@@ -93,8 +99,10 @@ export function ActionDrawer({
             </header>
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-6 sm:px-7">{children}</div>
           </section>
-        </div>
-      ) : null}
+          </div>,
+          document.body,
+        )
+        : null}
     </>
   );
 }

@@ -132,9 +132,9 @@ export function MobileAppNav({ tabs, timHref, groups, quickActions, ariaLabel }:
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-[14px] font-semibold text-od-text">Falar com o Tim</span>
-                    <span className="block text-[12px] text-white/50">Seu parceiro de negócios</span>
+                    <span className="block text-[12px] text-od-text-3">Seu parceiro de negócios</span>
                   </span>
-                  <ChevronRight size={18} className="shrink-0 text-white/30" />
+                  <ChevronRight size={18} className="shrink-0 text-od-text-3" />
                 </Link>
 
                 {quickActions && quickActions.length > 0 ? (
@@ -226,7 +226,7 @@ function BarTab({ item, active, onTap }: { item: MobileNavItem; active: boolean;
       prefetch
       onClick={onTap}
       aria-current={active ? "page" : undefined}
-      className={`relative flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-[18px] px-1 text-[10px] transition-colors ${active ? "text-white" : "text-white/50"}`}
+      className={`relative flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-[18px] px-1 text-xs transition-colors ${active ? "text-white" : "text-od-text-3"}`}
     >
       {active ? (
         <motion.span layoutId="mobile-tab-active" className="absolute inset-0 rounded-[18px] bg-white/[0.07]" transition={{ type: "spring", damping: 30, stiffness: 400 }} />
@@ -234,7 +234,7 @@ function BarTab({ item, active, onTap }: { item: MobileNavItem; active: boolean;
       <span className="relative shrink-0">
         <Icon size={20} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : ""} />
         {typeof item.badge === "number" && item.badge > 0 ? (
-          <span className={`absolute -right-2 -top-1.5 min-w-4 rounded-full px-1 text-[9px] font-semibold leading-4 tabular-nums ${item.danger ? "bg-[#fb7767] text-[#3a0f0a]" : "bg-white/20 text-white"}`}>
+          <span className={`absolute -right-2 -top-1.5 min-w-4 rounded-full px-1 text-xs font-semibold leading-4 tabular-nums ${item.danger ? "bg-[#fb7767] text-[#3a0f0a]" : "bg-white/20 text-white"}`}>
             {item.badge}
           </span>
         ) : null}
@@ -248,7 +248,7 @@ function MenuGroup({ label, children }: { label?: string; children: ReactNode })
   return (
     <div>
       {label ? (
-        <p className="px-4 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-[0.06em] text-white/40">{label}</p>
+        <p className="px-4 pb-1 pt-4 text-xs font-semibold uppercase tracking-[0.06em] text-od-text-3">{label}</p>
       ) : (
         <div className="pt-2" />
       )}
@@ -314,7 +314,7 @@ function TimTab({ href, active, onTap }: { href: string; active: boolean; onTap?
       onClick={onTap}
       aria-current={active ? "page" : undefined}
       aria-label="Falar com o Tim"
-      className={`relative flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-[18px] px-1 text-[10px] transition-colors ${active ? "text-white" : "text-white/55"}`}
+      className={`relative flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-[18px] px-1 text-xs transition-colors ${active ? "text-white" : "text-white/55"}`}
     >
       {active ? (
         <motion.span layoutId="mobile-tab-active" className="absolute inset-0 rounded-[18px] bg-white/[0.07]" transition={{ type: "spring", damping: 30, stiffness: 400 }} />

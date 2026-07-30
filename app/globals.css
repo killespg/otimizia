@@ -224,23 +224,6 @@ p { text-wrap: pretty; }
   }
 }
 
-/*
- * Guarda de migração do workspace jurídico: nenhum conteúdo operacional
- * pode voltar à microtipografia do frontend anterior. Avatares e navegação
- * ficam fora de `main` e preservam a escala compacta oficial do shell.
- */
-.workspace-law_office main .text-\[8px\],
-.workspace-law_office main .text-\[9px\] {
-  font-size: 11px;
-  line-height: 1.4;
-}
-
-.workspace-law_office main .text-\[10px\],
-.workspace-law_office main .text-\[11px\] {
-  font-size: 12px;
-  line-height: 1.5;
-}
-
 .workspace-law_office main .text-\[15px\] {
   font-size: 16px;
   line-height: 1.4;
@@ -248,19 +231,6 @@ p { text-wrap: pretty; }
 
 .workspace-law_office main button:not([aria-label]) {
   min-height: 44px;
-}
-
-/* O painel de vendas usa a mesma escala oficial e não herda microtipografia legada. */
-.workspace-autonomous_seller main .text-\[8px\],
-.workspace-autonomous_seller main .text-\[9px\] {
-  font-size: 11px;
-  line-height: 1.4;
-}
-
-.workspace-autonomous_seller main .text-\[10px\],
-.workspace-autonomous_seller main .text-\[11px\] {
-  font-size: 12px;
-  line-height: 1.5;
 }
 
 .workspace-autonomous_seller main button:not([aria-label]),
@@ -287,34 +257,11 @@ p { text-wrap: pretty; }
   color: var(--od-text-2);
 }
 
-.workspace-autonomous_seller main .text-white\/30,
-.workspace-autonomous_seller main .text-white\/32,
-.workspace-autonomous_seller main .text-white\/34,
-.workspace-autonomous_seller main .text-white\/38,
-.workspace-autonomous_seller main .text-white\/40,
-.workspace-autonomous_seller main .text-white\/42,
-.workspace-autonomous_seller main .text-white\/44,
-.workspace-autonomous_seller main .text-white\/45 {
-  color: rgb(255 255 255 / .52);
-}
-
 /*
  * Guarda de migração do produto imobiliário. As telas preservam a lógica de
  * negócio existente, mas todo o vocabulário visual é normalizado pelo shell
  * atual para que nenhum painel claro ou peso tipográfico antigo reapareça.
  */
-.workspace-real_estate_broker main .text-\[8px\],
-.workspace-real_estate_broker main .text-\[9px\] {
-  font-size: 11px;
-  line-height: 1.4;
-}
-
-.workspace-real_estate_broker main .text-\[10px\],
-.workspace-real_estate_broker main .text-\[11px\] {
-  font-size: 12px;
-  line-height: 1.5;
-}
-
 .workspace-real_estate_broker .real-estate-area h1 {
   font-size: 28px !important;
   font-weight: 700 !important;

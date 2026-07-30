@@ -374,12 +374,19 @@ describe("frontend route parity", () => {
       resolve(process.cwd(), "app/(dashboard)/painel/imoveis/dashboard/RealEstateDashboard.tsx"),
       "utf8",
     );
+    const areaLayout = readFileSync(
+      resolve(process.cwd(), "app/(dashboard)/painel/imoveis/layout.tsx"),
+      "utf8",
+    );
 
     expect(layout).toContain('preset.key === "real_estate_broker"');
     expect(layout).toContain("<RealEstateProductNavigation");
     expect(layout).toContain("<RealEstateProductTopbar");
     expect(entry).toContain('workspaceKey === "real_estate_broker"');
-    expect(entry).toContain('redirect("/painel/imoveis/dashboard")');
+    expect(entry).toContain("canViewRealEstate(membership?.job_role, isOrgAdmin)");
+    expect(entry).toContain('"/painel/imoveis/dashboard"');
+    expect(areaLayout).toContain('workspaceKey !== "real_estate_broker"');
+    expect(areaLayout).toContain("canViewRealEstate(");
     for (const route of [
       "/painel/imoveis/dashboard",
       "/painel/imoveis",

@@ -46,7 +46,7 @@ export function AgentPanel({ userName }: { userName?: string }) {
           <TimAvatar size={30} online />
           <div className="min-w-0">
             <p className="text-[13px] font-semibold leading-tight text-white">Tim</p>
-            <p className="truncate text-[11px] leading-tight text-white/50">{status || "Seu parceiro de negócios"}</p>
+            <p className="truncate text-xs leading-tight text-od-text-3">{status || "Seu parceiro de negócios"}</p>
           </div>
         </div>
         <Link

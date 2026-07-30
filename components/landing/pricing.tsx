@@ -32,7 +32,7 @@ export function Pricing() {
         </p>
         <Link
           href="/signup"
-          className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-md bg-od-accent px-5 text-[13px] font-semibold text-white transition-colors hover:bg-od-accent-hover"
+          className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-md bg-od-accent px-5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-600"
         >
           Criar minha conta
           <ArrowRight className="size-4" strokeWidth={2} />
@@ -51,7 +51,7 @@ export function Pricing() {
         <ul className="mt-5 space-y-2.5">
           {INCLUSO.map((item) => (
             <li key={item} className="flex gap-2.5 text-[13px] leading-relaxed text-od-text-2">
-              <Check className="mt-0.5 size-4 shrink-0 text-od-accent" strokeWidth={2.5} />
+              <Check className="mt-0.5 size-4 shrink-0 text-od-accent-hover" strokeWidth={2.5} />
               {item}
             </li>
           ))}

@@ -118,7 +118,7 @@ export default async function ContactDetailPage(
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
       <Link
         href="/painel/contatos"
-        className="inline-flex items-center gap-2 text-[11px] font-semibold text-od-text-2 hover:text-od-text"
+        className="inline-flex items-center gap-2 text-xs font-semibold text-od-text-2 hover:text-od-text"
       >
         <IconArrowRight className="h-4 w-4 rotate-180" />
         {copy.backLabel}
@@ -435,7 +435,7 @@ function MiniStat({
   return (
     <div className="flex items-center gap-3 border-l border-white/[0.08] px-3 py-2">
       <Icon className={`h-4 w-4 ${pink ? "text-amber-300" : "text-od-text-2"}`} />
-      <div><p className="text-[9px] text-white/38">{label}</p><p className="text-[18px] font-bold text-white">{value}</p></div>
+      <div><p className="text-xs text-od-text-3">{label}</p><p className="text-[18px] font-bold text-white">{value}</p></div>
     </div>
   );
 }

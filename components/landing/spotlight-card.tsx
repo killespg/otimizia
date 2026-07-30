@@ -61,7 +61,7 @@ export function SpotlightCard({ localSpotlight = true }: { localSpotlight?: bool
             key={pergunta}
             className="flex items-center gap-2.5 py-3 text-[13px] text-od-text-2"
           >
-            <Sparkles className="size-3.5 shrink-0 text-od-accent" strokeWidth={2} />
+            <Sparkles className="size-3.5 shrink-0 text-od-accent-hover" strokeWidth={2} />
             {pergunta}
           </li>
         ))}

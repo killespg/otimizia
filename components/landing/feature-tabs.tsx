@@ -204,7 +204,7 @@ function FeatureRow({ feature, index }: { feature: Feature; index: number }) {
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1], delay: Math.min(index, 5) * 0.045 }}
     >
-      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-xl bg-od-accent/10 text-od-accent">
+      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-xl bg-od-accent/10 text-od-accent-hover">
         <Icon className="size-4" strokeWidth={2} />
       </span>
       <span className="min-w-0">
@@ -260,7 +260,7 @@ export function FeatureTabs() {
             ícone maior, texto de corpo e ordens reais. Continua sendo faixa,
             não card: o destaque vem de escala e do acento, não de moldura. */}
         <div className="grid gap-x-8 py-8 md:grid-cols-[160px_minmax(0,1fr)]">
-          <p className="text-od-label text-od-accent">Sócio-assistente</p>
+          <p className="text-od-label text-od-accent-hover">Sócio-assistente</p>
           <div className="min-w-0">
             <div className="flex items-start gap-4">
               <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-od-accent text-white">

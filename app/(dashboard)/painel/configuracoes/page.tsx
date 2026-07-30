@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BrandName } from "@/components/BrandName";
 import { DashboardPreferencesForm } from "@/components/DashboardPreferencesForm";
+import { InstallAppPrompt } from "@/components/InstallAppPrompt";
 import { PendingButton } from "@/components/PendingButton";
 import { formatCPF } from "@/lib/cpf";
 import { getDashboardPreferences } from "@/lib/dashboard-preferences";
@@ -258,6 +259,13 @@ export default async function SettingsPage(
         </form>
       </SectionCard>
 
+      <SectionCard
+        title="Aplicativo"
+        description="Instale no seu dispositivo quando quiser, sem interromper seu trabalho."
+      >
+        <InstallAppPrompt />
+      </SectionCard>
+
       {isFounder ? (
         <SectionCard
           title="Perfil"
@@ -385,7 +393,7 @@ export default async function SettingsPage(
 
       <SectionCard
         title="Seus dados"
-        description="Baixe uma cópia dos seus contatos, vendas, lembretes e conversas registradas."
+        description="Baixe seu perfil, preferências e os registros operacionais diretamente vinculados à sua conta. O arquivo não inclui dados pertencentes aos seus colegas."
       >
         <DataExportButton />
       </SectionCard>
@@ -436,7 +444,7 @@ function SectionCard({
         <h2 className="text-[14px] font-semibold text-white">
           {title}
         </h2>
-        <p className="mt-1 text-[10px] leading-5 text-white/42">{description}</p>
+        <p className="mt-1 text-xs leading-5 text-od-text-3">{description}</p>
       </div>
       {children}
     </section>

@@ -53,7 +53,7 @@ export function VoicePanel({
         <button
           type="button"
           onClick={voiceStatus === "connecting" ? stopVoice : startVoice}
-          className="min-h-8 shrink-0 rounded border border-white/[0.1] px-2.5 text-[11px] font-semibold text-white/75 hover:bg-white/[0.06]"
+          className="min-h-8 shrink-0 rounded border border-white/[0.1] px-2.5 text-xs font-semibold text-white/75 hover:bg-white/[0.06]"
         >
           {voiceStatus === "connecting" ? "Cancelar" : "Tentar de novo"}
         </button>
@@ -64,14 +64,14 @@ export function VoicePanel({
   return (
     <div className="border-t border-white/[0.08] px-4 py-3">
       <div className="flex items-center justify-between">
-        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-300">
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-emerald-300">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
           Ao vivo · {formatCallTime(callSeconds)}
         </span>
         <button
           type="button"
           onClick={stopVoice}
-          className="min-h-8 rounded border border-red-400/25 bg-red-400/10 px-2.5 text-[11px] font-semibold text-red-300 hover:bg-red-400/20"
+          className="min-h-8 rounded border border-red-400/25 bg-red-400/10 px-2.5 text-xs font-semibold text-red-300 hover:bg-red-400/20"
         >
           Encerrar
         </button>
@@ -94,14 +94,14 @@ export function VoicePanel({
           {captions.map((line, index) => (
             <p
               key={index}
-              className={`text-xs leading-snug ${line.role === "user" ? "text-right text-white/50" : "text-left text-white/75"}`}
+              className={`text-xs leading-snug ${line.role === "user" ? "text-right text-od-text-3" : "text-left text-white/75"}`}
             >
               {line.text}
             </p>
           ))}
           {partialCaption && partialCaption.text && (
             <p
-              className={`text-xs italic leading-snug opacity-70 ${partialCaption.role === "user" ? "text-right text-white/50" : "text-left text-white/75"}`}
+              className={`text-xs italic leading-snug opacity-70 ${partialCaption.role === "user" ? "text-right text-od-text-3" : "text-left text-white/75"}`}
             >
               {partialCaption.text}
             </p>

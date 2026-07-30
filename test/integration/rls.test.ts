@@ -9,11 +9,13 @@ import {
 } from "./helpers";
 
 const config = getLocalSupabaseConfig();
+if (!config) {
+  throw new Error(
+    "Supabase local indisponível. Rode `npx --no-install supabase start` antes da integração.",
+  );
+}
 
-// Toda a suíte pula (em vez de falhar) se não houver Supabase local rodando
-// — é assim que `npm test` continua funcionando sem Docker, e quem quiser
-// rodar de verdade usa `npm run test:integration` com `supabase start` de pé.
-describe.skipIf(!config)("RLS multi-tenancy (contra Supabase local)", () => {
+describe("RLS multi-tenancy (contra Supabase local)", () => {
   let admin: SupabaseClient;
   let userA: Awaited<ReturnType<typeof createTestUser>>;
   let userB: Awaited<ReturnType<typeof createTestUser>>;
@@ -21,16 +23,16 @@ describe.skipIf(!config)("RLS multi-tenancy (contra Supabase local)", () => {
   let orgB: string;
 
   beforeAll(async () => {
-    admin = adminClient(config!);
-    userA = await createTestUser(config!, admin);
-    userB = await createTestUser(config!, admin);
+    admin = adminClient(config);
+    userA = await createTestUser(config, admin);
+    userB = await createTestUser(config, admin);
     orgA = await getPersonalOrgId(admin, userA.userId);
     orgB = await getPersonalOrgId(admin, userB.userId);
   });
 
   afterAll(async () => {
-    await deleteTestUser(admin, userA.userId);
-    await deleteTestUser(admin, userB.userId);
+    if (userA?.userId) await deleteTestUser(admin, userA.userId);
+    if (userB?.userId) await deleteTestUser(admin, userB.userId);
   });
 
   it("cria organizações pessoais distintas para cada novo usuário", () => {
@@ -38,7 +40,7 @@ describe.skipIf(!config)("RLS multi-tenancy (contra Supabase local)", () => {
   });
 
   it("ignora metadados forjados de convite no cadastro", async () => {
-    const attacker = await createTestUser(config!, admin, {
+    const attacker = await createTestUser(config, admin, {
       invited_org_id: orgA,
       invited_job_role: "owner",
     });
@@ -211,7 +213,7 @@ describe.skipIf(!config)("RLS multi-tenancy (contra Supabase local)", () => {
   });
 });
 
-describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", () => {
+describe("RLS vertical imobiliário (contra Supabase local)", () => {
   let admin: SupabaseClient;
   let anon: SupabaseClient;
   let userA: Awaited<ReturnType<typeof createTestUser>>;
@@ -220,10 +222,10 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
   let propertyId: string;
 
   beforeAll(async () => {
-    admin = adminClient(config!);
-    anon = createClient(config!.apiUrl, config!.anonKey, { auth: { autoRefreshToken: false, persistSession: false } });
-    userA = await createTestUser(config!, admin);
-    userB = await createTestUser(config!, admin);
+    admin = adminClient(config);
+    anon = createClient(config.apiUrl, config.anonKey, { auth: { autoRefreshToken: false, persistSession: false } });
+    userA = await createTestUser(config, admin);
+    userB = await createTestUser(config, admin);
     orgA = await getPersonalOrgId(admin, userA.userId);
 
     const { data: property } = await userA.client
@@ -242,8 +244,11 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
   });
 
   afterAll(async () => {
-    await deleteTestUser(admin, userA.userId);
-    await deleteTestUser(admin, userB.userId);
+    if (propertyId) {
+      await admin.from("real_estate_properties").delete().eq("id", propertyId);
+    }
+    if (userA?.userId) await deleteTestUser(admin, userA.userId);
+    if (userB?.userId) await deleteTestUser(admin, userB.userId);
   });
 
   it("impede membro de outra organização ler ou inserir imóveis", async () => {
@@ -279,35 +284,58 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
   it("job_role=assistant lê mas não escreve; job_role=agent lê e escreve", async () => {
     await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "assistant" });
 
-    const { data: seenAsAssistant } = await userB.client
-      .from("real_estate_properties")
-      .select("*")
-      .eq("id", propertyId)
-      .maybeSingle();
-    expect(seenAsAssistant?.id).toEqual(propertyId);
+    try {
+      const { data: seenAsAssistant } = await userB.client
+        .from("real_estate_properties")
+        .select("*")
+        .eq("id", propertyId)
+        .maybeSingle();
+      expect(seenAsAssistant?.id).toEqual(propertyId);
 
-    // RLS bloqueando um UPDATE não gera erro — o Postgres só casa 0 linhas
-    // com a cláusula USING e o PostgREST devolve sucesso vazio. Por isso o
-    // jeito certo de detectar o bloqueio é pedir .select() de volta e
-    // conferir que veio vazio (ou reler com o client admin), não checar
-    // "error" (que só aparece em INSERT/violação de FK/check).
-    const { data: updateAsAssistant, error: updateAsAssistantError } = await userB.client
-      .from("real_estate_properties")
-      .update({ title: "Editado pelo assistente" })
-      .eq("id", propertyId)
-      .select();
-    expect(updateAsAssistantError).toBeNull();
-    expect(updateAsAssistant).toEqual([]);
+      // RLS bloqueando um UPDATE não gera erro — o Postgres só casa 0 linhas
+      // com a cláusula USING e o PostgREST devolve sucesso vazio. Por isso o
+      // jeito certo de detectar o bloqueio é pedir .select() de volta e
+      // conferir que veio vazio (ou reler com o client admin), não checar
+      // "error" (que só aparece em INSERT/violação de FK/check).
+      const { data: updateAsAssistant, error: updateAsAssistantError } = await userB.client
+        .from("real_estate_properties")
+        .update({ title: "Editado pelo assistente" })
+        .eq("id", propertyId)
+        .select();
+      expect(updateAsAssistantError).toBeNull();
+      expect(updateAsAssistant).toEqual([]);
 
-    await admin.from("organization_members").update({ job_role: "agent" }).eq("org_id", orgA).eq("user_id", userB.userId);
+      const storagePath = `${orgA}/${propertyId}/direct-policy-test.png`;
+      const { error: uploadAsAssistant } = await userB.client.storage
+        .from("property-photos")
+        .upload(storagePath, new Uint8Array([1, 2, 3]), {
+          contentType: "image/png",
+          upsert: false,
+        });
+      expect(uploadAsAssistant).not.toBeNull();
 
-    const { error: updateAsAgent } = await userB.client
-      .from("real_estate_properties")
-      .update({ title: "Editado pelo corretor associado" })
-      .eq("id", propertyId);
-    expect(updateAsAgent).toBeNull();
+      await admin.from("organization_members").update({ job_role: "agent" }).eq("org_id", orgA).eq("user_id", userB.userId);
 
-    await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+      const { error: updateAsAgent } = await userB.client
+        .from("real_estate_properties")
+        .update({ title: "Editado pelo corretor associado" })
+        .eq("id", propertyId);
+      expect(updateAsAgent).toBeNull();
+
+      const { error: uploadAsAgent } = await userB.client.storage
+        .from("property-photos")
+        .upload(storagePath, new Uint8Array([1, 2, 3]), {
+          contentType: "image/png",
+          upsert: false,
+        });
+      expect(uploadAsAgent).toBeNull();
+      const { error: deleteAsAgent } = await userB.client.storage
+        .from("property-photos")
+        .remove([storagePath]);
+      expect(deleteAsAgent).toBeNull();
+    } finally {
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+    }
   });
 
   it("rejeita media/item de coleção cujo property_id pertence a outra organização mesmo com org_id falsificado", async () => {

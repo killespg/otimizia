@@ -3,34 +3,36 @@
 import { useEffect, useState } from "react";
 import { BrandName } from "@/components/BrandName";
 import { LogoMark } from "@/components/design-system/logo";
-import { IconX } from "@/app/(dashboard)/painel/icons";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 };
 
-const DISMISSED_KEY = "otimizia_install_prompt_dismissed";
-
 function isStandalone() {
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone === true
+    (window.navigator as Navigator & { standalone?: boolean }).standalone ===
+      true
   );
-}
-
-function isMobileViewport() {
-  return window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
 }
 
 function isIOS() {
   return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
 }
 
+/**
+ * Controle de instalação deliberadamente acionado pelo usuário.
+ *
+ * Ele vive em Configurações, sem overlay global, sem interromper formulário,
+ * conversa ou navegação. Quando o navegador não expõe beforeinstallprompt,
+ * ainda ensina o caminho manual.
+ */
 export function InstallAppPrompt() {
-  const [ready, setReady] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installed, setInstalled] = useState(false);
+  const [ios, setIOS] = useState(false);
+  const [installPrompt, setInstallPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [showInstructions, setShowInstructions] = useState(false);
 
   useEffect(() => {
@@ -38,21 +40,20 @@ export function InstallAppPrompt() {
       void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
     }
 
-    const dismissedThisSession = sessionStorage.getItem(DISMISSED_KEY) === "true";
     const frame = window.requestAnimationFrame(() => {
-      setDismissed(dismissedThisSession);
-      setReady(isMobileViewport() && !isStandalone());
+      setInstalled(isStandalone());
+      setIOS(isIOS());
     });
 
     function onBeforeInstallPrompt(event: Event) {
       event.preventDefault();
       setInstallPrompt(event as BeforeInstallPromptEvent);
-      setReady(isMobileViewport() && !isStandalone());
     }
 
     function onAppInstalled() {
-      setReady(false);
-      setDismissed(true);
+      setInstalled(true);
+      setInstallPrompt(null);
+      setShowInstructions(false);
     }
 
     window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
@@ -64,88 +65,78 @@ export function InstallAppPrompt() {
     };
   }, []);
 
-  if (!ready || dismissed) return null;
-
   async function install() {
-    if (installPrompt) {
-      await installPrompt.prompt();
-      const choice = await installPrompt.userChoice.catch(() => null);
-      if (choice?.outcome === "accepted") {
-        setReady(false);
-        return;
-      }
+    if (!installPrompt) {
+      setShowInstructions(true);
+      return;
     }
-    setShowInstructions(true);
-  }
 
-  function close() {
-    sessionStorage.setItem(DISMISSED_KEY, "true");
-    setDismissed(true);
+    await installPrompt.prompt();
+    const choice = await installPrompt.userChoice.catch(() => null);
+    setInstallPrompt(null);
+    if (choice?.outcome === "accepted") {
+      setInstalled(true);
+    } else {
+      setShowInstructions(true);
+    }
   }
-
-  const ios = typeof window !== "undefined" && isIOS();
 
   return (
-    <section
-      className="install-app-prompt fixed inset-x-3 bottom-[calc(5.8rem+env(safe-area-inset-bottom))] z-[70] rounded-lg border border-brand-200 bg-surface p-3 sm:hidden"
-      aria-label="Instalar aplicativo"
-    >
-      <button
-        type="button"
-        onClick={close}
-        className="icon-button absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-lg text-ink-muted transition-colors duration-150 ease-out hover:bg-surface-2 hover:text-ink"
-        aria-label="Fechar convite de instalação"
-      >
-        <IconX className="h-4 w-4" />
-      </button>
-
-      <div className="flex gap-3 pr-8">
-        <span className="grid size-[46px] shrink-0 place-items-center rounded-md bg-[#120f1c]">
-          <LogoMark size={38} />
+    <div className="install-app-prompt flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="grid size-11 shrink-0 place-items-center rounded-md bg-[#120f1c]">
+          <LogoMark size={36} />
         </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-black text-ink">
-            Use o <BrandName /> como app
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-ink">
+            {installed ? (
+              <>
+                <BrandName /> já está instalado
+              </>
+            ) : (
+              <>
+                Use o <BrandName /> como aplicativo
+              </>
+            )}
           </p>
-          <p className="mt-1 text-xs font-semibold leading-relaxed text-ink-muted">
-            Abra direto da tela inicial, em tela cheia, sem cara de site.
+          <p className="mt-1 text-xs leading-relaxed text-ink-muted">
+            {installed
+              ? "Você pode abrir direto pela tela inicial do dispositivo."
+              : "A instalação é opcional e fica disponível aqui quando você quiser."}
           </p>
         </div>
       </div>
 
-      {showInstructions ? (
-        <div className="pop-in origin-top mt-3 rounded-xl bg-surface-2 p-3 text-xs font-semibold leading-relaxed text-ink-soft">
-          {ios ? (
-            <>
-              No iPhone: toque em <span className="font-black text-ink">Compartilhar</span> e depois em{" "}
-              <span className="font-black text-ink">Adicionar à Tela de Início</span>.
-            </>
-          ) : (
-            <>
-              No navegador: abra o menu e escolha{" "}
-              <span className="font-black text-ink">Adicionar à tela inicial</span> ou{" "}
-              <span className="font-black text-ink">Instalar app</span>.
-            </>
-          )}
-        </div>
-      ) : null}
-
-      <div className="mt-3 flex gap-2">
+      {!installed ? (
         <button
           type="button"
           onClick={install}
-          className="nav-item flex min-h-11 flex-1 items-center justify-center rounded-md bg-brand-700 px-4 text-sm font-semibold text-white"
+          className="btn-soft shrink-0"
+          aria-expanded={showInstructions}
         >
-          Baixar aplicativo
+          Instalar aplicativo
         </button>
-        <button
-          type="button"
-          onClick={close}
-          className="nav-item min-h-11 rounded-md border border-line bg-surface px-3 text-xs font-semibold text-ink-muted"
+      ) : null}
+
+      {showInstructions && !installed ? (
+        <p
+          role="status"
+          className="basis-full border-t border-line pt-3 text-xs font-medium leading-relaxed text-ink-soft sm:w-full"
         >
-          Depois
-        </button>
-      </div>
-    </section>
+          {ios ? (
+            <>
+              No iPhone ou iPad, toque em <strong>Compartilhar</strong> e depois
+              em <strong> Adicionar à Tela de Início</strong>.
+            </>
+          ) : (
+            <>
+              Abra o menu do navegador e escolha{" "}
+              <strong>Instalar aplicativo</strong> ou{" "}
+              <strong>Adicionar à tela inicial</strong>.
+            </>
+          )}
+        </p>
+      ) : null}
+    </div>
   );
 }

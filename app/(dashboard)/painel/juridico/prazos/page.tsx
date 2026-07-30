@@ -73,7 +73,7 @@ export default async function DeadlinesPage() {
           </Link>
           <Link
             href="/painel/juridico/processos"
-            className="inline-flex min-h-11 items-center justify-center rounded-md bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover"
+            className="inline-flex min-h-11 items-center justify-center rounded-md bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-brand-600"
           >
             Ver carteira de casos
           </Link>
@@ -112,7 +112,7 @@ function DeadlineGroup({
     <section className="overflow-hidden border border-white/[0.09] bg-[#1e1d22]">
       <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
         <h2 className="text-base font-semibold text-white">{title}</h2>
-        <span className="text-xs font-semibold text-white/50">{cases.length}</span>
+        <span className="text-xs font-semibold text-od-text-3">{cases.length}</span>
       </div>
       {cases.length === 0 ? (
         <p className="px-5 py-5 text-sm text-white/52">Nada nesta fila.</p>
@@ -126,7 +126,7 @@ function DeadlineGroup({
             >
               <div className="min-w-0">
                 <p className="truncate text-[13px] font-semibold text-white">{item.title}</p>
-                <p className="mt-1 truncate text-xs text-white/48">
+                <p className="mt-1 truncate text-xs text-od-text-3">
                   {item.area ?? "Área não informada"}
                 </p>
               </div>
@@ -136,7 +136,7 @@ function DeadlineGroup({
               <span
                 className={
                   "text-xs font-semibold " +
-                  (danger ? "text-[#fb7767]" : muted ? "text-white/38" : "text-od-text-2")
+                  (danger ? "text-[#fb7767]" : muted ? "text-od-text-3" : "text-od-text-2")
                 }
               >
                 {item.next_deadline_at
@@ -168,8 +168,8 @@ function Metric({
 }) {
   return (
     <article className="flex items-center gap-3 border-b border-white/[0.08] px-4 py-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
-      <span className={danger ? "text-[#fb7767]" : muted ? "text-white/35" : "text-od-text-2"}><Icon className="h-4 w-4" /></span>
-      <div><p className="text-xs text-white/50">{label}</p><p className="mt-1 text-2xl font-bold tracking-[-.02em] text-white">{value}</p></div>
+      <span className={danger ? "text-[#fb7767]" : muted ? "text-od-text-3" : "text-od-text-2"}><Icon className="h-4 w-4" /></span>
+      <div><p className="text-xs text-od-text-3">{label}</p><p className="mt-1 text-2xl font-bold tracking-[-.02em] text-white">{value}</p></div>
     </article>
   );
 }

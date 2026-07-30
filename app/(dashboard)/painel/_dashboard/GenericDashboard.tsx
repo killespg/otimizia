@@ -602,7 +602,7 @@ export default async function DashboardPage() {
               aria-label="Ver lembretes"
             >
               <IconBell className="h-[18px] w-[18px]" />
-              <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-danger-500 px-1 text-[11px] font-black text-white">
+              <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-danger-500 px-1 text-xs font-black text-white">
                 {Math.min(overdue.length, 9)}
               </span>
             </Link>
@@ -648,7 +648,7 @@ export default async function DashboardPage() {
             />
             <button
               type="submit"
-              className="rounded-md bg-od-muted-surface px-2 py-1 text-[11px] font-bold text-od-text-3 hover:bg-brand-50 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-600"
+              className="rounded-md bg-od-muted-surface px-2 py-1 text-xs font-bold text-od-text-3 hover:bg-brand-50 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-600"
             >
               Buscar
             </button>
@@ -661,7 +661,7 @@ export default async function DashboardPage() {
               aria-label="Ver lembretes"
             >
               <IconBell className="h-5 w-5" />
-              <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-danger-500 px-1 text-[11px] font-black text-white">
+              <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-danger-500 px-1 text-xs font-black text-white">
                 {Math.min(overdue.length, 9)}
               </span>
             </Link>
@@ -994,7 +994,7 @@ function RevenueChart({
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Receita</p>
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-brand-700">Receita</p>
           <h2 className="mt-0.5 text-base font-black tracking-[-0.02em] text-od-text sm:text-lg">
             {preset.wonLabel} no mês (R$)
           </h2>
@@ -1027,7 +1027,7 @@ function DealsTable({
     <section className="enter rounded-md border border-od-border bg-od-surface p-4 sm:p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Pipeline</p>
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-brand-700">Pipeline</p>
           <h2 className="mt-0.5 text-base font-black tracking-[-0.02em] text-od-text sm:text-lg">
             Negócios recentes
           </h2>
@@ -1062,7 +1062,7 @@ function DealsTable({
                     <p className="clip-2 text-safe min-w-0 text-sm font-black leading-snug text-od-text">
                       {deal.title}
                     </p>
-                    <span className={`shrink-0 rounded-md px-2 py-1 text-[11px] font-black ${stage.className}`}>
+                    <span className={`shrink-0 rounded-md px-2 py-1 text-xs font-black ${stage.className}`}>
                       {stage.label}
                     </span>
                   </div>
@@ -1074,7 +1074,7 @@ function DealsTable({
                       {formatBRL(deal.value_cents ?? 0)}
                     </span>
                   </div>
-                  <p className="mt-1 text-[11px] font-semibold text-od-text-3">
+                  <p className="mt-1 text-xs font-semibold text-od-text-3">
                     {formatDate(deal.created_at)}
                   </p>
                 </li>
@@ -1086,7 +1086,7 @@ function DealsTable({
           <div className="mt-4 hidden overflow-x-auto rounded-md border border-od-border sm:block">
             <table className="w-full min-w-[620px] border-collapse text-left">
               <thead className="bg-[#f8faff]">
-                <tr className="text-[11px] font-bold text-od-text-3">
+                <tr className="text-xs font-bold text-od-text-3">
                   <th className="px-3 py-3">Negócio</th>
                   <th className="px-3 py-3">Cliente</th>
                   <th className="px-3 py-3">Etapa</th>
@@ -1105,7 +1105,7 @@ function DealsTable({
                         {contact?.company ?? contact?.name ?? "-"}
                       </td>
                       <td className="px-3 py-3">
-                        <span className={`rounded-md px-2 py-1 text-[11px] font-black ${stage.className}`}>
+                        <span className={`rounded-md px-2 py-1 text-xs font-black ${stage.className}`}>
                           {stage.label}
                         </span>
                       </td>
@@ -1136,7 +1136,7 @@ function TaskQueue({
     <section className="enter rounded-md border border-od-border bg-od-surface p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Agenda</p>
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-brand-700">Agenda</p>
           <h2 className="mt-0.5 text-base font-black tracking-[-0.02em] text-od-text sm:text-lg">
             Fila de tarefas
           </h2>
@@ -1225,7 +1225,7 @@ function CalendarWidget({
     <section className="enter rounded-md border border-od-border bg-od-surface p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-brand-700">Agenda</p>
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-brand-700">Agenda</p>
           <h2 className="mt-0.5 text-base font-black capitalize tracking-[-0.02em] text-od-text sm:text-lg">
             {monthLabel}
           </h2>
@@ -1239,7 +1239,7 @@ function CalendarWidget({
         </Link>
       </div>
 
-      <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-[0.04em] text-od-text-3">
+      <div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs font-bold uppercase tracking-[0.04em] text-od-text-3">
         {CALENDAR_WEEKDAY_LABELS.map((label, index) => (
           <div key={index}>{label}</div>
         ))}
@@ -1252,7 +1252,7 @@ function CalendarWidget({
             <div
               key={index}
               className={
-                "aspect-square rounded-md text-[11px] font-bold " +
+                "aspect-square rounded-md text-xs font-bold " +
                 (day === null
                   ? ""
                   : isToday
@@ -1281,7 +1281,7 @@ function CalendarWidget({
                 className="row-link flex items-center justify-between gap-2 rounded-md border border-od-border px-3 py-2 hover:border-brand-300 hover:bg-brand-50"
               >
                 <span className="clip-1 text-safe min-w-0 text-xs font-bold text-od-text">{item.title}</span>
-                <span className={"shrink-0 text-[11px] font-black " + calendarToneClass(item.tone)}>
+                <span className={"shrink-0 text-xs font-black " + calendarToneClass(item.tone)}>
                   {formatDate(item.date.toISOString())}
                 </span>
               </Link>

@@ -52,9 +52,9 @@ export function DashboardCustomizePanel({
           <div>
             <p className={isSeller ? "text-xs font-semibold text-od-text-2" : "dashboard-customize-eyebrow"}>Modo de edição</p>
             <h2 className={isSeller ? "mt-1 text-od-subtitle text-white" : "dashboard-customize-title"}>Deixe o painel do seu jeito</h2>
-            <p className={isSeller ? "mt-1 text-xs leading-relaxed text-white/44" : "dashboard-customize-description"}>Escolha a aparência, o fundo e as métricas. Para reorganizar os blocos, use as alças no painel abaixo.</p>
+            <p className={isSeller ? "mt-1 text-xs leading-relaxed text-od-text-3" : "dashboard-customize-description"}>Escolha a aparência, o fundo e as métricas. Para reorganizar os blocos, use as alças no painel abaixo.</p>
           </div>
-          <span className={isSeller ? "inline-flex items-center gap-2 text-[11px] font-semibold text-emerald-300" : "dashboard-customize-live"}><span className={isSeller ? "size-1.5 rounded-full bg-emerald-400" : undefined} />Prévia ao vivo</span>
+          <span className={isSeller ? "inline-flex items-center gap-2 text-xs font-semibold text-emerald-300" : "dashboard-customize-live"}><span className={isSeller ? "size-1.5 rounded-full bg-emerald-400" : undefined} />Prévia ao vivo</span>
         </div>
           <DashboardPreferencesForm
             preferences={preferences}

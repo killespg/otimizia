@@ -291,7 +291,7 @@ export default async function LegalDashboardPage({
                 </span>
               ) : null}
               {critical.length > 0 && reviews.length > 0 ? (
-                <span className="text-white/35">e</span>
+                <span className="text-od-text-3">e</span>
               ) : null}
               {reviews.length > 0 ? (
                 <span className="inline-flex items-center gap-1 font-semibold text-od-text">
@@ -307,7 +307,7 @@ export default async function LegalDashboardPage({
               <Check size={15} className="mt-1 shrink-0 text-emerald-300/80" />
               <span>
                 Nenhum prazo crítico e nenhuma movimentação pendente.{" "}
-                <span className="text-white/45">
+                <span className="text-od-text-3">
                   {allActiveCases.length}{" "}
                   {allActiveCases.length === 1
                     ? "caso ativo na carteira"
@@ -362,7 +362,7 @@ export default async function LegalDashboardPage({
           {/* O cabeçalho de coluna vive DENTRO do caso com linhas. Fora dele,
               prometia cinco colunas e entregava uma frase centralizada. */}
           {priorityItems.length ? (
-            <div className="hidden grid-cols-[128px_minmax(0,1.2fr)_minmax(150px,.8fr)_110px_120px_32px] gap-x-3 px-3 pb-2 text-od-label text-white/35 sm:grid">
+            <div className="hidden grid-cols-[128px_minmax(0,1.2fr)_minmax(150px,.8fr)_110px_120px_32px] gap-x-3 px-3 pb-2 text-od-label text-od-text-3 sm:grid">
               <span>Prioridade</span>
               <span>Caso</span>
               <span>Próxima ação</span>
@@ -418,14 +418,14 @@ export default async function LegalDashboardPage({
                       {item?.area || "Não informada"}
                     </span>
                     <span className="hidden items-center gap-2 text-xs text-white/65 sm:flex">
-                      <span className="grid size-5 place-items-center rounded-full bg-white/[0.08] text-[9px] font-bold text-white/70">
+                      <span className="grid size-5 place-items-center rounded-full bg-white/[0.08] text-xs font-bold text-white/70">
                         {owner.charAt(0)}
                       </span>
                       {owner}
                     </span>
                     <Check
                       size={15}
-                      className="hidden text-white/40 sm:block"
+                      className="hidden text-od-text-3 sm:block"
                     />
                   </Link>
                 );
@@ -445,7 +445,7 @@ export default async function LegalDashboardPage({
                   {portfolio === "mine" ? " na sua carteira" : " na carteira do escritório"}
                   {area === "all" ? "" : ` em ${area}`}.
                   {deadlinesOutOfScope > 0 ? (
-                    <span className="mt-1 block text-white/45">
+                    <span className="mt-1 block text-od-text-3">
                       {deadlinesOutOfScope}{" "}
                       {deadlinesOutOfScope === 1
                         ? "prazo pendente fica fora deste filtro"
@@ -503,7 +503,7 @@ export default async function LegalDashboardPage({
                   </span>
                   <span className="min-w-0 flex-1">
                     <strong className="flex items-center gap-2 text-[13px] font-semibold text-white">
-                      <Icon size={14} className="shrink-0 text-white/40" />
+                      <Icon size={14} className="shrink-0 text-od-text-3" />
                       {title}
                     </strong>
                     <span className="mt-1 block max-w-[62ch] text-xs leading-5 text-white/55">
@@ -514,7 +514,7 @@ export default async function LegalDashboardPage({
                     href={href}
                     className={`inline-flex h-11 shrink-0 items-center gap-1.5 rounded-md px-4 text-[13px] font-semibold transition-colors ${
                       step === "1"
-                        ? "bg-od-accent text-white hover:bg-od-accent-hover"
+                        ? "bg-od-accent text-white hover:bg-brand-600"
                         : "border border-od-border text-white/80 hover:border-white/25 hover:text-white"
                     }`}
                   >
@@ -535,7 +535,7 @@ export default async function LegalDashboardPage({
                 O que precisa de decisão no escritório agora
               </p>
             </div>
-            <span className="text-xs font-medium text-white/50">
+            <span className="text-xs font-medium text-od-text-3">
               Atualizado agora
             </span>
           </div>
@@ -600,7 +600,7 @@ export default async function LegalDashboardPage({
               <h2 className="text-base font-semibold">
                 Carteira do escritório
               </h2>
-              <p className="mt-2 text-sm text-white/50">
+              <p className="mt-2 text-sm text-od-text-3">
                 {activeCases.length} casos ativos sob acompanhamento.
               </p>
             </div>
@@ -656,7 +656,7 @@ function StatCard({
         <span className={`text-xs font-semibold ${color}`}>{detail}</span>
       </div>
       <div className="mt-3 flex items-center justify-between gap-3 border-t border-white/[0.07] pt-3">
-        <span className="text-xs text-white/50">{context}</span>
+        <span className="text-xs text-od-text-3">{context}</span>
         <Link
           href={href}
           className="shrink-0 text-xs font-semibold text-od-text-2 hover:text-od-text"
@@ -877,7 +877,7 @@ function CasesTable({
                 <strong className="block truncate text-[13px] font-semibold">
                   {client}
                 </strong>
-                <small className="mt-1 block truncate font-mono text-xs text-white/45">
+                <small className="mt-1 block truncate font-mono text-xs text-od-text-3">
                   {item.case_number || item.title}
                 </small>
               </span>
@@ -885,12 +885,12 @@ function CasesTable({
                 {item.area || "Não informada"}
               </span>
               <span className="flex items-center gap-1.5 text-xs text-white/65">
-                <span className="grid size-5 place-items-center rounded-full bg-white/[0.08] text-[9px]">
+                <span className="grid size-5 place-items-center rounded-full bg-white/[0.08] text-xs">
                   {owner.charAt(0)}
                 </span>
                 {owner}
               </span>
-              <span className="w-fit rounded-md bg-white/[0.06] px-2 py-0.5 text-[11px] font-semibold text-od-text-2">
+              <span className="w-fit rounded-md bg-white/[0.06] px-2 py-0.5 text-xs font-semibold text-od-text-2">
                 {CASE_STATUS[item.status]}
               </span>
               <span
@@ -900,13 +900,13 @@ function CasesTable({
               </span>
               <ArrowUpRight
                 size={13}
-                className="hidden text-white/35 sm:block"
+                className="hidden text-od-text-3 sm:block"
               />
             </Link>
           );
         })
       ) : (
-        <p className="py-8 text-center text-sm text-white/48">
+        <p className="py-8 text-center text-sm text-od-text-3">
           Nenhum caso ativo. Abra o primeiro caso para iniciar a carteira.
         </p>
       )}

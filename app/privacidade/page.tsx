@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     "Quais dados o OtimizIA coleta, para quê, por quanto tempo guarda e como exercer seus direitos de titular sob a LGPD.",
 };
 
-const UPDATED_AT = "27 de julho de 2026";
+const UPDATED_AT = "29 de julho de 2026";
 
 export default function PrivacidadePage() {
   return (
@@ -120,8 +120,11 @@ export default function PrivacidadePage() {
             <p>
               A LGPD garante confirmação de tratamento, acesso, correção, anonimização, portabilidade,
               eliminação e revogação do consentimento. Dois deles já estão disponíveis sem precisar
-              falar com ninguém, em <strong>Configurações</strong>: exportar todos os seus dados em
-              formato aberto e excluir a conta em definitivo. Os demais, peça pelo e-mail do item 1.
+              falar com ninguém, em <strong>Configurações</strong>: exportar o perfil, as preferências
+              e os registros operacionais diretamente vinculados à sua conta em formato aberto, ou
+              excluir a conta em definitivo. A exportação pessoal não funciona como backup da
+              organização e não inclui dados pertencentes aos seus colegas. Os demais direitos,
+              peça pelo e-mail do item 1.
             </p>
             <p>
               Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).

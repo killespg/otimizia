@@ -157,7 +157,7 @@ export function SellerProductNavigation({ workspaceKey, workspaceOptions, displa
               {collapsed ? <LogoMark size={30} /> : <LogoWordmark height={30} />}
             </Link>
             {!collapsed ? (
-              <button type="button" onClick={toggle} aria-label="Recolher menu" className="grid size-7 place-items-center rounded-xl text-white/38 hover:bg-white/[0.06] hover:text-white">
+              <button type="button" onClick={toggle} aria-label="Recolher menu" className="grid size-7 place-items-center rounded-xl text-od-text-3 hover:bg-white/[0.06] hover:text-white">
                 <ChevronLeft size={15} />
               </button>
             ) : null}
@@ -201,12 +201,12 @@ export function SellerProductNavigation({ workspaceKey, workspaceOptions, displa
             </div>
           ) : null}
           <form action={logout}>
-            <PendingButton iconOnly={collapsed} pendingLabel="Saindo" className={`flex min-h-8 w-full items-center rounded-xl text-[13px] text-white/48 hover:bg-white/[0.05] hover:text-white ${collapsed ? "justify-center" : "gap-2 px-2.5"}`}>
+            <PendingButton iconOnly={collapsed} pendingLabel="Saindo" className={`flex min-h-8 w-full items-center rounded-xl text-[13px] text-od-text-3 hover:bg-white/[0.05] hover:text-white ${collapsed ? "justify-center" : "gap-2 px-2.5"}`}>
               <LogOut size={16} />{!collapsed ? <span>Sair</span> : <span className="sr-only">Sair</span>}
             </PendingButton>
           </form>
           {collapsed ? (
-            <button type="button" onClick={toggle} aria-label="Expandir menu" className="mt-1 grid min-h-9 w-full place-items-center rounded text-white/45 hover:bg-white/[0.05] hover:text-white">
+            <button type="button" onClick={toggle} aria-label="Expandir menu" className="mt-1 grid min-h-9 w-full place-items-center rounded text-od-text-3 hover:bg-white/[0.05] hover:text-white">
               <ChevronRight size={16} />
             </button>
           ) : null}

@@ -92,12 +92,12 @@ export async function sendEvolutionText(
 }
 
 // POST /message/sendMedia/{instance} -> { number, mediatype, media, caption }
-// `media` aceita URL pública (é o que usamos: a imagem sobe primeiro pro
-// Storage e mandamos o link) ou base64.
+// `media` aceita URL ou base64. Para anexos do inbox enviamos base64 direto:
+// nenhuma URL pública temporária ou permanente precisa existir.
 export async function sendEvolutionMedia(
   instanceName: string,
   number: string,
-  mediaUrl: string,
+  media: string,
   caption?: string
 ): Promise<void> {
   await evolutionFetch(`/message/sendMedia/${instanceName}`, {
@@ -105,7 +105,7 @@ export async function sendEvolutionMedia(
     body: JSON.stringify({
       number,
       mediatype: "image",
-      media: mediaUrl,
+      media,
       ...(caption ? { caption } : {}),
     }),
   });

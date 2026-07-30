@@ -127,7 +127,7 @@ export default async function PipelineReportPage(
       <section className={usesFlatSurface ? "overflow-x-auto border-y border-white/[0.08]" : "panel overflow-x-auto p-5 sm:p-6"}>
         <table className={usesFlatSurface ? "w-full min-w-[680px] border-collapse text-sm" : "w-full min-w-[560px] border-collapse text-sm"}>
           <thead>
-            <tr className={usesFlatSurface ? "text-left text-[11px] font-semibold uppercase tracking-[0.04em] text-white/34" : "text-left text-xs font-bold uppercase tracking-wide text-ink-muted"}>
+            <tr className={usesFlatSurface ? "text-left text-xs font-semibold uppercase tracking-[0.04em] text-od-text-3" : "text-left text-xs font-bold uppercase tracking-wide text-ink-muted"}>
               <th className={usesFlatSurface ? "border-b border-white/[0.08] px-4 py-3" : "border-b border-line pb-2"}>Mês</th>
               <th className={usesFlatSurface ? "border-b border-white/[0.08] px-4 py-3" : "border-b border-line pb-2"}>{isRealEstate ? "Iniciados" : "Criados"}</th>
               <th className={usesFlatSurface ? "border-b border-white/[0.08] px-4 py-3" : "border-b border-line pb-2"}>{isRealEstate ? "Fechados" : "Ganhos"}</th>
@@ -165,7 +165,7 @@ function clampMonths(raw: string | undefined): number {
 function MetricCard({ label, value, flat = false }: { label: string; value: string; flat?: boolean }) {
   return (
     <article className={flat ? "border-b border-white/[0.08] px-4 py-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0" : "panel p-4"}>
-      <p className={flat ? "text-xs font-medium text-white/46" : "text-xs font-bold uppercase tracking-wide text-ink-muted"}>{label}</p>
+      <p className={flat ? "text-xs font-medium text-od-text-3" : "text-xs font-bold uppercase tracking-wide text-ink-muted"}>{label}</p>
       <p className={flat ? "mt-2 text-2xl font-bold tracking-[-0.03em] text-white" : "mt-1 text-xl font-black text-ink"}>{value}</p>
     </article>
   );

@@ -114,7 +114,7 @@ export function PropertyFilterChat() {
           {activeChips.map((chip) => (
             <span
               key={chip.key}
-              className="flex items-center gap-1 rounded bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700"
+              className="flex items-center gap-1 rounded bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700"
             >
               {chipLabel(chip.key, chip.value)}
               <button
@@ -148,7 +148,7 @@ export function PropertyFilterChat() {
             )
           )}
           {sending && (
-            <div className="flex items-center gap-2 px-1 text-[11px] font-semibold text-ink-muted">
+            <div className="flex items-center gap-2 px-1 text-xs font-semibold text-ink-muted">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand-600" />
               Interpretando…
             </div>

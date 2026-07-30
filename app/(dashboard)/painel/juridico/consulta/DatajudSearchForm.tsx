@@ -137,7 +137,7 @@ export function DatajudSearchForm({
               title={isFavorite ? "Remover dos favoritos" : "Favoritar este tribunal"}
               className={
                 "grid h-11 w-11 shrink-0 place-items-center rounded-md border border-white/[0.1] " +
-                (isFavorite ? "bg-white/[0.06] text-od-text-2" : "bg-transparent text-white/40")
+                (isFavorite ? "bg-white/[0.06] text-od-text-2" : "bg-transparent text-od-text-3")
               }
             >
               <IconStar className="h-5 w-5" filled={isFavorite} />
@@ -167,7 +167,7 @@ export function DatajudSearchForm({
           </p>
         )}
         {!compact && (
-          <p className="mt-4 text-[11px] text-white/42">
+          <p className="mt-4 text-xs text-od-text-3">
             Dados públicos do DataJud (CNJ) — cobre praticamente todos os tribunais do país. Clique na estrela pra
             fixar um tribunal no topo da lista.
           </p>
@@ -179,7 +179,7 @@ export function DatajudSearchForm({
           <div className="border-b border-white/[0.08] p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold text-od-text-2">{process.classe?.nome ?? "Classe não informada"}</p>
+                <p className="text-xs font-semibold text-od-text-2">{process.classe?.nome ?? "Classe não informada"}</p>
                 <p className="mt-1 text-[17px] font-semibold tracking-[-0.02em] text-white">{formatNumero(process.numeroProcesso)}</p>
               </div>
               {canManage && (
@@ -204,10 +204,10 @@ export function DatajudSearchForm({
           </div>
           <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
             <h2 className="text-[14px] font-semibold text-white">Movimentações</h2>
-            <span className="text-[11px] text-white/42">{process.movimentos.length}</span>
+            <span className="text-xs text-od-text-3">{process.movimentos.length}</span>
           </div>
           {process.movimentos.length === 0 ? (
-            <p className="p-5 text-[12px] text-white/45">Nenhuma movimentação retornada pelo DataJud.</p>
+            <p className="p-5 text-[12px] text-od-text-3">Nenhuma movimentação retornada pelo DataJud.</p>
           ) : (
             <div className="max-h-[32rem] overflow-y-auto">
               {[...process.movimentos]
@@ -219,7 +219,7 @@ export function DatajudSearchForm({
                     </span>
                     <div className="min-w-0">
                       <p className="text-[12px] font-medium text-white/72">{movimento.nome}</p>
-                      <p className="mt-1 text-[10px] text-white/38">{dateTime(movimento.dataHora)}</p>
+                      <p className="mt-1 text-xs text-od-text-3">{dateTime(movimento.dataHora)}</p>
                     </div>
                   </article>
                 ))}

@@ -1,4 +1,7 @@
 import { redirect } from "next/navigation";
+import { canViewLegal } from "@/lib/law-office";
+import { getActiveOrgId } from "@/lib/org";
+import { canViewRealEstate } from "@/lib/real-estate";
 import { createClient } from "@/lib/supabase/server";
 import { getWorkspaceKey } from "@/lib/workspaces";
 import GenericDashboard from "./_dashboard/GenericDashboard";
@@ -6,10 +9,36 @@ import GenericDashboard from "./_dashboard/GenericDashboard";
 export default async function DashboardEntryPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: profile } = await supabase.from("profiles").select("profession_type,is_admin").eq("id", user!.id).maybeSingle();
+  const [{ data: profile }, orgId] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("profession_type,is_admin")
+      .eq("id", user!.id)
+      .maybeSingle(),
+    getActiveOrgId(supabase, user!.id),
+  ]);
   const workspaceKey = getWorkspaceKey(profile?.profession_type, user?.user_metadata?.profession_type, profile?.is_admin);
+  const { data: membership } = await supabase
+    .from("organization_members")
+    .select("role,job_role")
+    .eq("org_id", orgId)
+    .eq("user_id", user!.id)
+    .maybeSingle();
+  const isOrgAdmin = membership?.role === "admin";
 
-  if (workspaceKey === "law_office") redirect("/painel/juridico");
-  if (workspaceKey === "real_estate_broker") redirect("/painel/imoveis/dashboard");
+  if (workspaceKey === "law_office") {
+    redirect(
+      canViewLegal(membership?.job_role, isOrgAdmin)
+        ? "/painel/juridico"
+        : "/painel/contatos",
+    );
+  }
+  if (workspaceKey === "real_estate_broker") {
+    redirect(
+      canViewRealEstate(membership?.job_role, isOrgAdmin)
+        ? "/painel/imoveis/dashboard"
+        : "/painel/contatos",
+    );
+  }
   return <GenericDashboard />;
 }

@@ -77,7 +77,7 @@ export function ListingQualitySection({
                         <option value="received">Recebido</option>
                         <option value="waived">Dispensado</option>
                       </select>
-                      <button type="submit" className="press-sm rounded-md border border-line bg-surface px-2 py-1 text-[11px] font-bold text-ink-muted hover:bg-surface-2">
+                      <button type="submit" className="press-sm rounded-md border border-line bg-surface px-2 py-1 text-xs font-bold text-ink-muted hover:bg-surface-2">
                         Salvar
                       </button>
                     </form>

@@ -62,7 +62,7 @@ export function Field({
         defaultValue={defaultValue}
         className="field mt-1.5"
       />
-      {hint && <span className="mt-1 block text-[11px] font-medium text-ink-muted">{hint}</span>}
+      {hint && <span className="mt-1 block text-xs font-medium text-ink-muted">{hint}</span>}
     </label>
   );
 }
@@ -99,7 +99,7 @@ export function Select({
           </option>
         ))}
       </select>
-      {hint && <span className="mt-1 block text-[11px] font-medium text-ink-muted">{hint}</span>}
+      {hint && <span className="mt-1 block text-xs font-medium text-ink-muted">{hint}</span>}
     </label>
   );
 }

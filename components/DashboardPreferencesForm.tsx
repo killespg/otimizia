@@ -179,8 +179,8 @@ export function DashboardPreferencesForm({
       ))}
 
       <div className={usesFlatTabs ? "grid grid-cols-2 border-b border-white/[0.09]" : "dashboard-preferences-tabs"} role="tablist" aria-label="Seções da personalização">
-        <button type="button" role="tab" aria-selected={section === "appearance"} onClick={() => setSection("appearance")} className={usesFlatTabs ? `min-h-11 border-b-2 px-3 text-xs font-semibold transition-colors ${section === "appearance" ? "border-od-accent text-white" : "border-transparent text-white/44 hover:text-white/72"}` : section === "appearance" ? "is-active" : ""}>Aparência</button>
-        <button type="button" role="tab" aria-selected={section === "metrics"} onClick={() => setSection("metrics")} className={usesFlatTabs ? `min-h-11 border-b-2 px-3 text-xs font-semibold transition-colors ${section === "metrics" ? "border-od-accent text-white" : "border-transparent text-white/44 hover:text-white/72"}` : section === "metrics" ? "is-active" : ""}>Estatísticas <span className={usesFlatTabs ? "ml-1 text-od-text-3" : undefined}>{metrics.length}/8</span></button>
+        <button type="button" role="tab" aria-selected={section === "appearance"} onClick={() => setSection("appearance")} className={usesFlatTabs ? `min-h-11 border-b-2 px-3 text-xs font-semibold transition-colors ${section === "appearance" ? "border-od-accent text-white" : "border-transparent text-od-text-3 hover:text-white/72"}` : section === "appearance" ? "is-active" : ""}>Aparência</button>
+        <button type="button" role="tab" aria-selected={section === "metrics"} onClick={() => setSection("metrics")} className={usesFlatTabs ? `min-h-11 border-b-2 px-3 text-xs font-semibold transition-colors ${section === "metrics" ? "border-od-accent text-white" : "border-transparent text-od-text-3 hover:text-white/72"}` : section === "metrics" ? "is-active" : ""}>Estatísticas <span className={usesFlatTabs ? "ml-1 text-od-text-3" : undefined}>{metrics.length}/8</span></button>
       </div>
 
       {section === "appearance" && <div className="grid gap-4 lg:grid-cols-2" role="tabpanel">
@@ -228,7 +228,7 @@ export function DashboardPreferencesForm({
             >
               <span>
                 <span className="block text-sm font-semibold text-white/82">Fundo animado</span>
-                <span className="mt-0.5 block text-xs text-white/42">
+                <span className="mt-0.5 block text-xs text-od-text-3">
                   {showAnimatedBackground ? "Ativado na visão geral" : "Desativado na visão geral"}
                 </span>
               </span>
@@ -261,18 +261,18 @@ export function DashboardPreferencesForm({
           <div className="mb-4 flex flex-col gap-3 border-b border-white/[0.08] pb-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-md">
               <p className="text-sm font-semibold text-white/78">Custo mensal de vendas e marketing</p>
-              <p className="mt-1 text-xs leading-relaxed text-white/42">Usado para calcular o CAC. Inclua anúncios, ferramentas e comissões comerciais do mês.</p>
+              <p className="mt-1 text-xs leading-relaxed text-od-text-3">Usado para calcular o CAC. Inclua anúncios, ferramentas e comissões comerciais do mês.</p>
             </div>
             <label className="block w-full sm:w-52">
               <span className="sr-only">Custo mensal de vendas e marketing</span>
               <span className="flex h-11 items-center rounded-md border border-white/[0.09] bg-[#151419] px-3 focus-within:border-od-accent">
-                <span className="mr-2 text-sm text-white/42">R$</span>
+                <span className="mr-2 text-sm text-od-text-3">R$</span>
                 <input
                   value={salesMarketingCost}
                   onChange={(event) => setSalesMarketingCost(event.target.value)}
                   inputMode="decimal"
                   placeholder="0,00"
-                  className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-white outline-none placeholder:text-white/32"
+                  className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-white outline-none placeholder:text-od-text-3"
                 />
               </span>
             </label>
@@ -315,7 +315,7 @@ export function DashboardPreferencesForm({
                       {active && <IconGrip className={isSeller ? "h-4 w-4 shrink-0 text-od-text-2" : "h-4 w-4 shrink-0 text-ink-muted"} />}
                       {label}
                     </span>
-                    <span className={isSeller ? "mt-0.5 block text-xs text-white/38" : "mt-0.5 block text-xs font-semibold text-ink-muted"}>
+                    <span className={isSeller ? "mt-0.5 block text-xs text-od-text-3" : "mt-0.5 block text-xs font-semibold text-ink-muted"}>
                       {active ? "Ativa no painel" : "Disponível"}
                     </span>
                   </span>
@@ -331,7 +331,7 @@ export function DashboardPreferencesForm({
                   }
                   placeholder={preset.metrics.find((metric) => metric.key === key)?.label ?? fallbackLabel}
                   maxLength={42}
-                  className={isSeller ? "mt-2 h-10 w-full rounded-md border border-white/[0.09] bg-[#151419] px-3 text-sm text-white/72 outline-none placeholder:text-white/32 focus:border-od-accent" : "field mt-2 h-9 text-sm"}
+                  className={isSeller ? "mt-2 h-10 w-full rounded-md border border-white/[0.09] bg-[#151419] px-3 text-sm text-white/72 outline-none placeholder:text-od-text-3 focus:border-od-accent" : "field mt-2 h-9 text-sm"}
                 />
                 {active && (
                     <MobileOrderButtons
@@ -347,7 +347,7 @@ export function DashboardPreferencesForm({
       </Panel></div>}
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <p className={isSeller ? "text-xs text-white/42" : "text-xs font-semibold text-ink-muted"}>
+        <p className={isSeller ? "text-xs text-od-text-3" : "text-xs font-semibold text-ink-muted"}>
           {saveStatus === "saved"
             ? "Personalização salva."
             : saveStatus === "error"
@@ -357,7 +357,7 @@ export function DashboardPreferencesForm({
                 : "As mudanças aparecem no painel antes de você salvar."}
         </p>
         <PendingButton
-          className={isSeller ? "inline-flex min-h-11 items-center justify-center rounded-md bg-od-accent px-4 text-xs font-semibold text-white hover:bg-od-accent-hover disabled:opacity-50" : compact ? "btn-soft" : "btn"}
+          className={isSeller ? "inline-flex min-h-11 items-center justify-center rounded-md bg-od-accent px-4 text-xs font-semibold text-white hover:bg-brand-600 disabled:opacity-50" : compact ? "btn-soft" : "btn"}
           disabled={isSaving}
           pendingLabel="Salvando"
         >
@@ -385,7 +385,7 @@ function Panel({
     <section data-preferences-panel className={`${seller ? "rounded-md border border-white/[0.08] bg-white/[0.018] p-4" : "rounded-lg border border-line bg-surface p-3 sm:p-4"} ${className}`}>
       <div className="mb-3">
         <h3 className={seller ? "text-sm font-semibold text-white" : "text-sm font-black text-ink"}>{title}</h3>
-        <p className={seller ? "mt-1 text-xs leading-relaxed text-white/42" : "mt-0.5 text-xs font-semibold leading-relaxed text-ink-muted"}>{description}</p>
+        <p className={seller ? "mt-1 text-xs leading-relaxed text-od-text-3" : "mt-0.5 text-xs font-semibold leading-relaxed text-ink-muted"}>{description}</p>
       </div>
       {children}
     </section>

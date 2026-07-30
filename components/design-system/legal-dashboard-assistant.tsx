@@ -50,7 +50,7 @@ export function LegalDashboardAssistant({
           type="submit"
           disabled={!value.trim() || sending}
           aria-label="Enviar pergunta"
-          className="flex size-11 shrink-0 items-center justify-center rounded-md bg-od-accent text-white transition-colors hover:bg-od-accent-hover disabled:opacity-30"
+          className="flex size-11 shrink-0 items-center justify-center rounded-md bg-od-accent text-white transition-colors hover:bg-brand-600 disabled:opacity-30"
         >
           <ArrowUp size={14} strokeWidth={2.5} />
         </button>
@@ -72,7 +72,7 @@ export function LegalDashboardAssistant({
               key={suggestion}
               type="button"
               onClick={() => setValue(suggestion)}
-              className="min-h-11 text-left text-[12px] font-medium text-od-accent hover:text-od-accent-hover sm:min-h-8"
+              className="min-h-11 text-left text-[12px] font-medium text-od-accent-hover hover:text-white sm:min-h-8"
             >
               {suggestion}
             </button>

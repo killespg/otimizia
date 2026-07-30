@@ -27,7 +27,7 @@ export function DocumentDraftViewer({ name, typeLabel, content }: { name: string
       </button>
       {open && (
         <div className="mt-3 rounded-lg border border-line bg-surface-2 p-4">
-          <p className="text-[11px] font-black text-danger-600">
+          <p className="text-xs font-black text-danger-600">
             Rascunho gerado por IA — revise, confira fundamentos e complete antes de usar ou protocolar.
           </p>
           <pre className="mt-2 max-h-96 overflow-y-auto whitespace-pre-wrap text-xs font-medium leading-relaxed text-ink-soft">{content}</pre>

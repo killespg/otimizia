@@ -155,7 +155,7 @@ export default function TaskItem({
       )}
 
       {members.length > 1 && (
-        <div className="flex flex-wrap items-center gap-2 pl-1 text-[11px] font-bold text-ink-muted">
+        <div className="flex flex-wrap items-center gap-2 pl-1 text-xs font-bold text-ink-muted">
           {assigneeName && (
             <span className="tag bg-surface-2 text-ink-muted">Com {assigneeName}</span>
           )}
@@ -167,7 +167,7 @@ export default function TaskItem({
                 <input type="hidden" name="task_id" value={task.id} />
                 <input type="hidden" name="return_to" value={returnTo} />
                 <PendingButton
-                  className="rounded-md bg-brand-700 px-2 py-1 text-[11px] font-black text-white hover:bg-brand-800"
+                  className="rounded-md bg-brand-700 px-2 py-1 text-xs font-black text-white hover:bg-brand-800"
                   pendingLabel="Pegando"
                 >
                   Pegar
@@ -183,14 +183,14 @@ export default function TaskItem({
                 <form action={acceptTaskHandoff}>
                   <input type="hidden" name="task_id" value={task.id} />
                   <input type="hidden" name="return_to" value={returnTo} />
-                  <PendingButton className="rounded-md bg-brand-700 px-2 py-1 text-[11px] font-black text-white hover:bg-brand-800" pendingLabel="Aceitando">
+                  <PendingButton className="rounded-md bg-brand-700 px-2 py-1 text-xs font-black text-white hover:bg-brand-800" pendingLabel="Aceitando">
                     Aceitar
                   </PendingButton>
                 </form>
                 <form action={declineTaskHandoff}>
                   <input type="hidden" name="task_id" value={task.id} />
                   <input type="hidden" name="return_to" value={returnTo} />
-                  <PendingButton className="rounded-md border border-line bg-white px-2 py-1 text-[11px] font-black text-ink-soft hover:bg-surface-2" pendingLabel="Recusando">
+                  <PendingButton className="rounded-md border border-line bg-white px-2 py-1 text-xs font-black text-ink-soft hover:bg-surface-2" pendingLabel="Recusando">
                     Recusar
                   </PendingButton>
                 </form>
@@ -206,7 +206,7 @@ export default function TaskItem({
             <button
               type="button"
               onClick={() => setShowHandoff((v) => !v)}
-              className="nav-item text-[11px] font-black text-brand-700 hover:text-brand-900"
+              className="nav-item text-xs font-black text-brand-700 hover:text-brand-900"
             >
               {isAdmin ? "Reatribuir" : "Passar para..."}
             </button>

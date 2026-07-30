@@ -40,7 +40,7 @@ export function LandingNav() {
           </Link>
           <Link
             href="/signup"
-            className="hidden min-h-11 items-center rounded-md bg-od-accent px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-od-accent-hover min-[360px]:flex"
+            className="hidden min-h-11 items-center rounded-md bg-od-accent px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-600 min-[360px]:flex"
           >
             Criar conta
           </Link>

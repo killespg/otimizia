@@ -273,7 +273,7 @@ function TaskGroup({
       <div className={isSeller ? "flex items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4" : "flex items-center justify-between gap-3 border-b border-line px-5 py-4"}>
         <div>
           <h2 className={isSeller ? "text-sm font-semibold text-white" : "text-base font-black tracking-[-0.02em] text-ink sm:text-lg"}>{title}</h2>
-          <p className={isSeller ? "mt-1 text-xs text-white/44" : "mt-1 text-sm font-medium text-ink-muted"}>
+          <p className={isSeller ? "mt-1 text-xs text-od-text-3" : "mt-1 text-sm font-medium text-ink-muted"}>
             {items.length === 0
               ? empty
               : `${items.length} ${items.length === 1 ? "item" : "itens"} nesta fila.`}
@@ -289,7 +289,7 @@ function TaskGroup({
           <div className={isSeller ? "text-left" : "rounded-lg border border-dashed border-line bg-[#f8fbff] p-5 text-center"}>
             <div>
             <p className={isSeller ? "text-sm font-semibold text-white/68" : "text-sm font-black text-ink"}>Fila vazia</p>
-            <p className={isSeller ? "mt-1 text-xs text-white/38" : "mt-1 text-sm font-medium text-ink-muted"}>{empty}</p>
+            <p className={isSeller ? "mt-1 text-xs text-od-text-3" : "mt-1 text-sm font-medium text-ink-muted"}>{empty}</p>
             </div>
           </div>
         </div>
@@ -328,7 +328,7 @@ function MetricCard({
       <div className="flex items-center gap-3">
         <span className={pink ? "text-amber-300" : "text-od-text-2"}><Icon className="h-4 w-4"/></span>
         <div className="min-w-0">
-          <p className="text-xs text-white/50">{label}</p>
+          <p className="text-xs text-od-text-3">{label}</p>
           <p className="mt-1 text-2xl font-bold tracking-[-0.02em] text-white">
             {value}
           </p>
