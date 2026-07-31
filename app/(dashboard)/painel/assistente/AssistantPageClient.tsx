@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useAssistantChat } from "@/lib/ai/AssistantChatProvider";
-import { usePdfAttachment } from "@/lib/ai/usePdfAttachment";
-import { useVoiceCall } from "@/lib/ai/useVoiceCall";
-import type { PendingImage } from "@/components/ChatImageAttach";
-import { VoicePanel } from "@/components/VoicePanel";
+import { usePdfAttachment } from "@/lib/ai/hooks/usePdfAttachment";
+import { useVoiceCall } from "@/lib/ai/hooks/useVoiceCall";
+import type { PendingImage } from "@/components/tim/ChatImageAttach";
+import { VoicePanel } from "@/components/tim/VoicePanel";
 import { TimHeader } from "@/components/tim/TimHeader";
 import { TimConversation } from "@/components/tim/TimConversation";
 import { TimComposer } from "@/components/tim/TimComposer";

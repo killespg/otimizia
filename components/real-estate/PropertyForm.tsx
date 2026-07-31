@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { REAL_ESTATE_TRANSACTION_TYPES } from "@/lib/real-estate";
+import { REAL_ESTATE_TRANSACTION_TYPES } from "@/lib/real-estate/real-estate";
 import type { RealEstateTransactionType } from "@/lib/supabase/types";
 
 export function FormSection({

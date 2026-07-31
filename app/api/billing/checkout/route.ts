@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { logError } from "@/lib/logger";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
-import { resolveOrigin } from "@/lib/request-origin";
-import { getStripe } from "@/lib/stripe";
+import { logError } from "@/lib/utils/logger";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
+import { resolveOrigin } from "@/lib/utils/request-origin";
+import { getStripe } from "@/lib/billing/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 

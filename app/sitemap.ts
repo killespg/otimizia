@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { siteUrl } from "@/lib/request-origin";
+import { siteUrl } from "@/lib/utils/request-origin";
 
 // Só o que é público e indexável. Painel, onboarding e páginas de
 // compartilhamento por token ficam de fora — as duas primeiras exigem login e

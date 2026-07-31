@@ -1,6 +1,6 @@
-import { EvolutionApiError, getEvolutionConnectionState } from "@/lib/evolution";
-import { logError } from "@/lib/logger";
-import { getActiveOrgId } from "@/lib/org";
+import { EvolutionApiError, getEvolutionConnectionState } from "@/lib/whatsapp/evolution";
+import { logError } from "@/lib/utils/logger";
+import { getActiveOrgId } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";

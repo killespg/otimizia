@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { PendingButton } from "@/components/PendingButton";
+import { PendingButton } from "@/components/ui/PendingButton";
 import { updateOrganizationContext } from "@/app/(dashboard)/painel/equipe/actions";
 import type { Organization } from "@/lib/supabase/types";
 

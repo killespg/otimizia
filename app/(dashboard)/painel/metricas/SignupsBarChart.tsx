@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/utils/format";
 
 const LEFT = 8;
 const RIGHT = 812;

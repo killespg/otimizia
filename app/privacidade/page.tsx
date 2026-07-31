@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BrandName } from "@/components/BrandName";
-import { CookiePreferencesLink } from "@/components/CookieConsent";
+import { BrandName } from "@/components/design-system/BrandName";
+import { CookiePreferencesLink } from "@/components/site/CookieConsent";
 
 export const metadata: Metadata = {
   title: "Política de Privacidade | OtimizIA",

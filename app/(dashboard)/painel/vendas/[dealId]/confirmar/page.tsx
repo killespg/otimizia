@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, CalendarDays, CircleDollarSign, UserRound } from "lucide-react";
 import { SellerSaleConfirmation } from "@/components/seller/SellerSaleConfirmation";
 import { SellerPageHeader, date, money } from "@/components/seller/seller-ui";
-import { getSellerPageContext } from "@/lib/seller-server";
+import { getSellerPageContext } from "@/lib/seller/seller-server";
 import type { Contact, Deal, SellerCollection, SellerProduct, SellerProductVariant } from "@/lib/supabase/types";
 
 type CatalogProduct = SellerProduct & { variants: SellerProductVariant[] };

@@ -1,5 +1,5 @@
-import { canViewLegal, hasLegalWorkspace } from "@/lib/law-office";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { canViewLegal, hasLegalWorkspace } from "@/lib/law/law-office";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";

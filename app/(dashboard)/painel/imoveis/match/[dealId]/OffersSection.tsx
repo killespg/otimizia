@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PendingButton } from "@/components/PendingButton";
+import { PendingButton } from "@/components/ui/PendingButton";
 import type { RealEstateOffer, RealEstateProperty } from "@/lib/supabase/types";
 import { acceptOffer, counterOffer, createOffer, declineOffer, sendOffer } from "../../offer-actions";
 

@@ -40,15 +40,66 @@ npm run test:integration
 
 ## Estrutura
 
-```text
-app/api/             endpoints, webhooks e cron jobs
-lib/                 domínio, integrações e serviços
-lib/ai/              assistente e ferramentas operacionais
-lib/supabase/        clientes server/admin, middleware e tipos
-supabase/migrations/ schema, funções e políticas RLS
-scripts/             importadores e seeds
-test/                testes de integração do backend
-```
+Mapa de onde cada coisa mora, pra quem não é programador conseguir se achar.
+
+**`app/`** — cada pasta ali dentro é literalmente um endereço do site (o
+Next.js usa a própria estrutura de pastas como as rotas). Não é reorganizada
+por conveniência: mexer numa pasta de `app/` muda ou quebra uma página.
+
+- `app/(auth)/` — telas de entrada: login, cadastro, esqueci/nova senha
+- `app/(dashboard)/painel/` — a área logada inteira (ver seção "Interface" abaixo)
+- `app/api/` — endpoints que o site chama por trás dos panos: webhooks (Stripe,
+  WhatsApp/Evolution, Autentique), cron jobs (lembretes, resumo diário,
+  sincronização do DataJud) e ações que não são página
+- `app/globals.css` — cores, espaçamentos, raios e demais tokens visuais do produto
+
+**`components/`** — as peças visuais (React), agrupadas por assunto:
+
+| Pasta | O que tem |
+|---|---|
+| `components/design-system/` | Peças reutilizáveis da marca: navegação, cabeçalho, logo, fundos animados |
+| `components/landing/` | Seções da página inicial pública (hero, planos, perguntas frequentes) |
+| `components/auth/` | Campos e botões das telas de login/cadastro |
+| `components/dashboard/` | Widgets de personalização do painel |
+| `components/site/` | Avisos do site inteiro (cookies, instalar o app, analytics) |
+| `components/tim/` | A interface do Tim, o assistente de IA (chat, voz, anexos) |
+| `components/legal/` | Telas e blocos da vertical jurídica (prazos, processos, documentos) |
+| `components/real-estate/` | Telas e blocos da vertical imobiliária |
+| `components/seller/` | Telas e blocos da vertical de vendedor autônomo |
+| `components/ui/` | Botões e utilidades genéricas usadas em mais de uma vertical |
+
+**`lib/`** — a lógica por trás das telas (regras de negócio, cálculos,
+integrações com serviços externos), também agrupada por assunto:
+
+| Pasta | O que configura |
+|---|---|
+| `lib/ai/` | O assistente Tim: conversa, ferramentas que ele pode acionar, voz |
+| `lib/supabase/` | Conexão com o banco de dados (Supabase): login, permissões, tipos |
+| `lib/crm/` | Negociações, funil de vendas, convites, lembretes |
+| `lib/workspace/` | Organizações, workspaces habilitadas, preferências do painel |
+| `lib/billing/` | Planos, assinatura e cobrança (Stripe) |
+| `lib/account/` | Conta do usuário: exclusão, exportação de dados, conta demo |
+| `lib/people/` | Profissões e papéis de cada pessoa na organização |
+| `lib/law/` | Regras da vertical jurídica: prazos, processos, consulta ao DataJud |
+| `lib/real-estate/` | Regras da vertical imobiliária: match, comissões, qualidade do anúncio |
+| `lib/seller/` | Regras da vertical de vendedor autônomo |
+| `lib/whatsapp/` | Integração com o WhatsApp via Evolution API |
+| `lib/integrations/` | Outros serviços externos: captcha (Turnstile), e-mail, notificações push |
+| `lib/consent/` | Consentimento de cookies |
+| `lib/utils/` | Funções pequenas e genéricas (formatação, CPF, datas, CSV, compressão de imagem) |
+
+**Outras pastas:**
+
+- `supabase/migrations/` — histórico de mudanças no banco de dados; nunca é
+  reorganizado, só cresce
+- `scripts/` — scripts de manutenção: importar dados, criar contas de teste,
+  gerar chaves
+- `public/` e `assets/` — imagens e ícones do site
+- `test/` — testes de integração e ponta a ponta do produto (os testes
+  unitários ficam junto de cada arquivo em `lib/`, como `arquivo.test.ts`)
+- Configurações na raiz (`next.config.mjs`, `tsconfig.json`, `eslint.config.mjs`,
+  etc.) — um arquivo por ferramenta, cada um no lugar que a própria ferramenta
+  exige; não movemos esses por convenção do ecossistema Next.js/TypeScript
 
 ## Interface
 

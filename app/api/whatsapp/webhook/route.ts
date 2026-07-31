@@ -1,13 +1,13 @@
-import { EvolutionApiError, sendEvolutionText } from "@/lib/evolution";
+import { EvolutionApiError, sendEvolutionText } from "@/lib/whatsapp/evolution";
 import { fetchWhatsappHistory, generateWhatsappReply } from "@/lib/ai/whatsapp-reply";
 import { detectPurchaseIntent } from "@/lib/ai/whatsapp-intent";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
-import { logError } from "@/lib/logger";
+import { logError } from "@/lib/utils/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createDealIfNeeded, findOrCreateContact } from "@/lib/whatsapp-contacts";
-import { isOptOutKeyword, markWhatsappOptOut, OPT_OUT_CONFIRMATION_TEXT } from "@/lib/whatsapp-opt-out";
-import { extractMessageText, resolveWhatsappPhone } from "@/lib/whatsapp-jid";
-import { verifyEvolutionWebhookAuthorization } from "@/lib/evolution-webhook";
+import { createDealIfNeeded, findOrCreateContact } from "@/lib/whatsapp/whatsapp-contacts";
+import { isOptOutKeyword, markWhatsappOptOut, OPT_OUT_CONFIRMATION_TEXT } from "@/lib/whatsapp/whatsapp-opt-out";
+import { extractMessageText, resolveWhatsappPhone } from "@/lib/whatsapp/whatsapp-jid";
+import { verifyEvolutionWebhookAuthorization } from "@/lib/whatsapp/evolution-webhook";
 
 export const runtime = "nodejs";
 const MAX_WEBHOOK_BYTES = 1_000_000;

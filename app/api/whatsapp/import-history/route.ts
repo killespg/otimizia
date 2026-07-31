@@ -1,10 +1,10 @@
-import { findEvolutionMessages, type EvolutionMessageRecord } from "@/lib/evolution";
-import { logError } from "@/lib/logger";
-import { getActiveOrgId } from "@/lib/org";
+import { findEvolutionMessages, type EvolutionMessageRecord } from "@/lib/whatsapp/evolution";
+import { logError } from "@/lib/utils/logger";
+import { getActiveOrgId } from "@/lib/workspace/org";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { extractMessageText, resolveWhatsappPhone } from "@/lib/whatsapp-jid";
-import { findOrCreateContact } from "@/lib/whatsapp-contacts";
+import { extractMessageText, resolveWhatsappPhone } from "@/lib/whatsapp/whatsapp-jid";
+import { findOrCreateContact } from "@/lib/whatsapp/whatsapp-contacts";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;

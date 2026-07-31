@@ -1,12 +1,12 @@
-import { logError } from "@/lib/logger";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
-import { getUserPlanAccess } from "@/lib/plan-access";
+import { logError } from "@/lib/utils/logger";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
+import { getUserPlanAccess } from "@/lib/billing/plan-access";
 import { type FilterChatTurn, parsePropertyFilters } from "@/lib/ai/property-filter-chat";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
-import { canViewRealEstate } from "@/lib/real-estate";
+import { canViewRealEstate } from "@/lib/real-estate/real-estate";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;

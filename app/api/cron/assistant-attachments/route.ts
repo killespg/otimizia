@@ -4,7 +4,7 @@ import {
   WHATSAPP_ATTACHMENTS_BUCKET,
   whatsappAttachmentExpiresAt,
   whatsappAttachmentUrl,
-} from "@/lib/whatsapp-attachments";
+} from "@/lib/whatsapp/whatsapp-attachments";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;

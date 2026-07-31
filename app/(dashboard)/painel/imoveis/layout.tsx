@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import { getActiveOrgId } from "@/lib/org";
-import { canViewRealEstate } from "@/lib/real-estate";
+import { getActiveOrgId } from "@/lib/workspace/org";
+import { canViewRealEstate } from "@/lib/real-estate/real-estate";
 import { createClient } from "@/lib/supabase/server";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 
 /**
  * Porta única da vertical imobiliária.

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { PendingButton } from "@/components/PendingButton";
-import { REAL_ESTATE_PROPERTY_TYPES } from "@/lib/real-estate";
+import { PendingButton } from "@/components/ui/PendingButton";
+import { REAL_ESTATE_PROPERTY_TYPES } from "@/lib/real-estate/real-estate";
 import type { Deal, RealEstateLeadPreferences } from "@/lib/supabase/types";
 import { saveLeadPreferences } from "../../imoveis/match-actions";
 

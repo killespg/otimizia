@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Check, FileSearch, RefreshCw } from "lucide-react";
-import { DATAJUD_TRIBUNALS } from "@/lib/datajud-tribunals";
+import { DATAJUD_TRIBUNALS } from "@/lib/law/datajud-tribunals";
 import type { LegalWatchedProcess } from "@/lib/supabase/types";
 
 function processNumber(value: string) {

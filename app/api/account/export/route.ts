@@ -3,9 +3,9 @@ import {
   ORGANIZATION_AFFILIATION_COLUMNS,
   PERSONAL_EXPORT_DATASETS,
   type PersonalExportDataset,
-} from "@/lib/account-export";
-import { logError } from "@/lib/logger";
-import { getActiveOrgId } from "@/lib/org";
+} from "@/lib/account/account-export";
+import { logError } from "@/lib/utils/logger";
+import { getActiveOrgId } from "@/lib/workspace/org";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 

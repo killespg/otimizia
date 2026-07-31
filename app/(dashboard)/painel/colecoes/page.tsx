@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Archive, ArrowRightLeft, CalendarDays, Layers3, Plus } from "lucide-react";
-import { PendingButton } from "@/components/PendingButton";
+import { PendingButton } from "@/components/ui/PendingButton";
 import { SellerEmptyState, SellerPageHeader, SellerStatus, date } from "@/components/seller/seller-ui";
-import { getSellerPageContext } from "@/lib/seller-server";
+import { getSellerPageContext } from "@/lib/seller/seller-server";
 import type { SellerCollection, SellerProduct } from "@/lib/supabase/types";
 import { createSellerCollection, switchSellerCollection, updateSellerCollectionStatus } from "../operacao/actions";
 

@@ -19,14 +19,14 @@ import {
   Truck,
   UserRound,
 } from "lucide-react";
-import { DashboardCustomizePanel } from "@/components/DashboardCustomizePanel";
-import { DashboardWidgetGrid } from "@/components/DashboardWidgetGrid";
-import { PendingButton } from "@/components/PendingButton";
-import type { DashboardPreferences, DashboardWidgetKey } from "@/lib/dashboard-preferences";
-import type { DevMetrics } from "@/lib/devMetrics";
-import { formatBRL, formatDate } from "@/lib/format";
-import type { MetricKey, ProfessionPreset } from "@/lib/professions";
-import type { SellerCommercialInsights } from "@/lib/seller-insights";
+import { DashboardCustomizePanel } from "@/components/dashboard/DashboardCustomizePanel";
+import { DashboardWidgetGrid } from "@/components/dashboard/DashboardWidgetGrid";
+import { PendingButton } from "@/components/ui/PendingButton";
+import type { DashboardPreferences, DashboardWidgetKey } from "@/lib/workspace/dashboard-preferences";
+import type { DevMetrics } from "@/lib/utils/devMetrics";
+import { formatBRL, formatDate } from "@/lib/utils/format";
+import type { MetricKey, ProfessionPreset } from "@/lib/people/professions";
+import type { SellerCommercialInsights } from "@/lib/seller/seller-insights";
 import type { Contact, Deal, DealStage, SellerModule, Task } from "@/lib/supabase/types";
 import { claimDeal, claimTask, createTask, dismissChecklist } from "../actions";
 import { updateDashboardPreferences } from "./actions";

@@ -4,18 +4,18 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient as createSupabaseAdminClient } from "@supabase/supabase-js";
-import { logError } from "@/lib/logger";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
-import { getUserPlanAccess } from "@/lib/plan-access";
+import { logError } from "@/lib/utils/logger";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
+import { getUserPlanAccess } from "@/lib/billing/plan-access";
 import {
   getProfessionPreset,
   normalizeProfession,
   type FieldSpec,
   type ProfessionType,
-} from "@/lib/professions";
+} from "@/lib/people/professions";
 import { createClient } from "@/lib/supabase/server";
 import { DEAL_STAGES, type DealStage } from "@/lib/supabase/types";
-import { getWorkspaceKey, isWorkspaceEnabled, normalizeWorkspaceKeys } from "@/lib/workspaces";
+import { getWorkspaceKey, isWorkspaceEnabled, normalizeWorkspaceKeys } from "@/lib/workspace/workspaces";
 
 const LIMIT = {
   name: 120,

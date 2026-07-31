@@ -3,10 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
-import { resolveOrigin } from "@/lib/request-origin";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
+import { resolveOrigin } from "@/lib/utils/request-origin";
 import { createClient } from "@/lib/supabase/server";
-import { sendWelcomeEmailOnce } from "@/lib/welcome-email";
+import { sendWelcomeEmailOnce } from "@/lib/integrations/welcome-email";
 
 async function requireOrgAdmin() {
   const supabase = await createClient();

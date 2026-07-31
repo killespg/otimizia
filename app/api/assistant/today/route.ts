@@ -1,8 +1,8 @@
 import { getBusinessSummary, listTasks } from "@/lib/ai/tools/read";
-import { logError } from "@/lib/logger";
-import { getActiveOrgId } from "@/lib/org";
+import { logError } from "@/lib/utils/logger";
+import { getActiveOrgId } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 
 export const dynamic = "force-dynamic";
 

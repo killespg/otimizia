@@ -2,9 +2,9 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { isValidCPF, onlyDigits } from "@/lib/cpf";
-import { safeInternalPath } from "@/lib/invitations";
-import { normalizeProfession, type ProfessionType } from "@/lib/professions";
+import { isValidCPF, onlyDigits } from "@/lib/utils/cpf";
+import { safeInternalPath } from "@/lib/crm/invitations";
+import { normalizeProfession, type ProfessionType } from "@/lib/people/professions";
 import { createClient } from "@/lib/supabase/server";
 
 export async function submitCpf(formData: FormData) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { compressImage } from "@/lib/image-compress";
+import { compressImage } from "@/lib/utils/image-compress";
 import { createClient } from "@/lib/supabase/client";
 import type { WhatsappConversation, WhatsappMessage } from "@/lib/supabase/types";
 import {

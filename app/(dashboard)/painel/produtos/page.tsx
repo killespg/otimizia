@@ -1,10 +1,10 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { Archive, ChevronRight, Layers3, PackagePlus, Plus, Search, SlidersHorizontal, TriangleAlert } from "lucide-react";
-import { PendingButton } from "@/components/PendingButton";
+import { PendingButton } from "@/components/ui/PendingButton";
 import { ProductThumb, SellerEmptyState, SellerPageHeader, SellerStatus, SellerSummaryStrip, money } from "@/components/seller/seller-ui";
-import { SELLER_SALES_MODELS } from "@/lib/seller-operations";
-import { getSellerPageContext, sellerProductImageUrl } from "@/lib/seller-server";
+import { SELLER_SALES_MODELS } from "@/lib/seller/seller-operations";
+import { getSellerPageContext, sellerProductImageUrl } from "@/lib/seller/seller-server";
 import type { SellerCollection, SellerModule, SellerProduct, SellerProductMedia, SellerProductVariant } from "@/lib/supabase/types";
 import { createSellerProduct } from "../operacao/actions";
 

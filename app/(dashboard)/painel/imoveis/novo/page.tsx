@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { PendingButton } from "@/components/PendingButton";
+import { PendingButton } from "@/components/ui/PendingButton";
 import { PropertyAddressFields } from "@/components/real-estate/PropertyAddressFields";
 import { Field, FormSection, Select, TransactionAndPriceFields } from "@/components/real-estate/PropertyForm";
 import { RealEstatePageHeader } from "@/components/real-estate/real-estate-ui";
-import { getActiveOrgId } from "@/lib/org";
-import { isRealEstateV2Enabled, REAL_ESTATE_PROPERTY_TYPES } from "@/lib/real-estate";
+import { getActiveOrgId } from "@/lib/workspace/org";
+import { isRealEstateV2Enabled, REAL_ESTATE_PROPERTY_TYPES } from "@/lib/real-estate/real-estate";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact } from "@/lib/supabase/types";
 import { IconPlus } from "../../icons";

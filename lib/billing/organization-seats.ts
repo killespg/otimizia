@@ -1,7 +1,7 @@
 import "server-only";
 
-import { logError } from "@/lib/logger";
-import { getStripe } from "@/lib/stripe";
+import { logError } from "@/lib/utils/logger";
+import { getStripe } from "@/lib/billing/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function syncOrganizationSeats(orgId: string): Promise<void> {

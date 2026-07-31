@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { getActiveOrgId } from "@/lib/org";
-import { getProfessionPreset } from "@/lib/professions";
+import { getActiveOrgId } from "@/lib/workspace/org";
+import { getProfessionPreset } from "@/lib/people/professions";
 import { createClient } from "@/lib/supabase/server";
-import { getWorkspaceLabels } from "@/lib/workspace-preferences";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceLabels } from "@/lib/workspace/workspace-preferences";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import { IconArrowRight } from "../../icons";
 import { ContactsCsvImporter } from "./ContactsCsvImporter";
 

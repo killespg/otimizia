@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 
 function Capsule({ className, width, height, rotate, delay }: { className: string; width: number; height: number; rotate: number; delay: number }) {
   return (

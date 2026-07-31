@@ -4,7 +4,7 @@ import { useActionState, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Box, Check, Minus, PackagePlus, Plus, Search, Trash2 } from "lucide-react";
 import { confirmSellerSale, type ConfirmSellerSaleState } from "@/app/(dashboard)/painel/operacao/actions";
-import { SELLER_SALES_MODELS } from "@/lib/seller-operations";
+import { SELLER_SALES_MODELS } from "@/lib/seller/seller-operations";
 import type { SellerCollection, SellerModule, SellerProduct, SellerProductVariant, SellerSalesModel } from "@/lib/supabase/types";
 
 type CatalogProduct = SellerProduct & { variants: SellerProductVariant[] };

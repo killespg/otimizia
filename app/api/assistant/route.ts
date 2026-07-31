@@ -2,16 +2,16 @@ import { randomUUID } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
 import type { User } from "@supabase/supabase-js";
 import { saveAssistantMessage } from "@/lib/ai/history";
-import { logError } from "@/lib/logger";
-import { getActiveOrgId } from "@/lib/org";
-import { getUserPlanAccess } from "@/lib/plan-access";
-import { getProfessionPreset, type ProfessionPreset } from "@/lib/professions";
+import { logError } from "@/lib/utils/logger";
+import { getActiveOrgId } from "@/lib/workspace/org";
+import { getUserPlanAccess } from "@/lib/billing/plan-access";
+import { getProfessionPreset, type ProfessionPreset } from "@/lib/people/professions";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
 import { confirmDeletionFromUserMessage } from "@/lib/ai/deletion-confirmation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { CRM_TOOLS, executeTool, isMutatingTool } from "@/lib/ai/tools";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import {
   friendlyOpenAIError,
   resolveAiProvider,
@@ -26,7 +26,7 @@ const MAX_TOOL_TURNS = 10;
 const MAX_HISTORY = 30;
 const MAX_MESSAGE_CHARS = 4000;
 // Um pouco acima do limite de arquivo do cliente (MAX_PDF_BYTES em
-// lib/ai/usePdfAttachment.ts) já convertido pra base64 (~33% maior),
+// lib/ai/hooks/usePdfAttachment.ts) já convertido pra base64 (~33% maior),
 // pra sobrar folga sem abrir espaço pra payloads muito maiores que o
 // cliente jamais enviaria de propósito.
 const MAX_PDF_BASE64_CHARS = 4_500_000;

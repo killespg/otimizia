@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { CalendarClock, ChevronRight, CircleCheck, Plus, ShieldCheck, Wrench } from "lucide-react";
-import { PendingButton } from "@/components/PendingButton";
+import { PendingButton } from "@/components/ui/PendingButton";
 import { SellerEmptyState, SellerPageHeader, SellerStatus, SellerSummaryStrip, date, sellerClaimStatusLabel } from "@/components/seller/seller-ui";
-import { daysUntil, isWarrantyExpired } from "@/lib/seller-operations";
-import { getSellerPageContext } from "@/lib/seller-server";
+import { daysUntil, isWarrantyExpired } from "@/lib/seller/seller-operations";
+import { getSellerPageContext } from "@/lib/seller/seller-server";
 import type { Contact, SellerOrderItem, SellerWarranty, SellerWarrantyClaim } from "@/lib/supabase/types";
 import { createSellerWarrantyClaim, updateSellerWarrantyClaim } from "../operacao/actions";
 

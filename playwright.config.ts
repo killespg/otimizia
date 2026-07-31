@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { defineConfig, devices } from "@playwright/test";
-import { CONSENT_COOKIE, CONSENT_POLICY_VERSION } from "./lib/consent";
+import { CONSENT_COOKIE, CONSENT_POLICY_VERSION } from "./lib/consent/consent";
 
 // O Playwright roda fora do Next, então não herda o .env.local que o app lê
 // sozinho. Sem isto, E2E_EMAIL/E2E_PASSWORD ficam indefinidos e os testes

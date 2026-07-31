@@ -1,7 +1,7 @@
-import { sendEvolutionText } from "@/lib/evolution";
-import { logError } from "@/lib/logger";
-import { sendPushToUser } from "@/lib/push";
-import { markEventSent } from "@/lib/reminders";
+import { sendEvolutionText } from "@/lib/whatsapp/evolution";
+import { logError } from "@/lib/utils/logger";
+import { sendPushToUser } from "@/lib/integrations/push";
+import { markEventSent } from "@/lib/crm/reminders";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";

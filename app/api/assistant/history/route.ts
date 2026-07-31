@@ -1,5 +1,5 @@
 import { getRecentAssistantMessages } from "@/lib/ai/history";
-import { getActiveOrgId } from "@/lib/org";
+import { getActiveOrgId } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET() {

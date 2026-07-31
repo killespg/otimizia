@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ArrowUpRight, Download, FileCheck2, FilePenLine, FileText, Plus, Signature } from "lucide-react";
-import { DocumentLink } from "@/components/law/DocumentLink";
-import { canManageLegal, canViewLegal } from "@/lib/law-office";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { DocumentLink } from "@/components/legal/document-link";
+import { canManageLegal, canViewLegal } from "@/lib/law/law-office";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { LegalCase, LegalDocument, LegalDocumentSignature } from "@/lib/supabase/types";
 

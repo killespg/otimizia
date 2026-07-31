@@ -2,12 +2,12 @@ import {
   commissionPeriodOrFilter,
   commissionsToCsv,
   normalizeCommissionPeriod,
-} from "@/lib/real-estate-commissions";
-import { getActiveOrgId } from "@/lib/org";
-import { canViewRealEstate } from "@/lib/real-estate";
+} from "@/lib/real-estate/real-estate-commissions";
+import { getActiveOrgId } from "@/lib/workspace/org";
+import { canViewRealEstate } from "@/lib/real-estate/real-estate";
 import { createClient } from "@/lib/supabase/server";
 import type { RealEstateCommission } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 
 // Mesmo padrão de app/api/reports/deals/route.ts.
 export async function GET(request: Request) {

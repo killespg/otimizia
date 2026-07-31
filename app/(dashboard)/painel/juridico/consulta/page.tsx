@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { canManageLegal, canViewLegal } from "@/lib/law-office";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { canManageLegal, canViewLegal } from "@/lib/law/law-office";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import { IconArrowRight } from "../../icons";
 import { DatajudSearchForm } from "./DatajudSearchForm";
 

@@ -13,11 +13,11 @@ import {
   isDashboardWidgetKey,
   mergeScopedPreferences,
   type DashboardPreferences,
-} from "@/lib/dashboard-preferences";
-import { getProfessionPreset, type MetricKey } from "@/lib/professions";
-import { moneyToCentsOrNull } from "@/lib/form-parse";
+} from "@/lib/workspace/dashboard-preferences";
+import { getProfessionPreset, type MetricKey } from "@/lib/people/professions";
+import { moneyToCentsOrNull } from "@/lib/utils/form-parse";
 import { createClient } from "@/lib/supabase/server";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 
 export async function updateDashboardPreferences(formData: FormData) {
   const supabase = await createClient();
