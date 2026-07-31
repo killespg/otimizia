@@ -58,6 +58,27 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Login por Google não pede CPF no fluxo (não tem como injetar campo extra
+  // no consentimento do provedor). Em vez de travar o cadastro, deixa entrar
+  // e intercepta aqui: qualquer rota protegida com `profiles.cpf` vazio
+  // redireciona pro preenchimento antes de continuar. Não roda pra login por
+  // senha, já que ali o CPF é obrigatório desde o formulário de cadastro.
+  if (user && isProtected && !path.startsWith("/onboarding/cpf")) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("cpf")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (profile && !profile.cpf) {
+      const url = request.nextUrl.clone();
+      const requestedPath = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+      url.pathname = "/onboarding/cpf";
+      url.search = "";
+      url.searchParams.set("next", requestedPath);
+      return NextResponse.redirect(url);
+    }
+  }
+
   if (user && isAuthPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/painel";

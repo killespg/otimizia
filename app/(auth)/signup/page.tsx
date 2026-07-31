@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
 import { CaptchaField } from "@/components/CaptchaField";
 import { PendingButton } from "@/components/PendingButton";
+import { SocialAuthButtons } from "@/components/SocialAuthButtons";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth-constants";
 import { PROFESSION_OPTIONS } from "@/lib/professions";
 import { signup } from "../actions";
@@ -132,6 +133,7 @@ export default async function SignupPage(
           Criar conta grátis
         </PendingButton>
       </form>
+      <SocialAuthButtons next={searchParams.next} />
     </AuthShell>
   );
 }
