@@ -192,7 +192,7 @@ export function PropertyMap({ properties }: { properties: MapProperty[] }) {
             <p className="text-sm font-semibold text-white">
               Não foi possível carregar o mapa agora.
             </p>
-            <p className="mt-2 text-xs text-white/48">
+            <p className="mt-2 text-xs text-od-text-3">
               Os imóveis continuam disponíveis na carteira.
             </p>
             <button

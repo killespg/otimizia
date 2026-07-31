@@ -4,11 +4,15 @@ import { logError } from "@/lib/logger";
 import { getActiveOrgId } from "@/lib/org";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import {
+  extensionForImageType,
+  WHATSAPP_ATTACHMENTS_BUCKET,
+  whatsappAttachmentExpiresAt,
+  whatsappAttachmentUrl,
+} from "@/lib/whatsapp-attachments";
 
 export const runtime = "nodejs";
 
-// Mesmo bucket/política das fotos do chat do Tim — só muda o prefixo.
-const CHAT_PHOTOS_BUCKET = "deal-photos";
 const IMAGE_MAX_BYTES = 6 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -24,15 +28,19 @@ function sanitizeImage(raw: unknown): IncomingImage | null {
   return { mediaType, data };
 }
 
-async function uploadImage(orgId: string, userId: string, image: IncomingImage): Promise<string> {
-  const extension = image.mediaType.split("/")[1] || "jpg";
-  const path = `${orgId}/whatsapp/${userId}/${randomUUID()}.${extension}`;
+async function uploadImage(
+  orgId: string,
+  messageId: string,
+  image: IncomingImage,
+): Promise<string> {
+  const extension = extensionForImageType(image.mediaType);
+  const path = `${orgId}/${messageId}/${randomUUID()}.${extension}`;
   const admin = createAdminClient();
   const { error } = await admin.storage
-    .from(CHAT_PHOTOS_BUCKET)
+    .from(WHATSAPP_ATTACHMENTS_BUCKET)
     .upload(path, Buffer.from(image.data, "base64"), { contentType: image.mediaType, upsert: false });
   if (error) throw error;
-  return admin.storage.from(CHAT_PHOTOS_BUCKET).getPublicUrl(path).data.publicUrl;
+  return path;
 }
 
 // Envio manual: o usuário digita no painel, o sistema entrega via Evolution
@@ -89,10 +97,11 @@ export async function POST(request: Request) {
     return Response.json({ error: "WhatsApp não está conectado." }, { status: 409 });
   }
 
-  let mediaUrl: string | null = null;
+  const messageId = randomUUID();
+  let mediaStoragePath: string | null = null;
   if (image) {
     try {
-      mediaUrl = await uploadImage(orgId, user.id, image);
+      mediaStoragePath = await uploadImage(orgId, messageId, image);
     } catch (error) {
       logError("api/whatsapp/send.upload-failed", error, { orgId, conversationId });
       return Response.json({ error: "Não consegui preparar a imagem. Tente de novo." }, { status: 502 });
@@ -100,12 +109,22 @@ export async function POST(request: Request) {
   }
 
   try {
-    if (mediaUrl) {
-      await sendEvolutionMedia(instance.instance_name, conversation.phone_number, mediaUrl, text || undefined);
+    if (image) {
+      await sendEvolutionMedia(
+        instance.instance_name,
+        conversation.phone_number,
+        image.data,
+        text || undefined,
+      );
     } else {
       await sendEvolutionText(instance.instance_name, conversation.phone_number, text);
     }
   } catch (error) {
+    if (mediaStoragePath) {
+      await createAdminClient().storage
+        .from(WHATSAPP_ATTACHMENTS_BUCKET)
+        .remove([mediaStoragePath]);
+    }
     logError("api/whatsapp/send", error, { orgId, conversationId });
     const message =
       error instanceof EvolutionApiError
@@ -117,21 +136,55 @@ export async function POST(request: Request) {
   const { data: saved, error: insertError } = await supabase
     .from("whatsapp_messages")
     .insert({
+      id: messageId,
       conversation_id: conversationId,
       org_id: orgId,
       direction: "outbound",
-      message_type: mediaUrl ? "image" : "text",
+      message_type: image ? "image" : "text",
       content: text || null,
-      media_url: mediaUrl,
+      media_url: image ? whatsappAttachmentUrl(messageId) : null,
       sent_by: "human",
     })
     .select("*")
     .single();
   if (insertError) {
+    if (mediaStoragePath) {
+      await createAdminClient().storage
+        .from(WHATSAPP_ATTACHMENTS_BUCKET)
+        .remove([mediaStoragePath]);
+    }
     logError("api/whatsapp/send.persist-failed", insertError, { orgId, conversationId });
     // A mensagem já foi entregue pelo WhatsApp — não falha a requisição por
     // causa do registro, só avisa que o histórico pode ficar incompleto.
     return Response.json({ warning: "Mensagem enviada, mas houve falha ao salvar no histórico." });
+  }
+
+  if (image && mediaStoragePath) {
+    const admin = createAdminClient();
+    const { error: attachmentError } = await admin
+      .from("whatsapp_attachments")
+      .insert({
+        message_id: messageId,
+        org_id: orgId,
+        storage_path: mediaStoragePath,
+        media_type: image.mediaType,
+        expires_at: whatsappAttachmentExpiresAt().toISOString(),
+      });
+    if (attachmentError) {
+      await admin.storage
+        .from(WHATSAPP_ATTACHMENTS_BUCKET)
+        .remove([mediaStoragePath]);
+      await admin
+        .from("whatsapp_messages")
+        .update({ media_url: null })
+        .eq("id", messageId)
+        .eq("org_id", orgId);
+      saved.media_url = null;
+      logError("api/whatsapp/send.attachment-persist-failed", attachmentError, {
+        orgId,
+        conversationId,
+      });
+    }
   }
 
   await supabase

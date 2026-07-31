@@ -38,21 +38,21 @@ export function SellerOperationSettingsForm(props: Props) {
   return (
     <form action={formAction} className="space-y-6">
       <section className="border border-white/[0.09] bg-[#1e1d22]/90">
-        <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">O que você vende</h2><p className="mt-1 max-w-3xl text-xs leading-relaxed text-white/42">Marque tudo que fizer parte da sua operação. Um mesmo negócio pode trabalhar com moda, garantia e encomendas ao mesmo tempo.</p></header>
+        <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">O que você vende</h2><p className="mt-1 max-w-3xl text-xs leading-relaxed text-od-text-3">Marque tudo que fizer parte da sua operação. Um mesmo negócio pode trabalhar com moda, garantia e encomendas ao mesmo tempo.</p></header>
         <div className="grid border-l border-white/[0.07] sm:grid-cols-2 xl:grid-cols-3">
           {SELLER_SALES_MODELS.map((model) => {
             const selected = models.includes(model.value);
             return <label key={model.value} className={`relative flex min-h-28 cursor-pointer gap-3 border-b border-r border-white/[0.07] p-4 ${selected ? "bg-od-accent/[0.055]" : "hover:bg-white/[0.02]"}`}>
               <input type="checkbox" name="sales_models" value={model.value} checked={selected} onChange={() => toggleModel(model.value)} disabled={!props.canEdit} className="sr-only" />
               <span className={`mt-0.5 grid size-6 shrink-0 place-items-center border ${selected ? "border-od-accent bg-od-accent text-white" : "border-white/20 text-transparent"}`}><Check size={14} /></span>
-              <span><strong className="block text-sm font-semibold text-white/78">{model.label}</strong><span className="mt-1.5 block text-xs leading-relaxed text-white/40">{model.description}</span></span>
+              <span><strong className="block text-sm font-semibold text-white/78">{model.label}</strong><span className="mt-1.5 block text-xs leading-relaxed text-od-text-3">{model.description}</span></span>
             </label>;
           })}
         </div>
       </section>
 
       <section className="border border-white/[0.09] bg-[#1e1d22]/90">
-        <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">Ferramentas da operação</h2><p className="mt-1 text-xs text-white/42">As opções sugeridas foram ativadas conforme os tipos de venda selecionados. Você pode ajustar.</p></header>
+        <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">Ferramentas da operação</h2><p className="mt-1 text-xs text-od-text-3">As opções sugeridas foram ativadas conforme os tipos de venda selecionados. Você pode ajustar.</p></header>
         <div className="divide-y divide-white/[0.07]">
           {SELLER_MODULES.map((module) => {
             const selected = modules.includes(module.value);
@@ -61,15 +61,15 @@ export function SellerOperationSettingsForm(props: Props) {
               <input type="checkbox" name="enabled_modules" value={module.value} checked={selected} onChange={() => toggleModule(module.value)} disabled={!props.canEdit || locked} className="sr-only" />
               {locked ? <input type="hidden" name="enabled_modules" value={module.value} /> : null}
               <span className={`grid size-6 shrink-0 place-items-center border ${selected ? "border-od-accent bg-od-accent text-white" : "border-white/20 text-transparent"}`}><Check size={14} /></span>
-              <span className="min-w-0 flex-1"><strong className="block text-sm font-semibold text-white/72">{module.label}</strong><span className="mt-1 block text-xs text-white/40">{module.description}</span></span>
-              {locked ? <span className="text-[11px] font-semibold text-white/30">Essencial</span> : null}
+              <span className="min-w-0 flex-1"><strong className="block text-sm font-semibold text-white/72">{module.label}</strong><span className="mt-1 block text-xs text-od-text-3">{module.description}</span></span>
+              {locked ? <span className="text-xs font-semibold text-od-text-3">Essencial</span> : null}
             </label>;
           })}
         </div>
       </section>
 
       <section className="border border-white/[0.09] bg-[#1e1d22]/90">
-        <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">Padrões de cadastro</h2><p className="mt-1 text-xs text-white/42">Esses valores entram automaticamente na criação rápida durante a venda e podem ser alterados por item.</p></header>
+        <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">Padrões de cadastro</h2><p className="mt-1 text-xs text-od-text-3">Esses valores entram automaticamente na criação rápida durante a venda e podem ser alterados por item.</p></header>
         <div className="grid gap-4 p-4 md:grid-cols-3">
           <label><span className="label">Garantia padrão em dias</span><input name="default_warranty_days" type="number" min="0" max="3650" defaultValue={props.defaultWarrantyDays} disabled={!props.canEdit} className="field mt-1.5" /></label>
           <label><span className="label">Alerta de estoque baixo</span><input name="low_stock_threshold" type="number" min="0" defaultValue={props.lowStockThreshold} disabled={!props.canEdit} className="field mt-1.5" /></label>

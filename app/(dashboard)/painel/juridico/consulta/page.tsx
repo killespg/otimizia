@@ -50,7 +50,7 @@ export default async function DatajudSearchPage() {
         <div>
           <Link
             href="/painel/juridico/processos"
-            className="inline-flex items-center gap-2 text-[11px] font-semibold text-od-text-2 hover:text-od-text"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-od-text-2 hover:text-od-text"
           >
             <IconArrowRight className="h-4 w-4 rotate-180" />
             Voltar para casos

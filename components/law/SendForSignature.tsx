@@ -17,7 +17,7 @@ export function SendForSignature({
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className="text-[11px] font-black text-brand-700">
+      <button type="button" onClick={() => setOpen(true)} className="text-xs font-black text-brand-700">
         Enviar p/ assinatura
       </button>
     );
@@ -48,7 +48,7 @@ export function SendForSignature({
         <PendingButton className="btn min-h-9 flex-1 text-xs" pendingLabel="Enviando">
           Enviar
         </PendingButton>
-        <button type="button" onClick={() => setOpen(false)} className="text-[11px] font-bold text-ink-muted">
+        <button type="button" onClick={() => setOpen(false)} className="text-xs font-bold text-ink-muted">
           Cancelar
         </button>
       </div>

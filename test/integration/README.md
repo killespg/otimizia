@@ -8,10 +8,12 @@ colunas sensíveis (`assignee_id`, `reviewer_id` etc).
 ## Rodando
 
 ```bash
-npx supabase start   # sobe Postgres + Auth + API localmente (precisa de Docker)
+npx --no-install supabase start   # sobe Postgres + Auth + API localmente (precisa de Docker)
 npm run test:integration
-npx supabase stop    # quando terminar
+npx --no-install supabase stop    # quando terminar
 ```
 
-Se não houver Supabase local rodando, a suíte inteira é pulada (não falha) —
-`npm test` normal não depende disso.
+Se não houver Supabase local rodando, `npm run test:integration` falha com uma
+mensagem de preparação. Isso impede um resultado verde com todos os casos
+ignorados. O `npm test` normal continua independente de Docker porque exclui
+`test/integration/**`.

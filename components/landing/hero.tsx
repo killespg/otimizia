@@ -42,7 +42,7 @@ export function Hero({ animated = false }: { animated?: boolean }) {
             aqui é roadmap. */}
         <h1 className="mx-auto mb-5 max-w-[18ch] text-balance text-[40px] font-extrabold leading-[1.1] tracking-[-0.02em] sm:text-[44px] md:max-w-[22ch] md:text-[56px]">
           <span className="text-white">A IA atende seu WhatsApp. </span>
-          <span className="text-od-accent">
+          <span className="text-od-accent-hover">
             Você entra quando importa.
           </span>
         </h1>
@@ -53,7 +53,7 @@ export function Hero({ animated = false }: { animated?: boolean }) {
         </p>
         <a
           href="/signup"
-          className="inline-flex min-h-11 items-center gap-2 rounded-md bg-od-accent px-6 text-sm font-semibold text-white transition-colors hover:bg-od-accent-hover"
+          className="inline-flex min-h-11 items-center gap-2 rounded-md bg-od-accent px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
         >
           Começar grátis
           <ArrowRight className="size-4" strokeWidth={2} />

@@ -53,7 +53,7 @@ export function PropertyPhotoManager({ propertyId, propertyTitle, photos }: { pr
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- vem de storage público, sem next/image configurado */}
           <img src={photo.url} alt={`${propertyTitle}, foto ${index + 1}`} className="aspect-square w-full select-none object-cover" draggable={false} />
-          <span className="absolute left-1.5 top-1.5 grid h-5 min-w-5 place-items-center rounded bg-black/60 px-1 text-[10px] font-semibold text-white">
+          <span className="absolute left-1.5 top-1.5 grid h-5 min-w-5 place-items-center rounded bg-black/60 px-1 text-xs font-semibold text-white">
             {index + 1}
           </span>
           <form action={deletePropertyMedia} className="absolute right-1.5 top-1.5">
@@ -70,7 +70,7 @@ export function PropertyPhotoManager({ propertyId, propertyTitle, photos }: { pr
         </div>
       ))}
       {order.length > 1 && (
-        <p className="col-span-2 -mt-1 text-[11px] font-medium text-ink-muted sm:col-span-3">
+        <p className="col-span-2 -mt-1 text-xs font-medium text-ink-muted sm:col-span-3">
           Arraste uma foto para reordenar — a foto 1 é a capa, usada na listagem e no seletor de vitrine.
         </p>
       )}

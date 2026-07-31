@@ -109,9 +109,9 @@ export function ProductNavigation(props: Props) {
     groups.push({ label: "Administração", items: [{ href: "/painel/metricas", label: "Métricas", icon: ChartNoAxesCombined }] });
   }
 
-  const mobileTabs: [NavItem, NavItem, NavItem] = [core[0], core[3], core[2]];
+  const mobileTabs: [NavItem, NavItem, NavItem] = [core[0], core[5], core[3]];
   const timHref = "/painel/assistente";
-  const barHrefs = new Set([core[0].href, core[3].href, core[2].href, timHref]);
+  const barHrefs = new Set([core[0].href, core[5].href, core[3].href, timHref]);
   const mobileGroups = [
     ...groups,
     { label: "Conta", items: [{ href: "/painel/configuracoes", label: "Configurações", icon: Settings }] },
@@ -130,7 +130,7 @@ export function ProductNavigation(props: Props) {
             {collapsed ? <LogoMark size={30} /> : <LogoWordmark height={30} />}
           </Link>
           {!collapsed ? (
-            <button type="button" onClick={toggleCollapsed} aria-label="Recolher menu" className="grid size-9 place-items-center rounded-md text-white/35 hover:bg-white/[0.06] hover:text-white">
+            <button type="button" onClick={toggleCollapsed} aria-label="Recolher menu" className="grid size-9 place-items-center rounded-md text-od-text-3 hover:bg-white/[0.06] hover:text-white">
               <ChevronLeft size={16} />
             </button>
           ) : null}
@@ -138,7 +138,7 @@ export function ProductNavigation(props: Props) {
 
         {!collapsed && props.workspaceOptions.length > 1 ? (
           <div className="border-b border-white/[0.06] px-4 py-3">
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/35">Área ativa</p>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-od-text-3">Área ativa</p>
             <WorkspaceSwitcher options={props.workspaceOptions} value={props.workspaceKey} />
           </div>
         ) : null}
@@ -154,20 +154,20 @@ export function ProductNavigation(props: Props) {
         </nav>
 
         <div className="border-t border-white/[0.06] p-2">
-          <Link href="/painel/configuracoes" title={collapsed ? "Configurações" : undefined} className={`nav-item flex min-h-8 items-center rounded-xl text-[12px] text-white/48 hover:bg-white/[0.05] hover:text-white/80 ${collapsed ? "justify-center" : "gap-3 px-3"}`}>
+          <Link href="/painel/configuracoes" title={collapsed ? "Configurações" : undefined} className={`nav-item flex min-h-8 items-center rounded-xl text-[12px] text-od-text-3 hover:bg-white/[0.05] hover:text-white/80 ${collapsed ? "justify-center" : "gap-3 px-3"}`}>
             <Settings size={17} />{!collapsed ? <span>Configurações</span> : null}
           </Link>
           <div className={`mt-1 flex items-center py-2 ${collapsed ? "justify-center" : "gap-3 px-3"}`}>
-            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-white/[0.08] text-[10px] font-semibold text-white/75">{initials(props.displayName)}</span>
-            {!collapsed ? <div className="min-w-0 flex-1"><p className="truncate text-[11px] font-semibold text-white/75">{props.displayName}</p><p className="truncate text-[10px] text-white/32">{props.workspaceLabel}</p></div> : null}
+            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-white/[0.08] text-xs font-semibold text-white/75">{initials(props.displayName)}</span>
+            {!collapsed ? <div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold text-white/75">{props.displayName}</p><p className="truncate text-xs text-od-text-3">{props.workspaceLabel}</p></div> : null}
           </div>
           <form action={logout}>
-            <PendingButton iconOnly={collapsed} pendingLabel="Saindo" className={`nav-item flex min-h-10 w-full items-center rounded-md text-[12px] text-white/38 hover:bg-white/[0.05] hover:text-white/72 ${collapsed ? "justify-center" : "gap-3 px-3"}`}>
+            <PendingButton iconOnly={collapsed} pendingLabel="Saindo" className={`nav-item flex min-h-10 w-full items-center rounded-md text-[12px] text-od-text-3 hover:bg-white/[0.05] hover:text-white/72 ${collapsed ? "justify-center" : "gap-3 px-3"}`}>
               <LogOut size={16} />{!collapsed ? <span>Sair</span> : <span className="sr-only">Sair</span>}
             </PendingButton>
           </form>
           {collapsed ? (
-            <button type="button" onClick={toggleCollapsed} aria-label="Expandir menu" className="mt-1 grid min-h-10 w-full place-items-center rounded-md text-white/38 hover:bg-white/[0.05] hover:text-white">
+            <button type="button" onClick={toggleCollapsed} aria-label="Expandir menu" className="mt-1 grid min-h-10 w-full place-items-center rounded-md text-od-text-3 hover:bg-white/[0.05] hover:text-white">
               <ChevronRight size={16} />
             </button>
           ) : null}

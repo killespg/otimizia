@@ -120,7 +120,7 @@ export default async function PipelinePage() {
       <form id="new-deal" action={createDeal} className={usesFlatPipeline ? "scroll-mt-24 border-y border-white/[0.08] py-5" : "scroll-mt-24 border border-white/[0.09] bg-[#1e1d22] p-5"}>
         <input type="hidden" name="return_to" value="/painel/funil" />
         <input type="hidden" name="pipeline_list" value={pipelineLists[0] ?? "Novo"} />
-        {usesFlatPipeline ? <div className="mb-4"><h2 className="text-od-subtitle text-white">{isSeller ? "Nova venda" : "Novo atendimento"}</h2><p className="mt-1 text-xs text-white/44">{isSeller ? "Cadastre o essencial e acompanhe no quadro." : "Registre a demanda do cliente e acompanhe cada avanço no funil."}</p></div> : null}
+        {usesFlatPipeline ? <div className="mb-4"><h2 className="text-od-subtitle text-white">{isSeller ? "Nova venda" : "Novo atendimento"}</h2><p className="mt-1 text-xs text-od-text-3">{isSeller ? "Cadastre o essencial e acompanhe no quadro." : "Registre a demanda do cliente e acompanhe cada avanço no funil."}</p></div> : null}
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_9rem_minmax(0,1fr)_auto] lg:items-end">
           <div>
             <label className="label" htmlFor="deal-title">
@@ -290,7 +290,7 @@ function MetricCard({
       <div className="flex items-center gap-3">
         <span className={pink ? "text-amber-300" : "text-od-text-2"}><Icon className="h-4 w-4"/></span>
         <div className="min-w-0">
-          <p className="text-xs text-white/50">{label}</p>
+          <p className="text-xs text-od-text-3">{label}</p>
           <p className="text-safe mt-1 text-2xl font-bold tracking-[-0.02em] text-white">
             {value}
           </p>

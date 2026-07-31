@@ -46,13 +46,13 @@ export function About() {
           para cima até desaparecer. */}
       <h2 className="mx-auto max-w-[22ch] text-balance text-center text-[26px] font-extrabold leading-[1.2] tracking-[-0.02em] text-od-text md:text-[32px]">
         O cliente não desistiu de você. A conversa dele{" "}
-        <span className="text-od-accent">só foi empurrada pra cima.</span>
+        <span className="text-od-accent-hover">só foi empurrada pra cima.</span>
       </h2>
 
       <div className="mx-auto mt-14 max-w-[900px]">
         <div className="grid grid-cols-2 gap-x-8 border-b border-od-border pb-3">
           <p className="text-od-label text-od-text-3">O de sempre</p>
-          <p className="text-od-label text-od-accent">No OtimizIA</p>
+          <p className="text-od-label text-od-accent-hover">No OtimizIA</p>
         </div>
 
         <div className="divide-y divide-od-border border-b border-od-border">
@@ -63,7 +63,7 @@ export function About() {
                 <span className="text-[14px] leading-snug text-od-text-3">{posicao.comum}</span>
               </div>
               <div className="flex min-w-0 items-start gap-2.5">
-                <Check className="mt-0.5 size-4 shrink-0 text-od-accent" strokeWidth={2.5} />
+                <Check className="mt-0.5 size-4 shrink-0 text-od-accent-hover" strokeWidth={2.5} />
                 <span className="text-[14px] font-semibold leading-snug text-od-text">
                   {posicao.nosso}
                 </span>

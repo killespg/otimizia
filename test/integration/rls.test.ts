@@ -9,11 +9,13 @@ import {
 } from "./helpers";
 
 const config = getLocalSupabaseConfig();
+if (!config) {
+  throw new Error(
+    "Supabase local indisponível. Rode `npx --no-install supabase start` antes da integração.",
+  );
+}
 
-// Toda a suíte pula (em vez de falhar) se não houver Supabase local rodando
-// — é assim que `npm test` continua funcionando sem Docker, e quem quiser
-// rodar de verdade usa `npm run test:integration` com `supabase start` de pé.
-describe.skipIf(!config)("RLS multi-tenancy (contra Supabase local)", () => {
+describe("RLS multi-tenancy (contra Supabase local)", () => {
   let admin: SupabaseClient;
   let userA: Awaited<ReturnType<typeof createTestUser>>;
   let userB: Awaited<ReturnType<typeof createTestUser>>;
@@ -21,16 +23,16 @@ describe.skipIf(!config)("RLS multi-tenancy (contra Supabase local)", () => {
   let orgB: string;
 
   beforeAll(async () => {
-    admin = adminClient(config!);
-    userA = await createTestUser(config!, admin);
-    userB = await createTestUser(config!, admin);
+    admin = adminClient(config);
+    userA = await createTestUser(config, admin);
+    userB = await createTestUser(config, admin);
     orgA = await getPersonalOrgId(admin, userA.userId);
     orgB = await getPersonalOrgId(admin, userB.userId);
   });
 
   afterAll(async () => {
-    await deleteTestUser(admin, userA.userId);
-    await deleteTestUser(admin, userB.userId);
+    if (userA?.userId) await deleteTestUser(admin, userA.userId);
+    if (userB?.userId) await deleteTestUser(admin, userB.userId);
   });
 
   it("cria organizações pessoais distintas para cada novo usuário", () => {
@@ -38,7 +40,7 @@ describe.skipIf(!config)("RLS multi-tenancy (contra Supabase local)", () => {
   });
 
   it("ignora metadados forjados de convite no cadastro", async () => {
-    const attacker = await createTestUser(config!, admin, {
+    const attacker = await createTestUser(config, admin, {
       invited_org_id: orgA,
       invited_job_role: "owner",
     });
@@ -211,7 +213,7 @@ describe.skipIf(!config)("RLS multi-tenancy (contra Supabase local)", () => {
   });
 });
 
-describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", () => {
+describe("RLS vertical imobiliário (contra Supabase local)", () => {
   let admin: SupabaseClient;
   let anon: SupabaseClient;
   let userA: Awaited<ReturnType<typeof createTestUser>>;
@@ -220,10 +222,10 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
   let propertyId: string;
 
   beforeAll(async () => {
-    admin = adminClient(config!);
-    anon = createClient(config!.apiUrl, config!.anonKey, { auth: { autoRefreshToken: false, persistSession: false } });
-    userA = await createTestUser(config!, admin);
-    userB = await createTestUser(config!, admin);
+    admin = adminClient(config);
+    anon = createClient(config.apiUrl, config.anonKey, { auth: { autoRefreshToken: false, persistSession: false } });
+    userA = await createTestUser(config, admin);
+    userB = await createTestUser(config, admin);
     orgA = await getPersonalOrgId(admin, userA.userId);
 
     const { data: property } = await userA.client
@@ -242,8 +244,11 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
   });
 
   afterAll(async () => {
-    await deleteTestUser(admin, userA.userId);
-    await deleteTestUser(admin, userB.userId);
+    if (propertyId) {
+      await admin.from("real_estate_properties").delete().eq("id", propertyId);
+    }
+    if (userA?.userId) await deleteTestUser(admin, userA.userId);
+    if (userB?.userId) await deleteTestUser(admin, userB.userId);
   });
 
   it("impede membro de outra organização ler ou inserir imóveis", async () => {
@@ -279,35 +284,58 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
   it("job_role=assistant lê mas não escreve; job_role=agent lê e escreve", async () => {
     await admin.from("organization_members").insert({ org_id: orgA, user_id: userB.userId, role: "member", job_role: "assistant" });
 
-    const { data: seenAsAssistant } = await userB.client
-      .from("real_estate_properties")
-      .select("*")
-      .eq("id", propertyId)
-      .maybeSingle();
-    expect(seenAsAssistant?.id).toEqual(propertyId);
+    try {
+      const { data: seenAsAssistant } = await userB.client
+        .from("real_estate_properties")
+        .select("*")
+        .eq("id", propertyId)
+        .maybeSingle();
+      expect(seenAsAssistant?.id).toEqual(propertyId);
 
-    // RLS bloqueando um UPDATE não gera erro — o Postgres só casa 0 linhas
-    // com a cláusula USING e o PostgREST devolve sucesso vazio. Por isso o
-    // jeito certo de detectar o bloqueio é pedir .select() de volta e
-    // conferir que veio vazio (ou reler com o client admin), não checar
-    // "error" (que só aparece em INSERT/violação de FK/check).
-    const { data: updateAsAssistant, error: updateAsAssistantError } = await userB.client
-      .from("real_estate_properties")
-      .update({ title: "Editado pelo assistente" })
-      .eq("id", propertyId)
-      .select();
-    expect(updateAsAssistantError).toBeNull();
-    expect(updateAsAssistant).toEqual([]);
+      // RLS bloqueando um UPDATE não gera erro — o Postgres só casa 0 linhas
+      // com a cláusula USING e o PostgREST devolve sucesso vazio. Por isso o
+      // jeito certo de detectar o bloqueio é pedir .select() de volta e
+      // conferir que veio vazio (ou reler com o client admin), não checar
+      // "error" (que só aparece em INSERT/violação de FK/check).
+      const { data: updateAsAssistant, error: updateAsAssistantError } = await userB.client
+        .from("real_estate_properties")
+        .update({ title: "Editado pelo assistente" })
+        .eq("id", propertyId)
+        .select();
+      expect(updateAsAssistantError).toBeNull();
+      expect(updateAsAssistant).toEqual([]);
 
-    await admin.from("organization_members").update({ job_role: "agent" }).eq("org_id", orgA).eq("user_id", userB.userId);
+      const storagePath = `${orgA}/${propertyId}/direct-policy-test.png`;
+      const { error: uploadAsAssistant } = await userB.client.storage
+        .from("property-photos")
+        .upload(storagePath, new Uint8Array([1, 2, 3]), {
+          contentType: "image/png",
+          upsert: false,
+        });
+      expect(uploadAsAssistant).not.toBeNull();
 
-    const { error: updateAsAgent } = await userB.client
-      .from("real_estate_properties")
-      .update({ title: "Editado pelo corretor associado" })
-      .eq("id", propertyId);
-    expect(updateAsAgent).toBeNull();
+      await admin.from("organization_members").update({ job_role: "agent" }).eq("org_id", orgA).eq("user_id", userB.userId);
 
-    await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+      const { error: updateAsAgent } = await userB.client
+        .from("real_estate_properties")
+        .update({ title: "Editado pelo corretor associado" })
+        .eq("id", propertyId);
+      expect(updateAsAgent).toBeNull();
+
+      const { error: uploadAsAgent } = await userB.client.storage
+        .from("property-photos")
+        .upload(storagePath, new Uint8Array([1, 2, 3]), {
+          contentType: "image/png",
+          upsert: false,
+        });
+      expect(uploadAsAgent).toBeNull();
+      const { error: deleteAsAgent } = await userB.client.storage
+        .from("property-photos")
+        .remove([storagePath]);
+      expect(deleteAsAgent).toBeNull();
+    } finally {
+      await admin.from("organization_members").delete().eq("org_id", orgA).eq("user_id", userB.userId);
+    }
   });
 
   it("rejeita media/item de coleção cujo property_id pertence a outra organização mesmo com org_id falsificado", async () => {
@@ -929,5 +957,288 @@ describe.skipIf(!config)("RLS vertical imobiliário (contra Supabase local)", ()
     expect(seenByB).toBeNull();
 
     await admin.from("real_estate_targets").delete().eq("id", target!.id);
+  });
+});
+
+describe("Privilégios de RPC e medição de voz (contra Supabase local)", () => {
+  let admin: SupabaseClient;
+  let user: Awaited<ReturnType<typeof createTestUser>>;
+
+  beforeAll(async () => {
+    admin = adminClient(config);
+    user = await createTestUser(config, admin);
+  });
+
+  afterAll(async () => {
+    if (user?.userId) await deleteTestUser(admin, user.userId);
+  });
+
+  it("nega RPCs internas de custo para authenticated", async () => {
+    const aiRateLimit = await user.client.rpc("increment_ai_rate_limit", {
+      p_route: "assistant_chat",
+      p_subject_id: "outra-organizacao",
+      p_window_start: new Date().toISOString(),
+    });
+    expect(aiRateLimit.error).not.toBeNull();
+
+    const directVoiceIncrement = await user.client.rpc("increment_voice_usage", {
+      p_seconds: 600,
+    });
+    expect(directVoiceIncrement.error).not.toBeNull();
+
+    const forgedClose = await user.client.rpc("close_stale_voice_sessions", {
+      p_grace_seconds: -1,
+    });
+    expect(forgedClose.error).not.toBeNull();
+  });
+
+  it("mantém o fluxo legítimo start/checkpoint disponível", async () => {
+    const started = await user.client.rpc("start_voice_session");
+    expect(started.error).toBeNull();
+    expect(started.data).toMatch(/^[0-9a-f-]{36}$/i);
+
+    await admin
+      .from("voice_sessions")
+      .update({
+        last_heartbeat_at: new Date(Date.now() - 5_000).toISOString(),
+      })
+      .eq("id", started.data as string);
+
+    const checkpoint = await user.client.rpc("checkpoint_voice_session", {
+      p_session_id: started.data,
+      p_close: true,
+    });
+    expect(checkpoint.error).toBeNull();
+    expect(checkpoint.data).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("RLS da operação de vendedor (contra Supabase local)", () => {
+  let admin: SupabaseClient;
+  let owner: Awaited<ReturnType<typeof createTestUser>>;
+  let staff: Awaited<ReturnType<typeof createTestUser>>;
+  let organizationId: string;
+  let productId: string | undefined;
+
+  beforeAll(async () => {
+    admin = adminClient(config);
+    owner = await createTestUser(config, admin);
+    staff = await createTestUser(config, admin);
+    organizationId = await getPersonalOrgId(admin, owner.userId);
+    await owner.client.from("seller_business_profiles").insert({
+      org_id: organizationId,
+      workspace_key: "autonomous_seller",
+    });
+  });
+
+  afterAll(async () => {
+    if (productId) {
+      await admin.from("seller_products").delete().eq("id", productId);
+    }
+    if (organizationId && staff?.userId) {
+      await admin
+        .from("organization_members")
+        .delete()
+        .eq("org_id", organizationId)
+        .eq("user_id", staff.userId);
+    }
+    if (owner?.userId) await deleteTestUser(admin, owner.userId);
+    if (staff?.userId) await deleteTestUser(admin, staff.userId);
+  });
+
+  it("isola catálogo entre organizações", async () => {
+    const forgedInsert = await staff.client.from("seller_products").insert({
+      org_id: organizationId,
+      workspace_key: "autonomous_seller",
+      name: "Produto forjado",
+      created_by: staff.userId,
+    });
+    expect(forgedInsert.error).not.toBeNull();
+  });
+
+  it("staff opera catálogo e estoque, mas não altera configuração administrativa", async () => {
+    await admin.from("organization_members").insert({
+      org_id: organizationId,
+      user_id: staff.userId,
+      role: "member",
+      job_role: "staff",
+    });
+
+    const inserted = await staff.client
+      .from("seller_products")
+      .insert({
+        org_id: organizationId,
+        workspace_key: "autonomous_seller",
+        name: "Produto da equipe",
+        created_by: staff.userId,
+      })
+      .select("id")
+      .single();
+    expect(inserted.error).toBeNull();
+    productId = inserted.data!.id;
+
+    const stock = await staff.client.rpc("adjust_seller_stock", {
+      p_product_id: productId,
+      p_variant_id: null,
+      p_quantity_delta: 2,
+      p_reason: "Entrada de teste",
+    });
+    expect(stock.error).toBeNull();
+    expect(stock.data).toBe(2);
+
+    const administrativeUpdate = await staff.client
+      .from("seller_business_profiles")
+      .update({ allow_negative_stock: true })
+      .eq("org_id", organizationId)
+      .select();
+    expect(administrativeUpdate.error).toBeNull();
+    expect(administrativeUpdate.data).toEqual([]);
+
+    const { data: profile } = await admin
+      .from("seller_business_profiles")
+      .select("allow_negative_stock")
+      .eq("org_id", organizationId)
+      .single();
+    expect(profile?.allow_negative_stock).toBe(false);
+  });
+});
+
+describe("RLS da operação jurídica (contra Supabase local)", () => {
+  let admin: SupabaseClient;
+  let owner: Awaited<ReturnType<typeof createTestUser>>;
+  let collaborator: Awaited<ReturnType<typeof createTestUser>>;
+  let organizationId: string;
+  let caseId: string;
+
+  beforeAll(async () => {
+    admin = adminClient(config);
+    owner = await createTestUser(config, admin);
+    collaborator = await createTestUser(config, admin);
+    organizationId = await getPersonalOrgId(admin, owner.userId);
+    await admin.from("organization_members").insert({
+      org_id: organizationId,
+      user_id: collaborator.userId,
+      role: "member",
+      job_role: "receptionist",
+    });
+    const { data } = await owner.client
+      .from("legal_cases")
+      .insert({
+        org_id: organizationId,
+        workspace_key: "law_office",
+        created_by: owner.userId,
+        responsible_id: owner.userId,
+        title: "Caso de teste de cargos",
+        confidentiality: "team",
+      })
+      .select("id")
+      .single();
+    caseId = data!.id;
+  });
+
+  afterAll(async () => {
+    if (caseId) await admin.from("legal_cases").delete().eq("id", caseId);
+    if (organizationId && collaborator?.userId) {
+      await admin
+        .from("organization_members")
+        .delete()
+        .eq("org_id", organizationId)
+        .eq("user_id", collaborator.userId);
+    }
+    if (owner?.userId) await deleteTestUser(admin, owner.userId);
+    if (collaborator?.userId) await deleteTestUser(admin, collaborator.userId);
+  });
+
+  it("receptionist não vê casos; intern vê sem editar; lawyer edita", async () => {
+    const { data: receptionistView } = await collaborator.client
+      .from("legal_cases")
+      .select("id")
+      .eq("id", caseId)
+      .maybeSingle();
+    expect(receptionistView).toBeNull();
+
+    await admin
+      .from("organization_members")
+      .update({ job_role: "intern" })
+      .eq("org_id", organizationId)
+      .eq("user_id", collaborator.userId);
+    const { data: internView } = await collaborator.client
+      .from("legal_cases")
+      .select("id")
+      .eq("id", caseId)
+      .maybeSingle();
+    expect(internView?.id).toBe(caseId);
+
+    const internUpdate = await collaborator.client
+      .from("legal_cases")
+      .update({ title: "Alteração indevida" })
+      .eq("id", caseId)
+      .select();
+    expect(internUpdate.error).toBeNull();
+    expect(internUpdate.data).toEqual([]);
+
+    await admin
+      .from("organization_members")
+      .update({ job_role: "lawyer" })
+      .eq("org_id", organizationId)
+      .eq("user_id", collaborator.userId);
+    const lawyerUpdate = await collaborator.client
+      .from("legal_cases")
+      .update({ title: "Alteração autorizada" })
+      .eq("id", caseId)
+      .select("title")
+      .single();
+    expect(lawyerUpdate.error).toBeNull();
+    expect(lawyerUpdate.data?.title).toBe("Alteração autorizada");
+  });
+});
+
+describe("Limpeza de organização pessoal (contra Supabase local)", () => {
+  it("remove dados WhatsApp e a organização depois de excluir o único usuário", async () => {
+    const admin = adminClient(config);
+    const user = await createTestUser(config, admin);
+    const organizationId = await getPersonalOrgId(admin, user.userId);
+    const suffix = user.userId.slice(0, 8);
+
+    const { data: conversation, error: conversationError } = await admin
+      .from("whatsapp_conversations")
+      .insert({
+        org_id: organizationId,
+        phone_number: `55119999${suffix.replace(/\D/g, "").padEnd(4, "0")}`,
+        contact_name: "Contato de limpeza",
+      })
+      .select("id")
+      .single();
+    expect(conversationError).toBeNull();
+
+    expect(
+      (
+        await admin.from("whatsapp_instances").insert({
+          org_id: organizationId,
+          instance_name: `cleanup-${suffix}`,
+        })
+      ).error,
+    ).toBeNull();
+    expect(
+      (
+        await admin.from("whatsapp_messages").insert({
+          org_id: organizationId,
+          conversation_id: conversation!.id,
+          direction: "inbound",
+          content: "Mensagem que deve sair com a organização",
+        })
+      ).error,
+    ).toBeNull();
+
+    await deleteTestUser(admin, user.userId);
+    const deletion = await admin.from("organizations").delete().eq("id", organizationId);
+    expect(deletion.error).toBeNull();
+
+    const { data: orphan } = await admin
+      .from("organizations")
+      .select("id")
+      .eq("id", organizationId)
+      .maybeSingle();
+    expect(orphan).toBeNull();
   });
 });

@@ -78,8 +78,8 @@ export function TimMessageBubble({
         )}
         {time ? (
           <span
-            className={`absolute bottom-1 right-2.5 text-[10px] leading-none ${
-              isUser ? "text-white/55" : "text-white/45"
+            className={`absolute bottom-1 right-2.5 text-xs leading-none ${
+              isUser ? "text-white/55" : "text-od-text-3"
             }`}
           >
             {time}

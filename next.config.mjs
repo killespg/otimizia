@@ -1,3 +1,43 @@
+const vercelEnvironment = process.env.VERCEL_ENV;
+const supabaseEnvironment = process.env.SUPABASE_ENVIRONMENT;
+const localDevelopmentSources =
+  process.env.NODE_ENV === "development"
+    ? " http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*"
+    : "";
+
+if (
+  vercelEnvironment === "preview" &&
+  supabaseEnvironment !== "staging"
+) {
+  throw new Error(
+    "Deploy Preview bloqueado: configure SUPABASE_ENVIRONMENT=staging e credenciais de um Supabase isolado.",
+  );
+}
+if (
+  vercelEnvironment === "production" &&
+  supabaseEnvironment !== "production"
+) {
+  throw new Error(
+    "Deploy Production bloqueado: configure SUPABASE_ENVIRONMENT=production.",
+  );
+}
+
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""} https://challenges.cloudflare.com https://www.googletagmanager.com https://connect.facebook.net`,
+  "style-src 'self' 'unsafe-inline'",
+  `img-src 'self' data: blob: https:${localDevelopmentSources}`,
+  "font-src 'self' data:",
+  `media-src 'self' blob: https:${localDevelopmentSources}`,
+  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://www.facebook.com https://api.openai.com wss://api.openai.com${localDevelopmentSources}`,
+  "frame-src https://challenges.cloudflare.com",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  ...(process.env.NODE_ENV === "production" ? ["upgrade-insecure-requests"] : []),
+].join("; ");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Some o balão de indicador do Next em desenvolvimento, a pedido. Ele só
@@ -35,10 +75,13 @@ const nextConfig = {
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },
+          { key: "Content-Security-Policy", value: contentSecurityPolicy },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+          { key: "Cross-Origin-Resource-Policy", value: "same-site" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+            value: "camera=(), microphone=(self), geolocation=(), browsing-topics=()",
           },
           {
             key: "Strict-Transport-Security",

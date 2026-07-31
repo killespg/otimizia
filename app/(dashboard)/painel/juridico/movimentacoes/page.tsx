@@ -32,7 +32,7 @@ export default async function LegalMovementsPage() {
           <h1 className="mt-2 text-od-title text-od-text">Movimentações processuais</h1>
           <p className="mt-2 max-w-2xl text-sm text-od-text-2">Acompanhe o que mudou nos processos monitorados e registre cada revisão.</p>
         </div>
-        <Link href="/painel/juridico/consulta" className="inline-flex min-h-11 items-center gap-2 self-start rounded-md bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover lg:self-auto"><FileSearch size={16} />Consultar DataJud</Link>
+        <Link href="/painel/juridico/consulta" className="inline-flex min-h-11 items-center gap-2 self-start rounded-md bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-brand-600 lg:self-auto"><FileSearch size={16} />Consultar DataJud</Link>
       </header>
 
       <section className="grid border-y border-od-border sm:grid-cols-3">

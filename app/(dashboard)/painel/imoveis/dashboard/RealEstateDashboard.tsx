@@ -156,7 +156,7 @@ export function RealEstateDashboard({
           <Link href="/painel/imoveis/visitas" className="inline-flex min-h-11 items-center gap-2 rounded border border-white/[0.1] px-4 text-[13px] font-semibold text-white/68 hover:bg-white/[0.04] hover:text-white">
             <CalendarDays size={15} /> Agenda de visitas
           </Link>
-          <Link href="/painel/imoveis/novo" className="inline-flex min-h-11 items-center gap-2 rounded bg-od-accent px-4 text-[13px] font-semibold text-white shadow-[0_8px_20px_-8px_rgba(92,34,232,.6)] hover:bg-od-accent-hover">
+          <Link href="/painel/imoveis/novo" className="inline-flex min-h-11 items-center gap-2 rounded bg-od-accent px-4 text-[13px] font-semibold text-white shadow-[0_8px_20px_-8px_rgba(92,34,232,.6)] hover:bg-brand-600">
             <HousePlus size={16} /> Novo imóvel
           </Link>
         </div>
@@ -166,7 +166,7 @@ export function RealEstateDashboard({
         <Link href="/painel/assistente" className="group flex min-h-14 items-center gap-3 text-sm text-white/52 hover:text-white/80">
           <Sparkles size={17} className="text-od-accent" />
           <span className="min-w-0 flex-1 truncate">Pergunte ao Tim sobre sua carteira, clientes e negociações</span>
-          <ArrowRight size={16} className="text-white/25 transition-transform group-hover:translate-x-0.5 group-hover:text-od-text" />
+          <ArrowRight size={16} className="text-od-text-3 transition-transform group-hover:translate-x-0.5 group-hover:text-od-text" />
         </Link>
       </section>
 
@@ -229,13 +229,13 @@ function DashboardFilters({
 }: Pick<Props, "from" | "to" | "brokerFilter" | "members" | "showAnimatedBackground">) {
   return (
     <details className="group relative self-start sm:self-auto">
-      <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded border border-white/[0.1] px-3 text-xs font-semibold text-white/58 hover:bg-white/[0.04] hover:text-white">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded border border-od-border px-3 text-xs font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text">
         <Settings2 size={15} /> Personalizar painel
       </summary>
       <div className="absolute right-0 top-12 z-30 w-[min(38rem,calc(100vw-2rem))] rounded border border-white/[0.1] bg-[#1b191f] p-4 shadow-lg">
         <div className="mb-4">
           <h3 className="text-sm font-semibold text-white">Período e corretor</h3>
-          <p className="mt-1 text-xs text-white/46">Ajuste quais dados aparecem na visão geral.</p>
+          <p className="mt-1 text-xs text-od-text-3">Ajuste quais dados aparecem na visão geral.</p>
         </div>
         <form className="grid gap-3 sm:grid-cols-3" method="get">
           <label className="block">
@@ -268,7 +268,7 @@ function DashboardFilters({
           />
           <div>
             <p className="text-xs font-semibold text-white/78">Fundo animado</p>
-            <p className="mt-1 text-xs text-white/42">
+            <p className="mt-1 text-xs text-od-text-3">
               {showAnimatedBackground ? "Ativado na visão geral." : "Desativado na visão geral."}
             </p>
           </div>
@@ -293,9 +293,9 @@ function RealEstateMetrics({ metrics }: { metrics: DashboardMetric[] }) {
           <Link href={metric.href} key={metric.label} aria-label={`Abrir ${metric.label.toLowerCase()}`} className="group flex min-h-24 items-start gap-3 border-b border-r border-white/[0.08] px-4 py-4 transition-colors hover:bg-white/[0.025] focus-visible:z-10 even:border-r-0 [&:nth-last-child(-n+2)]:border-b-0 xl:min-h-28 xl:border-b-0 xl:border-r xl:even:border-r xl:last:border-r-0 xl:px-5">
             <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><Icon className="size-4" /></span>
             <div className="min-w-0">
-              <p className="text-xs font-medium text-white/48">{metric.label}</p>
+              <p className="text-xs font-medium text-od-text-3">{metric.label}</p>
               <p className="mt-2 truncate text-2xl font-bold tracking-[-0.03em] text-white">{metric.value}</p>
-              <p className="mt-2 truncate text-[11px] text-white/38 transition-colors group-hover:text-white/52">{metric.note}</p>
+              <p className="mt-2 truncate text-xs text-od-text-3 transition-colors group-hover:text-white/52">{metric.note}</p>
             </div>
           </Link>
         );
@@ -336,7 +336,7 @@ function RealEstateCommercialIndicators({
       <header className="flex items-end justify-between gap-4 border-b border-white/[0.08] px-4 py-4 sm:px-5">
         <div>
           <h2 className="text-sm font-semibold text-white">Indicadores imobiliários</h2>
-          <p className="mt-1 text-xs text-white/44">Carteira, eficiência comercial e resultado financeiro.</p>
+          <p className="mt-1 text-xs text-od-text-3">Carteira, eficiência comercial e resultado financeiro.</p>
         </div>
         <a href="/api/reports/real-estate-commissions" download className="shrink-0 text-xs font-semibold text-od-text-2 hover:text-od-text">Baixar relatório</a>
       </header>
@@ -368,9 +368,9 @@ function IndicatorGroup({ title, items }: { title: string; items: Array<{ label:
       <div className="mt-3 divide-y divide-white/[0.07]">
         {items.map((item) => (
           <Link href={item.href} key={item.label} className="group grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1 py-3 transition-colors hover:bg-white/[0.02] focus-visible:z-10 first:pt-0 last:pb-0" aria-label={`Abrir ${item.label.toLowerCase()}`}>
-            <span className="text-xs text-white/46 transition-colors group-hover:text-white/64">{item.label}</span>
+            <span className="text-xs text-od-text-3 transition-colors group-hover:text-white/64">{item.label}</span>
             <span className="max-w-44 truncate text-right text-sm font-semibold text-white/82 group-hover:text-od-text" title={item.value}>{item.value}</span>
-            <span className="col-span-2 text-[11px] leading-relaxed text-white/34 transition-colors group-hover:text-white/48">{item.note}</span>
+            <span className="col-span-2 text-xs leading-relaxed text-od-text-3 transition-colors group-hover:text-od-text-3">{item.note}</span>
           </Link>
         ))}
       </div>
@@ -382,14 +382,14 @@ export function CommissionPanel({ commissions, members, deals, properties, canMa
   return (
     <section id="comissoes" className="panel scroll-mt-24 p-5">
       <header className="flex flex-wrap items-end justify-between gap-3 border-b border-white/[0.08] pb-4">
-        <div><h2 className="text-sm font-semibold text-white">Comissões</h2><p className="mt-1 text-xs text-white/44">Prevista: {centsToReais(expectedTotal)} · Recebida: {centsToReais(receivedTotal)}</p></div>
+        <div><h2 className="text-sm font-semibold text-white">Comissões</h2><p className="mt-1 text-xs text-od-text-3">Prevista: {centsToReais(expectedTotal)} · Recebida: {centsToReais(receivedTotal)}</p></div>
         {overdueCount > 0 ? <span className="text-xs font-semibold text-[#fca79b]">{overdueCount} {overdueCount === 1 ? "vencida" : "vencidas"}</span> : null}
       </header>
       <div className="pt-4">
         <div className="space-y-2">
-          {commissions.length === 0 ? <p className="text-sm text-white/46">Nenhuma comissão registrada no período.</p> : commissions.map((commission) => (
+          {commissions.length === 0 ? <p className="text-sm text-od-text-3">Nenhuma comissão registrada no período.</p> : commissions.map((commission) => (
             <div key={commission.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.07] py-3 first:pt-0 last:border-b-0">
-              <div><p className="text-sm font-semibold text-white">{centsToReais(commission.expected_amount_cents)}</p><p className="mt-1 text-[11px] text-white/38">{commission.commission_percent}% de comissão</p></div>
+              <div><p className="text-sm font-semibold text-white">{centsToReais(commission.expected_amount_cents)}</p><p className="mt-1 text-xs text-od-text-3">{commission.commission_percent}% de comissão</p></div>
               <span className={`tag ${isCommissionOverdue(commission) ? "bg-danger-50 text-danger-700" : "bg-surface-2 text-ink-muted"}`}>{isCommissionOverdue(commission) ? "Vencida" : commission.status === "received" ? "Recebida" : commission.status === "partial" ? "Parcial" : commission.status === "cancelled" ? "Cancelada" : "Prevista"}</span>
               {canManage && commission.status !== "received" && commission.status !== "cancelled" ? (
                 <form action={recordCommissionPayment} className="flex items-center gap-2">
@@ -422,9 +422,9 @@ export function TargetsPanel({ targets, members, canManage, from, to }: Pick<Pro
   // Com superficie propria, o proprio bloco delimita a coluna.
   return (
     <section id="metas" className="panel scroll-mt-24 p-5">
-      <header className="border-b border-white/[0.08] pb-4"><div className="flex items-center gap-2"><Target size={16} className="text-od-text-3" /><h2 className="text-sm font-semibold text-white">Metas do período</h2></div><p className="mt-1 text-xs text-white/44">Acompanhe o objetivo da equipe ou de cada corretor.</p></header>
+      <header className="border-b border-white/[0.08] pb-4"><div className="flex items-center gap-2"><Target size={16} className="text-od-text-3" /><h2 className="text-sm font-semibold text-white">Metas do período</h2></div><p className="mt-1 text-xs text-od-text-3">Acompanhe o objetivo da equipe ou de cada corretor.</p></header>
       <div className="pt-4">
-        {targets.length === 0 ? <p className="text-sm text-white/46">Nenhuma meta definida para este período.</p> : (
+        {targets.length === 0 ? <p className="text-sm text-od-text-3">Nenhuma meta definida para este período.</p> : (
           <ul className="divide-y divide-white/[0.07]">{targets.map((target) => { const broker = members.find((member) => member.user_id === target.broker_id); return <li key={target.id} className="flex items-center justify-between gap-3 py-3 first:pt-0"><span className="text-sm text-white/62">{broker ? broker.name ?? "Sem nome" : "Equipe"}</span><strong className="text-sm font-semibold text-white">{centsToReais(target.target_amount_cents)}</strong></li>; })}</ul>
         )}
         {canManage ? (
@@ -443,7 +443,7 @@ export function TargetsPanel({ targets, members, canManage, from, to }: Pick<Pro
 function PublicPagePanel({ organization }: { organization: DashboardOrganization }) {
   return (
     <section className="flex flex-col gap-4 rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-      <div className="flex min-w-0 items-center gap-3"><span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><CircleDollarSign size={17} /></span><div><h2 className="text-sm font-semibold text-white">Página pública do corretor</h2><p className="mt-1 text-xs text-white/44">Vitrine permanente com todos os imóveis ativos.</p></div></div>
+      <div className="flex min-w-0 items-center gap-3"><span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><CircleDollarSign size={17} /></span><div><h2 className="text-sm font-semibold text-white">Página pública do corretor</h2><p className="mt-1 text-xs text-od-text-3">Vitrine permanente com todos os imóveis ativos.</p></div></div>
       <div className="flex flex-wrap items-center gap-2">
         <form action={togglePublicPage}><input type="hidden" name="enabled" value={organization.real_estate_public_page_enabled ? "" : "on"} /><PendingButton className="btn-secondary" pendingLabel="...">{organization.real_estate_public_page_enabled ? "Desativar" : "Ativar"}</PendingButton></form>
         {organization.real_estate_public_page_enabled ? <><Link href={`/share/corretor/${organization.real_estate_public_page_token}`} target="_blank" className="btn">Ver página</Link><form action={regeneratePublicPageToken}><PendingButton className="btn-secondary" pendingLabel="...">Gerar novo link</PendingButton></form></> : null}

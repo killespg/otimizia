@@ -63,7 +63,7 @@ export function LegalMovementsList({ initialItems }: { initialItems: LegalWatche
               <article key={item.id} className="grid gap-4 px-5 py-4 transition-colors hover:bg-white/[0.025] md:grid-cols-[minmax(0,1.3fr)_minmax(180px,.8fr)_auto] md:items-center">
                 <Link href={item.case_id ? `/painel/juridico/processos/${item.case_id}` : "/painel/juridico/consulta"} className="group min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className={`grid size-8 shrink-0 place-items-center rounded-xl ${unread ? "bg-white/[0.06] text-od-text-2" : "bg-white/[0.05] text-white/40"}`}>
+                    <span className={`grid size-8 shrink-0 place-items-center rounded-xl ${unread ? "bg-white/[0.06] text-od-text-2" : "bg-white/[0.05] text-od-text-3"}`}>
                       {unread ? <RefreshCw size={14} /> : <Check size={14} />}
                     </span>
                     <span className="min-w-0">
@@ -74,14 +74,14 @@ export function LegalMovementsList({ initialItems }: { initialItems: LegalWatche
                 </Link>
                 <div className="min-w-0">
                   <p className="truncate text-xs font-medium text-od-text-2">{item.last_movement_nome || "Aguardando primeira sincronização"}</p>
-                  <p className="mt-1 text-[11px] text-od-text-3">{dateTime(item.last_movement_at)}</p>
+                  <p className="mt-1 text-xs text-od-text-3">{dateTime(item.last_movement_at)}</p>
                 </div>
                 <div className="flex items-center justify-end gap-2">
                   {unread ? (
-                    <button type="button" disabled={saving === item.id} onClick={() => markSeen(item.id)} className="inline-flex min-h-9 items-center gap-2 rounded-md border border-od-border px-3 text-[11px] font-semibold text-od-text-2 hover:border-od-border-hover hover:bg-white/[0.03] disabled:opacity-50">
+                    <button type="button" disabled={saving === item.id} onClick={() => markSeen(item.id)} className="inline-flex min-h-9 items-center gap-2 rounded-md border border-od-border px-3 text-xs font-semibold text-od-text-2 hover:border-od-border-hover hover:bg-white/[0.03] disabled:opacity-50">
                       <Check size={13} /> {saving === item.id ? "Salvando" : "Marcar como revisada"}
                     </button>
-                  ) : <span className="text-[11px] font-medium text-od-text-3">Revisada</span>}
+                  ) : <span className="text-xs font-medium text-od-text-3">Revisada</span>}
                 </div>
               </article>
             );

@@ -28,7 +28,7 @@ export default async function OnboardingPage() {
   return (
     <main className="min-h-[100dvh] bg-[#171320] px-4 py-8 sm:py-12">
       <div className="mx-auto max-w-3xl">
-        <div className="mb-8 border-b border-white/[0.08] pb-6"><p className="text-xs font-semibold text-od-text-3">Configuração inicial</p><p className="mt-2 text-sm text-white/42">Você poderá alterar tudo depois nas configurações do painel.</p></div>
+        <div className="mb-8 border-b border-white/[0.08] pb-6"><p className="text-xs font-semibold text-od-text-3">Configuração inicial</p><p className="mt-2 text-sm text-od-text-2">Você poderá alterar tudo depois nas configurações do painel.</p></div>
         <div className="panel space-y-6 p-5 sm:p-8">
           <div>
             <p className="text-sm font-black text-ink">Bem-vindo(a) ao <BrandName /></p>

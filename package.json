@@ -9,8 +9,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:integration": "node scripts/require-local-supabase.mjs && vitest run --config vitest.integration.config.ts",
     "test:e2e": "playwright test",
+    "test:e2e:isolated": "node scripts/run-isolated-e2e.mjs",
     "import:trello": "node scripts/import-trello.mjs",
     "seed:broker-demo": "node scripts/seed-real-estate-demo.mjs"
   },
@@ -42,6 +43,7 @@
     "@types/web-push": "^3.6.4",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.2.12",
+    "supabase": "2.110.0",
     "typescript": "^5.5.3",
     "vitest": "^4.1.10"
   },

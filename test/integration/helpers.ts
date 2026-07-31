@@ -17,7 +17,7 @@ let cached: LocalSupabaseConfig | null | undefined;
 export function getLocalSupabaseConfig(): LocalSupabaseConfig | null {
   if (cached !== undefined) return cached;
   try {
-    const output = execSync("npx supabase status -o json", {
+    const output = execSync("npx --no-install supabase status -o json", {
       cwd: process.cwd(),
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],

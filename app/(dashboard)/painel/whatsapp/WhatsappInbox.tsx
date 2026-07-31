@@ -311,21 +311,21 @@ export function WhatsappInbox({
               type="button"
               onClick={importHistory}
               disabled={importing}
-              className="shrink-0 rounded px-2 py-1 text-[11px] font-semibold text-white/45 hover:bg-white/[0.05] hover:text-white disabled:opacity-50"
+              className="shrink-0 rounded px-2 py-1 text-xs font-semibold text-od-text-3 hover:bg-white/[0.05] hover:text-white disabled:opacity-50"
               title="Importar histórico já existente desse número no WhatsApp"
             >
               {importing ? "Importando…" : "Importar"}
             </button>
           </div>
           <div className="relative">
-            <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/35" />
+            <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-od-text-3" />
             <input
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Pesquisar"
               aria-label="Pesquisar conversa"
-              className="w-full rounded-lg border-0 bg-white/[0.05] pl-9 pr-3 text-[13px] text-white outline-none placeholder:text-white/35 focus:bg-white/[0.07]"
+              className="w-full rounded-lg border-0 bg-white/[0.05] pl-9 pr-3 text-[13px] text-white outline-none placeholder:text-od-text-3 focus:bg-white/[0.07]"
               style={{ minHeight: "2.25rem" }}
             />
           </div>
@@ -336,16 +336,16 @@ export function WhatsappInbox({
         <ul className="min-h-0 flex-1 overflow-y-auto pb-28 lg:pb-0">
           {conversations.length === 0 ? (
             <li className="flex flex-col items-center gap-2 px-4 py-12 text-center">
-              <span className="grid size-12 place-items-center rounded-full bg-white/[0.06] text-white/50">
+              <span className="grid size-12 place-items-center rounded-full bg-white/[0.06] text-od-text-3">
                 <IconMessage className="h-6 w-6" />
               </span>
               <p className="text-sm font-semibold text-white">Nenhuma conversa ainda</p>
-              <p className="text-xs text-white/50">
+              <p className="text-xs text-od-text-3">
                 Assim que alguém mandar mensagem no WhatsApp conectado, ela aparece aqui.
               </p>
             </li>
           ) : visibleConversations.length === 0 ? (
-            <li className="px-4 py-10 text-center text-[13px] text-white/45">Nenhuma conversa encontrada.</li>
+            <li className="px-4 py-10 text-center text-[13px] text-od-text-3">Nenhuma conversa encontrada.</li>
           ) : (
             visibleConversations.map((conversation) => {
               const unread = unreadCounts[conversation.id] ?? 0;
@@ -372,8 +372,8 @@ export function WhatsappInbox({
                         </span>
                         <span
                           className={
-                            "shrink-0 text-[11px] tabular-nums " +
-                            (unread > 0 ? "font-semibold text-od-text-2" : "text-white/40")
+                            "shrink-0 text-xs tabular-nums " +
+                            (unread > 0 ? "font-semibold text-od-text-2" : "text-od-text-3")
                           }
                         >
                           {listTime(conversation.last_message_at)}
@@ -383,7 +383,7 @@ export function WhatsappInbox({
                         <span
                           className={
                             "min-w-0 flex-1 truncate text-[13px] " +
-                            (unread > 0 ? "text-white/70" : "text-white/45")
+                            (unread > 0 ? "text-white/70" : "text-od-text-3")
                           }
                         >
                           {preview
@@ -391,7 +391,7 @@ export function WhatsappInbox({
                             : conversation.phone_number}
                         </span>
                         {unread > 0 ? (
-                          <span className="grid min-w-[20px] shrink-0 place-items-center rounded-full bg-od-accent px-1.5 py-0.5 text-[11px] font-semibold leading-none text-white">
+                          <span className="grid min-w-[20px] shrink-0 place-items-center rounded-full bg-od-accent px-1.5 py-0.5 text-xs font-semibold leading-none text-white">
                             {unread}
                           </span>
                         ) : null}
@@ -419,11 +419,11 @@ export function WhatsappInbox({
       >
         {!selected ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 border-l border-white/[0.06] px-8 text-center">
-            <span className="grid size-16 place-items-center rounded-full bg-white/[0.05] text-white/30">
+            <span className="grid size-16 place-items-center rounded-full bg-white/[0.05] text-od-text-3">
               <IconMessage className="h-8 w-8" />
             </span>
             <p className="text-[15px] font-medium text-white/70">WhatsApp do seu negócio</p>
-            <p className="max-w-sm text-[13px] leading-relaxed text-white/40">
+            <p className="max-w-sm text-[13px] leading-relaxed text-od-text-3">
               Escolha uma conversa à esquerda para ver as mensagens. O Tim pode responder sozinho quando a IA
               estiver ativa.
             </p>
@@ -448,7 +448,7 @@ export function WhatsappInbox({
                   <p className="truncate text-[15px] font-medium text-white">
                     {selected.contact_name ?? selected.phone_number}
                   </p>
-                  <p className="truncate text-[12px] text-white/45">{selected.phone_number}</p>
+                  <p className="truncate text-[12px] text-od-text-3">{selected.phone_number}</p>
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-1">
@@ -462,7 +462,7 @@ export function WhatsappInbox({
                   aria-pressed={threadSearchOpen}
                   className={
                     "grid size-9 place-items-center rounded-full transition-colors " +
-                    (threadSearchOpen ? "bg-white/[0.08] text-white" : "text-white/45 hover:bg-white/[0.06]")
+                    (threadSearchOpen ? "bg-white/[0.08] text-white" : "text-od-text-3 hover:bg-white/[0.06]")
                   }
                   title="Buscar nesta conversa"
                 >
@@ -473,10 +473,10 @@ export function WhatsappInbox({
                   onClick={toggleIa}
                   disabled={toggling}
                   className={
-                    "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors " +
+                    "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors " +
                     (selected.ia_active
                       ? "bg-white/[0.06] text-od-text hover:bg-white/[0.04]"
-                      : "text-white/45 hover:bg-white/[0.06]")
+                      : "text-od-text-3 hover:bg-white/[0.06]")
                   }
                   title={
                     selected.ia_active
@@ -492,16 +492,16 @@ export function WhatsappInbox({
 
             {threadSearchOpen ? (
               <div className="flex shrink-0 items-center gap-2 border-t border-white/[0.06] bg-white/[0.02] px-3 py-2">
-                <IconSearch className="h-3.5 w-3.5 shrink-0 text-white/35" />
+                <IconSearch className="h-3.5 w-3.5 shrink-0 text-od-text-3" />
                 <input
                   autoFocus
                   value={threadQuery}
                   onChange={(event) => setThreadQuery(event.target.value)}
                   placeholder="Buscar nesta conversa"
                   aria-label="Buscar nesta conversa"
-                  className="min-w-0 flex-1 bg-transparent text-[13px] text-white outline-none placeholder:text-white/35"
+                  className="min-w-0 flex-1 bg-transparent text-[13px] text-white outline-none placeholder:text-od-text-3"
                 />
-                <span className="shrink-0 text-[11px] tabular-nums text-white/40">
+                <span className="shrink-0 text-xs tabular-nums text-od-text-3">
                   {threadQuery.trim()
                     ? `${visibleMessages.length} ${visibleMessages.length === 1 ? "resultado" : "resultados"}`
                     : ""}
@@ -513,7 +513,7 @@ export function WhatsappInbox({
                     setThreadQuery("");
                   }}
                   aria-label="Fechar busca"
-                  className="grid size-7 shrink-0 place-items-center rounded-full text-white/45 hover:bg-white/[0.06] hover:text-white"
+                  className="grid size-7 shrink-0 place-items-center rounded-full text-od-text-3 hover:bg-white/[0.06] hover:text-white"
                 >
                   <IconX className="h-3.5 w-3.5" />
                 </button>
@@ -526,9 +526,9 @@ export function WhatsappInbox({
               className="chat-wallpaper min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-8 lg:px-16"
             >
               {messagesLoading ? (
-                <p className="text-center text-xs font-semibold text-white/45">Carregando…</p>
+                <p className="text-center text-xs font-semibold text-od-text-3">Carregando…</p>
               ) : visibleMessages.length === 0 ? (
-                <p className="py-6 text-center text-[13px] text-white/45">
+                <p className="py-6 text-center text-[13px] text-od-text-3">
                   {threadQuery.trim() ? "Nenhuma mensagem com esse termo." : "Nenhuma mensagem ainda."}
                 </p>
               ) : (
@@ -543,7 +543,7 @@ export function WhatsappInbox({
                     <div key={message.id}>
                       {showDay ? (
                         <div className="flex justify-center py-3">
-                          <span className="rounded-md bg-black/35 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-white/55">
+                          <span className="rounded-md bg-black/35 px-3 py-1 text-xs font-medium uppercase tracking-wide text-white/55">
                             {dayLabel(message.created_at)}
                           </span>
                         </div>
@@ -601,6 +601,13 @@ export function WhatsappInbox({
                               className="mb-1 max-h-72 w-full rounded object-cover"
                             />
                           ) : null}
+                          {!message.media_url &&
+                          message.message_type === "image" &&
+                          !message.content ? (
+                            <p className="pr-12 text-xs text-white/70">
+                              Imagem expirada
+                            </p>
+                          ) : null}
                           {message.content ? (
                             <p
                               className="whitespace-pre-wrap break-words"
@@ -611,7 +618,7 @@ export function WhatsappInbox({
                           ) : (
                             <p style={{ paddingRight: isOutbound ? 58 : 42 }} />
                           )}
-                          <span className="absolute bottom-1 right-2.5 flex items-center gap-1 text-[10px] leading-none text-white/55">
+                          <span className="absolute bottom-1 right-2.5 flex items-center gap-1 text-xs leading-none text-white/75">
                             {isOutbound && message.sent_by === "ai" ? (
                               <IconBot className="h-3 w-3" aria-label="Enviado pela IA" />
                             ) : null}
@@ -637,7 +644,7 @@ export function WhatsappInbox({
                     type="button"
                     onClick={() => setPendingImage(null)}
                     aria-label="Remover imagem"
-                    className="grid size-7 shrink-0 place-items-center rounded-full text-white/45 hover:bg-white/[0.06] hover:text-white"
+                    className="grid size-7 shrink-0 place-items-center rounded-full text-od-text-3 hover:bg-white/[0.06] hover:text-white"
                   >
                     <IconX className="h-3.5 w-3.5" />
                   </button>
@@ -649,7 +656,7 @@ export function WhatsappInbox({
 
               {actionsOpen ? (
                 <div className="border-b border-white/[0.06] px-3 py-2">
-                  <p className="pb-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-white/40">
+                  <p className="pb-1.5 text-xs font-semibold uppercase tracking-[0.06em] text-od-text-3">
                     Ações rápidas
                   </p>
                   <div className="flex flex-wrap gap-1.5">
@@ -690,7 +697,7 @@ export function WhatsappInbox({
                   aria-expanded={actionsOpen}
                   className={
                     "grid size-10 shrink-0 place-items-center rounded-full transition-colors " +
-                    (actionsOpen ? "bg-white/[0.08] text-white" : "text-white/45 hover:bg-white/[0.06] hover:text-white/70")
+                    (actionsOpen ? "bg-white/[0.08] text-white" : "text-od-text-3 hover:bg-white/[0.06] hover:text-white/70")
                   }
                   aria-label="Ações rápidas"
                   title="Ações rápidas"
@@ -710,7 +717,7 @@ export function WhatsappInbox({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="grid size-10 shrink-0 place-items-center rounded-full text-white/45 hover:bg-white/[0.06] hover:text-white/70"
+                  className="grid size-10 shrink-0 place-items-center rounded-full text-od-text-3 hover:bg-white/[0.06] hover:text-white/70"
                   aria-label="Anexar imagem"
                   title="Anexar imagem"
                 >
@@ -721,13 +728,13 @@ export function WhatsappInbox({
                   onChange={(event) => setInput(event.target.value)}
                   placeholder={pendingImage ? "Adicione uma legenda (opcional)" : "Digite uma mensagem"}
                   maxLength={4000}
-                  className="min-w-0 flex-1 rounded-lg border-0 bg-white/[0.06] px-4 text-[14px] text-white outline-none placeholder:text-white/35 focus:bg-white/[0.08]"
+                  className="min-w-0 flex-1 rounded-lg border-0 bg-white/[0.06] px-4 text-[14px] text-white outline-none placeholder:text-od-text-3 focus:bg-white/[0.08]"
                   style={{ minHeight: "2.625rem" }}
                 />
                 <button
                   type="submit"
                   disabled={sending}
-                  className="grid size-10 shrink-0 place-items-center rounded-full bg-od-accent text-white transition-colors hover:bg-od-accent-hover disabled:opacity-40"
+                  className="grid size-10 shrink-0 place-items-center rounded-full bg-od-accent text-white transition-colors hover:bg-brand-600 disabled:opacity-40"
                   aria-label={input.trim() || pendingImage ? "Enviar mensagem" : "Gravar áudio"}
                 >
                   {input.trim() || pendingImage ? (

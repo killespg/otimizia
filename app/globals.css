@@ -181,9 +181,9 @@ button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: no
 }
 h1, h2, h3 { text-wrap: balance; }
 p { text-wrap: pretty; }
-::selection { background: var(--od-accent); color: #fff; }
+::selection { background: var(--od-accent); color: var(--od-text); }
 
-:focus-visible { outline: 2px solid #a78bfa; outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--od-accent-hover); outline-offset: 2px; }
 
 @keyframes od-fade-up {
   from { opacity: 0; transform: translateY(6px); }
@@ -217,28 +217,15 @@ p { text-wrap: pretty; }
     min-height: 44px;
   }
 
+  .product-workspace summary {
+    min-height: 44px;
+  }
+
   .product-workspace button[aria-label],
   .product-workspace a[aria-label] {
     min-width: 44px;
     min-height: 44px;
   }
-}
-
-/*
- * Guarda de migração do workspace jurídico: nenhum conteúdo operacional
- * pode voltar à microtipografia do frontend anterior. Avatares e navegação
- * ficam fora de `main` e preservam a escala compacta oficial do shell.
- */
-.workspace-law_office main .text-\[8px\],
-.workspace-law_office main .text-\[9px\] {
-  font-size: 11px;
-  line-height: 1.4;
-}
-
-.workspace-law_office main .text-\[10px\],
-.workspace-law_office main .text-\[11px\] {
-  font-size: 12px;
-  line-height: 1.5;
 }
 
 .workspace-law_office main .text-\[15px\] {
@@ -248,19 +235,6 @@ p { text-wrap: pretty; }
 
 .workspace-law_office main button:not([aria-label]) {
   min-height: 44px;
-}
-
-/* O painel de vendas usa a mesma escala oficial e não herda microtipografia legada. */
-.workspace-autonomous_seller main .text-\[8px\],
-.workspace-autonomous_seller main .text-\[9px\] {
-  font-size: 11px;
-  line-height: 1.4;
-}
-
-.workspace-autonomous_seller main .text-\[10px\],
-.workspace-autonomous_seller main .text-\[11px\] {
-  font-size: 12px;
-  line-height: 1.5;
 }
 
 .workspace-autonomous_seller main button:not([aria-label]),
@@ -287,34 +261,11 @@ p { text-wrap: pretty; }
   color: var(--od-text-2);
 }
 
-.workspace-autonomous_seller main .text-white\/30,
-.workspace-autonomous_seller main .text-white\/32,
-.workspace-autonomous_seller main .text-white\/34,
-.workspace-autonomous_seller main .text-white\/38,
-.workspace-autonomous_seller main .text-white\/40,
-.workspace-autonomous_seller main .text-white\/42,
-.workspace-autonomous_seller main .text-white\/44,
-.workspace-autonomous_seller main .text-white\/45 {
-  color: rgb(255 255 255 / .52);
-}
-
 /*
  * Guarda de migração do produto imobiliário. As telas preservam a lógica de
  * negócio existente, mas todo o vocabulário visual é normalizado pelo shell
  * atual para que nenhum painel claro ou peso tipográfico antigo reapareça.
  */
-.workspace-real_estate_broker main .text-\[8px\],
-.workspace-real_estate_broker main .text-\[9px\] {
-  font-size: 11px;
-  line-height: 1.4;
-}
-
-.workspace-real_estate_broker main .text-\[10px\],
-.workspace-real_estate_broker main .text-\[11px\] {
-  font-size: 12px;
-  line-height: 1.5;
-}
-
 .workspace-real_estate_broker .real-estate-area h1 {
   font-size: 28px !important;
   font-weight: 700 !important;
@@ -427,10 +378,10 @@ textarea {
 }
 
 textarea { min-height: 96px; resize: vertical; }
-.field::placeholder, .glass-input::placeholder, input::placeholder, textarea::placeholder { color: #918a97; opacity: 1; }
+.field::placeholder, .glass-input::placeholder, input::placeholder, textarea::placeholder { color: var(--od-text-3); opacity: 1; }
 .field:hover, .glass-input:hover, input:hover, select:hover, textarea:hover { border-color: var(--od-border-hover); }
-.field:focus, .glass-input:focus, input:focus, select:focus, textarea:focus { border-color: #8b5cf6; box-shadow: var(--shadow-focus); }
-select option { background: #1d1924; color: #faf9f8; }
+.field:focus, .glass-input:focus, input:focus, select:focus, textarea:focus { border-color: var(--od-accent); box-shadow: var(--shadow-focus); }
+select option { background: var(--od-muted-surface); color: var(--od-text); }
 
 .label {
   display: block;
@@ -456,7 +407,7 @@ select option { background: #1d1924; color: #faf9f8; }
   padding: 0 18px;
   font-size: 14px;
   font-weight: 600;
-  box-shadow: var(--shadow-od-primary);
+  box-shadow: none;
   transition: background-color 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 120ms ease-out;
 }
 
@@ -514,9 +465,8 @@ select option { background: #1d1924; color: #faf9f8; }
 .modal { position: fixed; z-index: var(--z-modal); }
 
 @media (max-width: 767px) {
-  /* Espaço para a barra de navegação flutuante (~64px de altura + folga
-     acima e abaixo) não cobrir o fim do conteúdo. */
-  .product-content { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  /* Espaço para a barra fixa de 64px não cobrir o fim do conteúdo. */
+  .product-content { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
 
   /* Conversa aberta no WhatsApp: a tela vira o chat inteiro, como no app —
      topbar e barra de abas somem enquanto ela está aberta (o botão voltar do

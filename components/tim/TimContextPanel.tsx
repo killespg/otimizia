@@ -51,7 +51,7 @@ export function TimContextPanel({
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
           <div>
             <p className="text-[15px] font-semibold text-white">Personalizar o Tim</p>
-            <p className="mt-0.5 text-[12px] text-white/50">
+            <p className="mt-0.5 text-[12px] text-od-text-3">
               Isso ajuda o Tim a entender sua empresa, o jeito que ele deve falar com vocês, e dar respostas melhores.
             </p>
           </div>

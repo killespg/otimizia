@@ -230,7 +230,7 @@ export default async function ColecoesPage() {
                             )}
                             {reaction && (
                               <span
-                                className={`absolute left-2 top-2 rounded px-2 py-0.5 text-[10px] font-semibold ${REACTION_BADGE[reaction]}`}
+                                className={`absolute left-2 top-2 rounded px-2 py-0.5 text-xs font-semibold ${REACTION_BADGE[reaction]}`}
                               >
                                 {REACTION_LABEL[reaction]}
                               </span>

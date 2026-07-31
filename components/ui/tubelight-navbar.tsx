@@ -3,7 +3,7 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Menu, type LucideIcon } from "lucide-react";
+import { Menu, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface NavItem {
@@ -99,12 +99,12 @@ export function NavBar({ items, className, brand, actions, mobileActions }: NavB
           <div className="relative lg:hidden">
             <button
               type="button"
-              aria-label="Abrir menu"
+              aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
               aria-expanded={mobileOpen}
               onClick={() => setMobileOpen((current) => !current)}
               className="grid size-11 place-items-center rounded-md border border-od-border text-od-text-2 transition-colors hover:border-od-border-hover hover:text-od-text"
             >
-              <Menu className="size-5" strokeWidth={2} />
+              {mobileOpen ? <X className="size-5" strokeWidth={2} /> : <Menu className="size-5" strokeWidth={2} />}
             </button>
             {mobileOpen ? (
               <div className="absolute right-0 top-[calc(100%+8px)] w-[min(320px,calc(100vw-40px))] rounded-lg border border-od-border bg-od-surface p-2">

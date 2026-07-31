@@ -209,7 +209,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
             </Link>
           </div>
         </div>
-        <div className="grid grid-cols-7 border-b border-line bg-surface-2 text-center text-[11px] font-black uppercase tracking-[.08em] text-ink-muted">
+        <div className="grid grid-cols-7 border-b border-line bg-surface-2 text-center text-xs font-black uppercase tracking-[.08em] text-ink-muted">
           {WEEKDAY_LABELS.map((label) => (
             <div key={label} className="py-2">
               {label}
@@ -237,7 +237,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
                           key={entryIndex}
                           href={entry.kind === "task" ? "/painel/tarefas" : `/painel/juridico/processos/${entry.deadline.case_id}`}
                           className={
-                            "block truncate rounded px-1 py-0.5 text-[10px] font-bold hover:opacity-80 " +
+                            "block truncate rounded px-1 py-0.5 text-xs font-bold hover:opacity-80 " +
                             (entry.kind === "task"
                               ? entry.date < now
                                 ? "bg-danger-50 text-danger-700"
@@ -249,7 +249,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
                         </Link>
                       ))}
                       {entries.length > 2 && (
-                        <p className="text-[10px] font-bold text-ink-muted">+{entries.length - 2} mais</p>
+                        <p className="text-xs font-bold text-ink-muted">+{entries.length - 2} mais</p>
                       )}
                     </div>
                   </>
@@ -310,7 +310,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
                         <div className="flex shrink-0 items-center gap-2">
                           <span
                             className={
-                              "rounded-md px-2 py-1 text-[11px] font-black " +
+                              "rounded-md px-2 py-1 text-xs font-black " +
                               (PRIORITY_COLOR[entry.deadline.priority] ?? PRIORITY_COLOR.normal)
                             }
                           >
@@ -360,7 +360,7 @@ function MetricCard({
       <div className="flex items-center gap-3">
         <span className={danger ? "text-[#fb7767]" : "text-od-text-2"}><Icon className="h-4 w-4"/></span>
         <div className="min-w-0">
-          <p className="text-[10px] text-white/42">{label}</p>
+          <p className="text-xs text-od-text-3">{label}</p>
           <p className="mt-0.5 text-[20px] font-bold tracking-[-0.03em] text-white">{value}</p>
         </div>
       </div>

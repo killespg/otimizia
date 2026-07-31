@@ -119,6 +119,10 @@ export default function ShaderBackground() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     canvas.dataset.shaderStatus = "initializing";
+    if (window.matchMedia("(max-width: 767px), (pointer: coarse)").matches) {
+      canvas.dataset.shaderStatus = "disabled-on-mobile";
+      return;
+    }
 
     const gl = canvas.getContext("webgl");
     if (!gl) {
@@ -187,14 +191,25 @@ export default function ShaderBackground() {
       animationFrame = window.requestAnimationFrame(render);
     };
 
+    const updateAnimation = () => {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
+      if (reducedMotion) {
+        draw(performance.now());
+      } else if (document.visibilityState === "visible") {
+        animationFrame = window.requestAnimationFrame(render);
+      }
+    };
+
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
-    if (reducedMotion) draw(performance.now());
-    else animationFrame = window.requestAnimationFrame(render);
+    document.addEventListener("visibilitychange", updateAnimation);
+    updateAnimation();
 
     return () => {
       window.cancelAnimationFrame(animationFrame);
       window.removeEventListener("resize", resizeCanvas);
+      document.removeEventListener("visibilitychange", updateAnimation);
       gl.deleteBuffer(positionBuffer);
       gl.deleteProgram(shaderProgram);
       gl.deleteShader(vertexShader);
@@ -381,13 +396,24 @@ function startCanvasFallback(canvas: HTMLCanvasElement) {
     animationFrame = window.requestAnimationFrame(render);
   };
 
+  const updateAnimation = () => {
+    window.cancelAnimationFrame(animationFrame);
+    animationFrame = 0;
+    if (reducedMotion) {
+      draw(performance.now());
+    } else if (document.visibilityState === "visible") {
+      animationFrame = window.requestAnimationFrame(render);
+    }
+  };
+
   resizeCanvas();
   window.addEventListener("resize", resizeCanvas);
-  if (reducedMotion) draw(performance.now());
-  else animationFrame = window.requestAnimationFrame(render);
+  document.addEventListener("visibilitychange", updateAnimation);
+  updateAnimation();
 
   return () => {
     window.cancelAnimationFrame(animationFrame);
     window.removeEventListener("resize", resizeCanvas);
+    document.removeEventListener("visibilitychange", updateAnimation);
   };
 }

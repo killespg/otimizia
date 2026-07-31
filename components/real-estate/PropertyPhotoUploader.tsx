@@ -70,7 +70,7 @@ export function PropertyPhotoUploader({ propertyId }: { propertyId: string }) {
           aria-label="Escolher foto do imóvel"
         />
       </div>
-      <p className="mt-2 text-[11px] font-medium text-ink-muted" aria-live="polite">
+      <p className="mt-2 text-xs font-medium text-ink-muted" aria-live="polite">
         {error ? (
           <span className="text-[#fb7767]">{error}</span>
         ) : (

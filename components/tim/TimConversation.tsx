@@ -103,7 +103,7 @@ export function TimConversation({
             <div key={index}>
               {showDaySeparator && dayLabel(message.createdAt) ? (
                 <div className="flex justify-center py-3">
-                  <span className="rounded-md bg-black/35 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-white/55">
+                  <span className="rounded-md bg-black/35 px-3 py-1 text-xs font-medium uppercase tracking-wide text-white/55">
                     {dayLabel(message.createdAt)}
                   </span>
                 </div>
@@ -135,7 +135,7 @@ export function TimConversation({
                 />
               ))}
             </span>
-            <span className="text-[11px] font-medium text-white/55">{status}</span>
+            <span className="text-xs font-medium text-white/55">{status}</span>
           </div>
         </div>
       )}

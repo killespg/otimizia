@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CaptchaField } from "@/components/CaptchaField";
 import { PendingButton } from "@/components/PendingButton";
+import { SocialAuthButtons } from "@/components/SocialAuthButtons";
 import { login } from "../actions";
 import { AuthShell, AuthField } from "../AuthShell";
 
@@ -59,6 +60,7 @@ export default async function LoginPage(
           Entrar
         </PendingButton>
       </form>
+      <SocialAuthButtons next={searchParams.next} />
     </AuthShell>
   );
 }

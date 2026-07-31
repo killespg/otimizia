@@ -26,14 +26,14 @@ export function AiComposer() {
             <div className="flex gap-2">
               <button
                 type="button"
-                className="flex size-11 items-center justify-center text-white/45 transition-colors hover:bg-white/[0.035] hover:text-white/75"
+                className="flex size-11 items-center justify-center text-od-text-3 transition-colors hover:bg-white/[0.035] hover:text-white/75"
                 aria-label="Anexar arquivo"
               >
                 <Paperclip className="size-[15px]" strokeWidth={2} />
               </button>
               <button
                 type="button"
-                className="flex size-11 items-center justify-center text-white/45 transition-colors hover:bg-white/[0.035] hover:text-white/75"
+                className="flex size-11 items-center justify-center text-od-text-3 transition-colors hover:bg-white/[0.035] hover:text-white/75"
                 aria-label="Comandos"
               >
                 <Sparkles className="size-[15px]" strokeWidth={2} />
@@ -41,7 +41,7 @@ export function AiComposer() {
             </div>
             <button
               type="button"
-              className="flex min-h-11 items-center gap-1.5 rounded bg-white/[0.06] px-4 text-[13px] font-semibold text-white/30"
+              className="flex min-h-11 items-center gap-1.5 rounded bg-white/[0.06] px-4 text-[13px] font-semibold text-od-text-3"
               disabled
             >
               Enviar

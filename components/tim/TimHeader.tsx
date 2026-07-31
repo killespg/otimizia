@@ -26,7 +26,7 @@ export function TimHeader({
         <TimAvatar size={avatarSize} online={!status} />
         <div className="min-w-0">
           <p className="text-[15px] font-medium leading-tight text-white">Tim</p>
-          <p className="truncate text-[12px] leading-tight text-white/45">
+          <p className="truncate text-[12px] leading-tight text-od-text-3">
             {status || "Parceiro de negócios"}
           </p>
         </div>
@@ -38,7 +38,7 @@ export function TimHeader({
             onClick={onPersonalize}
             aria-label="Personalizar o Tim"
             title="Personalizar o Tim"
-            className="grid size-10 place-items-center rounded-full text-white/45 hover:bg-white/[0.06] hover:text-white"
+            className="grid size-10 place-items-center rounded-full text-od-text-3 hover:bg-white/[0.06] hover:text-white"
           >
             <IconSettings className="h-4 w-4" />
           </button>
@@ -48,7 +48,7 @@ export function TimHeader({
             type="button"
             onClick={onClose}
             aria-label="Fechar conversa com o Tim"
-            className="grid size-10 place-items-center rounded-full text-lg leading-none text-white/50 hover:bg-white/[0.06] hover:text-white"
+            className="grid size-10 place-items-center rounded-full text-lg leading-none text-od-text-3 hover:bg-white/[0.06] hover:text-white"
           >
             ×
           </button>

@@ -156,7 +156,7 @@ export function ProductNavGroups({ namespace, groups, collapsed, pathname, defau
           aria-expanded={submenuOpen}
           aria-controls={`nav-sub-${namespace}`}
           title={submenuOpen ? "Recolher" : "Expandir"}
-          className="grid size-6 shrink-0 place-items-center text-white/38 transition-colors hover:text-white"
+          className="grid size-6 shrink-0 place-items-center text-od-text-3 transition-colors hover:text-white"
         >
           <ChevronRight size={13} className={`transition-transform duration-150 ${submenuOpen ? "rotate-90" : ""}`} />
         </button>
@@ -167,7 +167,7 @@ export function ProductNavGroups({ namespace, groups, collapsed, pathname, defau
       {canPin || hasBadge ? (
         <span className="relative grid min-w-6 shrink-0 place-items-center px-1">
           {hasBadge ? (
-            <span className={`text-[11px] font-semibold tabular-nums transition-opacity ${canPin ? "group-hover:opacity-0" : ""} ${item.danger ? "text-[#fb7767]" : "text-white/65"}`}>{item.badge}</span>
+            <span className={`text-xs font-semibold tabular-nums transition-opacity ${canPin ? "group-hover:opacity-0" : ""} ${item.danger ? "text-[#fb7767]" : "text-white/65"}`}>{item.badge}</span>
           ) : null}
           {canPin ? (
             <button
@@ -175,7 +175,7 @@ export function ProductNavGroups({ namespace, groups, collapsed, pathname, defau
               onClick={() => togglePin(item.href)}
               aria-pressed={isPinned}
               title={isPinned ? "Desafixar do topo" : "Fixar no topo"}
-              className={`absolute inset-0 grid place-items-center text-white/40 transition-opacity hover:text-white ${isPinned ? "" : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"}`}
+              className={`absolute inset-0 grid place-items-center text-od-text-3 transition-opacity hover:text-white ${isPinned ? "" : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"}`}
             >
               <Pin size={12} className={isPinned ? "fill-current" : ""} />
             </button>
@@ -198,7 +198,7 @@ export function ProductNavGroups({ namespace, groups, collapsed, pathname, defau
             onClick={() => toggleGroup(group.label)}
             aria-expanded={!closed}
             aria-controls={`nav-grupo-${group.label}`}
-            className="flex h-7 w-full items-center gap-1.5 px-2 text-[10px] font-medium text-white/38 transition-colors hover:text-white/60"
+            className="flex h-7 w-full items-center gap-1.5 px-2 text-xs font-medium text-od-text-3 transition-colors hover:text-white/60"
           >
             <ChevronRight size={11} className={`shrink-0 transition-transform duration-150 ${closed ? "" : "rotate-90"}`} />
             <span className="min-w-0 flex-1 truncate text-left">{group.label}</span>
@@ -207,7 +207,7 @@ export function ProductNavGroups({ namespace, groups, collapsed, pathname, defau
             {closed && group.items.some((item) => isCurrent(pathname, item)) ? (
               <span className="size-1.5 shrink-0 rounded-full bg-od-accent" aria-label="Contém a página atual" />
             ) : null}
-            {closed ? <span className="text-[11px] tabular-nums text-white/38">{group.items.length}</span> : null}
+            {closed ? <span className="text-xs tabular-nums text-od-text-3">{group.items.length}</span> : null}
           </button>
         ) : null}
         {!hidden ? (
@@ -220,7 +220,7 @@ export function ProductNavGroups({ namespace, groups, collapsed, pathname, defau
                     <Link
                       key={sub.href}
                       href={sub.href}
-                      className={`flex h-7 -translate-x-px items-center rounded-xl px-2 text-[12px] ${pathname === sub.href ? "bg-white/[0.055] font-medium text-white" : "text-white/42 hover:text-white"}`}
+                      className={`flex h-7 -translate-x-px items-center rounded-xl px-2 text-[12px] ${pathname === sub.href ? "bg-white/[0.055] font-medium text-white" : "text-od-text-3 hover:text-white"}`}
                     >
                       {sub.label}
                     </Link>

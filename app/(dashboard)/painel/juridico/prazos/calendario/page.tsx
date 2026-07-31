@@ -106,7 +106,7 @@ export default async function DeadlinesCalendarPage(props: { searchParams: Promi
       </header>
 
       <section className="panel overflow-hidden">
-        <div className="grid grid-cols-7 border-b border-line bg-surface-2 text-center text-[11px] font-black uppercase tracking-[.08em] text-ink-muted">
+        <div className="grid grid-cols-7 border-b border-line bg-surface-2 text-center text-xs font-black uppercase tracking-[.08em] text-ink-muted">
           {WEEKDAY_LABELS.map((label) => (
             <div key={label} className="py-2">
               {label}
@@ -134,14 +134,14 @@ export default async function DeadlinesCalendarPage(props: { searchParams: Promi
                           key={item.id}
                           href={`/painel/juridico/processos/${item.case_id}`}
                           className={
-                            "block truncate rounded px-1.5 py-0.5 text-[10px] font-bold hover:opacity-80 " +
+                            "block truncate rounded px-1.5 py-0.5 text-xs font-bold hover:opacity-80 " +
                             (PRIORITY_COLOR[item.priority] ?? PRIORITY_COLOR.normal)
                           }
                         >
                           {item.title}
                         </Link>
                       ))}
-                      {items.length > 3 && <p className="text-[10px] font-bold text-ink-muted">+{items.length - 3} mais</p>}
+                      {items.length > 3 && <p className="text-xs font-bold text-ink-muted">+{items.length - 3} mais</p>}
                     </div>
                   </>
                 )}

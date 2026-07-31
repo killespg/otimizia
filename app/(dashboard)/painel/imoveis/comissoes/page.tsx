@@ -111,7 +111,7 @@ export default async function RealEstateCommissionsPage({
     <div className="mx-auto w-full max-w-[1640px] space-y-6">
       <header className="flex flex-col gap-5 border-b border-white/[0.08] pb-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <Link href="/painel/imoveis/dashboard" className="inline-flex items-center gap-2 text-xs font-semibold text-white/42 hover:text-white/72"><ArrowLeft size={14} /> Voltar à visão geral</Link>
+          <Link href="/painel/imoveis/dashboard" className="inline-flex items-center gap-2 text-xs font-semibold text-od-text-3 hover:text-white/72"><ArrowLeft size={14} /> Voltar à visão geral</Link>
           <h1 className="mt-4 text-od-title text-white">Comissões e metas</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/52">Registre previsões, acompanhe recebimentos e defina objetivos para a equipe ou para cada corretor.</p>
         </div>
@@ -132,7 +132,7 @@ export default async function RealEstateCommissionsPage({
           documentada. Quem ancora a tela sao os paineis de conteudo abaixo;
           transformar isto num card faria a quarta caixa identica da pagina. */}
       <section className="grid grid-cols-2 border-y border-od-border xl:grid-cols-4">
-        {summary.map(({ icon: Icon, ...item }) => <div key={item.label} className="min-w-0 border-b border-r border-white/[0.08] py-4 pr-4 even:border-r-0 [&:nth-last-child(-n+2)]:border-b-0 xl:border-b-0 xl:pl-5 xl:even:border-r xl:last:border-r-0 xl:first:pl-0"><div className="flex items-center gap-2 text-xs font-medium text-white/48"><Icon size={15} className="text-od-text-2" />{item.label}</div><p className="mt-3 truncate text-xl font-semibold text-white" title={item.value}>{item.value}</p><p className="mt-2 text-[11px] text-white/38">{item.note}</p></div>)}
+        {summary.map(({ icon: Icon, ...item }) => <div key={item.label} className="min-w-0 border-b border-r border-white/[0.08] py-4 pr-4 even:border-r-0 [&:nth-last-child(-n+2)]:border-b-0 xl:border-b-0 xl:pl-5 xl:even:border-r xl:last:border-r-0 xl:first:pl-0"><div className="flex items-center gap-2 text-xs font-medium text-od-text-3"><Icon size={15} className="text-od-text-2" />{item.label}</div><p className="mt-3 truncate text-xl font-semibold text-white" title={item.value}>{item.value}</p><p className="mt-2 text-xs text-od-text-3">{item.note}</p></div>)}
       </section>
 
       <section className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(21rem,.55fr)]">

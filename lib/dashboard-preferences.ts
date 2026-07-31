@@ -1,6 +1,6 @@
 import type { MetricKey, ProfessionPreset } from "@/lib/professions";
 
-export const DASHBOARD_WIDGETS = [
+const LEGACY_DASHBOARD_WIDGETS = [
   "metrics",
   "calendar",
   "chart",
@@ -9,6 +9,20 @@ export const DASHBOARD_WIDGETS = [
   "assistant",
   "open_claims",
   "onboarding",
+] as const;
+
+// A ordem inicial segue o trabalho real: orientar a primeira configuração,
+// mostrar quem precisa de ação e só depois abrir análises. Preferências salvas
+// continuam respeitadas, exceto a ordem-padrão legada sem personalização.
+export const DASHBOARD_WIDGETS = [
+  "onboarding",
+  "tasks",
+  "open_claims",
+  "calendar",
+  "deals",
+  "metrics",
+  "chart",
+  "assistant",
 ] as const;
 
 export type DashboardWidgetKey = (typeof DASHBOARD_WIDGETS)[number];
@@ -119,12 +133,12 @@ export function getDashboardPreferences(
     sameKeys(normalizedMetrics, LEGACY_AUTONOMOUS_SELLER_METRICS);
 
   return {
-    style: isDashboardStyle(raw.style) ? raw.style : "glow",
+    style: isDashboardStyle(raw.style) ? raw.style : "clean",
     accent: isDashboardAccent(raw.accent) ? raw.accent : "purple",
     metrics: shouldUpgradeSellerDefaults ? presetMetrics : normalizedMetrics,
     metricLabels,
     widgets: normalizeWidgetKeys(raw.widgets),
-    showAnimatedBackground: raw.showAnimatedBackground !== false,
+    showAnimatedBackground: raw.showAnimatedBackground === true,
     salesMarketingCostCents: normalizeNonNegativeNumber(raw.salesMarketingCostCents),
   };
 }
@@ -173,6 +187,9 @@ function normalizeMetricKeys(value: unknown, fallback: MetricKey[]): MetricKey[]
 function normalizeWidgetKeys(value: unknown): DashboardWidgetKey[] {
   const raw = Array.isArray(value) ? value : DASHBOARD_WIDGETS;
   const keys = raw.filter(isDashboardWidgetKey);
+  if (sameStringKeys(keys, LEGACY_DASHBOARD_WIDGETS)) {
+    return [...DASHBOARD_WIDGETS];
+  }
   return keys.length > 0 ? unique(keys) : [...DASHBOARD_WIDGETS];
 }
 
@@ -191,6 +208,10 @@ function unique<T extends string>(values: T[]): T[] {
 }
 
 function sameKeys(left: MetricKey[], right: MetricKey[]) {
+  return left.length === right.length && left.every((key, index) => key === right[index]);
+}
+
+function sameStringKeys(left: string[], right: readonly string[]) {
   return left.length === right.length && left.every((key, index) => key === right[index]);
 }
 

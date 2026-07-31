@@ -81,17 +81,17 @@ export function ContactsExplorer({
           </p>
           <Link
             href="/painel/contatos/importar"
-            className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-od-text-2 hover:text-od-text"
+            className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text"
           >
             Importar contatos via CSV
             <IconArrowRight className="h-4 w-4" />
           </Link>
-          <Link href="/painel/funil" className="ml-5 mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-od-text-2 hover:text-od-text">Ver atendimentos<IconArrowRight className="h-4 w-4"/></Link>
+          <Link href="/painel/funil" className="ml-5 mt-3 inline-flex items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text">Ver atendimentos<IconArrowRight className="h-4 w-4"/></Link>
         </div>
 
         <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
           <div className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-md border border-white/[0.1] bg-[#1e1d22] px-3 lg:w-[360px]">
-            <IconSearch className="h-4 w-4 shrink-0 text-white/38" />
+            <IconSearch className="h-4 w-4 shrink-0 text-od-text-3" />
             <label className="sr-only" htmlFor="contacts-search">
               Buscar contatos
             </label>
@@ -101,7 +101,7 @@ export function ContactsExplorer({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Buscar contato, empresa, telefone, Instagram..."
-              className="!min-h-0 min-w-0 flex-1 !border-0 !bg-transparent !p-0 text-[13px] text-white/70 !shadow-none outline-none placeholder:text-white/45"
+              className="!min-h-0 min-w-0 flex-1 !border-0 !bg-transparent !p-0 text-[13px] text-white/70 !shadow-none outline-none placeholder:text-od-text-3"
             />
           </div>
           <ActionDrawer
@@ -138,7 +138,7 @@ export function ContactsExplorer({
                     : `${results.length} ${results.length === 1 ? "contato salvo" : "contatos salvos"}.`}
               </p>
             </div>
-            <span className="text-xs font-semibold text-white/48">
+            <span className="text-xs font-semibold text-od-text-3">
               {String(results.length).padStart(2, "0")}
             </span>
           </div>
@@ -177,7 +177,7 @@ export function ContactsExplorer({
                       <p className="truncate text-[13px] font-semibold text-white">
                         {displayContactName(contact)}
                       </p>
-                      <p className="mt-1 truncate text-xs text-white/48">
+                      <p className="mt-1 truncate text-xs text-od-text-3">
                         {contact.company || contact.instagram || contact.email || contact.phone || "Sem dados extras"}
                       </p>
                     </div>
@@ -192,7 +192,7 @@ export function ContactsExplorer({
                         <span className="tag bg-surface-2 text-ink-muted">{contact.source}</span>
                       )}
                     </div>
-                    <IconArrowRight className="h-3.5 w-3.5 text-white/30 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-od-text" />
+                    <IconArrowRight className="h-3.5 w-3.5 text-od-text-3 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-od-text" />
                   </Link>
                 </li>
               ))}
@@ -220,7 +220,7 @@ function MetricCard({
       <div className="flex items-center gap-3">
         <span className={pink ? "text-amber-300" : "text-od-text-2"}><Icon className="h-4 w-4" /></span>
         <div className="min-w-0">
-          <p className="text-xs text-white/50">{label}</p>
+          <p className="text-xs text-od-text-3">{label}</p>
           <p className="mt-1 text-2xl font-bold tracking-[-0.02em] text-white">
             {value}
           </p>

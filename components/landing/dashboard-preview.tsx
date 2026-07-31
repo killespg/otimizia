@@ -254,7 +254,7 @@ function initials(name: string) {
 // enxerga literais no codigo. Duas variantes explicitas.
 function Avatar({ name, large = false }: { name: string; large?: boolean }) {
   return (
-    <span className={`grid ${large ? "size-7 text-[10px]" : "size-6 text-[9px]"} shrink-0 place-items-center rounded-full bg-white/[0.08] font-semibold text-white/70`}>
+    <span className={`grid ${large ? "size-7 text-xs" : "size-6 text-xs"} shrink-0 place-items-center rounded-full bg-white/[0.08] font-semibold text-white/70`}>
       {initials(name)}
     </span>
   );
@@ -267,13 +267,13 @@ function NavRow({ label, current, badge, danger, pinned, onClick }: { label: str
       onClick={onClick}
       aria-current={current ? "page" : undefined}
       className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-left text-[12px] transition-colors ${
-        current ? "bg-white/[0.075] font-semibold text-white" : "font-medium text-white/45 hover:bg-white/[0.04] hover:text-white/75"
+        current ? "bg-white/[0.075] font-semibold text-white" : "font-medium text-od-text-3 hover:bg-white/[0.04] hover:text-white/75"
       }`}
     >
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      {pinned ? <Pin className="size-2.5 shrink-0 text-white/35" strokeWidth={2} /> : null}
+      {pinned ? <Pin className="size-2.5 shrink-0 text-od-text-3" strokeWidth={2} /> : null}
       {typeof badge === "number" ? (
-        <span className={`shrink-0 text-[10px] font-semibold tabular-nums ${danger ? "text-[#fb7767]" : "text-white/60"}`}>{badge}</span>
+        <span className={`shrink-0 text-xs font-semibold tabular-nums ${danger ? "text-[#fb7767]" : "text-white/60"}`}>{badge}</span>
       ) : null}
     </button>
   );
@@ -307,7 +307,7 @@ export function DashboardPreview() {
   }
 
   return (
-    <div className="relative flex h-full overflow-hidden rounded-xl border border-od-border bg-od-muted-surface">
+    <div className="landing-dashboard-preview relative flex h-full overflow-hidden rounded-xl border border-od-border bg-od-muted-surface">
       <div className="hidden w-[190px] shrink-0 flex-col gap-0.5 bg-od-sidebar px-3 py-4 md:flex">
         <div className="mb-3 flex items-center gap-2 px-2">
           <LogoMark size={20} className="shrink-0" />
@@ -325,10 +325,10 @@ export function DashboardPreview() {
             className="flex w-full items-center gap-2 rounded-xl border border-white/[0.07] px-2 py-1.5 text-left transition-colors hover:bg-white/[0.05]"
           >
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[11px] font-semibold text-white/85">{profession.org}</span>
-              <span className="block truncate text-[10px] text-white/45">{profession.role}</span>
+              <span className="block truncate text-xs font-semibold text-white/85">{profession.org}</span>
+              <span className="block truncate text-xs text-od-text-3">{profession.role}</span>
             </span>
-            <ChevronsUpDown className="size-3 shrink-0 text-white/40" strokeWidth={2} />
+            <ChevronsUpDown className="size-3 shrink-0 text-od-text-3" strokeWidth={2} />
           </button>
           {switcherOpen ? (
             <ul className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-xl border border-od-border bg-od-surface py-1">
@@ -337,10 +337,10 @@ export function DashboardPreview() {
                   <button
                     type="button"
                     onClick={() => chooseProfession(index)}
-                    className={`flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-[11px] transition-colors hover:bg-white/[0.06] ${index === professionIndex ? "font-semibold text-white" : "text-white/60"}`}
+                    className={`flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-white/[0.06] ${index === professionIndex ? "font-semibold text-white" : "text-white/60"}`}
                   >
                     <span className="min-w-0 flex-1 truncate">{item.role}</span>
-                    {index === professionIndex ? <Check className="size-3 shrink-0 text-od-accent" strokeWidth={2.5} /> : null}
+                    {index === professionIndex ? <Check className="size-3 shrink-0 text-od-accent-hover" strokeWidth={2.5} /> : null}
                   </button>
                 </li>
               ))}
@@ -362,7 +362,7 @@ export function DashboardPreview() {
             {profession.subItems.map((sub, index) => (
               <span
                 key={sub}
-                className={`truncate rounded-xl px-2 py-1 text-[11px] ${index === 0 ? "bg-white/[0.055] font-medium text-white" : "text-white/42"}`}
+                className={`truncate rounded-xl px-2 py-1 text-xs ${index === 0 ? "bg-white/[0.055] font-medium text-white" : "text-od-text-3"}`}
               >
                 {sub}
               </span>
@@ -372,7 +372,7 @@ export function DashboardPreview() {
 
         {profession.groups.map((group) => (
           <div key={group.label} className="mt-2">
-            <p className="px-2 py-1 text-[10px] font-medium text-white/34">{group.label}</p>
+            <p className="px-2 py-1 text-xs font-medium text-od-text-3">{group.label}</p>
             {group.items.map((item) => (
               <NavRow
                 key={item.label}
@@ -390,7 +390,7 @@ export function DashboardPreview() {
           <NavRow label="Configurações" current={false} onClick={() => { setScreen("list"); setNavLabel("Configurações"); }} />
           <div className="flex items-center gap-2 px-2.5 py-2">
             <Avatar name={profession.userName} />
-            <span className="min-w-0 flex-1 truncate text-[11px] text-white/60">{profession.userName}</span>
+            <span className="min-w-0 flex-1 truncate text-xs text-white/60">{profession.userName}</span>
           </div>
         </div>
       </div>
@@ -428,7 +428,7 @@ export function DashboardPreview() {
                     open(item);
                   }
                 }}
-                className={`min-h-11 rounded px-1 text-[10px] font-semibold ${
+                className={`min-h-11 rounded px-1 text-xs font-semibold ${
                   screen === item.screen
                     ? "bg-od-accent text-white"
                     : "border border-white/[0.08] text-white/58"
@@ -441,8 +441,8 @@ export function DashboardPreview() {
         </div>
         <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
           <div className="flex min-w-0 flex-1 items-center gap-2 border-b border-white/[0.12] py-1.5 md:w-64 md:flex-none">
-            <Search className="size-3.5 shrink-0 text-white/40" strokeWidth={2} />
-            <span className="truncate text-[12px] text-white/40">{profession.search}</span>
+            <Search className="size-3.5 shrink-0 text-od-text-3" strokeWidth={2} />
+            <span className="truncate text-[12px] text-od-text-3">{profession.search}</span>
           </div>
           <Avatar name={profession.org} large />
         </div>
@@ -452,7 +452,7 @@ export function DashboardPreview() {
             <div className="flex min-h-0 flex-1 flex-col justify-end gap-2.5">
               {TIM_TROCA.map((msg, index) => (
                 <div key={index} className={`flex ${msg.de === "voce" ? "justify-end" : "justify-start"}`}>
-                  <p className={`max-w-[78%] rounded-lg px-3 py-2 text-[11px] leading-relaxed ${msg.de === "voce" ? "bg-od-accent text-white" : "bg-white/[0.06] text-white/80"}`}>
+                  <p className={`max-w-[78%] rounded-lg px-3 py-2 text-xs leading-relaxed ${msg.de === "voce" ? "bg-od-accent text-white" : "bg-white/[0.06] text-white/80"}`}>
                     {msg.texto}
                   </p>
                 </div>
@@ -460,12 +460,12 @@ export function DashboardPreview() {
             </div>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {TIM_SUGESTOES.map((item) => (
-                <span key={item} className="rounded border border-od-border px-2 py-1 text-[10px] text-white/55">{item}</span>
+                <span key={item} className="rounded border border-od-border px-2 py-1 text-xs text-white/55">{item}</span>
               ))}
             </div>
             <div className="mt-2 flex items-center gap-2 rounded-lg border border-od-border px-3 py-2">
-              <Sparkles className="size-3.5 shrink-0 text-od-accent" strokeWidth={2} />
-              <span className="flex-1 truncate text-[11px] text-white/35">Pergunte ao Tim...</span>
+              <Sparkles className="size-3.5 shrink-0 text-od-accent-hover" strokeWidth={2} />
+              <span className="flex-1 truncate text-xs text-od-text-3">Pergunte ao Tim...</span>
             </div>
           </div>
         ) : screen === "whatsapp" ? (
@@ -475,38 +475,38 @@ export function DashboardPreview() {
                 <li key={item.nome} className={`flex items-start gap-2 border-b border-white/[0.06] px-3 py-2.5 ${index === 0 ? "bg-white/[0.05]" : ""}`}>
                   <Avatar name={item.nome} />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[11px] font-medium text-white">{item.nome}</span>
-                    <span className="block truncate text-[10px] text-white/45">{item.previa}</span>
+                    <span className="block truncate text-xs font-medium text-white">{item.nome}</span>
+                    <span className="block truncate text-xs text-od-text-3">{item.previa}</span>
                   </span>
-                  <span className="shrink-0 text-[9px] text-white/35">{item.hora}</span>
+                  <span className="shrink-0 text-xs text-od-text-3">{item.hora}</span>
                   {item.naoLidas ? (
-                    <span className="grid size-4 shrink-0 place-items-center rounded-full bg-od-accent text-[9px] font-bold text-white">{item.naoLidas}</span>
+                    <span className="grid size-4 shrink-0 place-items-center rounded-full bg-od-accent text-xs font-bold text-white">{item.naoLidas}</span>
                   ) : null}
                 </li>
               ))}
             </ul>
             <div className="flex min-h-0 flex-col justify-end gap-2.5 px-4 py-4">
-              <p className="max-w-[78%] rounded-lg bg-white/[0.06] px-3 py-2 text-[11px] text-white/80">Consigo fechar até sexta?</p>
-              <p className="ml-auto max-w-[78%] rounded-lg bg-od-accent px-3 py-2 text-[11px] text-white">Consegue sim, Carla. Te mando a proposta ainda hoje.</p>
+              <p className="max-w-[78%] rounded-lg bg-white/[0.06] px-3 py-2 text-xs text-white/80">Consigo fechar até sexta?</p>
+              <p className="ml-auto max-w-[78%] rounded-lg bg-od-accent px-3 py-2 text-xs text-white">Consegue sim, Carla. Te mando a proposta ainda hoje.</p>
               <div className="mt-1 flex items-center gap-2 rounded-lg border border-od-border px-3 py-2">
-                <MessageCircle className="size-3.5 shrink-0 text-white/35" strokeWidth={2} />
-                <span className="flex-1 truncate text-[11px] text-white/35">Escrever mensagem</span>
+                <MessageCircle className="size-3.5 shrink-0 text-od-text-3" strokeWidth={2} />
+                <span className="flex-1 truncate text-xs text-od-text-3">Escrever mensagem</span>
               </div>
             </div>
           </div>
         ) : screen === "list" ? (
           <div className="min-h-0 flex-1 px-4 py-4">
-            <p className="text-[11px] font-medium text-white/45">{navLabel === profession.listNav ? profession.listLabel : navLabel}</p>
+            <p className="text-xs font-medium text-od-text-3">{navLabel === profession.listNav ? profession.listLabel : navLabel}</p>
             <ul className="mt-2 divide-y divide-white/[0.07]">
               {profession.listRows.map((row) => (
                 <li key={row.name} className="flex items-center gap-2.5 py-2.5">
                   <Avatar name={row.name} />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[11px] font-medium text-white">{row.name}</span>
-                    <span className="block truncate text-[10px] text-white/45">{row.note}</span>
+                    <span className="block truncate text-xs font-medium text-white">{row.name}</span>
+                    <span className="block truncate text-xs text-od-text-3">{row.note}</span>
                   </span>
                   {row.urgent ? (
-                    <span className="shrink-0 rounded bg-[#fb7767]/12 px-1.5 py-0.5 text-[9px] font-semibold text-[#fca79b]">Atenção</span>
+                    <span className="shrink-0 rounded bg-[#fb7767]/12 px-1.5 py-0.5 text-xs font-semibold text-[#fca79b]">Atenção</span>
                   ) : null}
                 </li>
               ))}
@@ -516,12 +516,12 @@ export function DashboardPreview() {
           <>
             <div className="flex flex-wrap items-end justify-between gap-3 px-4 pb-3 pt-4">
               <div className="min-w-0">
-                <p className="flex items-center gap-1.5 text-[10px] font-semibold text-white/38">
+                <p className="flex items-center gap-1.5 text-xs font-semibold text-od-text-3">
                   <CalendarDays className="size-3" strokeWidth={2} />
                   {profession.dateLabel}
                 </p>
                 <p className="mt-1.5 text-[19px] font-extrabold tracking-[-0.01em] text-white">{profession.greeting}</p>
-                <p className="mt-1 text-[11px] text-white/55">
+                <p className="mt-1 text-xs text-white/55">
                   {profession.summaryPrefix}{" "}
                   <strong className="font-semibold text-[#fca79b]">{profession.summaryAlert}</strong>{" "}
                   e <strong className="font-semibold text-white">{profession.summaryCount}</strong>{" "}
@@ -529,23 +529,23 @@ export function DashboardPreview() {
                 </p>
               </div>
               <div className="flex shrink-0 gap-1.5">
-                <span className="rounded border border-od-border px-2.5 py-1.5 text-[10px] font-semibold text-white/70">{profession.secondaryAction}</span>
-                <span className="rounded bg-od-accent px-2.5 py-1.5 text-[10px] font-semibold text-white">{profession.primaryAction}</span>
+                <span className="rounded border border-od-border px-2.5 py-1.5 text-xs font-semibold text-white/70">{profession.secondaryAction}</span>
+                <span className="rounded bg-od-accent px-2.5 py-1.5 text-xs font-semibold text-white">{profession.primaryAction}</span>
               </div>
             </div>
 
             <div className="mx-4 flex items-center gap-2 border-y border-white/[0.07] py-2.5">
-              <Sparkles className="size-3.5 shrink-0 text-od-accent" strokeWidth={2} />
-              <span className="min-w-0 flex-1 truncate text-[11px] text-white/52">{profession.timPrompt}</span>
-              <ArrowRight className="size-3 shrink-0 text-white/25" strokeWidth={2} />
+              <Sparkles className="size-3.5 shrink-0 text-od-accent-hover" strokeWidth={2} />
+              <span className="min-w-0 flex-1 truncate text-xs text-white/52">{profession.timPrompt}</span>
+              <ArrowRight className="size-3 shrink-0 text-od-text-3" strokeWidth={2} />
             </div>
 
             <div className="flex items-end justify-between gap-3 px-4 pb-2 pt-3">
               <div>
-                <p className="text-[10px] font-medium text-white/38">Área de trabalho</p>
+                <p className="text-xs font-medium text-od-text-3">Área de trabalho</p>
                 <p className="text-[12px] font-semibold text-white">{profession.workspaceLabel}</p>
               </div>
-              <span className="rounded border border-od-border px-2 py-1 text-[9px] font-semibold text-white/60">Personalizar painel</span>
+              <span className="rounded border border-od-border px-2 py-1 text-xs font-semibold text-white/60">Personalizar painel</span>
             </div>
 
             <div className="grid grid-cols-2 divide-x divide-y divide-white/[0.07] border-y border-white/[0.07] sm:grid-cols-4 sm:divide-y-0">
@@ -555,17 +555,17 @@ export function DashboardPreview() {
                     <span className="grid size-6 shrink-0 place-items-center rounded bg-white/[0.06]">
                       <Icon className="size-3 text-od-text-2" strokeWidth={2} />
                     </span>
-                    <span className="truncate text-[10px] text-white/55">{label}</span>
+                    <span className="truncate text-xs text-white/55">{label}</span>
                   </div>
                   <p className="mt-1.5 truncate text-[17px] font-bold text-white">{value}</p>
-                  <p className="mt-0.5 truncate text-[10px] text-white/40">{note}</p>
+                  <p className="mt-0.5 truncate text-xs text-od-text-3">{note}</p>
                 </div>
               ))}
             </div>
 
             <div className="grid shrink-0 md:grid-cols-[1.3fr_1fr] md:divide-x md:divide-white/[0.07]">
               <div className="px-4 py-4">
-                <p className="text-[11px] font-medium text-white/45">{profession.chartLabel}</p>
+                <p className="text-xs font-medium text-od-text-3">{profession.chartLabel}</p>
                 <div className="mt-3 flex h-[84px] items-end gap-1.5" aria-hidden="true">
                   {profession.chartDays.map((height, index) => (
                     <span
@@ -575,22 +575,22 @@ export function DashboardPreview() {
                     />
                   ))}
                 </div>
-                <div className="mt-2 flex justify-between text-[10px] text-white/35">
+                <div className="mt-2 flex justify-between text-xs text-od-text-3">
                   {["seg", "ter", "qua", "qui", "sex", "sáb", "dom"].map((day) => <span key={day}>{day}</span>)}
                 </div>
               </div>
 
               <div className="px-4 py-4">
-                <p className="text-[11px] font-medium text-white/45">{profession.queueLabel}</p>
+                <p className="text-xs font-medium text-od-text-3">{profession.queueLabel}</p>
                 <ul className="mt-2 divide-y divide-white/[0.07]">
                   {profession.queue.slice(0, 2).map((item) => (
                     <li key={item.name} className="flex items-center gap-2.5 py-2">
                       <Avatar name={item.name} />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[11px] font-medium text-white">{item.name}</span>
-                        <span className="block truncate text-[10px] text-white/45">{item.note}</span>
+                        <span className="block truncate text-xs font-medium text-white">{item.name}</span>
+                        <span className="block truncate text-xs text-od-text-3">{item.note}</span>
                       </span>
-                      <span className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-semibold ${item.urgent ? "bg-[#fb7767]/12 text-[#fca79b]" : "bg-white/[0.07] text-white/60"}`}>
+                      <span className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold ${item.urgent ? "bg-[#fb7767]/12 text-[#fca79b]" : "bg-white/[0.07] text-white/60"}`}>
                         {item.urgent ? "Hoje" : "Aberto"}
                       </span>
                     </li>
@@ -601,19 +601,19 @@ export function DashboardPreview() {
 
             <div className="border-t border-white/[0.07] px-4 py-3">
               <p className="text-[12px] font-semibold text-white">{profession.indicatorsTitle}</p>
-              <p className="mt-0.5 text-[10px] text-white/45">{profession.indicatorsNote}</p>
+              <p className="mt-0.5 text-xs text-od-text-3">{profession.indicatorsNote}</p>
               <div className="mt-3 grid gap-x-5 gap-y-3 md:grid-cols-3">
                 {profession.indicators.map(({ group, rows }) => (
                   <div key={group} className="min-w-0">
-                    <p className="text-[10px] font-medium text-white/45">{group}</p>
+                    <p className="text-xs font-medium text-od-text-3">{group}</p>
                     <ul className="mt-1.5 space-y-1.5">
                       {rows.slice(0, 2).map(([label, value, note]) => (
                         <li key={label} className="flex items-baseline justify-between gap-2">
                           <span className="min-w-0">
-                            <span className="block truncate text-[10px] text-white/70">{label}</span>
-                            <span className="block truncate text-[9px] text-white/35">{note}</span>
+                            <span className="block truncate text-xs text-white/70">{label}</span>
+                            <span className="block truncate text-xs text-od-text-3">{note}</span>
                           </span>
-                          <span className="shrink-0 text-[11px] font-semibold text-white">{value}</span>
+                          <span className="shrink-0 text-xs font-semibold text-white">{value}</span>
                         </li>
                       ))}
                     </ul>

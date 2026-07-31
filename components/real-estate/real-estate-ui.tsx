@@ -28,7 +28,7 @@ export function RealEstateSectionHeader({ title, description, action }: { title:
     <header className="flex flex-col gap-3 border-b border-white/[0.08] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h2 className="text-sm font-semibold text-white/85">{title}</h2>
-        {description ? <p className="mt-1 text-xs leading-relaxed text-white/48">{description}</p> : null}
+        {description ? <p className="mt-1 text-xs leading-relaxed text-od-text-3">{description}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </header>

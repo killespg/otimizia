@@ -3,6 +3,7 @@ import type { InputHTMLAttributes } from "react";
 import { AlertCircle, CalendarCheck2, Check, Columns3, ContactRound } from "lucide-react";
 import { LogoWordmark } from "@/components/design-system/logo";
 import { AmbientParticles } from "@/components/design-system/ambient-particles";
+import { AnimatedShapesBackground } from "@/components/design-system/animated-shapes-background";
 
 /**
  * Moldura das telas de entrada.
@@ -15,7 +16,16 @@ import { AmbientParticles } from "@/components/design-system/ambient-particles";
  *
  * Mapeamento aplicado, seguindo a mesma leitura do painel: a coluna de
  * apresentação é o plano mais fundo (`od-sidebar`), o formulário fica na
- * superfície elevada (`od-surface`) e a página é o canvas (`od-bg`).
+ * superfície elevada (`od-surface`) e a página (por trás do card) usa o
+ * mesmo par que abre o hero da landing — glow radial + cápsulas animadas
+ * (`AnimatedShapesBackground`) — pra puxar a mesma identidade visual.
+ *
+ * Com o card flutuando sobre esse fundo animado, ele passou a se qualificar
+ * pra regra do `shadow-od-float` (sombra em repouso só pra elemento que
+ * literalmente flutua sobre o conteúdo). A partir de `sm`, o card ganha uma
+ * moldura (`p-3`) e a coluna de apresentação vira um bloco arredondado
+ * próprio dentro dela — quadro dentro do quadro — em vez de ir de ponta a
+ * ponta como antes.
  */
 export function AuthShell({
   title,
@@ -33,12 +43,23 @@ export function AuthShell({
   footer: React.ReactNode;
 }) {
   return (
-    <main className="min-h-[100dvh] bg-od-bg p-0 sm:grid sm:place-items-center sm:p-5">
-      <div className="mx-auto grid min-h-[100dvh] w-full max-w-6xl overflow-hidden border-od-border bg-od-surface sm:min-h-[min(760px,calc(100dvh-2.5rem))] sm:rounded-lg sm:border lg:grid-cols-[1.05fr_.95fr]">
+    <main className="relative min-h-[100dvh] overflow-hidden bg-od-bg p-0 sm:grid sm:place-items-center sm:p-5">
+      {/* O mesmo glow que abre o hero da landing, só que centralizado — aqui
+          não há um lado esquerdo fixo pra ancorar o gradiente. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 55% at 50% 0%, rgba(92,34,232,0.32), transparent 70%)",
+        }}
+      />
+      <AnimatedShapesBackground />
+      <div className="relative z-10 mx-auto grid min-h-[100dvh] w-full max-w-6xl gap-0 overflow-hidden rounded-none border-od-border bg-od-surface shadow-none sm:min-h-[min(760px,calc(100dvh-2.5rem))] sm:gap-3 sm:rounded-[28px] sm:border sm:p-3 sm:shadow-od-float lg:grid-cols-[1.05fr_.95fr]">
         {/* A mesma poeira da área autenticada, contida em cada coluna. Densidade
             mais esparsa que no painel: aqui ela preenche o vazio entre o texto
             e a lista, não deve competir com o formulário. */}
-        <section className="relative hidden flex-col justify-between overflow-hidden border-r border-od-border bg-od-sidebar p-10 lg:flex">
+        <section className="relative hidden flex-col justify-between overflow-hidden bg-od-sidebar p-10 sm:rounded-[20px] lg:flex">
           <AmbientParticles contained density={11000} maxParticles={70} />
           <div className="relative z-10">
             <Link
@@ -78,12 +99,10 @@ export function AuthShell({
           </div>
         </section>
 
-        <section className="relative flex min-h-[100dvh] items-center overflow-hidden px-5 py-10 sm:min-h-0 sm:px-10 lg:px-14">
-          {/* No celular esta coluna é a tela inteira, então ela precisa da
-              própria poeira: a de cima só existe a partir de `lg`. Mais rala
-              ainda, porque o plano é mais claro e o campo fica atrás de campos
-              de formulário. */}
-          <AmbientParticles contained density={16000} maxParticles={45} />
+        <section className="relative flex min-h-[100dvh] items-center overflow-hidden px-5 py-10 sm:min-h-0 sm:px-8 lg:px-12">
+          {/* Superfície clara: sem poeira aqui, ela fica só no plano escuro
+              (coluna da esquerda) para não competir com os campos do
+              formulário. */}
           <div className="relative z-10 mx-auto w-full max-w-md">
             <div className="mb-10 lg:hidden">
               <Link

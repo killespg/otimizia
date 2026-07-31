@@ -18,12 +18,11 @@ import { canViewFinance, canViewLegal } from "@/lib/law-office";
 import { getActiveOrgId } from "@/lib/org";
 import { getUserPlanAccess } from "@/lib/plan-access";
 import { getProfessionPreset } from "@/lib/professions";
-import { canManageRealEstate } from "@/lib/real-estate";
+import { canManageRealEstate, canViewRealEstate } from "@/lib/real-estate";
 import { createClient } from "@/lib/supabase/server";
 import { getWorkspaceLabels, parseWorkspacePreferences } from "@/lib/workspace-preferences";
 import { getWorkspaceKey, getWorkspaceOptions } from "@/lib/workspaces";
 import { TrialBanner } from "./TrialBanner";
-import { InstallAppPrompt } from "@/components/InstallAppPrompt";
 
 function getInitials(name: string) {
   return (
@@ -75,7 +74,7 @@ export default async function PainelLayout({
     ? []
     : getWorkspaceOptions(profile?.profession_types, preset.key);
 
-  const [{ data: org }, access, { data: membership }, legalCounts, sellerCountRows, realEstateCountRows] = await Promise.all([
+  const [{ data: org }, access, { data: membership }] = await Promise.all([
     supabase
       .from("organizations")
       .select("name, workspace_preferences")
@@ -88,7 +87,20 @@ export default async function PainelLayout({
       .eq("org_id", orgId)
       .eq("user_id", user.id)
       .maybeSingle(),
-    isLawOffice
+  ]);
+  if (!access.hasAccess) redirect("/upgrade");
+
+  const isOrgAdmin = membership?.role === "admin";
+  const canViewLegalWorkspace =
+    isLawOffice && canViewLegal(membership?.job_role, isOrgAdmin);
+  const canViewRealEstateWorkspace =
+    isRealEstateBroker &&
+    canViewRealEstate(membership?.job_role, isOrgAdmin);
+
+  // As contagens também são dados do domínio. Não basta esconder links:
+  // elas só são consultadas depois que workspace e cargo foram autorizados.
+  const [legalCounts, sellerCountRows, realEstateCountRows] = await Promise.all([
+    canViewLegalWorkspace
       ? Promise.all([
           supabase.from("legal_cases").select("id", { count: "exact", head: true }).eq("org_id", orgId).in("status", ["intake", "active", "waiting", "suspended"]),
           supabase.from("legal_deadlines").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending"),
@@ -103,7 +115,7 @@ export default async function PainelLayout({
           supabase.from("tasks").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("workspace_key", workspaceKey).eq("done", false).lt("due_at", new Date().toISOString()),
         ])
       : Promise.resolve(null),
-    isRealEstateBroker
+    canViewRealEstateWorkspace
       ? Promise.all([
           supabase.from("real_estate_properties").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("workspace_key", "real_estate_broker"),
           supabase.from("real_estate_visits").select("id", { count: "exact", head: true }).eq("org_id", orgId).in("status", ["requested", "scheduled"]),
@@ -112,9 +124,6 @@ export default async function PainelLayout({
         ])
       : Promise.resolve(null),
   ]);
-  if (!access.hasAccess) redirect("/upgrade");
-
-  const isOrgAdmin = membership?.role === "admin";
   const labels = getWorkspaceLabels(
     preset,
     org?.workspace_preferences,
@@ -130,7 +139,7 @@ export default async function PainelLayout({
     canViewFinance: canViewFinance(membership?.job_role, isOrgAdmin),
   };
   const realEstateAccess = {
-    enabled: preset.key === "real_estate_broker",
+    enabled: canViewRealEstateWorkspace,
     canManage: canManageRealEstate(membership?.job_role, isOrgAdmin),
   };
   const handle = user.email?.split("@")[0] || "Usuário";
@@ -160,7 +169,7 @@ export default async function PainelLayout({
       <div className={`dark product-workspace workspace-${preset.key}`}>
         <DashboardRoutePreloader />
         <DashboardNavigationFeedback />
-        {isLawOffice ? (
+        {canViewLegalWorkspace ? (
           <LegalProductNavigation
             displayName={displayName}
             organizationName={org?.name || "Seu escritório"}
@@ -176,7 +185,7 @@ export default async function PainelLayout({
             counts={sellerCounts}
             enabledModules={(sellerOperationPreferences?.enabled_modules ?? ["catalog", "orders"]) as import("@/lib/supabase/types").SellerModule[]}
           />
-        ) : isRealEstateBroker ? (
+        ) : canViewRealEstateWorkspace ? (
           <RealEstateProductNavigation
             workspaceKey={workspaceKey}
             workspaceOptions={workspaceOptions}
@@ -233,11 +242,11 @@ export default async function PainelLayout({
               ) : null}
             </>
           ) : null}
-          {isLawOffice ? (
+          {canViewLegalWorkspace ? (
             <LegalProductTopbar initials={getInitials(displayName)} />
           ) : isAutonomousSeller ? (
             <SellerProductTopbar initials={getInitials(displayName)} reminderCount={sellerCounts.reminders} />
-          ) : isRealEstateBroker ? (
+          ) : canViewRealEstateWorkspace ? (
             <RealEstateProductTopbar initials={getInitials(displayName)} visitCount={realEstateCounts.visits} />
           ) : (
             <ProductTopbar initials={getInitials(displayName)} />
@@ -251,7 +260,6 @@ export default async function PainelLayout({
             {children}
           </main>
         </div>
-        <InstallAppPrompt />
       </div>
     </AssistantChatProvider>
   );

@@ -144,7 +144,7 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
       <header className="border-b border-white/[0.06] p-3 pb-4">
         <div className={`flex h-7 items-center ${collapsed ? "justify-center" : "justify-between"}`}>
           <Link href="/painel/imoveis/dashboard" prefetch={true} aria-label="Visão geral">{collapsed ? <LogoMark size={30} /> : <LogoWordmark height={30} />}</Link>
-          {!collapsed ? <button type="button" onClick={toggle} aria-label="Recolher menu" className="grid size-7 place-items-center rounded text-white/38 hover:bg-white/[0.06] hover:text-white"><ChevronLeft size={15} /></button> : null}
+          {!collapsed ? <button type="button" onClick={toggle} aria-label="Recolher menu" className="grid size-7 place-items-center rounded text-od-text-3 hover:bg-white/[0.06] hover:text-white"><ChevronLeft size={15} /></button> : null}
         </div>
         {!collapsed ? <div className="mx-1 mt-4 border-t border-white/[0.06] pt-3"><p className="truncate text-xs font-semibold text-white/85">{organizationName}</p><p className="mt-0.5 text-xs text-white/52">Corretor de imóveis</p>{workspaceOptions.length > 1 ? <div className="mt-3"><WorkspaceSwitcher options={workspaceOptions} value={workspaceKey} /></div> : null}</div> : null}
       </header>
@@ -169,8 +169,8 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
       <footer className="border-t border-white/[0.06] p-2">
         <Link href="/painel/configuracoes" prefetch={true} className={`flex min-h-8 items-center rounded-xl text-[13px] text-white/58 hover:bg-white/[0.05] hover:text-white ${collapsed ? "justify-center" : "gap-2 px-2.5"}`}><Settings size={16} />{!collapsed ? <span>Configurações</span> : null}</Link>
         {!collapsed ? <div className="mt-1 flex items-center gap-3 px-2 py-2"><span className="grid size-7 shrink-0 place-items-center rounded-full bg-white/[0.08] text-xs font-semibold text-white/75">{initials(displayName)}</span><p className="min-w-0 truncate text-xs font-medium text-white/65">{displayName}</p></div> : null}
-        <form action={logout}><PendingButton iconOnly={collapsed} pendingLabel="Saindo" className={`flex min-h-8 w-full items-center rounded-xl text-[13px] text-white/48 hover:bg-white/[0.05] hover:text-white ${collapsed ? "justify-center" : "gap-2 px-2.5"}`}><LogOut size={16} />{!collapsed ? <span>Sair</span> : <span className="sr-only">Sair</span>}</PendingButton></form>
-        {collapsed ? <button type="button" onClick={toggle} aria-label="Expandir menu" className="mt-1 grid min-h-9 w-full place-items-center rounded-md text-white/45 hover:bg-white/[0.05] hover:text-white"><ChevronRight size={16} /></button> : null}
+        <form action={logout}><PendingButton iconOnly={collapsed} pendingLabel="Saindo" className={`flex min-h-8 w-full items-center rounded-xl text-[13px] text-od-text-3 hover:bg-white/[0.05] hover:text-white ${collapsed ? "justify-center" : "gap-2 px-2.5"}`}><LogOut size={16} />{!collapsed ? <span>Sair</span> : <span className="sr-only">Sair</span>}</PendingButton></form>
+        {collapsed ? <button type="button" onClick={toggle} aria-label="Expandir menu" className="mt-1 grid min-h-9 w-full place-items-center rounded-md text-od-text-3 hover:bg-white/[0.05] hover:text-white"><ChevronRight size={16} /></button> : null}
       </footer>
       {!collapsed ? <button type="button" aria-label="Redimensionar menu lateral" title="Arraste para redimensionar" onPointerDown={startResize} onDoubleClick={() => { setSidebarWidth(255); window.localStorage.setItem("otimizia-real-estate-sidebar-width", "255"); }} className="group absolute inset-y-0 -right-1 z-[var(--z-modal-backdrop)] flex w-2 cursor-col-resize items-center justify-center touch-none"><span className="h-12 w-1 rounded-full bg-white/15 opacity-70 transition group-hover:bg-od-accent group-hover:opacity-100" /></button> : null}
     </aside>

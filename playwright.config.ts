@@ -9,6 +9,18 @@ import { CONSENT_COOKIE, CONSENT_POLICY_VERSION } from "./lib/consent";
 if (existsSync(".env.local")) process.loadEnvFile(".env.local");
 
 const baseURL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:3100";
+if (
+  process.env.CI &&
+  (!process.env.E2E_EMAIL ||
+    !process.env.E2E_PASSWORD ||
+    !process.env.E2E_RESTRICTED_EMAIL ||
+    !process.env.E2E_RESTRICTED_PASSWORD ||
+    !process.env.E2E_SHARED_CONTACT_NAME)
+) {
+  throw new Error(
+    "CI sem as fixtures autenticadas completas: fluxos, permissões e privacidade não podem ser ignorados.",
+  );
+}
 // O banner de cookies é um overlay fixo no rodapé e intercepta o clique em
 // "Entrar". Em vez de exigir que cada pessoa descubra o formato do cookie e
 // preencha duas variáveis, os testes já começam com a escolha registrada.
@@ -42,7 +54,10 @@ const storageState =
 export default defineConfig({
   testDir: "./test/e2e",
   fullyParallel: false,
-  retries: process.env.CI ? 2 : 0,
+  workers: 1,
+  timeout: 60_000,
+  expect: { timeout: 15_000 },
+  retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["html", { open: "never" }], ["list"]] : "list",
   use: {
     baseURL,
@@ -55,7 +70,9 @@ export default defineConfig({
     : {
         command: "npm run dev -- --hostname 127.0.0.1 --port 3100",
         url: baseURL,
-        reuseExistingServer: !process.env.CI,
+        // Nunca herda um `next dev` comum: ele pode estar com a chave real do
+        // Turnstile e produzir um falso erro de CAPTCHA.
+        reuseExistingServer: false,
         timeout: 120_000,
         // O servidor que ESTES testes sobem usa as chaves de teste do
         // Turnstile, publicadas pela Cloudflare em

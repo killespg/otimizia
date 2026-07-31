@@ -84,12 +84,12 @@ export function TimComposer({
         <div>
           {pendingPdf && (
             <div className="flex items-center gap-2 rounded bg-white/[0.04] px-2.5 py-1.5 text-xs font-semibold text-white/80">
-              <IconPaperclip className="h-3.5 w-3.5 shrink-0 text-white/50" />
+              <IconPaperclip className="h-3.5 w-3.5 shrink-0 text-od-text-3" />
               <span className="min-w-0 flex-1 truncate">{pendingPdf.name}</span>
               <button
                 type="button"
                 onClick={clearPdf}
-                className="grid h-6 w-6 shrink-0 place-items-center rounded text-white/50 hover:bg-white/[0.06] hover:text-white"
+                className="grid h-6 w-6 shrink-0 place-items-center rounded text-od-text-3 hover:bg-white/[0.06] hover:text-white"
                 aria-label="Remover PDF anexado"
               >
                 <IconX className="h-3.5 w-3.5" />
@@ -118,7 +118,7 @@ export function TimComposer({
         <button
           type="button"
           onClick={pickPdf}
-          className="grid size-10 shrink-0 place-items-center rounded-full text-white/45 hover:bg-white/[0.06] hover:text-white/70"
+          className="grid size-10 shrink-0 place-items-center rounded-full text-od-text-3 hover:bg-white/[0.06] hover:text-white/70"
           aria-label="Anexar PDF"
           title="Anexar PDF"
         >
@@ -138,7 +138,7 @@ export function TimComposer({
           // min-height/resize inline: o globals.css tem um `textarea { min-height: 96px }`
           // fora de @layer que sobrepõe as classes utilitárias do Tailwind. Inline vence.
           style={{ minHeight: "2.625rem", resize: "none" }}
-          className="max-h-[132px] min-w-0 flex-1 rounded-lg border-0 bg-white/[0.06] px-4 py-2.5 text-[14px] leading-snug text-white outline-none placeholder:text-white/35 focus:bg-white/[0.08]"
+          className="max-h-[132px] min-w-0 flex-1 rounded-lg border-0 bg-white/[0.06] px-4 py-2.5 text-[14px] leading-snug text-white outline-none placeholder:text-od-text-3 focus:bg-white/[0.08]"
         />
         <button
           type="submit"
@@ -150,7 +150,7 @@ export function TimComposer({
           }}
           disabled={sending}
           aria-label={hasContent ? "Enviar mensagem" : "Falar com o Tim"}
-          className="grid size-10 shrink-0 place-items-center rounded-full bg-od-accent text-white transition-colors hover:bg-od-accent-hover disabled:opacity-40"
+          className="grid size-10 shrink-0 place-items-center rounded-full bg-od-accent text-white transition-colors hover:bg-brand-600 disabled:opacity-40"
         >
           {hasContent ? (
             <IconArrowRight className="h-4 w-4 -rotate-45" />

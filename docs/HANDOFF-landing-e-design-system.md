@@ -195,9 +195,14 @@ Custaram tempo. Deixo registrado para não custar de novo:
 
 Sugestões, sem urgência:
 
-1. O default branch do repositório ainda é `claude/saas-creation-marketing-a49v4f`
-   (o frontend antigo). Trocar para `headless-base` é decisão do dono, feita na
-   UI do GitHub.
+1. ~~Trocar o default branch para `headless-base`.~~ Resolvido de outro jeito,
+   em 29/07/2026: em vez de trocar de branch, a `headless-base` foi promovida
+   para `claude/saas-creation-marketing-a49v4f` e apagada. O default branch
+   continua o mesmo nome, mas hoje ele **é** a versão 2.0, não o frontend
+   antigo. O que sobrou de fato em aberto é só cosmético: esse nome foi gerado
+   automaticamente e não descreve nada. Renomear é decisão do dono, feita na UI
+   do GitHub, e exige reapontar o remote local (`git remote set-head`) e a
+   branch de produção na Vercel.
 2. Guard ligando o mock da landing às telas reais (seção 3).
 3. `AppSplash` usa `z-[999]` e `pointer-events: auto`, enquanto o `globals.css`
    define uma escala semântica (`--z-dropdown` … `--z-tooltip`) que nunca foi
