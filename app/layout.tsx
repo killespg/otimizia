@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import { CookieConsent } from "@/components/CookieConsent";
-import { SiteAnalytics } from "@/components/SiteAnalytics";
-import { siteUrl } from "@/lib/request-origin";
+import { CookieConsent } from "@/components/site/CookieConsent";
+import { SiteAnalytics } from "@/components/site/SiteAnalytics";
+import { siteUrl } from "@/lib/utils/request-origin";
 import "./globals.css";
 
 const inter = Inter({
@@ -14,11 +14,16 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: "OtimizIA",
-  description: "CRM multiprofissões para organizar contatos, vendas, tarefas e operações especializadas.",
+  description: "CRM multiprofissões com uma IA integrada, no painel personalizado pela sua profissão.",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: "/otimizia-app-icon-2026.png",
     apple: "/otimizia-app-icon-2026.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "OtimizIA",
   },
 };
 

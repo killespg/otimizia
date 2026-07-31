@@ -52,6 +52,7 @@ export function Hero({ animated = false }: { animated?: boolean }) {
           e liga ou desliga a IA em cada uma.
         </p>
         <a
+          id="hero-cta"
           href="/signup"
           className="inline-flex min-h-11 items-center gap-2 rounded-md bg-od-accent px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
         >
