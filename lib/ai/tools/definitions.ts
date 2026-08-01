@@ -4,7 +4,7 @@ import {
   DASHBOARD_ACCENTS,
   DASHBOARD_STYLES,
   DASHBOARD_WIDGETS,
-} from "@/lib/dashboard-preferences";
+} from "@/lib/workspace/dashboard-preferences";
 import { STAGE_KEYS } from "./validation";
 
 // Ferramentas que espelham tudo que o usuário pode fazer no OtimizIA.

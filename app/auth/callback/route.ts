@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { safeInternalPath } from "@/lib/invitations";
-import { resolveOrigin } from "@/lib/request-origin";
+import { safeInternalPath } from "@/lib/crm/invitations";
+import { resolveOrigin } from "@/lib/utils/request-origin";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";

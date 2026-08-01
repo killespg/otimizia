@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PrintButton } from "@/components/PrintButton";
-import { canViewRealEstate, isRealEstateV2Enabled } from "@/lib/real-estate";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { PrintButton } from "@/components/ui/PrintButton";
+import { canViewRealEstate, isRealEstateV2Enabled } from "@/lib/real-estate/real-estate";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { RealEstateOffer } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 
 function centsToReais(cents: number | null): string {
   if (cents === null) return "A combinar";

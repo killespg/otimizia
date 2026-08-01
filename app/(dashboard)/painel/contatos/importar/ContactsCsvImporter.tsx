@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import { parseCsv } from "@/lib/csv";
+import { parseCsv } from "@/lib/utils/csv";
 import { importContacts, type ImportContactRow } from "../../actions";
 
 const TARGET_FIELDS: { key: keyof ImportContactRow | "ignore"; label: string }[] = [

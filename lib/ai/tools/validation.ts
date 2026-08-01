@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { logError } from "@/lib/logger";
+import { logError } from "@/lib/utils/logger";
 import { DEAL_STAGES, type DealStage } from "@/lib/supabase/types";
 
 export const STAGE_KEYS = DEAL_STAGES.map((s) => s.key);

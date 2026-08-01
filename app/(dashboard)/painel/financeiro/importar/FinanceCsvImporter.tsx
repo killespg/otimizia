@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import { parseCsv } from "@/lib/csv";
+import { parseCsv } from "@/lib/utils/csv";
 import { importReceivablesCsv, type ImportReceivableRow } from "../../juridico/actions";
 
 const TARGET_FIELDS: { key: keyof ImportReceivableRow | "ignore"; label: string }[] = [

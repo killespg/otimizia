@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requiredText, text } from "@/lib/form-parse";
-import { computeListingQuality } from "@/lib/real-estate-listing-quality";
+import { requiredText, text } from "@/lib/utils/form-parse";
+import { computeListingQuality } from "@/lib/real-estate/real-estate-listing-quality";
 import type { RealEstateProperty } from "@/lib/supabase/types";
 import { requireRealEstate } from "./actions";
 

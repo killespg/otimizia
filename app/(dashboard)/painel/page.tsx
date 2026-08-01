@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
-import { canViewLegal } from "@/lib/law-office";
-import { getActiveOrgId } from "@/lib/org";
-import { canViewRealEstate } from "@/lib/real-estate";
+import { canViewLegal } from "@/lib/law/law-office";
+import { getActiveOrgId } from "@/lib/workspace/org";
+import { canViewRealEstate } from "@/lib/real-estate/real-estate";
 import { createClient } from "@/lib/supabase/server";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import GenericDashboard from "./_dashboard/GenericDashboard";
 
 export default async function DashboardEntryPage() {

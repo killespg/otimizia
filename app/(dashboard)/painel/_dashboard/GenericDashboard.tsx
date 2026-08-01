@@ -1,24 +1,24 @@
 import Link from "next/link";
-import { AgentPanel } from "@/components/AgentPanel";
-import { BrandName } from "@/components/BrandName";
-import { DashboardCustomizePanel } from "@/components/DashboardCustomizePanel";
-import { DashboardWidgetGrid } from "@/components/DashboardWidgetGrid";
-import { PendingButton } from "@/components/PendingButton";
-import { RecentProcessChanges } from "@/components/RecentProcessChanges";
+import { AgentPanel } from "@/components/tim/AgentPanel";
+import { BrandName } from "@/components/design-system/BrandName";
+import { DashboardCustomizePanel } from "@/components/dashboard/DashboardCustomizePanel";
+import { DashboardWidgetGrid } from "@/components/dashboard/DashboardWidgetGrid";
+import { PendingButton } from "@/components/ui/PendingButton";
+import { RecentProcessChanges } from "@/components/legal/recent-process-changes";
 import {
   ALL_DASHBOARD_METRICS,
   type DashboardWidgetKey,
   getDashboardPreferences,
   metricLabel,
-} from "@/lib/dashboard-preferences";
-import { computeDevMetrics, type DevMetrics } from "@/lib/devMetrics";
-import { dealValueOrZero, getCommissionCents } from "@/lib/deals";
-import { buildMonthCells } from "@/lib/calendar-grid";
-import { canManageLegal } from "@/lib/law-office";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+} from "@/lib/workspace/dashboard-preferences";
+import { computeDevMetrics, type DevMetrics } from "@/lib/utils/devMetrics";
+import { dealValueOrZero, getCommissionCents } from "@/lib/crm/deals";
+import { buildMonthCells } from "@/lib/utils/calendar-grid";
+import { canManageLegal } from "@/lib/law/law-office";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { DatajudSearchForm } from "../juridico/consulta/DatajudSearchForm";
-import { getProfessionPreset, type MetricKey, type ProfessionPreset } from "@/lib/professions";
-import { isRealEstateV2Enabled } from "@/lib/real-estate";
+import { getProfessionPreset, type MetricKey, type ProfessionPreset } from "@/lib/people/professions";
+import { isRealEstateV2Enabled } from "@/lib/real-estate/real-estate";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -30,9 +30,9 @@ import {
   type LegalWatchedProcess,
   type Task,
 } from "@/lib/supabase/types";
-import { formatBRL, formatDate } from "@/lib/format";
-import { getWorkspaceKey } from "@/lib/workspaces";
-import { buildSellerCommercialInsights } from "@/lib/seller-insights";
+import { formatBRL, formatDate } from "@/lib/utils/format";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
+import { buildSellerCommercialInsights } from "@/lib/seller/seller-insights";
 import { claimDeal, claimTask, dismissChecklist, dismissRealEstateV2Intro } from "../actions";
 import { updateDashboardPreferences } from "./actions";
 import { ReminderModal as ReminderModalClient } from "./ReminderModal";

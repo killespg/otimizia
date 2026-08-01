@@ -1,4 +1,4 @@
-import { PendingButton } from "@/components/PendingButton";
+import { PendingButton } from "@/components/ui/PendingButton";
 import type { RealEstateProperty, RealEstatePropertyDocument } from "@/lib/supabase/types";
 import { IconPlus, IconTrash } from "../../icons";
 import { addDocumentChecklistItem, recalculateListingQuality, removeDocumentChecklistItem, updateDocumentChecklistStatus } from "../quality-actions";

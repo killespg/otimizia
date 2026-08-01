@@ -23,7 +23,7 @@ import {
   Users,
 } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
-import { PendingButton } from "@/components/PendingButton";
+import { PendingButton } from "@/components/ui/PendingButton";
 import { LogoMark, LogoWordmark } from "@/components/design-system/logo";
 import { MobileAppNav } from "@/components/design-system/mobile-app-nav";
 import { ProductNavGroups, type NavItem } from "@/components/design-system/product-nav-groups";

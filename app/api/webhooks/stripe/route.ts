@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { logError } from "@/lib/logger";
-import { getStripe } from "@/lib/stripe";
+import { logError } from "@/lib/utils/logger";
+import { getStripe } from "@/lib/billing/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";

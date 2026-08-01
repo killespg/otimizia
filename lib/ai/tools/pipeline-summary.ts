@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isCommissionOverdue } from "@/lib/real-estate-commissions";
+import { isCommissionOverdue } from "@/lib/real-estate/real-estate-commissions";
 import type { RealEstateCommissionStatus } from "@/lib/supabase/types";
 import type { ToolInput } from "./types";
 import { clampInt } from "./validation";

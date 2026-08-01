@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BrandName } from "@/components/BrandName";
+import { BrandName } from "@/components/design-system/BrandName";
 
 export default function TermosPage() {
   return (

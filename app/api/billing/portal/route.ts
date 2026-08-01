@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
-import { resolveOrigin } from "@/lib/request-origin";
-import { getStripe } from "@/lib/stripe";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
+import { resolveOrigin } from "@/lib/utils/request-origin";
+import { getStripe } from "@/lib/billing/stripe";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {

@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PendingButton } from "@/components/PendingButton";
+import { PendingButton } from "@/components/ui/PendingButton";
 import { RealEstatePageHeader } from "@/components/real-estate/real-estate-ui";
-import { canManageRealEstate, canViewRealEstate, isRealEstateV2Enabled } from "@/lib/real-estate";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { canManageRealEstate, canViewRealEstate, isRealEstateV2Enabled } from "@/lib/real-estate/real-estate";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, RealEstateProperty, RealEstateVisit } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import { IconCheck, IconX } from "../../icons";
 import { cancelVisit, completeVisit, confirmVisit, markVisitNoShow, scheduleVisit } from "../visit-actions";
 

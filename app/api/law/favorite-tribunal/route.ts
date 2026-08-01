@@ -1,7 +1,7 @@
-import { getActiveOrgId } from "@/lib/org";
+import { getActiveOrgId } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
-import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/datajud-tribunals";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/law/datajud-tribunals";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 
 export const runtime = "nodejs";
 

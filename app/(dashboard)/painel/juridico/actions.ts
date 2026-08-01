@@ -3,17 +3,17 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { canManageLegal, canViewFinance } from "@/lib/law-office";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { canManageLegal, canViewFinance } from "@/lib/law/law-office";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import type { JobRole, LegalCaseStatus } from "@/lib/supabase/types";
-import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/datajud-tribunals";
-import { normalizeProcessNumber } from "@/lib/datajud";
-import { syncCaseWithDatajud } from "@/lib/law-datajud-sync";
+import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/law/datajud-tribunals";
+import { normalizeProcessNumber } from "@/lib/law/datajud";
+import { syncCaseWithDatajud } from "@/lib/law/law-datajud-sync";
 import { generatePetitionDraft } from "@/lib/ai/petition-draft";
-import { sendDocumentForSignature } from "@/lib/autentique";
+import { sendDocumentForSignature } from "@/lib/law/autentique";
 
 const MAX = { title: 180, text: 1600, short: 160, reference: 180 };
 

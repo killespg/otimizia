@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { DATAJUD_TRIBUNALS, sortTribunalsByFavorites } from "@/lib/datajud-tribunals";
-import type { DatajudProcess } from "@/lib/datajud";
+import { DATAJUD_TRIBUNALS, sortTribunalsByFavorites } from "@/lib/law/datajud-tribunals";
+import type { DatajudProcess } from "@/lib/law/datajud";
 import { IconAlert, IconClock, IconPlus, IconSearch, IconStar } from "../../icons";
 
 // Datas vindas do DataJud nem sempre são um ISO 8601 válido (já vimos

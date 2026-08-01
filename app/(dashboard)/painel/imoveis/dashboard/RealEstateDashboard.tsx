@@ -14,9 +14,9 @@ import {
   Target,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { PendingButton } from "@/components/PendingButton";
-import type { OrgMember } from "@/lib/org";
-import { isCommissionOverdue } from "@/lib/real-estate-commissions";
+import { PendingButton } from "@/components/ui/PendingButton";
+import type { OrgMember } from "@/lib/workspace/org";
+import { isCommissionOverdue } from "@/lib/real-estate/real-estate-commissions";
 import type {
   RealEstateCommission,
   RealEstateOffer,

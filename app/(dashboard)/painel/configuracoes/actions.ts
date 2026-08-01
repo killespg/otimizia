@@ -6,15 +6,15 @@ import Stripe from "stripe";
 import {
   buildAccountDeletionPlan,
   type OrganizationMembership,
-} from "@/lib/account-deletion";
-import { MIN_PASSWORD_LENGTH } from "@/lib/auth-constants";
-import { logError } from "@/lib/logger";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
-import { getStripe } from "@/lib/stripe";
+} from "@/lib/account/account-deletion";
+import { MIN_PASSWORD_LENGTH } from "@/lib/account/auth-constants";
+import { logError } from "@/lib/utils/logger";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
+import { getStripe } from "@/lib/billing/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { cleanWorkspaceLabel, parseWorkspacePreferences } from "@/lib/workspace-preferences";
-import { getWorkspaceKey, type WorkspaceKey } from "@/lib/workspaces";
+import { cleanWorkspaceLabel, parseWorkspacePreferences } from "@/lib/workspace/workspace-preferences";
+import { getWorkspaceKey, type WorkspaceKey } from "@/lib/workspace/workspaces";
 
 async function requireUser() {
   const supabase = await createClient();

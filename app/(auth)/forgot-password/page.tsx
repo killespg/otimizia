@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { CaptchaField } from "@/components/CaptchaField";
-import { PendingButton } from "@/components/PendingButton";
+import { CaptchaField } from "@/components/auth/CaptchaField";
+import { PendingButton } from "@/components/ui/PendingButton";
 import { requestPasswordReset } from "../actions";
 import { AuthShell, AuthField } from "../AuthShell";
 
@@ -28,7 +28,7 @@ export default async function ForgotPasswordPage(
         </>
       }
     >
-      <form action={requestPasswordReset} className="mt-6 space-y-4">
+      <form action={requestPasswordReset} className="mt-6">
         <AuthField
           name="email"
           label="E-mail"
@@ -37,8 +37,10 @@ export default async function ForgotPasswordPage(
           maxLength={160}
           autoComplete="email"
         />
-        <CaptchaField />
-        <PendingButton className="btn w-full py-3 text-base" pendingLabel="Enviando">
+        <div className="mt-6">
+          <CaptchaField />
+        </div>
+        <PendingButton className="btn btn-lg mt-8 w-full" pendingLabel="Enviando">
           Enviar link de redefinição
         </PendingButton>
       </form>

@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { canViewLegal } from "@/lib/law-office";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { canViewLegal } from "@/lib/law/law-office";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { LegalDeadline } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
-import { buildMonthCells, monthParam, parseMonthParam } from "@/lib/calendar-grid";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
+import { buildMonthCells, monthParam, parseMonthParam } from "@/lib/utils/calendar-grid";
 import { IconArrowRight } from "../../../icons";
 
 const PRIORITY_COLOR: Record<string, string> = {

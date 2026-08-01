@@ -9,13 +9,14 @@ import { FeatureTabs } from "@/components/landing/feature-tabs";
 import { DashboardPreview } from "@/components/landing/dashboard-preview";
 import { Pricing } from "@/components/landing/pricing";
 import { Glow, Reveal } from "@/components/landing/reveal";
-import { FaqAccordion } from "@/components/FaqAccordion";
-import { CookiePreferencesLink } from "@/components/CookieConsent";
+import { FaqAccordion } from "@/components/landing/FaqAccordion";
+import { CookiePreferencesLink } from "@/components/site/CookieConsent";
 import { SpotlightCard } from "@/components/landing/spotlight-card";
 import { AiComposer } from "@/components/landing/ai-composer";
 import { ContainerScroll } from "@/components/landing/container-scroll-animation";
 import { About } from "@/components/landing/about";
 import { LogoWordmark } from "@/components/design-system/logo";
+import { MobileStickyCta } from "@/components/landing/mobile-sticky-cta";
 
 /**
  * Faixa de seção de largura total.
@@ -85,6 +86,7 @@ export default async function LandingPage() {
       />
 
       <LandingNav />
+      <MobileStickyCta />
       <main className="relative overflow-hidden">
         {/* Abertura: hero e prova social continuam emendados, sem regua entre
             eles — sao um bloco de entrada, nao duas categorias. */}
@@ -197,7 +199,7 @@ export default async function LandingPage() {
           <About />
         </Section>
 
-        <section className="border-t border-od-border bg-od-muted-surface">
+        <section id="cta-final" className="border-t border-od-border bg-od-muted-surface">
           <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-24 text-center sm:px-8">
             <h2 className="mx-auto mb-4 max-w-[520px] text-od-title text-od-text">
               Pronto pra parar de perder negócio por esquecimento?

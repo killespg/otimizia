@@ -3,13 +3,13 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { canManageRealEstate } from "@/lib/real-estate";
-import { decimalOrNull, intOrNull, moneyToCentsOrNull, optionalUuid, requiredText, signedDecimalOrNull, text } from "@/lib/form-parse";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
-import { advancePropertiesToSent } from "@/lib/real-estate-deal-properties";
+import { canManageRealEstate } from "@/lib/real-estate/real-estate";
+import { decimalOrNull, intOrNull, moneyToCentsOrNull, optionalUuid, requiredText, signedDecimalOrNull, text } from "@/lib/utils/form-parse";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
+import { advancePropertiesToSent } from "@/lib/real-estate/real-estate-deal-properties";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import type {
   AiSuggestedField,
   JobRole,

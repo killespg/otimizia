@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { buildMonthlyDealStats } from "@/lib/deals-report";
-import { formatBRL } from "@/lib/format";
-import { getActiveOrgId } from "@/lib/org";
-import { getProfessionPreset } from "@/lib/professions";
+import { buildMonthlyDealStats } from "@/lib/crm/deals-report";
+import { formatBRL } from "@/lib/utils/format";
+import { getActiveOrgId } from "@/lib/workspace/org";
+import { getProfessionPreset } from "@/lib/people/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Deal } from "@/lib/supabase/types";
-import { getWorkspaceLabels } from "@/lib/workspace-preferences";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceLabels } from "@/lib/workspace/workspace-preferences";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import { IconArrowRight, IconDownload } from "../../icons";
 
 const MONTHS_BACK = 6;

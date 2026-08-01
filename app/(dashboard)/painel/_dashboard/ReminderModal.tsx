@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PendingButton } from "@/components/PendingButton";
+import { PendingButton } from "@/components/ui/PendingButton";
 import { createTask } from "../actions";
 import { ContactField } from "../ContactField";
 import { IconBell } from "../icons";

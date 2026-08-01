@@ -1,10 +1,10 @@
-import { PendingButton } from "@/components/PendingButton";
-import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
-import { getProfessionPreset } from "@/lib/professions";
+import { PendingButton } from "@/components/ui/PendingButton";
+import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
+import { getProfessionPreset } from "@/lib/people/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Task } from "@/lib/supabase/types";
-import { getWorkspaceLabels } from "@/lib/workspace-preferences";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceLabels } from "@/lib/workspace/workspace-preferences";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import { createTask } from "../actions";
 import { ContactField } from "../ContactField";
 import { IconBell, IconCheckCircle, IconClock, IconPlus } from "../icons";

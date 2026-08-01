@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { PendingButton } from "@/components/PendingButton";
-import { canViewFinance, outstandingCents, receivableState } from "@/lib/law-office";
-import { formatBRL } from "@/lib/format";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { PendingButton } from "@/components/ui/PendingButton";
+import { canViewFinance, outstandingCents, receivableState } from "@/lib/law/law-office";
+import { formatBRL } from "@/lib/utils/format";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, LegalCase, LegalExpense, Receivable } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import { IconAlert, IconCheckCircle, IconPlus, IconWallet } from "../icons";
 import { createFeeAgreement, createLegalExpense, recordReceivablePayment, toggleLegalExpenseReimbursed } from "../juridico/actions";
 

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { BrandName } from "@/components/BrandName";
-import { PendingButton } from "@/components/PendingButton";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { BrandName } from "@/components/design-system/BrandName";
+import { PendingButton } from "@/components/ui/PendingButton";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Organization } from "@/lib/supabase/types";
 import { completeOnboarding, skipOnboarding } from "./actions";

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Box, PackageSearch } from "lucide-react";
-import { formatBRL, formatDate } from "@/lib/format";
+import { formatBRL, formatDate } from "@/lib/utils/format";
 
 export function SellerPageHeader({
   title,

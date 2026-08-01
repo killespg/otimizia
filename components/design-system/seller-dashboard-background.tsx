@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import ShaderBackground from "@/components/ui/shader-background";
+import ShaderBackground from "@/components/design-system/shader-background";
 
 export function SellerDashboardBackground({ enabled }: { enabled: boolean }) {
   const pathname = usePathname();

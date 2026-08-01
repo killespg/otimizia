@@ -3,7 +3,7 @@ import {
   REAL_ESTATE_PROPERTY_STATUSES,
   REAL_ESTATE_PROPERTY_TYPES,
   REAL_ESTATE_TRANSACTION_TYPES,
-} from "@/lib/real-estate";
+} from "@/lib/real-estate/real-estate";
 
 const MODEL = "claude-sonnet-5";
 

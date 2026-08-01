@@ -1,7 +1,7 @@
-import { getActiveOrgId } from "@/lib/org";
+import { getActiveOrgId } from "@/lib/workspace/org";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { WHATSAPP_ATTACHMENTS_BUCKET } from "@/lib/whatsapp-attachments";
+import { WHATSAPP_ATTACHMENTS_BUCKET } from "@/lib/whatsapp/whatsapp-attachments";
 
 export const runtime = "nodejs";
 

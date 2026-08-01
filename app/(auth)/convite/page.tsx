@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AuthShell } from "../AuthShell";
-import { hashInvitationToken, maskEmail } from "@/lib/invitations";
+import { hashInvitationToken, maskEmail } from "@/lib/crm/invitations";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { acceptOrganizationInvitation } from "./actions";

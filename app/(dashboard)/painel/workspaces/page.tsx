@@ -13,9 +13,9 @@ import {
   Store,
   Tractor,
 } from "lucide-react";
-import { getProfessionPreset, type ProfessionType } from "@/lib/professions";
+import { getProfessionPreset, type ProfessionType } from "@/lib/people/professions";
 import { createClient } from "@/lib/supabase/server";
-import { getWorkspaceKey, getWorkspaceOptions } from "@/lib/workspaces";
+import { getWorkspaceKey, getWorkspaceOptions } from "@/lib/workspace/workspaces";
 import { updateProfession } from "../actions";
 import { WorkspaceSubmitButton } from "./WorkspaceSubmitButton";
 

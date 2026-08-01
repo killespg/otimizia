@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { IconArrowRight, IconBot, IconX } from "@/app/(dashboard)/painel/icons";
-import { propertyStatusLabel, propertyTypeLabel, transactionTypeLabel } from "@/lib/real-estate";
+import { propertyStatusLabel, propertyTypeLabel, transactionTypeLabel } from "@/lib/real-estate/real-estate";
 import type { RealEstatePropertyStatus, RealEstatePropertyType, RealEstateTransactionType } from "@/lib/supabase/types";
 
 const FILTER_KEYS = ["status", "property_type", "transaction_type", "price_min", "price_max", "bedrooms_min", "neighborhood"] as const;

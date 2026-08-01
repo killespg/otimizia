@@ -3,14 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { MIN_PASSWORD_LENGTH } from "@/lib/auth-constants";
-import { isValidCPF, onlyDigits } from "@/lib/cpf";
-import { resolveDemoCredentials } from "@/lib/demo-account";
-import { safeInternalPath } from "@/lib/invitations";
-import { normalizeProfession, type ProfessionType } from "@/lib/professions";
-import { resolveOrigin } from "@/lib/request-origin";
+import { MIN_PASSWORD_LENGTH } from "@/lib/account/auth-constants";
+import { isValidCPF, onlyDigits } from "@/lib/utils/cpf";
+import { resolveDemoCredentials } from "@/lib/account/demo-account";
+import { safeInternalPath } from "@/lib/crm/invitations";
+import { normalizeProfession, type ProfessionType } from "@/lib/people/professions";
+import { resolveOrigin } from "@/lib/utils/request-origin";
 import { createClient } from "@/lib/supabase/server";
-import { TURNSTILE_TOKEN_FIELD, clientIpFromHeaders, verifyTurnstile } from "@/lib/turnstile";
+import { TURNSTILE_TOKEN_FIELD, clientIpFromHeaders, verifyTurnstile } from "@/lib/integrations/turnstile";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -94,7 +94,7 @@ export async function signup(formData: FormData) {
         terms_accepted: "true",
         trial_notice_accepted: "true",
       },
-      emailRedirectTo: `${origin}${nextPath}`,
+      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
     },
   });
   if (error) {
@@ -124,7 +124,7 @@ export async function requestPasswordReset(formData: FormData) {
   const origin = resolveOrigin(await headers());
 
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/reset-password`,
+    redirectTo: `${origin}/auth/callback?next=${encodeURIComponent("/reset-password")}`,
   });
 
   // Sempre mostra a mesma mensagem, exista ou não conta com esse e-mail —

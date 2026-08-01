@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { CaptchaField } from "@/components/CaptchaField";
-import { PendingButton } from "@/components/PendingButton";
-import { SocialAuthButtons } from "@/components/SocialAuthButtons";
+import { CaptchaField } from "@/components/auth/CaptchaField";
+import { PendingButton } from "@/components/ui/PendingButton";
+import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
+import { AuthPasswordField } from "@/components/auth/AuthPasswordField";
 import { login } from "../actions";
 import { AuthShell, AuthField } from "../AuthShell";
 
@@ -14,7 +15,7 @@ export default async function LoginPage(
   return (
     <AuthShell
       title="Entrar"
-      subtitle="Entre e veja quem você precisa chamar hoje."
+      subtitle="Entre para acompanhar seus clientes, vendas e compromissos."
       error={searchParams.error}
       notice={searchParams.message}
       footer={
@@ -29,34 +30,37 @@ export default async function LoginPage(
         </>
       }
     >
-      <form action={login} className="mt-6 space-y-4">
+      <form action={login} className="mt-6">
         {searchParams.next ? <input type="hidden" name="next" value={searchParams.next} /> : null}
-        <AuthField
-          name="email"
-          label="E-mail"
-          type="text"
-          required
-          maxLength={160}
-          autoComplete="email"
-        />
-        <div>
+        <div className="space-y-4">
           <AuthField
-            name="password"
-            label="Senha"
-            type="password"
+            name="email"
+            label="E-mail"
+            type="email"
             required
-            maxLength={200}
-            autoComplete="current-password"
+            maxLength={160}
+            autoComplete="email"
           />
-          <Link
-            href="/forgot-password"
-            className="nav-item mt-1.5 inline-flex min-h-11 items-center text-xs font-bold text-ink-muted hover:text-brand-700"
-          >
-            Esqueci minha senha
-          </Link>
+          <div>
+            <AuthPasswordField
+              name="password"
+              label="Senha"
+              required
+              maxLength={200}
+              autoComplete="current-password"
+            />
+            <Link
+              href="/forgot-password"
+              className="nav-item mt-1.5 inline-flex min-h-11 items-center text-xs font-bold text-ink-muted hover:text-brand-700"
+            >
+              Esqueci minha senha
+            </Link>
+          </div>
         </div>
-        <CaptchaField />
-        <PendingButton className="btn w-full py-3 text-base" pendingLabel="Entrando">
+        <div className="mt-6">
+          <CaptchaField />
+        </div>
+        <PendingButton className="btn btn-lg mt-8 w-full" pendingLabel="Entrando">
           Entrar
         </PendingButton>
       </form>

@@ -1,8 +1,8 @@
 import { headers } from "next/headers";
-import { createEvolutionInstance, EvolutionApiError } from "@/lib/evolution";
-import { logError } from "@/lib/logger";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
-import { resolveOrigin } from "@/lib/request-origin";
+import { createEvolutionInstance, EvolutionApiError } from "@/lib/whatsapp/evolution";
+import { logError } from "@/lib/utils/logger";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
+import { resolveOrigin } from "@/lib/utils/request-origin";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";

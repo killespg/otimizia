@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import { canViewLegal } from "@/lib/law-office";
-import { getActiveOrgId } from "@/lib/org";
+import { canViewLegal } from "@/lib/law/law-office";
+import { getActiveOrgId } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 
 /**
  * Porta única da workspace jurídica.

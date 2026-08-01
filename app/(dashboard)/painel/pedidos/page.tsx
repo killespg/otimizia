@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronRight, CircleDollarSign, ClipboardList, PackageCheck, Search, Truck } from "lucide-react";
 import { SellerEmptyState, SellerPageHeader, SellerStatus, SellerSummaryStrip, date, money, sellerOrderStatusLabel, sellerPaymentStatusLabel } from "@/components/seller/seller-ui";
-import { getSellerPageContext } from "@/lib/seller-server";
+import { getSellerPageContext } from "@/lib/seller/seller-server";
 import type { Contact, SellerOrder, SellerOrderItem } from "@/lib/supabase/types";
 
 type OrderRow = SellerOrder & { seller_order_items: Pick<SellerOrderItem, "id" | "quantity">[] };

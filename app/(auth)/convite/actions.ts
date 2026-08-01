@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { syncOrganizationSeats } from "@/lib/billing/organization-seats";
-import { hashInvitationToken } from "@/lib/invitations";
+import { hashInvitationToken } from "@/lib/crm/invitations";
 import { createClient } from "@/lib/supabase/server";
 
 export async function acceptOrganizationInvitation(formData: FormData) {

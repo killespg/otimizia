@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
-import { BrandName } from "@/components/BrandName";
-import { PendingButton } from "@/components/PendingButton";
+import { BrandName } from "@/components/design-system/BrandName";
+import { PendingButton } from "@/components/ui/PendingButton";
 import { AnimatedShapesBackground } from "@/components/design-system/animated-shapes-background";
-import { safeInternalPath } from "@/lib/invitations";
-import { PROFESSION_OPTIONS } from "@/lib/professions";
+import { safeInternalPath } from "@/lib/crm/invitations";
+import { PROFESSION_OPTIONS } from "@/lib/people/professions";
 import { createClient } from "@/lib/supabase/server";
 import { AuthField } from "@/app/(auth)/AuthShell";
 import { submitCpf } from "./actions";

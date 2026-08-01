@@ -2,8 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { AlertTriangle, Check, SlidersHorizontal } from "lucide-react";
-import { PendingButton } from "@/components/PendingButton";
-import { modulesForSalesModels, SELLER_MODULES, SELLER_SALES_MODELS } from "@/lib/seller-operations";
+import { PendingButton } from "@/components/ui/PendingButton";
+import { modulesForSalesModels, SELLER_MODULES, SELLER_SALES_MODELS } from "@/lib/seller/seller-operations";
 import type { SellerModule, SellerSalesModel } from "@/lib/supabase/types";
 import { updateSellerBusinessProfile, type UpdateSellerBusinessProfileState } from "@/app/(dashboard)/painel/operacao/actions";
 

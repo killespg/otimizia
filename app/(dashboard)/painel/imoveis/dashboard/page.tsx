@@ -1,16 +1,16 @@
 import { notFound } from "next/navigation";
-import { canManageRealEstate, canViewRealEstate, isRealEstateV2Enabled } from "@/lib/real-estate";
-import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
+import { canManageRealEstate, canViewRealEstate, isRealEstateV2Enabled } from "@/lib/real-estate/real-estate";
+import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
-import { getDashboardPreferences } from "@/lib/dashboard-preferences";
-import { getProfessionPreset } from "@/lib/professions";
+import { getDashboardPreferences } from "@/lib/workspace/dashboard-preferences";
+import { getProfessionPreset } from "@/lib/people/professions";
 import type {
   RealEstateCommission,
   RealEstateOffer,
   RealEstateTarget,
   RealEstateVisit,
 } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import { RealEstateDashboard } from "./RealEstateDashboard";
 
 function firstOfMonth(date: Date): string {

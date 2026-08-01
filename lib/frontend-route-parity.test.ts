@@ -117,7 +117,7 @@ describe("frontend route parity", () => {
     expect(dashboard).toContain("Origem dos leads");
     expect(dashboard).toContain("LTV observado");
     expect(dashboard).toContain("Principal motivo de perda");
-    expect(dashboard).not.toContain('from "@/components/AgentPanel"');
+    expect(dashboard).not.toContain('from "@/components/tim/AgentPanel"');
   });
 
   it("keeps the same animated background behind seller and real-estate dashboards", () => {
@@ -130,7 +130,7 @@ describe("frontend route parity", () => {
       "utf8",
     );
     const shaderBackground = readFileSync(
-      resolve(process.cwd(), "components/ui/shader-background.tsx"),
+      resolve(process.cwd(), "components/design-system/shader-background.tsx"),
       "utf8",
     );
     const neuralBackground = readFileSync(

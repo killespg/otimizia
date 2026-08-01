@@ -2,8 +2,8 @@
 
 import { useRef, type KeyboardEvent } from "react";
 import { IconPaperclip, IconX, IconMic, IconArrowRight } from "@/app/(dashboard)/painel/icons";
-import { ChatImageAttach, type PendingImage } from "@/components/ChatImageAttach";
-import type { VoiceStatus } from "@/lib/ai/useVoiceCall";
+import { ChatImageAttach, type PendingImage } from "@/components/tim/ChatImageAttach";
+import type { VoiceStatus } from "@/lib/ai/hooks/useVoiceCall";
 
 const MAX_TEXTAREA_PX = 132;
 

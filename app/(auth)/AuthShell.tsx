@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { InputHTMLAttributes } from "react";
-import { AlertCircle, CalendarCheck2, Check, Columns3, ContactRound } from "lucide-react";
+import { AlertCircle, CalendarCheck2, Check, ContactRound, Sparkles } from "lucide-react";
 import { LogoWordmark } from "@/components/design-system/logo";
 import { AmbientParticles } from "@/components/design-system/ambient-particles";
 import { AnimatedShapesBackground } from "@/components/design-system/animated-shapes-background";
@@ -27,6 +27,12 @@ import { AnimatedShapesBackground } from "@/components/design-system/animated-sh
  * próprio dentro dela — quadro dentro do quadro — em vez de ir de ponta a
  * ponta como antes.
  */
+const AUTH_FEATURES = [
+  [ContactRound, "Clientes organizados", "Histórico completo e próximos passos sempre disponíveis."],
+  [Sparkles, "Tim, seu assistente de IA", "Responde no WhatsApp e sinaliza o momento certo de agir."],
+  [CalendarCheck2, "Lembretes no momento certo", "Você sempre terá noção clara dos seus vencimentos."],
+] as const;
+
 export function AuthShell({
   title,
   subtitle,
@@ -43,7 +49,13 @@ export function AuthShell({
   footer: React.ReactNode;
 }) {
   return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-od-bg p-0 sm:grid sm:place-items-center sm:p-5">
+    <main
+      className="relative h-[100dvh] overflow-hidden bg-od-bg p-2 sm:grid sm:place-items-center sm:p-5"
+      style={{
+        paddingTop: "max(0.5rem, env(safe-area-inset-top))",
+        paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))",
+      }}
+    >
       {/* O mesmo glow que abre o hero da landing, só que centralizado — aqui
           não há um lado esquerdo fixo pra ancorar o gradiente. */}
       <div
@@ -55,7 +67,17 @@ export function AuthShell({
         }}
       />
       <AnimatedShapesBackground />
-      <div className="relative z-10 mx-auto grid min-h-[100dvh] w-full max-w-6xl gap-0 overflow-hidden rounded-none border-od-border bg-od-surface shadow-none sm:min-h-[min(760px,calc(100dvh-2.5rem))] sm:gap-3 sm:rounded-[28px] sm:border sm:p-3 sm:shadow-od-float lg:grid-cols-[1.05fr_.95fr]">
+      <div className="relative z-10 mx-auto grid h-full w-full max-w-6xl gap-0 overflow-hidden rounded-[24px] border border-od-border bg-od-surface shadow-od-float sm:h-auto sm:min-h-[min(760px,calc(100dvh-2.5rem))] sm:gap-3 sm:rounded-[28px] sm:p-3 lg:grid-cols-[1.05fr_.95fr]">
+        {/* No desktop a cor vem da coluna escura da esquerda (bg-od-sidebar +
+            partículas). No mobile essa coluna some (hidden lg:flex) e o card
+            virou uma superfície cinza quase de ponta a ponta — sem isso, o
+            único roxo da marca ficava espremido nos 8px de margem em volta
+            do card, invisível na prática. Esse glow entra por cima da própria
+            superfície, cortado pelos cantos arredondados do card. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 z-0 h-72 bg-[radial-gradient(ellipse_90%_100%_at_50%_-10%,rgba(135,87,240,0.4),transparent_72%)] lg:hidden"
+        />
         {/* A mesma poeira da área autenticada, contida em cada coluna. Densidade
             mais esparsa que no painel: aqui ela preenche o vazio entre o texto
             e a lista, não deve competir com o formulário. */}
@@ -69,19 +91,16 @@ export function AuthShell({
               <LogoWordmark height={32} />
             </Link>
             <h2 className="mt-16 max-w-lg text-[34px] font-extrabold leading-[1.14] tracking-[-0.025em] text-od-text">
-              O que precisa da sua atenção, sem ruído.
+              A IA que atende seu WhatsApp e organiza toda a operação do seu negócio.
             </h2>
             <p className="mt-4 max-w-md text-[15px] leading-7 text-od-text-2">
-              Contatos, vendas e lembretes no mesmo lugar, adaptados ao seu jeito
-              de trabalhar.
+              Cada profissão tem um painel dedicado, com telas específicas e o
+              apoio constante do Tim. Funciona para vendedor autônomo, advogado
+              e corretor de imóveis.
             </p>
           </div>
           <div className="relative z-10 border-y border-od-border">
-            {[
-              [ContactRound, "Clientes organizados", "Histórico e próximos passos sempre à mão."],
-              [Columns3, "Funil que acompanha seu processo", "Etapas, valores e responsáveis sem planilha."],
-              [CalendarCheck2, "Lembretes no momento certo", "O que venceu sobe para o topo da fila."],
-            ].map(([Icon, label, description]) => {
+            {AUTH_FEATURES.map(([Icon, label, description]) => {
               const FeatureIcon = Icon as typeof ContactRound;
               return (
                 <div
@@ -99,12 +118,15 @@ export function AuthShell({
           </div>
         </section>
 
-        <section className="relative flex min-h-[100dvh] items-center overflow-hidden px-5 py-10 sm:min-h-0 sm:px-8 lg:px-12">
+        <section className="relative flex h-full overflow-y-auto px-5 py-6 sm:h-auto sm:overflow-visible sm:px-8 sm:py-10 lg:px-12">
           {/* Superfície clara: sem poeira aqui, ela fica só no plano escuro
               (coluna da esquerda) para não competir com os campos do
-              formulário. */}
-          <div className="relative z-10 mx-auto w-full max-w-md">
-            <div className="mb-10 lg:hidden">
+              formulário. m-auto (não items-center) é proposital: centraliza
+              quando sobra espaço, mas se o conteúdo não couber (cadastro em
+              telas pequenas) ele nasce colado no topo em vez de cortar a
+              metade de cima contra a rolagem — só então essa seção rola. */}
+          <div className="relative z-10 m-auto w-full max-w-md">
+            <div className="mb-6 flex justify-center lg:hidden">
               <Link
                 href="/"
                 aria-label="OtimizIA, início"
@@ -113,8 +135,8 @@ export function AuthShell({
                 <LogoWordmark height={30} />
               </Link>
             </div>
-            <h1 className="text-[28px] font-bold tracking-[-0.02em] text-od-text">{title}</h1>
-            <p className="mt-2 max-w-[65ch] text-sm leading-6 text-od-text-2">{subtitle}</p>
+            <h1 className="text-center text-[28px] font-bold tracking-[-0.02em] text-od-text lg:text-left">{title}</h1>
+            <p className="mx-auto mt-2 max-w-[65ch] text-center text-sm leading-6 text-od-text-2 lg:mx-0 lg:text-left">{subtitle}</p>
 
             {error ? (
               <div
@@ -136,7 +158,7 @@ export function AuthShell({
             ) : null}
 
             {children}
-            <p className="mt-7 border-t border-od-border pt-5 text-sm text-od-text-2">{footer}</p>
+            <p className="mt-7 border-t border-od-border pt-5 text-center text-sm text-od-text-2 lg:text-left">{footer}</p>
           </div>
         </section>
       </div>

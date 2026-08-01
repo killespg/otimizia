@@ -1,10 +1,10 @@
 import { createHash } from "crypto";
 import { getRecentAssistantMessages } from "@/lib/ai/history";
-import { logError } from "@/lib/logger";
-import { getActiveOrgId } from "@/lib/org";
-import { getUserPlanAccess } from "@/lib/plan-access";
+import { logError } from "@/lib/utils/logger";
+import { getActiveOrgId } from "@/lib/workspace/org";
+import { getUserPlanAccess } from "@/lib/billing/plan-access";
 import { createClient } from "@/lib/supabase/server";
-import { currentYearMonth, VOICE_MONTHLY_LIMIT_SECONDS } from "@/lib/voice-limit";
+import { currentYearMonth, VOICE_MONTHLY_LIMIT_SECONDS } from "@/lib/ai/voice-limit";
 
 export const runtime = "nodejs";
 

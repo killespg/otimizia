@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { canViewLegal } from "@/lib/law-office";
-import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
+import { canViewLegal } from "@/lib/law/law-office";
+import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { LegalCase } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import { IconAlert, IconBell, IconColumns } from "../../icons";
 
 export default async function DeadlinesPage() {

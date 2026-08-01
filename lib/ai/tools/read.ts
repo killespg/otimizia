@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { ALL_DASHBOARD_METRICS, DASHBOARD_ACCENTS, DASHBOARD_STYLES, DASHBOARD_WIDGETS, getDashboardPreferences } from "@/lib/dashboard-preferences";
-import { getProfessionPreset } from "@/lib/professions";
-import { parseWorkspacePreferences } from "@/lib/workspace-preferences";
+import { ALL_DASHBOARD_METRICS, DASHBOARD_ACCENTS, DASHBOARD_STYLES, DASHBOARD_WIDGETS, getDashboardPreferences } from "@/lib/workspace/dashboard-preferences";
+import { getProfessionPreset } from "@/lib/people/professions";
+import { parseWorkspacePreferences } from "@/lib/workspace/workspace-preferences";
 import type { ToolInput } from "./types";
 import { STAGE_KEYS, clampInt, ensureOk, isStage, optionalStr, str } from "./validation";
 

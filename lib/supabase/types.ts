@@ -739,6 +739,7 @@ export type WhatsappConversation = {
   contact_id: string | null;
   phone_number: string;
   contact_name: string | null;
+  profile_pic_url: string | null;
   ia_active: boolean;
   last_message_at: string;
   created_at: string;

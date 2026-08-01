@@ -1,8 +1,8 @@
-import { dealsToCsv } from "@/lib/deals-report";
-import { getActiveOrgId } from "@/lib/org";
+import { dealsToCsv } from "@/lib/crm/deals-report";
+import { getActiveOrgId } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Deal } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 
 export async function GET(request: Request) {
   const supabase = await createClient();

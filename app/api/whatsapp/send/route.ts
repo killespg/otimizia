@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
-import { EvolutionApiError, sendEvolutionMedia, sendEvolutionText } from "@/lib/evolution";
-import { logError } from "@/lib/logger";
-import { getActiveOrgId } from "@/lib/org";
+import { EvolutionApiError, sendEvolutionMedia, sendEvolutionText } from "@/lib/whatsapp/evolution";
+import { logError } from "@/lib/utils/logger";
+import { getActiveOrgId } from "@/lib/workspace/org";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -9,7 +9,7 @@ import {
   WHATSAPP_ATTACHMENTS_BUCKET,
   whatsappAttachmentExpiresAt,
   whatsappAttachmentUrl,
-} from "@/lib/whatsapp-attachments";
+} from "@/lib/whatsapp/whatsapp-attachments";
 
 export const runtime = "nodejs";
 

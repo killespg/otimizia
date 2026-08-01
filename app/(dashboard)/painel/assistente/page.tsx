@@ -1,4 +1,4 @@
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Organization } from "@/lib/supabase/types";
 import { AssistantPageClient } from "./AssistantPageClient";

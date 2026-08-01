@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { PropertyReactionButtons } from "@/components/real-estate/PropertyReactionButtons";
-import { centsToReais } from "@/lib/real-estate";
+import { centsToReais } from "@/lib/real-estate/real-estate";
 
 // Fora do grupo (app): não cai em nenhum prefixo protegido de
 // lib/supabase/middleware.ts, então é público por padrão — sem sessão, sem
