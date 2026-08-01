@@ -111,6 +111,26 @@ export async function sendEvolutionMedia(
   });
 }
 
+// POST /chat/fetchProfilePictureUrl/{instance} -> { wuid, profilePictureUrl }
+// Contato sem foto, número que a instância ainda não sincronizou, ou a
+// própria Evolution fora do ar: qualquer um desses casos é normal (nem todo
+// número tem foto pública) — devolve null em vez de propagar erro, pra não
+// travar quem chamou (criação de conversa/contato) por causa de um avatar.
+export async function fetchEvolutionProfilePicture(
+  instanceName: string,
+  number: string
+): Promise<string | null> {
+  try {
+    const data = await evolutionFetch(`/chat/fetchProfilePictureUrl/${instanceName}`, {
+      method: "POST",
+      body: JSON.stringify({ number }),
+    });
+    return typeof data?.profilePictureUrl === "string" ? data.profilePictureUrl : null;
+  } catch {
+    return null;
+  }
+}
+
 export type EvolutionMessageRecord = {
   id: string;
   key: {

@@ -361,9 +361,12 @@ export function WhatsappInbox({
                       (active ? "bg-white/[0.07]" : "hover:bg-white/[0.035]")
                     }
                   >
-                    <span className="grid size-12 shrink-0 place-items-center rounded-full bg-white/[0.08] text-[13px] font-semibold text-white/70">
-                      {initials(conversation.contact_name ?? conversation.phone_number)}
-                    </span>
+                    <ConversationAvatar
+                      name={conversation.contact_name ?? conversation.phone_number}
+                      profilePicUrl={conversation.profile_pic_url}
+                      size="size-12"
+                      textSize="text-[13px]"
+                    />
                     {/* Divisória começa depois do avatar, como no WhatsApp. */}
                     <span className="flex min-w-0 flex-1 flex-col justify-center border-t border-white/[0.06] py-3">
                       <span className="flex items-baseline justify-between gap-2">
@@ -441,9 +444,12 @@ export function WhatsappInbox({
                 >
                   <IconChevronRight className="h-5 w-5 rotate-180" />
                 </button>
-                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white/[0.08] text-[12px] font-semibold text-white/70">
-                  {initials(selected.contact_name ?? selected.phone_number)}
-                </span>
+                <ConversationAvatar
+                  name={selected.contact_name ?? selected.phone_number}
+                  profilePicUrl={selected.profile_pic_url}
+                  size="size-10"
+                  textSize="text-[12px]"
+                />
                 <div className="min-w-0">
                   <p className="truncate text-[15px] font-medium text-white">
                     {selected.contact_name ?? selected.phone_number}
@@ -821,4 +827,39 @@ function initials(value: string) {
   const words = value.match(/[A-Za-zÀ-ÿ]+/g);
   if (!words) return <IconUsers className="h-5 w-5" />;
   return words.slice(0, 2).map((word) => word[0].toUpperCase()).join("");
+}
+
+// Foto de perfil do WhatsApp quando a Evolution já trouxe uma (ver
+// lib/whatsapp/evolution.ts); cai pras iniciais de sempre quando não tem
+// (contato sem foto, ou ainda não sincronizada) ou se a URL falhar ao
+// carregar. <img> comum, não next/image — mesmo padrão já usado nos anexos
+// de mensagem aqui embaixo, pra não depender de allow-list de domínio.
+function ConversationAvatar({
+  name,
+  profilePicUrl,
+  size,
+  textSize,
+}: {
+  name: string;
+  profilePicUrl: string | null;
+  size: "size-10" | "size-12";
+  textSize: "text-[12px]" | "text-[13px]";
+}) {
+  const [failed, setFailed] = useState(false);
+  if (profilePicUrl && !failed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={profilePicUrl}
+        alt=""
+        className={`${size} shrink-0 rounded-full object-cover`}
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return (
+    <span className={`grid ${size} shrink-0 place-items-center rounded-full bg-white/[0.08] ${textSize} font-semibold text-white/70`}>
+      {initials(name)}
+    </span>
+  );
 }

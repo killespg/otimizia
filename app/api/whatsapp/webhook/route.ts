@@ -1,4 +1,4 @@
-import { EvolutionApiError, sendEvolutionText } from "@/lib/whatsapp/evolution";
+import { EvolutionApiError, fetchEvolutionProfilePicture, sendEvolutionText } from "@/lib/whatsapp/evolution";
 import { fetchWhatsappHistory, generateWhatsappReply } from "@/lib/ai/whatsapp-reply";
 import { detectPurchaseIntent } from "@/lib/ai/whatsapp-intent";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
@@ -119,7 +119,7 @@ export async function POST(request: Request) {
 
     const { data: existingConversation } = await admin
       .from("whatsapp_conversations")
-      .select("id, ia_active, contact_name, contact_id")
+      .select("id, ia_active, contact_name, contact_id, profile_pic_url")
       .eq("org_id", orgId)
       .eq("phone_number", phoneNumber)
       .maybeSingle();
@@ -132,16 +132,22 @@ export async function POST(request: Request) {
       conversationId = existingConversation.id as string;
       iaActive = existingConversation.ia_active as boolean;
       contactId = existingConversation.contact_id as string | null;
-      await admin
-        .from("whatsapp_conversations")
-        .update({
-          last_message_at: new Date().toISOString(),
-          contact_name: existingConversation.contact_name ?? pushName,
-        })
-        .eq("id", conversationId);
+      const updatePayload: Record<string, unknown> = {
+        last_message_at: new Date().toISOString(),
+        contact_name: existingConversation.contact_name ?? pushName,
+      };
+      // Conversa criada antes dessa foto existir, ou a primeira busca não
+      // achou nada (contato ainda sem foto na época): tenta de novo a cada
+      // mensagem nova até achar, sem custo extra depois que já tem uma.
+      if (!existingConversation.profile_pic_url) {
+        const profilePicUrl = await fetchEvolutionProfilePicture(instanceName, phoneNumber);
+        if (profilePicUrl) updatePayload.profile_pic_url = profilePicUrl;
+      }
+      await admin.from("whatsapp_conversations").update(updatePayload).eq("id", conversationId);
     } else {
       const created2 = await findOrCreateContact(admin, orgId, phoneNumber, pushName);
       contactId = created2.contactId;
+      const profilePicUrl = await fetchEvolutionProfilePicture(instanceName, phoneNumber);
       const { data: created, error: createError } = await admin
         .from("whatsapp_conversations")
         .insert({
@@ -149,6 +155,7 @@ export async function POST(request: Request) {
           contact_id: contactId,
           phone_number: phoneNumber,
           contact_name: pushName,
+          profile_pic_url: profilePicUrl,
           // Número desconhecido (nunca foi contato/cliente antes): a IA fica
           // pausada até revisão humana — protege contra responder
           // automaticamente amigo/família quando o número é compartilhado
