@@ -13,15 +13,15 @@ import NeuralBackground from "@/components/design-system/neural-background";
 import { DashboardRoutePreloader } from "@/components/design-system/dashboard-route-preloader";
 import { DashboardNavigationFeedback } from "@/components/design-system/dashboard-navigation-feedback";
 import { AssistantChatProvider } from "@/lib/ai/AssistantChatProvider";
-import { getDashboardPreferences } from "@/lib/dashboard-preferences";
-import { canViewFinance, canViewLegal } from "@/lib/law-office";
-import { getActiveOrgId } from "@/lib/org";
-import { getUserPlanAccess } from "@/lib/plan-access";
-import { getProfessionPreset } from "@/lib/professions";
-import { canManageRealEstate, canViewRealEstate } from "@/lib/real-estate";
+import { getDashboardPreferences } from "@/lib/workspace/dashboard-preferences";
+import { canViewFinance, canViewLegal } from "@/lib/law/law-office";
+import { getActiveOrgId } from "@/lib/workspace/org";
+import { getUserPlanAccess } from "@/lib/billing/plan-access";
+import { getProfessionPreset } from "@/lib/people/professions";
+import { canManageRealEstate, canViewRealEstate } from "@/lib/real-estate/real-estate";
 import { createClient } from "@/lib/supabase/server";
-import { getWorkspaceLabels, parseWorkspacePreferences } from "@/lib/workspace-preferences";
-import { getWorkspaceKey, getWorkspaceOptions } from "@/lib/workspaces";
+import { getWorkspaceLabels, parseWorkspacePreferences } from "@/lib/workspace/workspace-preferences";
+import { getWorkspaceKey, getWorkspaceOptions } from "@/lib/workspace/workspaces";
 import { TrialBanner } from "./TrialBanner";
 
 function getInitials(name: string) {

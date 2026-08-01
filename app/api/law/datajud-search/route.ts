@@ -1,10 +1,10 @@
-import { canViewLegal, hasLegalWorkspace } from "@/lib/law-office";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { canViewLegal, hasLegalWorkspace } from "@/lib/law/law-office";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
-import { DatajudApiError, searchDatajudProcess } from "@/lib/datajud";
-import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/datajud-tribunals";
-import { logError } from "@/lib/logger";
-import { trackWatchedProcess } from "@/lib/law-watched-processes";
+import { DatajudApiError, searchDatajudProcess } from "@/lib/law/datajud";
+import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/law/datajud-tribunals";
+import { logError } from "@/lib/utils/logger";
+import { trackWatchedProcess } from "@/lib/law/law-watched-processes";
 
 export const runtime = "nodejs";
 

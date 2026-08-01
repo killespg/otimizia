@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Boxes, Camera, PackagePlus, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
-import { PendingButton } from "@/components/PendingButton";
+import { PendingButton } from "@/components/ui/PendingButton";
 import { ProductThumb, SellerPageHeader, SellerStatus, date, money } from "@/components/seller/seller-ui";
-import { SELLER_SALES_MODELS } from "@/lib/seller-operations";
-import { getSellerPageContext, sellerProductImageUrl } from "@/lib/seller-server";
+import { SELLER_SALES_MODELS } from "@/lib/seller/seller-operations";
+import { getSellerPageContext, sellerProductImageUrl } from "@/lib/seller/seller-server";
 import type { SellerCollection, SellerInventoryMovement, SellerOrderItem, SellerProduct, SellerProductMedia, SellerProductVariant, SellerWarranty } from "@/lib/supabase/types";
 import { adjustSellerStock, createSellerVariant, deleteSellerProductPhoto, updateSellerProduct, uploadSellerProductPhoto } from "../../operacao/actions";
 

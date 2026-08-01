@@ -1,7 +1,7 @@
 import { CheckCircle2 } from "lucide-react";
 import { SellerOperationSettingsForm } from "@/components/seller/SellerOperationSettingsForm";
 import { SellerPageHeader } from "@/components/seller/seller-ui";
-import { getSellerPageContext } from "@/lib/seller-server";
+import { getSellerPageContext } from "@/lib/seller/seller-server";
 
 export default async function SellerOperationSettingsPage({ searchParams }: { searchParams: Promise<{ salvo?: string }> }) {
   const { salvo } = await searchParams;

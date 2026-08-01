@@ -2,10 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PropertyMap } from "@/components/real-estate/PropertyMap";
 import { RealEstatePageHeader } from "@/components/real-estate/real-estate-ui";
-import { canViewRealEstate, isRealEstateV2Enabled } from "@/lib/real-estate";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { canViewRealEstate, isRealEstateV2Enabled } from "@/lib/real-estate/real-estate";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 
 export default async function ImoveisMapaPage() {
   const supabase = await createClient();

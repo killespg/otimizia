@@ -13,7 +13,8 @@
     "test:e2e": "playwright test",
     "test:e2e:isolated": "node scripts/run-isolated-e2e.mjs",
     "import:trello": "node scripts/import-trello.mjs",
-    "seed:broker-demo": "node scripts/seed-real-estate-demo.mjs"
+    "seed:broker-demo": "node scripts/seed-real-estate-demo.mjs",
+    "enrich:broker-demo": "node scripts/enrich-real-estate-demo.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.109.0",

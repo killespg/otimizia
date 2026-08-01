@@ -1,6 +1,6 @@
-import { logError } from "@/lib/logger";
-import { sendPushToUser } from "@/lib/push";
-import { getUsersWithDueTasks, markSent, summaryMessage } from "@/lib/reminders";
+import { logError } from "@/lib/utils/logger";
+import { sendPushToUser } from "@/lib/integrations/push";
+import { getUsersWithDueTasks, markSent, summaryMessage } from "@/lib/crm/reminders";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";

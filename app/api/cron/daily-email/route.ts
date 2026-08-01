@@ -1,7 +1,7 @@
-import { dailySummaryEmail, sendEmail, stalledDealEmail } from "@/lib/email";
-import { logError } from "@/lib/logger";
-import { getUsersWithDueTasks, markSent } from "@/lib/reminders";
-import { getStalledDealsByUser } from "@/lib/stalled-deals";
+import { dailySummaryEmail, sendEmail, stalledDealEmail } from "@/lib/integrations/email";
+import { logError } from "@/lib/utils/logger";
+import { getUsersWithDueTasks, markSent } from "@/lib/crm/reminders";
+import { getStalledDealsByUser } from "@/lib/crm/stalled-deals";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";

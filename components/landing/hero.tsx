@@ -1,7 +1,6 @@
 import * as React from "react";
 import { ArrowRight } from "lucide-react";
 import { AnimatedShapesBackground } from "@/components/design-system/animated-shapes-background";
-import { DashboardPreview } from "@/components/landing/dashboard-preview";
 
 /**
  * Dark hero pattern: restrained radial glow, animated shapes and a direct CTA.
@@ -10,7 +9,7 @@ import { DashboardPreview } from "@/components/landing/dashboard-preview";
  */
 export function Hero({ animated = false }: { animated?: boolean }) {
   return (
-    <section className="relative overflow-hidden border-b border-od-border bg-od-bg pt-24 text-center md:pt-28 lg:pb-0">
+    <section className="relative overflow-hidden border-b border-od-border bg-od-bg pb-16 pt-24 text-center md:pb-20 md:pt-28">
       <div
         className="pointer-events-none absolute inset-0"
         style={{
@@ -40,7 +39,7 @@ export function Hero({ animated = false }: { animated?: boolean }) {
         {/* A promessa é o que o webhook faz de verdade: a IA responde a
             conversa e a detecção de intenção abre a negociação no funil. Nada
             aqui é roadmap. */}
-        <h1 className="mx-auto mb-5 max-w-[18ch] text-balance text-[40px] font-extrabold leading-[1.1] tracking-[-0.02em] sm:text-[44px] md:max-w-[22ch] md:text-[56px]">
+        <h1 className="mx-auto mb-5 max-w-[20ch] text-balance text-[32px] font-extrabold leading-[1.15] tracking-[-0.02em] sm:text-[44px] md:max-w-[22ch] md:text-[56px]">
           <span className="text-white">A IA atende seu WhatsApp. </span>
           <span className="text-od-accent-hover">
             Você entra quando importa.
@@ -52,29 +51,13 @@ export function Hero({ animated = false }: { animated?: boolean }) {
           e liga ou desliga a IA em cada uma.
         </p>
         <a
+          id="hero-cta"
           href="/signup"
           className="inline-flex min-h-11 items-center gap-2 rounded-md bg-od-accent px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
         >
           Começar grátis
           <ArrowRight className="size-4" strokeWidth={2} />
         </a>
-      </div>
-
-      {/* Teaser do produto em perspectiva. Em vez do screenshot hotlinkado da
-          referência, é o mesmo mock fiel que a seção "O painel" usa — só que
-          aqui inerte: quem quiser explorar faz isso lá embaixo, onde a
-          instrução está. `inert` tira do foco e da árvore de acessibilidade,
-          evitando dois "Visão geral" concorrendo pro leitor de tela. */}
-      <div className="relative z-10 mx-auto mt-20 hidden w-full max-w-6xl [mask-image:linear-gradient(to_bottom,black_58%,transparent_100%)] lg:block">
-        <div className="[perspective:1400px]">
-          <div className="origin-top [transform:rotateX(22deg)]">
-            <div className="mx-auto h-[620px] max-w-5xl skew-x-[.14rad] overflow-hidden rounded-xl border border-od-border bg-od-surface p-2 shadow-od-float">
-              <div inert className="pointer-events-none h-full select-none">
-                <DashboardPreview />
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );

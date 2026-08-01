@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Download, HandCoins, Target, TriangleAlert, WalletCards } from "lucide-react";
-import { canManageRealEstate, canViewRealEstate, isRealEstateV2Enabled } from "@/lib/real-estate";
+import { canManageRealEstate, canViewRealEstate, isRealEstateV2Enabled } from "@/lib/real-estate/real-estate";
 import {
   commissionPeriodOrFilter,
   isCommissionDueInPeriod,
   isCommissionOverdue,
   isCommissionReceivedInPeriod,
   normalizeCommissionPeriod,
-} from "@/lib/real-estate-commissions";
-import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
+} from "@/lib/real-estate/real-estate-commissions";
+import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { RealEstateCommission, RealEstateTarget } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import { CommissionPanel, TargetsPanel } from "../dashboard/RealEstateDashboard";
 
 function centsToReais(cents: number): string {

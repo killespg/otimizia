@@ -3,7 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { logError } from "@/lib/logger";
+import { logError } from "@/lib/utils/logger";
 import { createClient } from "@/lib/supabase/server";
 
 async function requireUser() {

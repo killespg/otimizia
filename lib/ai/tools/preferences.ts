@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { advancePropertiesToSent } from "@/lib/real-estate-deal-properties";
-import { computeMatchScore } from "@/lib/real-estate-match";
+import { advancePropertiesToSent } from "@/lib/real-estate/real-estate-deal-properties";
+import { computeMatchScore } from "@/lib/real-estate/real-estate-match";
 import type { RealEstateLeadPreferences, RealEstateProperty } from "@/lib/supabase/types";
 import type { ToolInput } from "./types";
 import { clampInt, detailsObject, ensureOk, optionalStr, requireVisiblePropertyId, str, visibleContactIdOrNull } from "./validation";

@@ -7,9 +7,9 @@ import {
   isVisitorId,
   parseConsent,
   serializeConsent,
-} from "@/lib/consent";
-import { logError } from "@/lib/logger";
-import { resolveOrigin } from "@/lib/request-origin";
+} from "@/lib/consent/consent";
+import { logError } from "@/lib/utils/logger";
+import { resolveOrigin } from "@/lib/utils/request-origin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 

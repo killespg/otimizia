@@ -1,4 +1,4 @@
-import { getActiveOrgId } from "@/lib/org";
+import { getActiveOrgId } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";

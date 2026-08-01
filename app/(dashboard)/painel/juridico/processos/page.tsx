@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { PendingButton } from "@/components/PendingButton";
+import { PendingButton } from "@/components/ui/PendingButton";
 import { ActionDrawer } from "@/components/design-system/action-drawer";
-import { canManageLegal, canViewLegal, LEGAL_CASE_STATUS } from "@/lib/law-office";
-import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
+import { canManageLegal, canViewLegal, LEGAL_CASE_STATUS } from "@/lib/law/law-office";
+import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, LegalCase } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import { IconAlert, IconColumns, IconPlus, IconSearch, IconUsers } from "../../icons";
 import { createLegalCase } from "../actions";
 

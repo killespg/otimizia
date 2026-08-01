@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { computeListingQuality } from "@/lib/real-estate-listing-quality";
+import { computeListingQuality } from "@/lib/real-estate/real-estate-listing-quality";
 import type { RealEstateProperty } from "@/lib/supabase/types";
 import type { ToolInput } from "./types";
 import {

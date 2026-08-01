@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { logError } from "@/lib/logger";
+import { logError } from "@/lib/utils/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { fetchSignedDocumentUrl, verifyAutentiqueSignature } from "@/lib/autentique";
+import { fetchSignedDocumentUrl, verifyAutentiqueSignature } from "@/lib/law/autentique";
 
 export const runtime = "nodejs";
 

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { FileSearch, RefreshCw } from "lucide-react";
 import { LegalMovementsList } from "@/components/legal/legal-movements-list";
-import { canViewLegal } from "@/lib/law-office";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { canViewLegal } from "@/lib/law/law-office";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { LegalWatchedProcess } from "@/lib/supabase/types";
 

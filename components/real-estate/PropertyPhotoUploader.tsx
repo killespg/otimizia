@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { uploadPropertyPhoto } from "@/app/(dashboard)/painel/imoveis/actions";
-import { compressImage, formatBytes } from "@/lib/image-compress";
+import { compressImage, formatBytes } from "@/lib/utils/image-compress";
 
 // Envio de foto do imóvel com compressão antes de subir. O corretor escolhe a
 // foto do celular (3–8 MB, 4000px) e o navegador reduz pra ~1600px/JPEG antes

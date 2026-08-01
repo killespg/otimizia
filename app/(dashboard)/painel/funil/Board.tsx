@@ -3,16 +3,16 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PendingButton } from "@/components/PendingButton";
-import type { FieldSpec } from "@/lib/professions";
+import { PendingButton } from "@/components/ui/PendingButton";
+import type { FieldSpec } from "@/lib/people/professions";
 import type { Deal, DealStage } from "@/lib/supabase/types";
 import {
   dealValueOrZero,
   formatCommission,
   formatDealValue,
   getCommissionPercent,
-} from "@/lib/deals";
-import { formatBRL } from "@/lib/format";
+} from "@/lib/crm/deals";
+import { formatBRL } from "@/lib/utils/format";
 import {
   acceptDealHandoff,
   adminReassignDeal,

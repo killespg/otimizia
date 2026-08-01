@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PendingButton } from "@/components/PendingButton";
-import { CopyShareLink } from "@/components/law/CopyShareLink";
+import { PendingButton } from "@/components/ui/PendingButton";
+import { CopyShareLink } from "@/components/ui/CopyShareLink";
 import { VitrineSearch } from "@/components/real-estate/VitrineSearch";
 import { RealEstatePageHeader } from "@/components/real-estate/real-estate-ui";
-import { canManageRealEstate, canViewRealEstate } from "@/lib/real-estate";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { canManageRealEstate, canViewRealEstate } from "@/lib/real-estate/real-estate";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { RealEstateProperty, RealEstatePropertyReaction, RealEstateShareCollection } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import { IconImage, IconPlus, IconTrash } from "../../icons";
 import { removePropertyFromCollection, revokeShareCollection } from "../actions";
 

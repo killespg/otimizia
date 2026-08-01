@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { AuthPasswordField } from "@/components/auth/AuthPasswordField";
 import { AuthShell } from "../AuthShell";
 
 type Status = "checking" | "ready" | "invalid";
@@ -103,37 +104,29 @@ export default function ResetPasswordPage() {
       )}
 
       {status === "ready" && (
-        <form onSubmit={handleSubmit} className="pop-in mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="pop-in mt-6">
           <div>
-            <label className="label" htmlFor="password">
-              Nova senha
-              <span className="ml-1 text-brand-700" aria-hidden="true">
-                *
-              </span>
-              <span className="sr-only"> obrigatório</span>
-            </label>
-            <input
-              id="password"
-              type="password"
+            <AuthPasswordField
+              name="password"
+              label="Nova senha"
               required
               minLength={6}
               maxLength={200}
               autoComplete="new-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="field mt-1.5"
             />
-          </div>
 
-          {error && (
-            <p className="pop-in text-sm font-bold text-danger-700">{error}</p>
-          )}
+            {error && (
+              <p className="pop-in mt-2 text-sm font-bold text-danger-700">{error}</p>
+            )}
+          </div>
 
           <button
             type="submit"
             disabled={pending}
             aria-busy={pending || undefined}
-            className="btn relative w-full py-3 text-base"
+            className="btn btn-lg relative mt-8 w-full"
           >
             <span
               className={

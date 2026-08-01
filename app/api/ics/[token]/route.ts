@@ -1,4 +1,4 @@
-import { buildIcsFeed } from "@/lib/ics";
+import { buildIcsFeed } from "@/lib/utils/ics";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";

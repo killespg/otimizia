@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
-import { BrandName } from "@/components/BrandName";
-import { computeDevMetrics } from "@/lib/devMetrics";
-import { formatBRL, formatDate } from "@/lib/format";
+import { BrandName } from "@/components/design-system/BrandName";
+import { computeDevMetrics } from "@/lib/utils/devMetrics";
+import { formatBRL, formatDate } from "@/lib/utils/format";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import type { PlanStatus } from "@/lib/plan";
+import type { PlanStatus } from "@/lib/billing/plan";
 import { SignupsBarChart } from "./SignupsBarChart";
 
 const STATUS_META: Record<PlanStatus, { label: string; className: string }> = {

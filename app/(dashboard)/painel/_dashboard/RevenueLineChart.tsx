@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { formatBRL } from "@/lib/format";
+import { formatBRL } from "@/lib/utils/format";
 
 const LEFT = 64;
 const RIGHT = 790;

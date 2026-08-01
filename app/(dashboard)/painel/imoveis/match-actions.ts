@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { decimalOrNull, intOrNull, keyValueListOrEmpty, moneyToCentsOrNull, requiredText, stringListOrEmpty, text } from "@/lib/form-parse";
-import { computeMatchScore } from "@/lib/real-estate-match";
+import { decimalOrNull, intOrNull, keyValueListOrEmpty, moneyToCentsOrNull, requiredText, stringListOrEmpty, text } from "@/lib/utils/form-parse";
+import { computeMatchScore } from "@/lib/real-estate/real-estate-match";
 import type { RealEstateDealPropertyStatus, RealEstateLeadPreferences, RealEstateProperty } from "@/lib/supabase/types";
 import { requireRealEstate } from "./actions";
 

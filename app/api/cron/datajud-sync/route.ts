@@ -1,7 +1,7 @@
-import { logError } from "@/lib/logger";
+import { logError } from "@/lib/utils/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { syncCaseWithDatajud } from "@/lib/law-datajud-sync";
-import { syncWatchedProcesses } from "@/lib/law-watched-processes";
+import { syncCaseWithDatajud } from "@/lib/law/law-datajud-sync";
+import { syncWatchedProcesses } from "@/lib/law/law-watched-processes";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;

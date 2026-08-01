@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
-import { PendingButton } from "@/components/PendingButton";
-import { jobRoleLabel } from "@/lib/law-office";
-import { jobRoleLabelRealEstate } from "@/lib/real-estate";
-import { jobRolesFor } from "@/lib/job-roles";
-import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
+import { PendingButton } from "@/components/ui/PendingButton";
+import { jobRoleLabel } from "@/lib/law/law-office";
+import { jobRoleLabelRealEstate } from "@/lib/real-estate/real-estate";
+import { jobRolesFor } from "@/lib/people/job-roles";
+import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Organization } from "@/lib/supabase/types";
-import { normalizeProfession } from "@/lib/professions";
+import { normalizeProfession } from "@/lib/people/professions";
 import type { JobRole } from "@/lib/supabase/types";
 import { IconPlus, IconTrash, IconUsers } from "../icons";
 import { inviteMember, removeMember, revokeInvitation, updateMemberJobRole, updateMemberRole, updateOrganizationContext } from "./actions";

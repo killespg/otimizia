@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
-import { BrandName } from "@/components/BrandName";
-import { PendingButton } from "@/components/PendingButton";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
-import { getUserPlanAccess } from "@/lib/plan-access";
+import { BrandName } from "@/components/design-system/BrandName";
+import { PendingButton } from "@/components/ui/PendingButton";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
+import { getUserPlanAccess } from "@/lib/billing/plan-access";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "../(auth)/actions";
 

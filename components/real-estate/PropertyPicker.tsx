@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { centsToReais, propertyTypeLabel } from "@/lib/real-estate";
+import { centsToReais, propertyTypeLabel } from "@/lib/real-estate/real-estate";
 import type { RealEstateProperty } from "@/lib/supabase/types";
 
 type PickerProperty = Pick<RealEstateProperty, "id" | "title" | "property_type" | "price_cents" | "rent_price_cents"> & {

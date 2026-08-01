@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PendingButton } from "@/components/PendingButton";
-import { getProfessionPreset } from "@/lib/professions";
-import { isRealEstateV2Enabled } from "@/lib/real-estate";
+import { PendingButton } from "@/components/ui/PendingButton";
+import { getProfessionPreset } from "@/lib/people/professions";
+import { isRealEstateV2Enabled } from "@/lib/real-estate/real-estate";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Deal, Interaction, RealEstateLeadPreferences, SellerCustomerProfile, Task } from "@/lib/supabase/types";
-import { formatDateTime } from "@/lib/format";
-import { getActiveOrgId } from "@/lib/org";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { formatDateTime } from "@/lib/utils/format";
+import { getActiveOrgId } from "@/lib/workspace/org";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import { Avatar } from "../../Avatar";
 import {
   IconArrowRight,

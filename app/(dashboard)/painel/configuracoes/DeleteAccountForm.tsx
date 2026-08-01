@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PendingButton } from "@/components/PendingButton";
+import { PendingButton } from "@/components/ui/PendingButton";
 import { IconTrash } from "../icons";
 
 export function DeleteAccountForm({

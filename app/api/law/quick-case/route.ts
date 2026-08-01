@@ -1,9 +1,9 @@
-import { canManageLegal } from "@/lib/law-office";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { canManageLegal } from "@/lib/law/law-office";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
-import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/datajud-tribunals";
-import { normalizeProcessNumber } from "@/lib/datajud";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/law/datajud-tribunals";
+import { normalizeProcessNumber } from "@/lib/law/datajud";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 
 export const runtime = "nodejs";
 

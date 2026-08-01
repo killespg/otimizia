@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { MessageTemplate } from "@/lib/professions";
+import type { MessageTemplate } from "@/lib/people/professions";
 import { IconCheck, IconMessage } from "../../icons";
 
 type Props = {

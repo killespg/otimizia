@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { PendingButton } from "@/components/PendingButton";
-import { buildMonthCells, monthParam, parseMonthParam } from "@/lib/calendar-grid";
-import { canManageLegal } from "@/lib/law-office";
-import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
+import { PendingButton } from "@/components/ui/PendingButton";
+import { buildMonthCells, monthParam, parseMonthParam } from "@/lib/utils/calendar-grid";
+import { canManageLegal } from "@/lib/law/law-office";
+import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, LegalDeadline, Task } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
-import { formatDateTime } from "@/lib/format";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
+import { formatDateTime } from "@/lib/utils/format";
 import { createTask } from "../actions";
 import { completeLegalDeadline } from "../juridico/actions";
 import { ContactField } from "../ContactField";

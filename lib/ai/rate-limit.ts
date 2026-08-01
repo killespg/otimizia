@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { logError } from "@/lib/logger";
+import { logError } from "@/lib/utils/logger";
 
 // Limites por rota que chama a API da Anthropic direto (custo real por
 // requisição). Sem Redis/Upstash: uma janela fixa contada em Postgres

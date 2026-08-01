@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Building2, HelpCircle, LayoutDashboard, Sparkles, Tag, Wallet } from "lucide-react";
-import { NavBar } from "@/components/ui/tubelight-navbar";
+import { NavBar } from "@/components/design-system/tubelight-navbar";
 import { LogoWordmark } from "@/components/design-system/logo";
 
 /**

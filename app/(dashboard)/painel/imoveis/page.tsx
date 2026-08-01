@@ -13,11 +13,11 @@ import {
   REAL_ESTATE_PROPERTY_STATUSES,
   REAL_ESTATE_PROPERTY_TYPES,
   transactionTypeLabel,
-} from "@/lib/real-estate";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+} from "@/lib/real-estate/real-estate";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { RealEstateProperty } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import { IconBuilding, IconPlus, IconSearch } from "../icons";
 
 const PAGE_SIZE = 24;

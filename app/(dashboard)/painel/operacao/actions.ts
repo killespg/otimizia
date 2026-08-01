@@ -4,13 +4,13 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
-import { getUserPlanAccess } from "@/lib/plan-access";
-import { SELLER_MODULES, SELLER_SALES_MODELS } from "@/lib/seller-operations";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
+import { getUserPlanAccess } from "@/lib/billing/plan-access";
+import { SELLER_MODULES, SELLER_SALES_MODELS } from "@/lib/seller/seller-operations";
 import { createClient } from "@/lib/supabase/server";
 import type { SellerModule, SellerSalesModel } from "@/lib/supabase/types";
-import { parseWorkspacePreferences } from "@/lib/workspace-preferences";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { parseWorkspacePreferences } from "@/lib/workspace/workspace-preferences";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 
 const PRODUCT_IMAGE_BUCKET = "seller-product-images";
 const PRODUCT_IMAGE_MAX_BYTES = 6 * 1024 * 1024;

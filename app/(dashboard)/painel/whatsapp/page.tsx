@@ -1,7 +1,7 @@
-import { getActiveOrgId, getOrgRole } from "@/lib/org";
+import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { WhatsappConversation } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import { ConnectWhatsappPanel } from "./ConnectWhatsappPanel";
 import { WhatsappInbox } from "./WhatsappInbox";
 

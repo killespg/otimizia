@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PendingButton } from "@/components/PendingButton";
+import { PendingButton } from "@/components/ui/PendingButton";
 import { PropertyAddressFields } from "@/components/real-estate/PropertyAddressFields";
 import { Field, FormSection, Select, TransactionAndPriceFields } from "@/components/real-estate/PropertyForm";
 import { PropertyPhotoManager } from "@/components/real-estate/PropertyPhotoManager";
@@ -17,8 +17,8 @@ import {
   REAL_ESTATE_PROPERTY_STATUSES,
   REAL_ESTATE_PROPERTY_TYPES,
   transactionTypeLabel,
-} from "@/lib/real-estate";
-import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
+} from "@/lib/real-estate/real-estate";
+import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type {
   AiSuggestedField,
@@ -27,7 +27,7 @@ import type {
   RealEstatePropertyDocument,
   RealEstatePropertyMedia,
 } from "@/lib/supabase/types";
-import { getWorkspaceKey } from "@/lib/workspaces";
+import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import { IconCheck, IconPlus, IconTrash, IconX } from "../../icons";
 import {
   addPropertyToCollection,

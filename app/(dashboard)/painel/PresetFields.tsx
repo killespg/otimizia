@@ -1,4 +1,4 @@
-import type { FieldSpec } from "@/lib/professions";
+import type { FieldSpec } from "@/lib/people/professions";
 
 export function PresetFields({
   fields,

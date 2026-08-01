@@ -1,8 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createDeletionCode, hashDeletionCode } from "@/lib/ai/deletion-confirmation";
-import { cleanDashboardText, getDashboardPreferences, isDashboardAccent, isDashboardStyle, isDashboardWidgetKey, isMetricKey, mergeScopedPreferences } from "@/lib/dashboard-preferences";
-import { getProfessionPreset } from "@/lib/professions";
-import { cleanWorkspaceLabel, parseWorkspacePreferences } from "@/lib/workspace-preferences";
+import { cleanDashboardText, getDashboardPreferences, isDashboardAccent, isDashboardStyle, isDashboardWidgetKey, isMetricKey, mergeScopedPreferences } from "@/lib/workspace/dashboard-preferences";
+import { getProfessionPreset } from "@/lib/people/professions";
+import { cleanWorkspaceLabel, parseWorkspacePreferences } from "@/lib/workspace/workspace-preferences";
 import type { ToolInput } from "./types";
 import {
   detailsObject,

@@ -10,9 +10,9 @@ import {
   FileSearch,
   RefreshCw,
 } from "lucide-react";
-import { canViewFinance, canViewLegal } from "@/lib/law-office";
-import { formatBRL } from "@/lib/format";
-import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/org";
+import { canViewFinance, canViewLegal } from "@/lib/law/law-office";
+import { formatBRL } from "@/lib/utils/format";
+import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type {
   LegalCase,

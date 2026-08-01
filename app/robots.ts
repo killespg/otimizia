@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { siteUrl } from "@/lib/request-origin";
+import { siteUrl } from "@/lib/utils/request-origin";
 
 export default function robots(): MetadataRoute.Robots {
   return {
