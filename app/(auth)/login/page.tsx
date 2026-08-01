@@ -15,7 +15,7 @@ export default async function LoginPage(
   return (
     <AuthShell
       title="Entrar"
-      subtitle="Entre e veja quem você precisa chamar hoje."
+      subtitle="Entre para acompanhar seus clientes, vendas e compromissos."
       error={searchParams.error}
       notice={searchParams.message}
       footer={

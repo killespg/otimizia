@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { InputHTMLAttributes } from "react";
-import { AlertCircle, CalendarCheck2, Check, Columns3, ContactRound } from "lucide-react";
+import { AlertCircle, CalendarCheck2, Check, ContactRound, Sparkles } from "lucide-react";
 import { LogoWordmark } from "@/components/design-system/logo";
 import { AmbientParticles } from "@/components/design-system/ambient-particles";
 import { AnimatedShapesBackground } from "@/components/design-system/animated-shapes-background";
@@ -28,9 +28,9 @@ import { AnimatedShapesBackground } from "@/components/design-system/animated-sh
  * ponta como antes.
  */
 const AUTH_FEATURES = [
-  [ContactRound, "Clientes organizados", "Histórico e próximos passos sempre à mão."],
-  [Columns3, "Funil que acompanha seu processo", "Etapas, valores e responsáveis sem planilha."],
-  [CalendarCheck2, "Lembretes no momento certo", "O que venceu sobe para o topo da fila."],
+  [ContactRound, "Clientes organizados", "Histórico completo e próximos passos sempre disponíveis."],
+  [Sparkles, "Tim, seu assistente de IA", "Responde no WhatsApp e sinaliza o momento certo de agir."],
+  [CalendarCheck2, "Lembretes no momento certo", "Você sempre terá noção clara dos seus vencimentos."],
 ] as const;
 
 export function AuthShell({
@@ -91,11 +91,12 @@ export function AuthShell({
               <LogoWordmark height={32} />
             </Link>
             <h2 className="mt-16 max-w-lg text-[34px] font-extrabold leading-[1.14] tracking-[-0.025em] text-od-text">
-              O que precisa da sua atenção, sem ruído.
+              A IA que atende seu WhatsApp e organiza toda a operação do seu negócio.
             </h2>
             <p className="mt-4 max-w-md text-[15px] leading-7 text-od-text-2">
-              Contatos, vendas e lembretes no mesmo lugar, adaptados ao seu jeito
-              de trabalhar.
+              Cada profissão tem um painel dedicado, com telas específicas e o
+              apoio constante do Tim. Funciona para vendedor autônomo, advogado
+              e corretor de imóveis.
             </p>
           </div>
           <div className="relative z-10 border-y border-od-border">
