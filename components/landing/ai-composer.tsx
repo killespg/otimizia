@@ -3,9 +3,10 @@ import { Paperclip, Send, Sparkles } from "lucide-react";
 
 /**
  * AI chat composer — the "Sócio-Assistente" entry point. Flat surface (no
- * glass, no decorative blur blob): one command lane defined by a single
- * top/bottom rule. Attach/command icon buttons, send button and thinking
- * status remain part of the flow instead of becoming nested cards or chips.
+ * glass, no decorative blur blob): uma troca real de mensagens, pra mostrar
+ * o que a conversa é de verdade (pergunta/ordem → Tim executa), não só um
+ * campo vazio esperando texto. Attach/command icon buttons e o botão de
+ * enviar seguem parte do fluxo, sem virar cards ou chips aninhados.
  * (Não leva `border-b` próprio: o SpotlightCard acima já fecha com uma linha,
  * e a próxima Section já abre com `border-t` — uma terceira aqui era
  * redundante e, empilhada com a lista de exemplos no mobile, virava
@@ -23,9 +24,19 @@ export function AiComposer() {
         </div>
 
         <div className="border-y border-white/[0.08]">
-          <div className="px-4 py-4 text-sm text-white/60">
-            Mensagem para o Tim…
+          <div className="space-y-2.5 px-4 pt-4">
+            <p className="ml-auto w-fit max-w-[80%] rounded bg-od-accent/15 px-3.5 py-2 text-[13px] text-white">
+              Cadastra a Carla e abre uma negociação
+            </p>
+            <div className="w-fit max-w-[80%]">
+              <span className="mb-1 block text-xs font-semibold text-white/50">Tim</span>
+              <p className="rounded bg-white/[0.05] px-3.5 py-2 text-[13px] leading-relaxed text-white/80">
+                Prontinho — cadastrei a Carla e abri uma negociação nova em Qualificação.
+              </p>
+            </div>
           </div>
+
+          <div className="mt-4 px-4 text-sm text-white/60">Mensagem para o Tim…</div>
           <div className="flex items-center justify-between px-3.5 py-3">
             <div className="flex gap-2">
               <button
@@ -51,22 +62,6 @@ export function AiComposer() {
               Enviar
               <Send className="size-[13px]" strokeWidth={2} />
             </button>
-          </div>
-        </div>
-
-        <div className="mt-4 flex justify-center">
-          <div className="inline-flex items-center gap-2.5 text-white/60">
-            <span className="text-xs font-semibold text-white/60">Tim</span>
-            <span className="text-[13px] text-white/60">Pensando</span>
-            <span className="flex gap-1">
-              {[0, 0.15, 0.3].map((delay) => (
-                <span
-                  key={delay}
-                  className="size-[5px] animate-typing-dot rounded-full bg-white"
-                  style={{ animationDelay: `${delay}s` }}
-                />
-              ))}
-            </span>
           </div>
         </div>
       </div>
