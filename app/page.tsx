@@ -95,9 +95,7 @@ export default async function LandingPage() {
             volta pro container padrão logo abaixo, colada (sem régua) no
             rodapé do hero — hero e prova social continuam sendo um bloco de
             entrada só, não duas categorias. */}
-        <div className="pt-10">
-          <Hero animated />
-        </div>
+        <Hero animated />
         <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 sm:px-8">
           <div className="-mt-4 pb-20 pt-14">
             <p className="mb-7 text-center text-od-label text-od-text-3">
