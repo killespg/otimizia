@@ -31,6 +31,16 @@ test("mantém a landing sem overflow e com controles tocáveis no celular", asyn
     .locator("button:visible, a:visible, select:visible")
     .evaluateAll((elements) =>
       elements
+        // O indicador de dev do Next.js (<nextjs-portal>) só existe em `next
+        // dev` — nunca no build de produção que vai pro ar — e vive dentro de
+        // shadow DOM, então closest() não alcança o host; precisa checar a
+        // raiz da árvore. Não é controlado pelo produto, então não faz
+        // sentido auditar o alvo de toque dele.
+        .filter((element) => {
+          const root = element.getRootNode();
+          const host = root instanceof ShadowRoot ? root.host : null;
+          return host?.tagName !== "NEXTJS-PORTAL";
+        })
         .map((element) => {
           const rect = element.getBoundingClientRect();
           return {
