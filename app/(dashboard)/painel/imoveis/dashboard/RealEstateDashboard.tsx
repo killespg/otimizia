@@ -162,7 +162,7 @@ export function RealEstateDashboard({
         </div>
       </header>
 
-      <section className="border-y border-white/[0.08] py-1">
+      <section className="rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] px-4">
         <Link href="/painel/assistente" className="group flex min-h-14 items-center gap-3 text-sm text-white/52 hover:text-white/80">
           <Sparkles size={17} className="text-od-accent" />
           <span className="min-w-0 flex-1 truncate">Pergunte ao Tim sobre sua carteira, clientes e negociações</span>

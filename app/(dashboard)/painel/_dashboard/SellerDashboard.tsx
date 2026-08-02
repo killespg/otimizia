@@ -193,7 +193,7 @@ export function SellerDashboard({
 
       <SellerOperationsPulse operations={operations} />
 
-      <section className="border-y border-white/[0.08] py-1">
+      <section className="rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] px-4">
         <Link href="/painel/assistente" className="group flex min-h-14 items-center gap-3 text-sm text-od-text-2 hover:text-od-text">
           <Sparkles size={17} className="text-od-accent" />
           <span className="min-w-0 flex-1">Pergunte ao Tim sobre seus clientes e vendas</span>
@@ -619,7 +619,7 @@ function SellerOnboarding({ preset, isOrgAdmin, done }: NonNullable<Props["onboa
   return (
     <section data-dashboard-card className="rounded border border-od-border bg-od-surface p-4 sm:p-6">
       <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-semibold text-od-text-3">Primeiros passos</p><h2 className="mt-2 text-od-subtitle text-white">Deixe sua rotina de vendas pronta.</h2></div><form action={dismissChecklist}><PendingButton iconOnly pendingLabel="Fechando" className="grid size-9 place-items-center rounded text-od-text-3 hover:bg-white/[0.05] hover:text-white" aria-label="Fechar primeiros passos">×</PendingButton></form></div>
-      <div className="mt-4 grid border-y border-white/[0.08] sm:grid-cols-2 xl:grid-cols-3">{steps.map((step) => { const Icon = step.icon; return <Link key={step.label} href={step.href} className={`flex min-h-16 items-center gap-3 border-b border-white/[0.08] px-2 py-3 last:border-b-0 hover:bg-white/[0.02] sm:border-r sm:last:border-r-0 ${step.done ? "text-od-text-3" : "text-white/72"}`}><span className={`grid size-8 place-items-center rounded ${step.done ? "bg-emerald-400/10 text-emerald-300" : "bg-white/[0.06] text-od-text-2"}`}>{step.done ? <Check size={16} /> : <Icon size={16} />}</span><span className={`text-sm font-medium ${step.done ? "line-through" : ""}`}>{step.label}</span></Link>; })}</div>
+      <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">{steps.map((step) => { const Icon = step.icon; return <Link key={step.label} href={step.href} className={`flex min-h-16 items-center gap-3 rounded-md border px-3 py-3 hover:bg-white/[0.02] ${step.done ? "border-white/[0.06] text-od-text-3" : "border-white/[0.08] text-white/72"}`}><span className={`grid size-8 place-items-center rounded ${step.done ? "bg-emerald-400/10 text-emerald-300" : "bg-white/[0.06] text-od-text-2"}`}>{step.done ? <Check size={16} /> : <Icon size={16} />}</span><span className={`text-sm font-medium ${step.done ? "line-through" : ""}`}>{step.label}</span></Link>; })}</div>
     </section>
   );
 }
