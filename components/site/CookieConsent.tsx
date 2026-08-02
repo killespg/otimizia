@@ -65,27 +65,64 @@ export function CookieConsent() {
     <div
       role="dialog"
       aria-modal="false"
-      aria-labelledby="cookie-consent-title"
-      className="fixed inset-x-0 bottom-0 z-[100] p-3 sm:p-4"
+      aria-label="Cookies neste site"
+      className="fixed inset-x-0 bottom-0 z-[100] p-2 sm:p-3"
     >
-      <div className="mx-auto max-w-[880px] rounded-xl border border-od-border bg-od-surface p-5 shadow-2xl sm:p-6">
-        <h2 id="cookie-consent-title" className="text-[15px] font-black text-od-text">
-          Cookies neste site
-        </h2>
-        <p className="mt-2 text-[13px] leading-relaxed text-od-text-2">
-          Usamos cookies essenciais para manter você conectado e o site funcionando — esses
-          não dá para desligar. Os demais só entram se você autorizar. Detalhes na{" "}
-          <Link
-            href="/privacidade"
-            className="inline-flex min-h-11 items-center align-middle text-od-text underline underline-offset-2"
-          >
-            Política de Privacidade
-          </Link>
-          .
-        </p>
+      {/* Barra compacta por padrão — o formato anterior (título + parágrafo
+          longo + botões empilhados) cobria mais de meio celular pequeno
+          (iPhone SE) e escondia campo de senha e botão de entrar atrás dela
+          na tela de login. Texto e ações dividem a mesma linha, quebrando só
+          se não couber; o detalhe por categoria continua existindo, só que
+          atrás de "Personalizar" (abre por escolha da pessoa, não por padrão). */}
+      <div className="mx-auto max-w-[880px] rounded-xl border border-od-border bg-od-surface p-3 shadow-2xl sm:p-4">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+          <p className="min-w-[220px] flex-1 text-[12px] leading-relaxed text-od-text-2">
+            Cookies essenciais mantêm o site funcionando; os demais só com sua permissão.{" "}
+            <Link href="/privacidade" className="text-od-text underline underline-offset-2">
+              Política de Privacidade
+            </Link>
+          </p>
+          <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto">
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => choose(ALL_CATEGORIES)}
+              className="btn justify-center disabled:opacity-60"
+            >
+              Aceitar todos
+            </button>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => choose(ESSENTIAL_ONLY)}
+              className="btn-secondary justify-center disabled:opacity-60"
+            >
+              Só os essenciais
+            </button>
+            {detailed ? (
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => choose({ analytics, marketing })}
+                className="btn-secondary justify-center disabled:opacity-60"
+              >
+                Salvar escolha
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => setDetailed(true)}
+                className="inline-flex min-h-11 items-center justify-center text-[13px] font-bold text-od-text-2 underline underline-offset-2 hover:text-od-text"
+              >
+                Personalizar
+              </button>
+            )}
+          </div>
+        </div>
 
         {detailed && (
-          <div className="mt-4 space-y-2">
+          <div className="mt-3 space-y-2">
             <CategoryRow
               title="Essenciais"
               description="Sessão, login e segurança. Sempre ativos."
@@ -108,48 +145,10 @@ export function CookieConsent() {
         )}
 
         {failed && (
-          <p className="mt-4 text-[13px] font-bold text-danger-600" role="alert">
+          <p className="mt-3 text-[13px] font-bold text-danger-600" role="alert">
             Não deu para registrar sua escolha agora. Tente de novo — nada foi ativado.
           </p>
         )}
-
-        <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
-          <button
-            type="button"
-            disabled={saving}
-            onClick={() => choose(ALL_CATEGORIES)}
-            className="btn justify-center disabled:opacity-60"
-          >
-            Aceitar todos
-          </button>
-          <button
-            type="button"
-            disabled={saving}
-            onClick={() => choose(ESSENTIAL_ONLY)}
-            className="btn-secondary justify-center disabled:opacity-60"
-          >
-            Só os essenciais
-          </button>
-          {detailed ? (
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => choose({ analytics, marketing })}
-              className="btn-secondary justify-center disabled:opacity-60"
-            >
-              Salvar escolha
-            </button>
-          ) : (
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => setDetailed(true)}
-              className="inline-flex min-h-11 items-center justify-center text-[13px] font-bold text-od-text-2 underline underline-offset-2 hover:text-od-text sm:ml-2"
-            >
-              Personalizar
-            </button>
-          )}
-        </div>
       </div>
     </div>
   );
