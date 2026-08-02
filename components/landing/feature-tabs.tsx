@@ -259,7 +259,7 @@ export function FeatureTabs() {
             "Honorários" numa lista de dez. Ganha faixa própria no topo, com
             ícone maior, texto de corpo e ordens reais. Continua sendo faixa,
             não card: o destaque vem de escala e do acento, não de moldura. */}
-        <div className="grid gap-x-8 py-8 md:grid-cols-[160px_minmax(0,1fr)]">
+        <div className="grid gap-x-8 gap-y-4 py-10 md:grid-cols-[160px_minmax(0,1fr)]">
           <p className="text-od-label text-od-accent-hover">Sócio-assistente</p>
           <div className="min-w-0">
             <div className="flex items-start gap-4">
@@ -270,16 +270,16 @@ export function FeatureTabs() {
                 <p className="text-[19px] font-bold tracking-[-0.01em] text-od-text">
                   Tim, o sócio-assistente
                 </p>
-                <p className="mt-1.5 max-w-[62ch] text-[14px] leading-relaxed text-od-text-2">
+                <p className="mt-2.5 max-w-[62ch] text-[14px] leading-relaxed text-od-text-2">
                   {vertical.tim.line}
                 </p>
               </div>
             </div>
-            <ul className="mt-5 flex flex-wrap gap-2 md:pl-15">
+            <ul className="mt-6 flex flex-wrap gap-2.5 md:pl-15">
               {vertical.tim.examples.map((example) => (
                 <li
                   key={example}
-                  className="rounded border border-od-border bg-od-muted-surface px-2.5 py-1.5 text-[12px] text-od-text-2"
+                  className="rounded border border-od-border bg-od-muted-surface px-3 py-2 text-[13px] leading-relaxed text-od-text-2"
                 >
                   “{example}”
                 </li>
