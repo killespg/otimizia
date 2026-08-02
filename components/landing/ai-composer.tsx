@@ -3,13 +3,17 @@ import { Paperclip, Send, Sparkles } from "lucide-react";
 
 /**
  * AI chat composer — the "Sócio-Assistente" entry point. Flat surface (no
- * glass, no decorative blur blob): one command lane defined by horizontal
- * rules. Attach/command icon buttons, send button and thinking status remain
- * part of the flow instead of becoming nested cards or chips.
+ * glass, no decorative blur blob): one command lane defined by a single
+ * top/bottom rule. Attach/command icon buttons, send button and thinking
+ * status remain part of the flow instead of becoming nested cards or chips.
+ * (Não leva `border-b` próprio: o SpotlightCard acima já fecha com uma linha,
+ * e a próxima Section já abre com `border-t` — uma terceira aqui era
+ * redundante e, empilhada com a lista de exemplos no mobile, virava
+ * "monte de linha".)
  */
 export function AiComposer() {
   return (
-    <div className="border-b border-od-border py-10">
+    <div className="py-10">
       <div className="mx-auto max-w-[520px]">
         <div className="mb-5 text-center">
           <h3 className="mb-1 text-xl font-semibold text-white">Como posso ajudar hoje?</h3>
@@ -22,7 +26,7 @@ export function AiComposer() {
           <div className="px-4 py-4 text-sm text-white/60">
             Mensagem para o Tim…
           </div>
-          <div className="flex items-center justify-between border-t border-white/[0.06] px-3.5 py-3">
+          <div className="flex items-center justify-between px-3.5 py-3">
             <div className="flex gap-2">
               <button
                 type="button"
