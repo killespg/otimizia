@@ -50,7 +50,11 @@ export function SpotlightCard({ localSpotlight = true }: { localSpotlight?: bool
           cria contato, move negociação e agenda compromisso.
         </p>
       </div>
-      <ul className="relative z-[1] w-full flex-1 divide-y divide-od-border border-y border-od-border">
+      {/* divide-y/border-y só valem a partir de md:, onde a lista fica
+          compacta ao lado do texto. Empilhada no mobile (flex-col), cinco
+          linhas pra separar quatro itens era ruído — o ícone de brilho já
+          marca cada exemplo. */}
+      <ul className="relative z-[1] w-full flex-1 md:divide-y md:divide-od-border md:border-y md:border-od-border">
         {[
           "Quem eu preciso chamar hoje?",
           "Cadastra a Carla e abre uma negociação",
