@@ -88,10 +88,17 @@ export default async function LandingPage() {
       <LandingNav />
       <MobileStickyCta />
       <main className="relative overflow-hidden">
-        {/* Abertura: hero e prova social continuam emendados, sem regua entre
-            eles — sao um bloco de entrada, nao duas categorias. */}
-        <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 pt-10 sm:px-8">
+        {/* O hero quebra o container padrão e ocupa a largura inteira da tela
+            — o fundo/glow vai de ponta a ponta em vez de ficar preso dentro
+            de uma faixa com respiro nas laterais (o texto continua com seu
+            próprio recuo, só o pano de fundo é que estica). A prova social
+            volta pro container padrão logo abaixo, colada (sem régua) no
+            rodapé do hero — hero e prova social continuam sendo um bloco de
+            entrada só, não duas categorias. */}
+        <div className="pt-10">
           <Hero animated />
+        </div>
+        <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 sm:px-8">
           <div className="-mt-4 pb-20 pt-14">
             <p className="mb-7 text-center text-od-label text-od-text-3">
               Feito para quem trabalha sozinho e para equipes inteiras

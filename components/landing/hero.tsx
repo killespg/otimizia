@@ -32,7 +32,11 @@ export function Hero({ animated = false }: { animated?: boolean }) {
         <div className="absolute left-0 top-0 h-[80rem] w-56 -translate-y-[87.5%] -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,color-mix(in_oklab,var(--od-accent)_9%,transparent)_0,color-mix(in_oklab,var(--od-accent)_4%,transparent)_80%,transparent_100%)]" />
       </div>
       {animated ? <AnimatedShapesBackground /> : null}
-      <div className="relative z-10">
+      {/* O <section> agora ocupa a tela inteira (o container padrão saiu pra
+          fora, em app/page.tsx) — o texto recupera aqui o mesmo recuo lateral
+          usado no resto do site, só que sem o limite de largura que fazia o
+          fundo parecer preso numa faixa. */}
+      <div className="relative z-10 px-5 sm:px-8">
         <div className="mb-6 text-od-label text-od-text-3">
           CRM com WhatsApp e IA, sozinho ou com equipe
         </div>
