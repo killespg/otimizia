@@ -1,4 +1,5 @@
 {
+  "ignoreCommand": "test \"$VERCEL_GIT_COMMIT_REF\" != \"claude/saas-creation-marketing-a49v4f\"",
   "crons": [
     {
       "path": "/api/cron/datajud-sync",
