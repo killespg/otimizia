@@ -70,17 +70,23 @@ export function propertyStatusLabel(status: RealEstatePropertyStatus) {
   return REAL_ESTATE_PROPERTY_STATUSES.find((item) => item.value === status)?.label ?? status;
 }
 
+// "tag-brand"/"tag-honey"/"tag-danger"/"tag-muted" nunca existiram no CSS —
+// toda etiqueta de status renderizava com a mesma cor neutra da classe base
+// `.tag`. Trocado por classes reais (o mesmo par bg-x-50/text-x-700 usado em
+// funil/Board.tsx e painel/metricas), e "vendido"/"alugado" passaram de
+// "brand" (mesma cor de "ativo", um anúncio ao vivo) para "success" — fechado
+// é resultado positivo, não o mesmo estado de "está no ar".
 const STATUS_TAG_CLASS: Record<RealEstatePropertyStatus, string> = {
-  rascunho: "tag-muted",
-  ativo: "tag-brand",
-  reservado: "tag-honey",
-  vendido: "tag-brand",
-  alugado: "tag-brand",
-  inativo: "tag-danger",
+  rascunho: "bg-surface-2 text-ink-muted",
+  ativo: "bg-brand-50 text-brand-700",
+  reservado: "bg-warning-50 text-warning-700",
+  vendido: "bg-success-50 text-success-700",
+  alugado: "bg-success-50 text-success-700",
+  inativo: "bg-surface-2 text-ink-muted",
 };
 
 export function propertyStatusTagClass(status: RealEstatePropertyStatus) {
-  return STATUS_TAG_CLASS[status] ?? "tag-muted";
+  return STATUS_TAG_CLASS[status] ?? "bg-surface-2 text-ink-muted";
 }
 
 export function centsToReais(cents: number | null): string {
