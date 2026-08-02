@@ -144,7 +144,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
         </div>
       </header>
 
-      <section className="grid grid-cols-3 border-y border-white/[0.08]">
+      <section className="grid grid-cols-1 border-y border-white/[0.08] sm:grid-cols-3">
         <MetricCard
           label="Atrasados"
           value={String(overdueTasks.length + overdueDeadlines.length)}

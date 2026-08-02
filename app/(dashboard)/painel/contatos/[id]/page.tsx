@@ -433,7 +433,7 @@ function MiniStat({
   pink?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-3 border-l border-white/[0.08] px-3 py-2">
+    <div className="flex items-center gap-3 px-3 py-2">
       <Icon className={`h-4 w-4 ${pink ? "text-amber-300" : "text-od-text-2"}`} />
       <div><p className="text-xs text-od-text-3">{label}</p><p className="text-[18px] font-bold text-white">{value}</p></div>
     </div>

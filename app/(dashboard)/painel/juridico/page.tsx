@@ -467,7 +467,7 @@ export default async function LegalDashboardPage({
             /* Dia um: ensina a área em vez de dizer "nada aqui". Numerado
                porque é uma sequência de verdade — cada passo destrava o
                seguinte. */
-            <ol className="divide-y divide-od-border border-y border-od-border">
+            <div className="grid gap-3 sm:grid-cols-3">
               {[
                 {
                   step: "1",
@@ -494,25 +494,23 @@ export default async function LegalDashboardPage({
                   Icon: FileClock,
                 },
               ].map(({ step, title, body, href, action, Icon }) => (
-                <li
+                <div
                   key={step}
-                  className="flex flex-col gap-3 px-3 py-4 sm:flex-row sm:items-center sm:gap-4"
+                  className="flex flex-col gap-3 rounded-md border border-od-border p-4"
                 >
-                  <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-od-accent/12 text-[13px] font-bold text-od-accent">
-                    {step}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <strong className="flex items-center gap-2 text-[13px] font-semibold text-white">
-                      <Icon size={14} className="shrink-0 text-od-text-3" />
-                      {title}
-                    </strong>
-                    <span className="mt-1 block max-w-[62ch] text-xs leading-5 text-white/55">
-                      {body}
+                  <div className="flex items-center gap-2">
+                    <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-od-accent/12 text-[13px] font-bold text-od-accent">
+                      {step}
                     </span>
-                  </span>
+                    <Icon size={14} className="shrink-0 text-od-text-3" />
+                  </div>
+                  <div>
+                    <strong className="text-[13px] font-semibold text-white">{title}</strong>
+                    <p className="mt-1 text-xs leading-5 text-white/55">{body}</p>
+                  </div>
                   <Link
                     href={href}
-                    className={`inline-flex h-11 shrink-0 items-center gap-1.5 rounded-md px-4 text-[13px] font-semibold transition-colors ${
+                    className={`mt-auto inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-md px-4 text-[13px] font-semibold transition-colors ${
                       step === "1"
                         ? "bg-od-accent text-white hover:bg-brand-600"
                         : "border border-od-border text-white/80 hover:border-white/25 hover:text-white"
@@ -521,9 +519,9 @@ export default async function LegalDashboardPage({
                     {action}
                     <ArrowUpRight size={14} />
                   </Link>
-                </li>
+                </div>
               ))}
-            </ol>
+            </div>
           )}
         </section>
 
