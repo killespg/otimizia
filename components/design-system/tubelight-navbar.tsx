@@ -110,7 +110,7 @@ export function NavBar({ items, className, brand, actions, mobileActions }: NavB
     <header
       className={cn(
         "sticky top-0 z-[var(--z-sticky)] border-b border-od-border transition-colors duration-200",
-        scrolled ? "bg-od-bg/50" : "bg-od-bg",
+        scrolled ? "bg-od-bg/80" : "bg-od-bg",
         className,
       )}
       style={{ paddingTop: "env(safe-area-inset-top)" }}
