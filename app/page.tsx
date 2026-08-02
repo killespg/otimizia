@@ -44,7 +44,7 @@ function Section({
   return (
     <section
       id={id}
-      className={`relative isolate scroll-mt-16 overflow-hidden border-t border-od-border ${raised ? "bg-od-muted-surface" : "bg-od-bg"}`}
+      className={`relative isolate scroll-mt-[calc(4rem+env(safe-area-inset-top))] overflow-hidden border-t border-od-border ${raised ? "bg-od-muted-surface" : "bg-od-bg"}`}
     >
       <Glow className="-top-40 left-1/2 -translate-x-1/2" size={640} intensity={0.1} pulse />
       <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-20 sm:px-8 md:py-24">
@@ -114,7 +114,7 @@ export default async function LandingPage() {
           <FeatureTabs />
         </Section>
 
-        <section id="painel" className="scroll-mt-16 border-t border-od-border bg-od-bg">
+        <section id="painel" className="scroll-mt-[calc(4rem+env(safe-area-inset-top))] border-t border-od-border bg-od-bg">
           <ContainerScroll
             titleComponent={
               <>
