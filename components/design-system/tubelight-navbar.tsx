@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from "framer-motion";
 import Link from "next/link";
 import { Menu, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils/utils";
@@ -40,9 +40,18 @@ interface NavBarProps {
 export function NavBar({ items, className, brand, actions, mobileActions }: NavBarProps) {
   const [activeTab, setActiveTab] = React.useState(items[0]?.name ?? "");
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [scrolled, setScrolled] = React.useState(false);
   const menuButtonRef = React.useRef<HTMLButtonElement>(null);
   const panelRef = React.useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
+
+  // Barra sólida em repouso (topo da página); ao rolar, o fundo fica a 50%
+  // — só opacidade, sem blur/glassmorphism (isso já foi tirado daqui antes,
+  // ver comentário do componente).
+  const { scrollY } = useScroll();
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setScrolled(latest > 8);
+  });
 
   function selectItem(name: string) {
     setActiveTab(name);
@@ -100,7 +109,8 @@ export function NavBar({ items, className, brand, actions, mobileActions }: NavB
     <>
     <header
       className={cn(
-        "sticky top-0 z-[var(--z-sticky)] border-b border-od-border bg-od-bg",
+        "sticky top-0 z-[var(--z-sticky)] border-b border-od-border transition-colors duration-200",
+        scrolled ? "bg-od-bg/80" : "bg-od-bg",
         className,
       )}
       style={{ paddingTop: "env(safe-area-inset-top)" }}
