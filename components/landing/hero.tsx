@@ -39,7 +39,7 @@ export function Hero({ animated = false }: { animated?: boolean }) {
         {/* A promessa é o que o webhook faz de verdade: a IA responde a
             conversa e a detecção de intenção abre a negociação no funil. Nada
             aqui é roadmap. */}
-        <h1 className="mx-auto mb-5 max-w-[20ch] text-balance text-[32px] font-extrabold leading-[1.15] tracking-[-0.02em] sm:text-[44px] md:max-w-[22ch] md:text-[56px]">
+        <h1 className="mx-auto mb-5 max-w-[26ch] text-balance text-[24px] font-extrabold leading-[1.25] tracking-[-0.02em] sm:max-w-[20ch] sm:text-[44px] sm:leading-[1.15] md:max-w-[22ch] md:text-[56px]">
           <span className="text-white">A IA atende seu WhatsApp. </span>
           <span className="text-od-accent-hover">
             Você entra quando importa.
