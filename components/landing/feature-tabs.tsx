@@ -254,7 +254,11 @@ export function FeatureTabs() {
       {/* Grupos empilhados em faixa: o rótulo à esquerda nomeia a faixa e os
           itens ocupam a largura em duas colunas. Antes eram quatro blocos de
           alturas diferentes num grid de dois, com a base toda irregular. */}
-      <div className="mt-10 divide-y divide-od-border border-y border-od-border">
+      {/* As linhas entre grupos só valem no desktop, onde reforçam a fileira
+          rótulo+conteúdo lado a lado. Empilhado no mobile, o rótulo em
+          maiúsculas de cada grupo já separa visualmente — repetir a régua a
+          cada bloco ficava cansativo, sempre a mesma linha se repetindo. */}
+      <div className="mt-10 md:divide-y md:divide-od-border md:border-y md:border-od-border">
         {/* O Tim é a peça central do produto, então não pode dividir peso com
             "Honorários" numa lista de dez. Ganha faixa própria no topo, com
             ícone maior, texto de corpo e ordens reais. Continua sendo faixa,
