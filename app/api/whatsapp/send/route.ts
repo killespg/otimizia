@@ -5,7 +5,7 @@ import { getActiveOrgId } from "@/lib/workspace/org";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
-  extensionForImageType,
+  extensionForMediaType,
   WHATSAPP_ATTACHMENTS_BUCKET,
   whatsappAttachmentExpiresAt,
   whatsappAttachmentUrl,
@@ -33,7 +33,7 @@ async function uploadImage(
   messageId: string,
   image: IncomingImage,
 ): Promise<string> {
-  const extension = extensionForImageType(image.mediaType);
+  const extension = extensionForMediaType(image.mediaType);
   const path = `${orgId}/${messageId}/${randomUUID()}.${extension}`;
   const admin = createAdminClient();
   const { error } = await admin.storage

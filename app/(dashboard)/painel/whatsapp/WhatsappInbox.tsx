@@ -598,7 +598,7 @@ export function WhatsappInbox({
                               reservando espaço pra ela (padding à direita na
                               última linha) — é assim que o WhatsApp evita que
                               mensagens curtas quebrem em várias linhas. */}
-                          {message.media_url ? (
+                          {message.media_url && message.message_type === "image" ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={message.media_url}
@@ -607,12 +607,26 @@ export function WhatsappInbox({
                               className="mb-1 max-h-72 w-full rounded object-cover"
                             />
                           ) : null}
+                          {message.media_url && message.message_type === "audio" ? (
+                            <audio controls src={message.media_url} className="mb-1 w-full" />
+                          ) : null}
+                          {message.media_url && message.message_type === "document" ? (
+                            <a
+                              href={message.media_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mb-1 flex items-center gap-2 rounded border border-white/15 px-2.5 py-2 text-sm text-white/90 hover:bg-white/5"
+                            >
+                              <IconPaperclip className="h-4 w-4 shrink-0" aria-hidden="true" />
+                              Abrir documento
+                            </a>
+                          ) : null}
                           {!message.media_url &&
-                          message.message_type === "image" &&
+                          (message.message_type === "image" ||
+                            message.message_type === "audio" ||
+                            message.message_type === "document") &&
                           !message.content ? (
-                            <p className="pr-12 text-xs text-white/70">
-                              Imagem expirada
-                            </p>
+                            <p className="pr-12 text-xs text-white/70">Anexo expirado</p>
                           ) : null}
                           {message.content ? (
                             <p

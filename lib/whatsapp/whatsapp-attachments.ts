@@ -29,11 +29,13 @@ export function legacyWhatsappStoragePath(value: string | null | undefined) {
   }
 }
 
-export function extensionForImageType(mediaType: string) {
+export function extensionForMediaType(mediaType: string) {
   const extensions: Record<string, string> = {
     "image/jpeg": "jpg",
     "image/png": "png",
     "image/webp": "webp",
+    "audio/ogg": "ogg",
+    "application/pdf": "pdf",
   };
   return extensions[mediaType] ?? "jpg";
 }
