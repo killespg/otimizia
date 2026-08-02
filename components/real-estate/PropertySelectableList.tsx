@@ -28,7 +28,7 @@ export function PropertySelectableList({ rows, selectable = true }: { rows: Prop
 
   return (
     <div>
-      <div className="divide-y divide-line">
+      <div>
         {rows.map((row) => (
           <div key={row.id} className="flex items-center gap-3 px-5 py-4 hover:bg-brand-50">
             {selectable && (
