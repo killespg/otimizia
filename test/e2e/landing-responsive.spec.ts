@@ -14,7 +14,9 @@ test("mantém a landing sem overflow e com controles tocáveis no celular", asyn
   expect(hasOverflow).toBe(false);
 
   await page.getByRole("button", { name: "Abrir menu" }).click();
-  const resourcesLink = page.getByRole("navigation").getByRole("link", { name: "Recursos" });
+  // O menu mobile é um dialog (bottom sheet), não um <nav> — mesmo contrato
+  // do menu "Mais" da área logada (components/design-system/tubelight-navbar.tsx).
+  const resourcesLink = page.getByRole("dialog", { name: "Menu" }).getByRole("link", { name: "Recursos" });
   await expect(resourcesLink).toBeVisible();
   await resourcesLink.click();
   await expect(page.getByRole("button", { name: "Abrir menu" })).toHaveAttribute(
