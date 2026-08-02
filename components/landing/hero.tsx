@@ -32,14 +32,18 @@ export function Hero({ animated = false }: { animated?: boolean }) {
         <div className="absolute left-0 top-0 h-[80rem] w-56 -translate-y-[87.5%] -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,color-mix(in_oklab,var(--od-accent)_9%,transparent)_0,color-mix(in_oklab,var(--od-accent)_4%,transparent)_80%,transparent_100%)]" />
       </div>
       {animated ? <AnimatedShapesBackground /> : null}
-      <div className="relative z-10">
+      {/* O <section> agora ocupa a tela inteira (o container padrão saiu pra
+          fora, em app/page.tsx) — o texto recupera aqui o mesmo recuo lateral
+          usado no resto do site, só que sem o limite de largura que fazia o
+          fundo parecer preso numa faixa. */}
+      <div className="relative z-10 px-5 sm:px-8">
         <div className="mb-6 text-od-label text-od-text-3">
           CRM com WhatsApp e IA, sozinho ou com equipe
         </div>
         {/* A promessa é o que o webhook faz de verdade: a IA responde a
             conversa e a detecção de intenção abre a negociação no funil. Nada
             aqui é roadmap. */}
-        <h1 className="mx-auto mb-5 max-w-[20ch] text-balance text-[32px] font-extrabold leading-[1.15] tracking-[-0.02em] sm:text-[44px] md:max-w-[22ch] md:text-[56px]">
+        <h1 className="mx-auto mb-5 max-w-[26ch] text-balance text-[24px] font-extrabold leading-[1.25] tracking-[-0.02em] sm:max-w-[20ch] sm:text-[44px] sm:leading-[1.15] md:max-w-[22ch] md:text-[56px]">
           <span className="text-white">A IA atende seu WhatsApp. </span>
           <span className="text-od-accent-hover">
             Você entra quando importa.

@@ -155,7 +155,7 @@ export function NavBar({ items, className, brand, actions, mobileActions }: NavB
             aria-expanded={mobileOpen}
             aria-controls="landing-mobile-menu"
             onClick={() => setMobileOpen((current) => !current)}
-            className="grid size-11 place-items-center rounded-md border border-od-border text-od-text-2 transition-colors hover:border-od-border-hover hover:text-od-text lg:hidden"
+            className="grid size-11 place-items-center rounded-md text-od-text-2 transition-colors hover:bg-white/[0.05] hover:text-od-text lg:hidden"
           >
             {mobileOpen ? <X className="size-5" strokeWidth={2} /> : <Menu className="size-5" strokeWidth={2} />}
           </button>
