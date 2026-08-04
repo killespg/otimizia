@@ -21,6 +21,7 @@
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
     "@tailwindcss/postcss": "^4.3.3",
+    "class-variance-authority": "^0.7.1",
     "framer-motion": "^12.42.2",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.25.0",
