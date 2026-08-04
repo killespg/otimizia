@@ -1,6 +1,6 @@
 # Apple Liquid Glass no painel do OtimizIA
 
-Status: aprovado pelo usuario em 2026-08-04.
+Status: direcao A, Apple contido, aprovada no comparador visual em 2026-08-04.
 
 ## Objetivo
 
@@ -21,17 +21,63 @@ Referencias oficiais:
 - WWDC25, Meet Liquid Glass:
   https://developer.apple.com/videos/play/wwdc2025/219/
 
+## Direcao visual aprovada
+
+A cena de uso e um corretor trabalhando por varias horas em um monitor de
+desktop. O painel precisa desaparecer atras das decisoes comerciais: leitura
+rapida, baixo cansaco visual e controles previsiveis. A assinatura Apple fica na
+camada funcional, nao em uma colorizacao dramatica do relatorio.
+
+O comparador visual registrou a escolha **A. Apple contido**. A implementacao
+deve reproduzir esta composicao:
+
+- Canvas `#17171b`, praticamente neutro.
+- Conteudo principal `rgba(39,39,46,.94)`; conteudo secundario
+  `rgba(32,32,38,.96)`. Nenhum painel usa preto puro ou fundo violeta.
+- Divisores e bordas `rgba(255,255,255,.09)`, sem contorno violeta em repouso.
+- Texto principal `#f5f5f7`; texto secundario e terciario usam branco com
+  opacidade suficiente para WCAG AA.
+- Violeta `#8757f0` apenas em acao primaria, selecao, foco e pequenos sinais de
+  identidade.
+- Vidro neutro com preenchimento branco de 7,5%, borda branca de 26%, blur
+  entre 16 e 20 px e highlight interno curto. Ele aparece no shell, busca,
+  grupos de acoes e overlays.
+- A luz ambiente fica restrita a uma mancha violeta muito discreta perto do
+  shell e uma mancha azul-acinzentada ainda mais fraca. Laranja, rosa e ciano
+  saem do canvas. A tela nao pode ser lida como gradiente multicolorido.
+- Paineis usam raio de 12 a 16 px. Pills ficam reservadas a busca, botoes e
+  controles compactos.
+
+### Estado da primeira entrega
+
+A primeira entrega ja separou corretamente conteudo e vidro, unificou o shell
+desktop, criou os grupos flutuantes da topbar e adicionou fallbacks de
+acessibilidade. Esta base funcional deve ser preservada.
+
+A captura revisada pelo usuario rejeitou quatro escolhas visuais dessa entrega:
+
+- O SVG ambiente ocupa a tela com cinco zonas violeta, laranja, rosa e ciano.
+- Os tokens de conteudo ficaram preto-violeta e transformaram os paineis em
+  blocos escuros destacados do canvas.
+- Bordas violetas em paineis inativos fizeram o acento parecer decoracao.
+- Raios de 20 a 24 px nos paineis aumentaram a aparencia de cards genericos.
+
+Portanto, esta correcao e um passe de material e geometria. Ela troca tokens e o
+asset ambiente e ajusta apenas as regras CSS que impedirem esses tokens de
+chegar ao dashboard. Nao reconstroi componentes React, navegacao ou dados.
+
 ## Abordagens consideradas
 
 1. **Liquid Glass funcional, fiel a Apple — escolhida.** Vidro apenas no shell,
    navegacao, controles agrupados, menus, sheets e popovers. Conteudo usa
    material padrao. Entrega hierarquia clara, melhor desempenho e menos ruido.
-2. **Vidro em todas as superficies — rejeitada.** E o estado visual atual:
-   `.panel` e cards tambem recebem blur, brilho e transparencia. Produz vidro
-   aninhado, bordas demais e baixa hierarquia; contraria o HIG.
-3. **Maquiagem cosmetica — rejeitada.** Manter a estrutura atual e apenas trocar
-   opacidade, blur e raios. E mais barata, mas continua parecendo glassmorphism
-   generico e nao resolve a separacao entre controles e conteudo.
+2. **Vidro em todas as superficies — rejeitada.** Aplicar blur, brilho e
+   transparencia a `.panel` e cards produziria vidro aninhado, bordas demais e
+   baixa hierarquia; contraria o HIG.
+3. **Preto-violeta sobre fundo multicolorido — rejeitada apos captura.** A
+   separacao semantica estava correta, mas os paineis viraram blocos quase
+   pretos sobre um gradiente dominante. Trocar apenas cinza por roxo nao resolve
+   a composicao.
 
 ## Escopo
 
@@ -63,8 +109,8 @@ O produto passa a ter tres camadas sem sobreposicao semantica.
 - `.panel`, `.card`, `.card-quiet`, faixas de metricas, tabelas e formularios
   deixam de usar `backdrop-filter`, grao, sheen e refração.
 - Superficies de conteudo usam cor solida ou material padrao quase opaco, borda
-  de baixo contraste e raio moderado. Divisores internos organizam dados sem
-  criar um card para cada valor.
+  neutra de baixo contraste, sem sombra ampla e com raio de 12 a 16 px.
+  Divisores internos organizam dados sem criar um card para cada valor.
 - Texto e dados financeiros mantem contraste WCAG AA no pior fundo possivel.
 
 ### 2. Liquid Glass funcional
@@ -122,8 +168,8 @@ O produto passa a ter tres camadas sem sobreposicao semantica.
   internos e sem brilho especular em cada celula.
 - Indicadores imobiliarios, comissoes e metas usam material padrao consistente;
   valores e estados ficam mais importantes que a superficie.
-- O fundo animado pode permanecer configuravel, mas com luminosidade e saturacao
-  limitadas para nao reduzir contraste nem competir com os dados.
+- O fundo multicolorido atual deve ser substituido pela luz ambiente restrita da
+  direcao A. Nao permanecem manchas laranja, rosa ou ciano atras dos dados.
 
 ## Componentes e tokens
 
@@ -133,8 +179,8 @@ O produto passa a ter tres camadas sem sobreposicao semantica.
 - Evitar um componente React novo quando uma classe/token resolve; criar um
   wrapper somente se ele garantir agrupamento, foco ou animacao que CSS sozinho
   nao consegue expressar.
-- Remover a regra global que transforma todo `bg-od-surface` em vidro. O nome da
-  superficie deve indicar seu papel, nao disparar um efeito caro implicitamente.
+- Preservar a separacao ja implementada: `bg-od-surface` continua sendo
+  conteudo estavel e nunca dispara vidro implicitamente.
 - Preservar fallback solido para navegadores sem `backdrop-filter` e para modos
   de acessibilidade.
 
@@ -180,6 +226,10 @@ O produto passa a ter tres camadas sem sobreposicao semantica.
 
 - A primeira leitura visual e de um app Apple contemporaneo, nao de um template
   de glassmorphism.
+- Em captura de tela inteira, o canvas e percebido primeiro como grafite neutro,
+  nao como um gradiente. Nenhuma zona colorida compete com valores ou titulos.
+- Cards nao parecem buracos pretos nem placas roxas: ficam um passo de
+  luminosidade acima do canvas, com borda neutra discreta e sem sombra ampla.
 - Vidro aparece principalmente onde a pessoa toca ou navega.
 - Dados continuam legiveis e mais importantes que os recipientes.
 - Sidebar, topbar e mobile formam uma camada funcional coerente e responsiva.
