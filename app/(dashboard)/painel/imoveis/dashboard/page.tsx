@@ -51,16 +51,29 @@ export default async function RealEstateDashboardPage({
     workspaceKey,
   );
 
-  const [orgRole, { data: membership }, { data: org }, members] = await Promise.all([
-    getOrgRole(supabase, orgId, user!.id),
-    supabase.from("organization_members").select("job_role").eq("org_id", orgId).eq("user_id", user!.id).maybeSingle(),
-    supabase
-      .from("organizations")
-      .select("real_estate_v2_enabled, real_estate_public_page_enabled, real_estate_public_page_token")
-      .eq("id", orgId)
-      .maybeSingle(),
-    getOrgMembers(supabase, orgId),
-  ]);
+  const [orgRole, { data: membership }, { data: org }, members, { data: notificationRow }] =
+    await Promise.all([
+      getOrgRole(supabase, orgId, user!.id),
+      supabase.from("organization_members").select("job_role").eq("org_id", orgId).eq("user_id", user!.id).maybeSingle(),
+      supabase
+        .from("organizations")
+        .select("real_estate_v2_enabled, real_estate_public_page_enabled, real_estate_public_page_token")
+        .eq("id", orgId)
+        .maybeSingle(),
+      getOrgMembers(supabase, orgId),
+      // Alimenta os atalhos de aviso no painel de configurações rápidas do
+      // cabeçalho. Sem linha salva, o padrão do produto é tudo ligado.
+      supabase
+        .from("notification_preferences")
+        .select("daily_push, daily_summary_email, stalled_deal_email")
+        .eq("user_id", user!.id)
+        .maybeSingle(),
+    ]);
+  const notificationPreferences = {
+    dailyPush: notificationRow?.daily_push ?? true,
+    dailySummaryEmail: notificationRow?.daily_summary_email ?? true,
+    stalledDealEmail: notificationRow?.stalled_deal_email ?? true,
+  };
   const isAdmin = orgRole === "admin";
   if (!canViewRealEstate(membership?.job_role, isAdmin) || !isRealEstateV2Enabled(org)) notFound();
 
@@ -163,6 +176,7 @@ export default async function RealEstateDashboardPage({
       properties={(propertiesForCommission ?? []) as Array<{ id: string; title: string }>}
       organization={org}
       showAnimatedBackground={dashboardPreferences.showAnimatedBackground}
+      notificationPreferences={notificationPreferences}
     />
   );
 }

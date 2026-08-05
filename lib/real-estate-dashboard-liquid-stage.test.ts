@@ -26,6 +26,11 @@ describe("Layout horizontal do dashboard imobiliário", () => {
         properties: [],
         organization: null,
         showAnimatedBackground: true,
+        notificationPreferences: {
+          dailyPush: true,
+          dailySummaryEmail: true,
+          stalledDealEmail: false,
+        },
       }),
     );
 
@@ -52,8 +57,13 @@ describe("Layout horizontal do dashboard imobiliário", () => {
     expect(html).toContain('aria-label="Ver resumo da operação"');
     expect(html).toContain('aria-controls="operation-summary"');
     expect(html).toContain('aria-expanded="false"');
-    expect(html).toContain('aria-label="Cadastrar novo imóvel"');
-    expect(html).toContain('href="/painel/imoveis/novo"');
+    // A ação em destaque do cabeçalho passou a ser a conta. Cadastrar imóvel
+    // continua no menu "Mais > Criar" do celular e no botão da carteira, então
+    // aqui a ausência é intencional, não uma perda de caminho.
+    expect(html).toContain('data-dashboard-settings-trigger="true"');
+    expect(html).toContain('aria-label="Abrir configurações rápidas da conta"');
+    expect(html).toContain('aria-controls="quick-settings"');
+    expect(html).not.toContain('aria-label="Cadastrar novo imóvel"');
     expect(html).toContain('href="/painel/assistente"');
     expect(html).toContain("Acione o Tim na sua operação");
     expect(html).toContain("Bom dia, Mariana");
@@ -123,7 +133,10 @@ describe("Layout horizontal do dashboard imobiliário", () => {
 
     expect(html).not.toContain("Pergunte ao Tim");
     expect(html).not.toContain("Agenda de visitas");
-    expect(html).toContain("Novo imóvel");
+    // Cadastrar imóvel deixou de ocupar o destaque do cabeçalho, que agora é
+    // da conta. O caminho continua na carteira e nas ações rápidas da
+    // navegação — esta tela é de leitura da operação.
+    expect(html).not.toContain("Novo imóvel");
     expect(html).toContain("Personalizar painel");
     expect(html).not.toContain("data-dashboard-card");
     expect(html).not.toContain("divide-x");
@@ -177,6 +190,11 @@ describe("Layout horizontal do dashboard imobiliário", () => {
         properties: [],
         organization: null,
         showAnimatedBackground: true,
+        notificationPreferences: {
+          dailyPush: true,
+          dailySummaryEmail: true,
+          stalledDealEmail: false,
+        },
       }),
     );
 

@@ -10,7 +10,10 @@ import {
   Target,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { RealEstateDashboardHeader } from "@/components/real-estate/real-estate-dashboard-header";
+import {
+  RealEstateDashboardHeader,
+  type NotificationPreferences,
+} from "@/components/real-estate/real-estate-dashboard-header";
 import { PendingButton } from "@/components/ui/PendingButton";
 import { getMobileDashboardGreeting } from "@/lib/real-estate/mobile-dashboard-greeting";
 import type { OrgMember } from "@/lib/workspace/org";
@@ -49,6 +52,7 @@ type Props = {
   properties: Array<{ id: string; title: string }>;
   organization: DashboardOrganization | null;
   showAnimatedBackground: boolean;
+  notificationPreferences: NotificationPreferences;
 };
 
 type DashboardMetric = {
@@ -80,6 +84,7 @@ export function RealEstateDashboard({
   properties,
   organization,
   showAnimatedBackground,
+  notificationPreferences,
 }: Props) {
   const completedVisits = visits.filter((visit) => visit.status === "completed").length;
   const requestedVisits = visits.filter((visit) => visit.status === "requested").length;
@@ -133,6 +138,7 @@ export function RealEstateDashboard({
         requestedVisits={requestedVisits}
         openOffers={openOffers}
         overdueCommissions={overdueCount}
+        notificationPreferences={notificationPreferences}
       />
 
       <RealEstateMetrics metrics={metrics} />
