@@ -52,6 +52,11 @@ Os valores executáveis vivem em `app/globals.css`.
 2. Uma cor de ação. Verde, âmbar e vermelho comunicam estado, não decoração.
 3. Nada de gradiente decorativo ou texto em gradiente no produto. Sheen e
    refração pertencem somente ao material Liquid Glass funcional.
+   Exceção única, aprovada em 2026-08-05: o botão do Tim na barra do celular
+   usa `bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-800`. Ele é
+   a única ação flutuante do produto e o gradiente é o que a separa das abas
+   de navegação ao redor. A exceção é dele; não abre precedente para cards,
+   faixas de métrica ou tipografia.
 4. Não aninhar cards. Métricas relacionadas formam uma faixa ou painel com propósito.
 5. Desktop usa relações e densidade; mobile reorganiza a mesma hierarquia.
 6. Conteúdo continua visível sem JavaScript. JavaScript melhora interação e movimento.

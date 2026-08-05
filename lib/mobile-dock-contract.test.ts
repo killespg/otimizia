@@ -37,7 +37,7 @@ describe("Barra de navegação do celular", () => {
     // A ordem é decisão de produto e já foi trocada por engano uma vez: o Tim
     // é a âncora central da barra e o menu de áreas fecha a fila à direita.
     const dock = dockMarkup(renderDock());
-    const order = [...dock.matchAll(/(?:aria-label="Falar com o Tim"|>(Início|Imóveis|WhatsApp|Mais)<)/g)].map(
+    const order = [...dock.matchAll(/(?:aria-label="Falar por voz com o Tim"|>(Início|Imóveis|WhatsApp|Mais)<)/g)].map(
       (match) => match[1] ?? "Tim",
     );
 
@@ -45,32 +45,36 @@ describe("Barra de navegação do celular", () => {
   });
 
   it("eleva o Tim acima da barra em vez de tratá-lo como uma aba comum", () => {
+    // `-top-3` e não `-top-6`: a elevação maior invadia o conteúdo acima e foi
+    // corrigida por decisão de produto. Fica travado para não voltar sozinho.
     const dock = dockMarkup(renderDock());
 
     expect(dock).toContain("-top-3");
-    expect(dock).toContain("h-14 w-14");
+    expect(dock).not.toContain("-top-6");
+    expect(dock).toContain("h-16 w-16");
     expect(dock).toContain("rounded-full");
-    expect(dock).toContain("border-[3px]");
   });
 
-  it("usa o roxo da marca no botão central, não uma cor solta", () => {
-    // DESIGN.md trata #8757f0 como identidade e proíbe gradiente decorativo
-    // no produto: o token existe, então não há motivo para uma cor externa.
+  it("mantém o anel do botão central preso ao token do canvas", () => {
+    // O recorte no vidro só funciona se o anel for exatamente a cor do fundo.
+    // Hardcodar o hex faz o botão descolar do canvas na primeira mudança de
+    // tema — por isso o teste exige o token, não um valor literal.
     const dock = dockMarkup(renderDock());
 
-    expect(dock).toContain("bg-od-accent");
-    expect(dock).toContain("border-od-bg");
-    expect(dock).not.toMatch(/bg-indigo-\d|bg-gradient-to/);
+    expect(dock).toContain("ring-od-bg");
+    expect(dock).not.toMatch(/ring-\[#[0-9a-fA-F]{6}\]/);
   });
 
-  it("continua navegando por link, não por button", () => {
-    // Trocar por <button> perderia prefetch, abrir em nova aba e o botão do
-    // meio do mouse — o Tim é uma rota, não uma ação local.
+  it("abre a conversa por voz em vez de navegar", () => {
+    // O botão central deixou de ser rota: ele aciona a folha de voz ali mesmo.
+    // A conversa completa continua alcançável pelo menu de áreas e por um
+    // atalho dentro da própria folha, então a página do Tim não fica órfã.
     const dock = dockMarkup(renderDock());
 
-    expect(dock).toMatch(/<a\b[^>]*aria-label="Falar com o Tim"/);
-    expect(dock).not.toMatch(/<button\b[^>]*aria-label="Falar com o Tim"/);
-    expect(dock).toMatch(/<a\b[^>]*href="\/painel\/assistente"/);
+    expect(dock).toMatch(/<button\b[^>]*aria-label="Falar por voz com o Tim"/);
+    expect(dock).toContain('aria-controls="tim-voice-sheet"');
+    expect(dock).toContain('aria-haspopup="dialog"');
+    expect(dock).not.toMatch(/<a\b[^>]*href="\/painel\/assistente"/);
   });
 
   it("dá a todo item da barra o alvo mínimo de toque", () => {
@@ -82,7 +86,7 @@ describe("Barra de navegação do celular", () => {
 
     expect(targets.length).toBe(5);
     for (const className of targets) {
-      const isTim = className.includes("h-14 w-14");
+      const isTim = className.includes("h-16 w-16");
       expect(isTim || (className.includes("min-h-14") && className.includes("min-w-11"))).toBe(true);
     }
   });

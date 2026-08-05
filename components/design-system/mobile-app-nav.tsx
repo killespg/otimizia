@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  forwardRef,
   useCallback,
   useEffect,
   useRef,
@@ -13,6 +14,8 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronRight, Menu, X, type LucideIcon } from "lucide-react";
 import { LogoMark } from "@/components/design-system/logo";
+import { TimIcon } from "@/components/design-system/tim-icon";
+import { VoiceSheet } from "@/components/tim/VoiceSheet";
 
 export type MobileNavItem = {
   href: string;
@@ -48,10 +51,17 @@ export function MobileAppNav({
 }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const timButtonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
+
+  const closeVoice = useCallback(() => {
+    setVoiceOpen(false);
+    window.requestAnimationFrame(() => timButtonRef.current?.focus());
+  }, []);
 
   const closeMenu = useCallback((restoreFocus = true) => {
     setOpen(false);
@@ -93,9 +103,6 @@ export function MobileAppNav({
 
   const tabActive = (item: { href: string; exact?: boolean }) =>
     pendingHref ? pendingHref === item.href : isCurrent(pathname, item);
-  const timActive = pendingHref
-    ? pendingHref === timHref
-    : isCurrent(pathname, { href: timHref });
   const anyGroupActive = groups.some((group) =>
     group.items.some((item) => isCurrent(pathname, item)),
   );
@@ -122,6 +129,12 @@ export function MobileAppNav({
   return (
     <>
       <AnimatePresence>
+        {voiceOpen ? (
+          <VoiceSheet assistantHref={timHref} onClose={closeVoice} />
+        ) : null}
+      </AnimatePresence>
+
+      <AnimatePresence>
         {open ? (
           <>
             <motion.button
@@ -141,7 +154,7 @@ export function MobileAppNav({
               aria-modal="true"
               aria-label="Todas as áreas"
               onKeyDown={trapFocus}
-              className="glass liquid-glass-mobile-sheet fixed inset-x-3 bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-[var(--z-sticky)] mx-auto max-h-[66dvh] max-w-md overflow-y-auto rounded-3xl md:hidden"
+              className="glass fixed inset-x-3 bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-[var(--z-sticky)] mx-auto max-h-[66dvh] max-w-md overflow-y-auto rounded-3xl md:hidden"
               initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
@@ -222,9 +235,12 @@ export function MobileAppNav({
             onTap={() => setPendingHref(tabs[1].href)}
           />
           <TimTab
-            href={timHref}
-            active={timActive}
-            onTap={() => setPendingHref(timHref)}
+            ref={timButtonRef}
+            open={voiceOpen}
+            onToggle={() => {
+              setOpen(false);
+              setVoiceOpen((value) => !value);
+            }}
           />
           <BarTab
             item={tabs[2]}
@@ -364,37 +380,36 @@ function MenuRow({
 }
 
 /**
- * O Tim é o único item elevado da barra: sobe acima do dock e ganha o anel da
- * cor do fundo para parecer recortado nele. Continua sendo `Link`, e não
- * `button`, porque o alvo é uma rota — trocar por `button` perderia prefetch,
- * abrir em nova aba e o botão do meio do mouse.
+ * O Tim é o único item elevado da barra. Camadas, de fora para dentro: o anel
+ * na cor do canvas, que abre o recorte no vidro; o brilho externo; o gradiente;
+ * e a borda branca interna, que simula o reflexo na quina do vidro.
+ *
+ * Continua sendo `Link`, e não `button`, porque o alvo é uma rota — trocar por
+ * `button` perderia prefetch, abrir em nova aba e o botão do meio do mouse.
+ *
+ * `-top-3`, e não `-top-6`: a elevação maior invadia o conteúdo acima e foi
+ * corrigida por decisão de produto.
  */
-function TimTab({
-  href,
-  active,
-  onTap,
-}: {
-  href: string;
-  active: boolean;
-  onTap?: () => void;
-}) {
+const TimTab = forwardRef<
+  HTMLButtonElement,
+  { open: boolean; onToggle: () => void }
+>(function TimTab({ open, onToggle }, ref) {
   return (
     <div className="relative -top-3 flex items-center justify-center">
-      <Link
-        href={href}
-        prefetch
-        onClick={onTap}
-        aria-current={active ? "page" : undefined}
-        aria-label="Falar com o Tim"
-        className={`flex h-14 w-14 items-center justify-center rounded-full border-[3px] border-od-bg bg-od-accent text-white shadow-[0_0_15px_rgba(135,87,240,0.5)] ${
-          active ? "ring-2 ring-white/45" : ""
+      <button
+        ref={ref}
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-controls="tim-voice-sheet"
+        aria-haspopup="dialog"
+        aria-label="Falar por voz com o Tim"
+        className={`flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-800 text-white shadow-[0_0_30px_rgba(139,92,246,0.6)] ring-4 ring-od-bg ${
+          open ? "outline outline-2 outline-offset-2 outline-white/45" : ""
         }`}
       >
-        {/* A marca é roxa (rgb(124,65,212)) e o círculo é indigo: sobrepostas
-            dão contraste ~1:1 e o ícone simplesmente some. Invertida para
-            branco a silhueta da marca se mantém e o contraste vai a ~5:1. */}
-        <LogoMark size={22} className="brightness-0 invert" />
-      </Link>
+        <TimIcon size={30} />
+      </button>
     </div>
   );
-}
+});
