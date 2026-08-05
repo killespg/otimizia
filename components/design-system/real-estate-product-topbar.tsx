@@ -2,11 +2,29 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Building2, CalendarDays, Maximize2, MessageSquare, Search } from "lucide-react";
+import { Building2, CalendarDays, Maximize2, Search } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { LogoWordmark } from "@/components/design-system/logo";
+import {
+  OperationSummaryButton,
+  type OperationSummary,
+} from "@/components/real-estate/operation-summary-button";
+import {
+  QuickSettingsButton,
+  type NotificationPreferences,
+} from "@/components/real-estate/quick-settings-button";
 
-export function RealEstateProductTopbar({ initials, visitCount }: { initials: string; visitCount: number }) {
+export function RealEstateProductTopbar({
+  displayName,
+  visitCount,
+  operationSummary,
+  notificationPreferences,
+}: {
+  displayName: string;
+  visitCount: number;
+  operationSummary: OperationSummary;
+  notificationPreferences: NotificationPreferences;
+}) {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
@@ -28,15 +46,22 @@ export function RealEstateProductTopbar({ initials, visitCount }: { initials: st
         <Search size={14} className="shrink-0 text-od-text-3" />
         <input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Buscar imóvel" placeholder="Buscar imóvel, bairro ou cidade" className="!min-h-0 !border-0 !bg-transparent !p-0 text-[13px] !shadow-none outline-none placeholder:text-od-text-3" />
       </form>
+      {/* O ícone de chat e o link de conta saíram daqui: o resumo da operação e
+          as configurações rápidas assumiram o lugar deles, e o Tim é alcançado
+          pela própria chamada do painel e pela barra do celular. Manter os dois
+          antigos duplicaria o mesmo destino lado a lado. */}
       <div data-liquid-glass-actions className="liquid-glass-control ml-auto flex items-center rounded-full p-1">
-        <Link href="/painel/assistente" aria-label="Abrir conversa com o Tim" className="grid size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text"><MessageSquare size={16} /></Link>
         <button type="button" onClick={fullscreen} aria-label="Tela cheia" className="hidden size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text sm:grid"><Maximize2 size={15} /></button>
         <Link href="/painel/imoveis/visitas" aria-label="Ver visitas" className="relative grid size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text">
           <CalendarDays size={16} />
           {visitCount > 0 ? <span className="absolute right-1.5 top-1.5 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#fb7767] px-1 text-xs font-bold text-white">{Math.min(visitCount, 99)}</span> : null}
         </Link>
         <Link href="/painel/imoveis" aria-label="Abrir carteira" className="hidden size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text sm:grid"><Building2 size={16} /></Link>
-        <Link href="/painel/configuracoes" aria-label="Abrir conta" className="grid size-11 place-items-center rounded-full bg-white/[0.07] text-xs font-bold text-od-text-2">{initials}</Link>
+        <OperationSummaryButton {...operationSummary} />
+        <QuickSettingsButton
+          displayName={displayName}
+          notificationPreferences={notificationPreferences}
+        />
       </div>
     </header>
   );

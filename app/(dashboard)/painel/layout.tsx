@@ -120,9 +120,35 @@ export default async function PainelLayout({
           supabase.from("real_estate_visits").select("id", { count: "exact", head: true }).eq("org_id", orgId).in("status", ["requested", "scheduled"]),
           supabase.from("real_estate_share_collections").select("id", { count: "exact", head: true }).eq("org_id", orgId).is("revoked_at", null),
           supabase.from("deals").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("workspace_key", "real_estate_broker"),
+          // Alimentam o sino do resumo, agora na topbar. São contagens
+          // (head: true), não leitura de linhas: a de comissão vencida
+          // reproduz `isCommissionOverdue` em consulta, para não precisar
+          // carregar a carteira inteira em toda rota.
+          supabase.from("real_estate_visits").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "requested"),
+          supabase.from("real_estate_offers").select("id", { count: "exact", head: true }).eq("org_id", orgId).in("status", ["sent", "viewed"]),
+          supabase
+            .from("real_estate_commissions")
+            .select("id", { count: "exact", head: true })
+            .eq("org_id", orgId)
+            .not("status", "in", "(received,cancelled)")
+            .not("due_at", "is", null)
+            .lt("due_at", new Date().toISOString()),
         ])
       : Promise.resolve(null),
   ]);
+  // Alimenta os atalhos de aviso das configurações rápidas, também na topbar.
+  const { data: notificationRow } = canViewRealEstateWorkspace
+    ? await supabase
+        .from("notification_preferences")
+        .select("daily_push, daily_summary_email, stalled_deal_email")
+        .eq("user_id", user.id)
+        .maybeSingle()
+    : { data: null };
+  const notificationPreferences = {
+    dailyPush: notificationRow?.daily_push ?? true,
+    dailySummaryEmail: notificationRow?.daily_summary_email ?? true,
+    stalledDealEmail: notificationRow?.stalled_deal_email ?? true,
+  };
   const labels = getWorkspaceLabels(
     preset,
     org?.workspace_preferences,
@@ -156,6 +182,11 @@ export default async function PainelLayout({
     contacts: sellerCountRows?.[0].count ?? 0,
     deals: sellerCountRows?.[1].count ?? 0,
     reminders: sellerCountRows?.[2].count ?? 0,
+  };
+  const operationSummary = {
+    requestedVisits: realEstateCountRows?.[4].count ?? 0,
+    openOffers: realEstateCountRows?.[5].count ?? 0,
+    overdueCommissions: realEstateCountRows?.[6].count ?? 0,
   };
   const realEstateCounts = {
     properties: realEstateCountRows?.[0].count ?? 0,
@@ -242,7 +273,12 @@ export default async function PainelLayout({
           ) : isAutonomousSeller ? (
             <SellerProductTopbar initials={getInitials(displayName)} reminderCount={sellerCounts.reminders} />
           ) : canViewRealEstateWorkspace ? (
-            <RealEstateProductTopbar initials={getInitials(displayName)} visitCount={realEstateCounts.visits} />
+            <RealEstateProductTopbar
+              displayName={displayName}
+              visitCount={realEstateCounts.visits}
+              operationSummary={operationSummary}
+              notificationPreferences={notificationPreferences}
+            />
           ) : (
             <ProductTopbar initials={getInitials(displayName)} />
           )}

@@ -26,11 +26,6 @@ describe("Layout horizontal do dashboard imobiliário", () => {
         properties: [],
         organization: null,
         showAnimatedBackground: true,
-        notificationPreferences: {
-          dailyPush: true,
-          dailySummaryEmail: true,
-          stalledDealEmail: false,
-        },
       }),
     );
 
@@ -47,22 +42,17 @@ describe("Layout horizontal do dashboard imobiliário", () => {
     expect(html.match(/data-indicator-group="true"/g)).toHaveLength(3);
     expect(html.match(/data-financial-progress="true"/g)).toHaveLength(3);
     expect(html).toContain('data-liquid-glow="tim-action"');
-    expect(html).toContain('data-liquid-glow="primary-action"');
     expect(html).not.toContain('data-liquid-glow="assistant"');
 
     expect(html).toContain('data-dashboard-profile-header="true"');
     expect(html).toContain('data-dashboard-greeting="true"');
     expect(html).toContain('data-dashboard-status="true"');
-    expect(html).toContain('data-dashboard-notification-trigger="true"');
-    expect(html).toContain('aria-label="Ver resumo da operação"');
-    expect(html).toContain('aria-controls="operation-summary"');
-    expect(html).toContain('aria-expanded="false"');
-    // A ação em destaque do cabeçalho passou a ser a conta. Cadastrar imóvel
-    // continua no menu "Mais > Criar" do celular e no botão da carteira, então
-    // aqui a ausência é intencional, não uma perda de caminho.
-    expect(html).toContain('data-dashboard-settings-trigger="true"');
-    expect(html).toContain('aria-label="Abrir configurações rápidas da conta"');
-    expect(html).toContain('aria-controls="quick-settings"');
+    // O sino do resumo e as configurações rápidas subiram para a topbar: os
+    // dois valem em qualquer tela do corretor e aqui apareciam ao lado dos
+    // equivalentes da topbar, repetindo o mesmo destino. Cadastrar imóvel
+    // continua no menu "Mais > Criar" do celular e no botão da carteira.
+    expect(html).not.toContain('data-dashboard-notification-trigger="true"');
+    expect(html).not.toContain('data-dashboard-settings-trigger="true"');
     expect(html).not.toContain('aria-label="Cadastrar novo imóvel"');
     expect(html).toContain('href="/painel/assistente"');
     expect(html).toContain("Acione o Tim na sua operação");
@@ -193,11 +183,6 @@ describe("Layout horizontal do dashboard imobiliário", () => {
         properties: [],
         organization: null,
         showAnimatedBackground: true,
-        notificationPreferences: {
-          dailyPush: true,
-          dailySummaryEmail: true,
-          stalledDealEmail: false,
-        },
       }),
     );
 

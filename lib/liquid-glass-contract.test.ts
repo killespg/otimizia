@@ -104,7 +104,16 @@ describe("Liquid Glass do shell de produto", () => {
       createElement(ProductTopbar, { initials: "MC" }),
       createElement(SellerProductTopbar, { initials: "MC", reminderCount: 2 }),
       createElement(LegalProductTopbar, { initials: "MC" }),
-      createElement(RealEstateProductTopbar, { initials: "MC", visitCount: 2 }),
+      createElement(RealEstateProductTopbar, {
+        displayName: "Mariana Costa",
+        visitCount: 2,
+        operationSummary: { requestedVisits: 1, openOffers: 0, overdueCommissions: 0 },
+        notificationPreferences: {
+          dailyPush: true,
+          dailySummaryEmail: true,
+          stalledDealEmail: false,
+        },
+      }),
     ];
 
     for (const topbar of topbars) {

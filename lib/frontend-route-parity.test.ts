@@ -357,6 +357,10 @@ describe("frontend route parity", () => {
       resolve(process.cwd(), "components/real-estate/real-estate-dashboard-header.tsx"),
       "utf8",
     );
+    const realEstateTopbar = readFileSync(
+      resolve(process.cwd(), "components/design-system/real-estate-product-topbar.tsx"),
+      "utf8",
+    );
     const dashboardPage = readFileSync(
       resolve(process.cwd(), "app/(dashboard)/painel/imoveis/dashboard/page.tsx"),
       "utf8",
@@ -391,8 +395,17 @@ describe("frontend route parity", () => {
     expect(dashboardHeader).not.toContain("Pergunte ao Tim");
     expect(dashboard).toContain("Visão geral de imóveis");
     expect(dashboard).toContain("Personalizar painel");
-    expect(dashboardHeader).toContain("data-dashboard-primary-actions");
-    expect(dashboardHeader).toContain("liquid-glass-control--tinted");
+    // As ações do cabeçalho (sino do resumo e configurações rápidas) subiram
+    // para a topbar, que aparece em toda tela do corretor. O cabeçalho ficou
+    // com identidade, status e a chamada do Tim.
+    expect(dashboardHeader).not.toContain("data-dashboard-primary-actions");
+    expect(realEstateTopbar).toContain("OperationSummaryButton");
+    expect(realEstateTopbar).toContain("QuickSettingsButton");
+    // A variação tingida é reservada à ação primária, e a ação primária do
+    // cabeçalho subiu para a topbar. O que restou aqui é a chamada do Tim, em
+    // vidro comum.
+    expect(dashboardHeader).toContain("liquid-glass-control");
+    expect(dashboardHeader).not.toContain("liquid-glass-control--tinted");
     expect(dashboard).toContain("data-dashboard-filters");
     expect(dashboard).toContain("sm:left-auto sm:right-0");
     expect(dashboard).toContain("updateDashboardBackgroundVisibility");
