@@ -11,6 +11,7 @@
  * mensagem em português que a tela mostra sem tradução.
  */
 import { logError } from "@/lib/utils/logger";
+import { parseBrlAmount } from "@/lib/utils/form-parse";
 import { type FieldSpec, type ProfessionType } from "@/lib/people/professions";
 import { DEAL_STAGES, type DealStage } from "@/lib/supabase/types";
 import { normalizeWorkspaceKeys } from "@/lib/workspace/workspaces";
@@ -124,7 +125,11 @@ export function parseStringArray(value: string | undefined): string[] {
 export function normalizeInstagram(v: FormDataEntryValue | null): string | null {
   let handle = text(v, 200);
   if (!handle) return null;
-  handle = handle.replace(/^https?:\/\/(www\.)?instagram\.com\//i, "");
+  // O esquema é opcional: quem copia o perfil do celular costuma colar
+  // "instagram.com/maria", sem http. A barra final também, para que colar só
+  // o domínio resulte em null em vez de virar um "usuário" chamado
+  // instagram.com.
+  handle = handle.replace(/^(https?:\/\/)?(www\.|m\.)?instagram\.com\/?/i, "");
   handle = handle.replace(/^@/, "");
   handle = handle.split(/[/?]/)[0].trim();
   return handle ? handle.slice(0, LIMIT.instagram) : null;
@@ -134,10 +139,7 @@ export function moneyToCents(v: FormDataEntryValue | null): number | null {
   const raw = text(v, 32).replace(/[R$\s]/g, "");
   if (!raw) return null;
 
-  const normalized = raw.includes(",")
-    ? raw.replace(/\./g, "").replace(",", ".")
-    : raw;
-  const value = Number(normalized);
+  const value = parseBrlAmount(raw);
   if (!Number.isFinite(value) || value < 0) return 0;
   return Math.min(Math.round(value * 100), 999_999_999_99);
 }

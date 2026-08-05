@@ -11,6 +11,7 @@ import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import type { JobRole, LegalCaseStatus } from "@/lib/supabase/types";
 import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/law/datajud-tribunals";
 import { normalizeProcessNumber } from "@/lib/law/datajud";
+import { parseBrlAmount } from "@/lib/utils/form-parse";
 import { syncCaseWithDatajud } from "@/lib/law/law-datajud-sync";
 import { generatePetitionDraft } from "@/lib/ai/petition-draft";
 import { sendDocumentForSignature } from "@/lib/law/autentique";
@@ -71,8 +72,7 @@ function dateTimeOrNull(value: FormDataEntryValue | null) {
 function moneyToCents(value: FormDataEntryValue | null) {
   const raw = text(value, 32).replace(/R\$|\s/g, "");
   if (!raw) return 0;
-  const normalized = raw.includes(",") ? raw.replace(/\./g, "").replace(",", ".") : raw;
-  const amount = Number(normalized);
+  const amount = parseBrlAmount(raw);
   if (!Number.isFinite(amount) || amount < 0) throw new Error("Informe um valor válido.");
   return Math.round(amount * 100);
 }

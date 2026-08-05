@@ -9,6 +9,7 @@ import { getUserPlanAccess } from "@/lib/billing/plan-access";
 import { SELLER_MODULES, SELLER_SALES_MODELS } from "@/lib/seller/seller-operations";
 import { createClient } from "@/lib/supabase/server";
 import type { SellerModule, SellerSalesModel } from "@/lib/supabase/types";
+import { parseBrlAmount } from "@/lib/utils/form-parse";
 import { parseWorkspacePreferences } from "@/lib/workspace/workspace-preferences";
 import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 
@@ -420,8 +421,7 @@ function optionalDecimal(value: FormDataEntryValue | null, min: number, max: num
 function moneyToCents(value: FormDataEntryValue | null | undefined) {
   const raw = String(value ?? "").trim().replace(/R\$\s?/gi, "").replace(/\s/g, "");
   if (!raw) return 0;
-  const decimal = raw.includes(",") ? raw.replace(/\./g, "").replace(",", ".") : raw;
-  const parsed = Number(decimal);
+  const parsed = parseBrlAmount(raw);
   if (!Number.isFinite(parsed) || parsed < 0) throw new Error("Informe um valor válido.");
   return Math.min(Number.MAX_SAFE_INTEGER, Math.round(parsed * 100));
 }

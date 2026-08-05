@@ -108,15 +108,9 @@ describe("moneyToCents", () => {
     expect(moneyToCents("R$ 1.234,56")).toBe(123456);
   });
 
-  // BUG CONHECIDO, comportamento fixado aqui só para não mudar sem querer.
-  // O ponto de milhar só é tratado quando existe vírgula na string. Sem
-  // vírgula, "1.000" é lido como 1,00 — o usuário digita mil reais e o
-  // negócio é salvo valendo um real. Corrigir exige decidir o que fazer com
-  // "1.5" (um e cinquenta ou mil e quinhentos?), então fica como decisão de
-  // produto, não como efeito colateral de refactor.
-  it("ainda lê milhar sem vírgula como decimal", () => {
-    expect(moneyToCents("1.000")).toBe(100);
-    expect(moneyToCents("1.500")).toBe(150);
+  it("lê milhar sem vírgula", () => {
+    expect(moneyToCents("1.000")).toBe(100000);
+    expect(moneyToCents("1.500")).toBe(150000);
   });
 
   it("lê valor simples sem separador", () => {
@@ -178,11 +172,15 @@ describe("normalizeInstagram", () => {
     expect(normalizeInstagram("https://instagram.com/maria?hl=pt")).toBe("maria");
   });
 
-  // BUG CONHECIDO, comportamento fixado aqui. O prefixo só é removido quando
-  // a URL vem com http/https; colada sem esquema, o domínio sobra e vira o
-  // "usuário" salvo no contato.
-  it("ainda erra quando a URL vem sem esquema", () => {
-    expect(normalizeInstagram("instagram.com/maria")).toBe("instagram.com");
+  it("aceita a URL colada sem esquema", () => {
+    expect(normalizeInstagram("instagram.com/maria")).toBe("maria");
+    expect(normalizeInstagram("www.instagram.com/maria")).toBe("maria");
+    expect(normalizeInstagram("m.instagram.com/maria")).toBe("maria");
+  });
+
+  it("colar só o domínio não vira usuário", () => {
+    expect(normalizeInstagram("instagram.com")).toBeNull();
+    expect(normalizeInstagram("https://instagram.com/")).toBeNull();
   });
 
   it("respeita o limite da coluna", () => {

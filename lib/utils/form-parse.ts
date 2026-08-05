@@ -18,11 +18,37 @@ export function optionalUuid(v: FormDataEntryValue | null): string | null {
   return /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(s) ? s : null;
 }
 
+/**
+ * Lê um valor em reais digitado por gente, já sem "R$" nem espaço, e devolve
+ * o número correspondente (`NaN` se não der para ler).
+ *
+ * Fonte única de verdade do parsing: os campos de dinheiro do produto vivem em
+ * quatro arquivos de action diferentes (CRM, imobiliário, jurídico e operação)
+ * e todos passam por aqui. Cada um mantém a própria política para vazio e para
+ * entrada inválida — o que se compartilha é só a leitura dos dígitos.
+ */
+export function parseBrlAmount(raw: string): number {
+  if (!raw) return Number.NaN;
+
+  // Com vírgula não há ambiguidade: é o formato brasileiro, a vírgula separa
+  // os centavos e todo ponto é separador de milhar.
+  if (raw.includes(",")) return Number(raw.replace(/\./g, "").replace(",", "."));
+  if (!raw.includes(".")) return Number(raw);
+
+  // Sem vírgula a entrada é ambígua e precisa de um critério. Real não tem
+  // três casas decimais, então um grupo final de exatamente 3 dígitos só pode
+  // ser milhar — "1.000" é mil, não um. Grupo de 1 ou 2 dígitos é decimal:
+  // "1.5" e "1.50" são um e cinquenta. Mais de um ponto é sempre milhar.
+  const groups = raw.split(".");
+  const last = groups[groups.length - 1];
+  const isThousandSeparator = groups.length > 2 || (last.length === 3 && groups[0] !== "");
+  return Number(isThousandSeparator ? groups.join("") : raw);
+}
+
 export function moneyToCentsOrNull(v: FormDataEntryValue | null): number | null {
   const raw = text(v, 32).replace(/R\$|\s/g, "");
   if (!raw) return null;
-  const normalized = raw.includes(",") ? raw.replace(/\./g, "").replace(",", ".") : raw;
-  const amount = Number(normalized);
+  const amount = parseBrlAmount(raw);
   if (!Number.isFinite(amount) || amount < 0) throw new Error("Informe um valor válido.");
   return Math.round(amount * 100);
 }
