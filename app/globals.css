@@ -271,6 +271,19 @@ p { text-wrap: pretty; }
 
 .product-content { min-width: 0; flex: 1; }
 
+/* Telas que trazem o próprio cabeçalho de perfil dentro do conteúdo ficavam
+   com duas barras empilhadas no topo do celular: a topbar global do layout e
+   o cabeçalho da página. No celular vale só o cabeçalho de perfil, que já
+   carrega identidade, saudação e as ações da operação.
+   O escopo é o `:has()`: só some onde o cabeçalho existe de fato, então as
+   demais rotas continuam com a topbar no celular. No desktop as duas
+   convivem — lá a topbar carrega a busca, que o cabeçalho não tem. */
+@media (max-width: 767px) {
+  .product-content:has([data-dashboard-profile-header]) > header {
+    display: none;
+  }
+}
+
 @media (max-width: 767px), (pointer: coarse) {
   .product-workspace button,
   .product-workspace [role="button"],
@@ -725,10 +738,18 @@ header.od-chrome::after {
 
 .liquid-glass-dock {
   border-radius: 24px;
-  background-color: rgba(19, 17, 26, 0.54);
-  -webkit-backdrop-filter: var(--od-glass-chrome-blur);
-  backdrop-filter: var(--od-glass-chrome-blur);
-  box-shadow: var(--od-glass-highlight), 0 24px 52px -24px rgba(0, 0, 0, 0.88);
+  /* `background`, e não `background-color`: a regra irmã acima (compartilhada
+     com .product-nav-glass-shell) deixa um gradiente branco na camada de
+     imagem. Somado ao preenchimento, dava duas camadas e o vidro lia como
+     chapa opaca. O shorthand zera a imagem e deixa um único tom translúcido.
+     O tom é o próprio canvas a 50%, via token, para não descolar do fundo. */
+  background: color-mix(in srgb, var(--od-bg) 50%, transparent);
+  border-color: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(40px) saturate(150%);
+  backdrop-filter: blur(40px) saturate(150%);
+  /* Realce de topo mais discreto que o --od-glass-highlight padrão: a 48% ele
+     desenhava um risco branco que denunciava a borda em vez de sugerir vidro. */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 24px 52px -24px rgba(0, 0, 0, 0.88);
 }
 
 /* Landing: canvas contínuo e poucos volumes refrativos. As regras ficam

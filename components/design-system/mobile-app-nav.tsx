@@ -203,9 +203,12 @@ export function MobileAppNav({
         ) : null}
       </AnimatePresence>
 
+      {/* Ordem fixa da barra: os dois destinos mais usados, o Tim flutuando no
+          centro, o terceiro destino e o menu de áreas. O Tim fica no meio
+          porque é a ação, não um destino — e o alcance do polegar é melhor ali. */}
       <nav
         data-mobile-nav
-        className="od-chrome liquid-glass-dock fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-[var(--z-sticky)] mx-auto grid min-h-16 max-w-md grid-cols-5 px-1 md:hidden"
+        className="od-chrome liquid-glass-dock fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-[var(--z-sticky)] mx-auto flex min-h-16 max-w-md items-center justify-between px-6 md:hidden"
         aria-label={ariaLabel}
       >
           <BarTab
@@ -218,13 +221,27 @@ export function MobileAppNav({
             active={tabActive(tabs[1])}
             onTap={() => setPendingHref(tabs[1].href)}
           />
+          <TimTab
+            href={timHref}
+            active={timActive}
+            onTap={() => setPendingHref(timHref)}
+          />
+          <BarTab
+            item={tabs[2]}
+            active={tabActive(tabs[2])}
+            onTap={() => setPendingHref(tabs[2].href)}
+          />
           <button
             ref={menuButtonRef}
             type="button"
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
             aria-controls="mobile-area-menu"
-            className={`relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded px-1 text-[10px] font-medium leading-none transition-colors ${
+            // `h-14` e não só `min-h-14`: a regra global de toque
+            // (.product-workspace button { min-height: 44px }) tem
+            // especificidade maior e achatava só este item, deixando o "Mais"
+            // 12px mais baixo que as abas vizinhas, que são links.
+            className={`relative flex h-14 min-h-14 min-w-11 flex-col items-center justify-center gap-1 rounded px-1 text-[10px] font-medium leading-none transition-colors ${
               open || anyGroupActive
                 ? "bg-white/[0.05] text-od-text"
                 : "text-od-text-3 hover:text-od-text-2"
@@ -233,16 +250,6 @@ export function MobileAppNav({
             {open ? <X size={20} /> : <Menu size={20} />}
             <span>{open ? "Fechar" : "Mais"}</span>
           </button>
-          <BarTab
-            item={tabs[2]}
-            active={tabActive(tabs[2])}
-            onTap={() => setPendingHref(tabs[2].href)}
-          />
-          <TimTab
-            href={timHref}
-            active={timActive}
-            onTap={() => setPendingHref(timHref)}
-          />
       </nav>
     </>
   );
@@ -264,7 +271,7 @@ function BarTab({
       prefetch
       onClick={onTap}
       aria-current={active ? "page" : undefined}
-      className={`relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded px-1 text-center text-[10px] font-medium leading-[1.1] transition-colors ${
+      className={`relative flex min-h-14 min-w-11 flex-col items-center justify-center gap-1 rounded px-1 text-center text-[10px] font-medium leading-[1.1] transition-colors ${
         active
           ? "bg-white/[0.05] text-od-text"
           : "text-od-text-3 hover:text-od-text-2"
@@ -356,6 +363,12 @@ function MenuRow({
   );
 }
 
+/**
+ * O Tim é o único item elevado da barra: sobe acima do dock e ganha o anel da
+ * cor do fundo para parecer recortado nele. Continua sendo `Link`, e não
+ * `button`, porque o alvo é uma rota — trocar por `button` perderia prefetch,
+ * abrir em nova aba e o botão do meio do mouse.
+ */
 function TimTab({
   href,
   active,
@@ -366,26 +379,22 @@ function TimTab({
   onTap?: () => void;
 }) {
   return (
-    <Link
-      href={href}
-      prefetch
-      onClick={onTap}
-      aria-current={active ? "page" : undefined}
-      aria-label="Falar com o Tim"
-      className={`relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded px-1 text-[10px] font-medium leading-none transition-colors ${
-        active
-          ? "bg-white/[0.05] text-od-text"
-          : "text-od-text-3 hover:text-od-text-2"
-      }`}
-    >
-      <span
-        className={`grid size-6 shrink-0 place-items-center rounded-full ${
-          active ? "bg-od-accent" : "bg-od-surface"
+    <div className="relative -top-3 flex items-center justify-center">
+      <Link
+        href={href}
+        prefetch
+        onClick={onTap}
+        aria-current={active ? "page" : undefined}
+        aria-label="Falar com o Tim"
+        className={`flex h-14 w-14 items-center justify-center rounded-full border-[3px] border-od-bg bg-od-accent text-white shadow-[0_0_15px_rgba(135,87,240,0.5)] ${
+          active ? "ring-2 ring-white/45" : ""
         }`}
       >
-        <LogoMark size={13} />
-      </span>
-      <span>Tim</span>
-    </Link>
+        {/* A marca é roxa (rgb(124,65,212)) e o círculo é indigo: sobrepostas
+            dão contraste ~1:1 e o ícone simplesmente some. Invertida para
+            branco a silhueta da marca se mantém e o contraste vai a ~5:1. */}
+        <LogoMark size={22} className="brightness-0 invert" />
+      </Link>
+    </div>
   );
 }
