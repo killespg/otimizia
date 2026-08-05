@@ -80,10 +80,16 @@ calmos e previsíveis.
 - **Overlays** (`.glass`, `.glass-soft`, `.assistant-sheet`, `.voice-panel`,
   `.mobile-create-menu`): menus, sheets e modais acima de conteúdo rolável.
   Não levam preenchimento chapado: a cor vem do que está atrás, já borrado, e
-  por cima ficam só o grão e o `--od-glass-reflection` — uma faixa especular
-  curta na quina superior e um brilho fraco na borda inferior. O branco a 7,5%
-  que havia aqui deixava o painel leitoso e foi retirado em 2026-08-05, com o
-  contraste do texto reverificado (pior caso 4,86:1, acima de AA).
+  por cima ficam só o grão e o `--od-glass-reflection`. O branco a 7,5% que
+  havia aqui deixava o painel leitoso e foi retirado em 2026-08-05.
+  **O reflexo mora sempre na metade de baixo** — faixa especular entrando pela
+  quina inferior direita e fio claro na borda inferior. O topo do painel é onde
+  fica a maior parte da informação, e brilho ali disputa com a leitura; por isso
+  o realce superior de 48% do `--od-glass-highlight` não vale para overlays,
+  que ficam com um traço de 10% só para fechar a quina. `.od-chrome` mantém o
+  realce no topo: navegação não carrega texto na borda.
+  Contraste reverificado após a mudança: pior caso 5,37:1 e as linhas do topo
+  entre 9,6:1 e 11:1, todas acima de AA.
 - **Conteúdo** (`.panel`, `.card`, `.card-quiet`, `.panel-soft` e tokens
   `bg-od-surface`): superfície grafite neutra sem `backdrop-filter`, com borda
   discreta, raio de 12–16 px e sem sombra ampla. Não existe vidro sobre vidro.
