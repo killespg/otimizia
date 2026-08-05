@@ -32,7 +32,11 @@ export default async function RealEstateDashboardPage({
     data: { user },
   } = await supabase.auth.getUser();
   const [{ data: profile }, orgId] = await Promise.all([
-    supabase.from("profiles").select("profession_type, is_admin, dashboard_preferences").maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("profession_type, is_admin, dashboard_preferences")
+      .eq("id", user!.id)
+      .maybeSingle(),
     getActiveOrgId(supabase, user!.id),
   ]);
   const workspaceKey = getWorkspaceKey(

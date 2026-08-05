@@ -62,10 +62,7 @@ export default async function DevMetricsPage() {
 
       <section className="enter grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
         {tiles.map((tile) => (
-          <article
-            key={tile.label}
-            className="rounded-lg border border-line bg-white p-3 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.75)] sm:p-5"
-          >
+          <article key={tile.label} className="panel p-3 sm:p-5">
             <p className="text-xs font-semibold text-ink-soft sm:text-sm">{tile.label}</p>
             <p className="mt-2 text-xl font-black leading-none tracking-[-0.03em] text-ink sm:mt-3 sm:text-2xl">
               {tile.value}
@@ -74,14 +71,14 @@ export default async function DevMetricsPage() {
         ))}
       </section>
 
-      <section data-reveal className="rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-6">
+      <section data-reveal className="panel p-4 sm:p-6">
         <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
           Novos cadastros — últimos 30 dias
         </h2>
         <SignupsBarChart series={metrics.signupsByDay} />
       </section>
 
-      <section data-reveal className="rounded-lg border border-line bg-white p-4 shadow-[0_18px_44px_-34px_rgba(21,19,46,0.72)] sm:p-5">
+      <section data-reveal className="panel p-4 sm:p-5">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
             Cadastros recentes
@@ -93,17 +90,17 @@ export default async function DevMetricsPage() {
         </div>
 
         {metrics.recentSignups.length === 0 ? (
-          <p className="mt-4 rounded-lg border border-dashed border-line bg-[#f8fbff] px-3 py-8 text-center text-sm font-medium text-ink-muted">
+          <p className="mt-4 rounded-lg border border-dashed border-line bg-od-muted-surface px-3 py-8 text-center text-sm font-medium text-ink-muted">
             Nenhum cadastro ainda.
           </p>
         ) : (
-          <ul className="enter mt-4 space-y-2">
+          <ul className="enter mt-4 divide-y divide-white/[0.06]">
             {metrics.recentSignups.map((signup, index) => {
               const status = STATUS_META[signup.status];
               return (
                 <li
                   key={`${signup.createdAt}-${index}`}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-line bg-white px-3 py-3 shadow-[0_8px_28px_-24px_rgba(15,23,42,0.55)]"
+                  className="flex items-center justify-between gap-3 py-3"
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-black text-ink">

@@ -17,6 +17,7 @@ import { LogoWordmark } from "@/components/design-system/logo";
 export function LandingNav() {
   return (
     <NavBar
+      className="landing-liquid-nav"
       brand={
         <Link href="/" aria-label="OtimizIA, início" className="flex min-h-11 items-center">
           <LogoWordmark height={22} />
@@ -40,7 +41,7 @@ export function LandingNav() {
           </Link>
           <Link
             href="/signup"
-            className="hidden min-h-11 items-center rounded-md bg-od-accent px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-600 min-[360px]:flex"
+            className="liquid-glass-control liquid-glass-control--tinted hidden min-h-11 items-center rounded-full px-4 text-[13px] font-semibold text-white min-[360px]:flex"
           >
             Criar conta
           </Link>
@@ -50,13 +51,13 @@ export function LandingNav() {
         <>
           <Link
             href="/login"
-            className="flex min-h-11 items-center justify-center rounded border border-od-border text-[13px] font-semibold text-od-text-2"
+            className="liquid-glass-control flex min-h-11 items-center justify-center rounded-full px-3 text-[13px] font-semibold text-od-text-2"
           >
             Entrar
           </Link>
           <Link
             href="/signup"
-            className="flex min-h-11 items-center justify-center rounded bg-od-accent px-3 text-[13px] font-semibold text-white"
+            className="liquid-glass-control liquid-glass-control--tinted flex min-h-11 items-center justify-center rounded-full px-3 text-[13px] font-semibold text-white"
           >
             Criar conta
           </Link>

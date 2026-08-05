@@ -155,7 +155,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
         <MetricCard label="Este mês" value={String(monthEntries.length)} icon={IconCalendar} />
       </section>
 
-      <form id="new-reminder" action={createTask} className={usesFlatSurface ? "scroll-mt-24 border-y border-white/[0.08] py-5" : "scroll-mt-24 border border-white/[0.09] bg-[#1e1d22] p-5"}>
+      <form id="new-reminder" action={createTask} className="scroll-mt-24 border-y border-white/[0.08] py-5">
         <input type="hidden" name="return_to" value="/painel/calendario" />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_13rem_minmax(0,1fr)_auto] lg:items-end">
           <div>
@@ -189,7 +189,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
         </div>
       </form>
 
-      <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "overflow-hidden border border-white/[0.09] bg-[#1e1d22]"}>
+      <section className="overflow-hidden border-y border-white/[0.08]">
         <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
           <h2 className="text-[14px] font-semibold capitalize text-white">{monthTitle}</h2>
           <div className="flex gap-2">

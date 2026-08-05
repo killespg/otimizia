@@ -254,7 +254,7 @@ function initials(name: string) {
 // enxerga literais no codigo. Duas variantes explicitas.
 function Avatar({ name, large = false }: { name: string; large?: boolean }) {
   return (
-    <span className={`grid ${large ? "size-7 text-xs" : "size-6 text-xs"} shrink-0 place-items-center rounded-full bg-white/[0.08] font-semibold text-white/70`}>
+    <span className={`grid ${large ? "size-7 text-xs" : "size-6 text-xs"} shrink-0 place-items-center rounded-full bg-white/[0.08] font-semibold text-od-text-2`}>
       {initials(name)}
     </span>
   );
@@ -267,13 +267,13 @@ function NavRow({ label, current, badge, danger, pinned, onClick }: { label: str
       onClick={onClick}
       aria-current={current ? "page" : undefined}
       className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-left text-[12px] transition-colors ${
-        current ? "bg-white/[0.075] font-semibold text-white" : "font-medium text-od-text-3 hover:bg-white/[0.04] hover:text-white/75"
+        current ? "bg-white/[0.075] font-semibold text-white" : "font-medium text-od-text-3 hover:bg-white/[0.04] hover:text-od-text-2"
       }`}
     >
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {pinned ? <Pin className="size-2.5 shrink-0 text-od-text-3" strokeWidth={2} /> : null}
       {typeof badge === "number" ? (
-        <span className={`shrink-0 text-xs font-semibold tabular-nums ${danger ? "text-[#fb7767]" : "text-white/60"}`}>{badge}</span>
+        <span className={`shrink-0 text-xs font-semibold tabular-nums ${danger ? "text-[#fb7767]" : "text-od-text-3"}`}>{badge}</span>
       ) : null}
     </button>
   );
@@ -322,10 +322,10 @@ export function DashboardPreview() {
             type="button"
             onClick={() => setSwitcherOpen((open) => !open)}
             aria-expanded={switcherOpen}
-            className="flex w-full items-center gap-2 rounded-xl border border-white/[0.07] px-2 py-1.5 text-left transition-colors hover:bg-white/[0.05]"
+            className="flex w-full items-center gap-2 rounded-xl border border-od-border px-2 py-1.5 text-left transition-colors hover:bg-white/[0.05]"
           >
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-xs font-semibold text-white/85">{profession.org}</span>
+              <span className="block truncate text-xs font-semibold text-od-text-2">{profession.org}</span>
               <span className="block truncate text-xs text-od-text-3">{profession.role}</span>
             </span>
             <ChevronsUpDown className="size-3 shrink-0 text-od-text-3" strokeWidth={2} />
@@ -337,7 +337,7 @@ export function DashboardPreview() {
                   <button
                     type="button"
                     onClick={() => chooseProfession(index)}
-                    className={`flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-white/[0.06] ${index === professionIndex ? "font-semibold text-white" : "text-white/60"}`}
+                    className={`flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-white/[0.06] ${index === professionIndex ? "font-semibold text-white" : "text-od-text-3"}`}
                   >
                     <span className="min-w-0 flex-1 truncate">{item.role}</span>
                     {index === professionIndex ? <Check className="size-3 shrink-0 text-od-accent-hover" strokeWidth={2.5} /> : null}
@@ -358,7 +358,7 @@ export function DashboardPreview() {
           />
         ))}
         {navLabel === "Visão geral" ? (
-          <div className="mx-3.5 mb-1 flex flex-col gap-0.5 border-l border-white/[0.08] pl-2.5">
+          <div className="mx-3.5 mb-1 flex flex-col gap-0.5 border-l border-od-border pl-2.5">
             {profession.subItems.map((sub, index) => (
               <span
                 key={sub}
@@ -386,24 +386,24 @@ export function DashboardPreview() {
           </div>
         ))}
 
-        <div className="mt-auto border-t border-white/[0.06] pt-2">
+        <div className="mt-auto border-t border-od-border pt-2">
           <NavRow label="Configurações" current={false} onClick={() => { setScreen("list"); setNavLabel("Configurações"); }} />
           <div className="flex items-center gap-2 px-2.5 py-2">
             <Avatar name={profession.userName} />
-            <span className="min-w-0 flex-1 truncate text-xs text-white/60">{profession.userName}</span>
+            <span className="min-w-0 flex-1 truncate text-xs text-od-text-3">{profession.userName}</span>
           </div>
         </div>
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <div className="grid gap-2 border-b border-white/[0.07] p-2 md:hidden">
+        <div className="grid gap-2 border-b border-od-border p-2 md:hidden">
           <label>
             <span className="sr-only">Profissão exibida</span>
             <select
               aria-label="Profissão exibida"
               value={professionIndex}
               onChange={(event) => chooseProfession(Number(event.target.value))}
-              className="h-11 w-full rounded border border-white/[0.1] bg-od-sidebar px-3 text-xs font-semibold text-white"
+              className="h-13 w-full rounded border border-od-border bg-od-sidebar px-3 text-xs font-semibold text-white"
             >
               {PROFESSIONS.map((item, index) => (
                 <option key={item.key} value={index}>
@@ -428,10 +428,10 @@ export function DashboardPreview() {
                     open(item);
                   }
                 }}
-                className={`min-h-11 rounded px-1 text-xs font-semibold ${
+                className={`min-h-12 rounded px-1 text-xs font-semibold ${
                   screen === item.screen
                     ? "bg-od-accent text-white"
-                    : "border border-white/[0.08] text-white/58"
+                    : "border border-od-border text-od-text-3"
                 }`}
               >
                 {item.label}
@@ -439,8 +439,8 @@ export function DashboardPreview() {
             ))}
           </div>
         </div>
-        <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
-          <div className="flex min-w-0 flex-1 items-center gap-2 border-b border-white/[0.12] py-1.5 md:w-64 md:flex-none">
+        <div className="flex items-center justify-between gap-3 border-b border-od-border px-4 py-3">
+          <div className="flex min-w-0 flex-1 items-center gap-2 border-b border-od-border py-1.5 md:w-64 md:flex-none">
             <Search className="size-3.5 shrink-0 text-od-text-3" strokeWidth={2} />
             <span className="truncate text-[12px] text-od-text-3">{profession.search}</span>
           </div>
@@ -452,7 +452,7 @@ export function DashboardPreview() {
             <div className="flex min-h-0 flex-1 flex-col justify-end gap-2.5">
               {TIM_TROCA.map((msg, index) => (
                 <div key={index} className={`flex ${msg.de === "voce" ? "justify-end" : "justify-start"}`}>
-                  <p className={`max-w-[78%] rounded-lg px-3 py-2 text-xs leading-relaxed ${msg.de === "voce" ? "bg-od-accent text-white" : "bg-white/[0.06] text-white/80"}`}>
+                  <p className={`max-w-[78%] rounded-lg px-3 py-2 text-xs leading-relaxed ${msg.de === "voce" ? "bg-od-accent text-white" : "bg-white/[0.06] text-od-text-2"}`}>
                     {msg.texto}
                   </p>
                 </div>
@@ -460,7 +460,7 @@ export function DashboardPreview() {
             </div>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {TIM_SUGESTOES.map((item) => (
-                <span key={item} className="rounded border border-od-border px-2 py-1 text-xs text-white/55">{item}</span>
+                <span key={item} className="rounded border border-od-border px-2 py-1 text-xs text-od-text-3">{item}</span>
               ))}
             </div>
             <div className="mt-2 flex items-center gap-2 rounded-lg border border-od-border px-3 py-2">
@@ -472,7 +472,7 @@ export function DashboardPreview() {
           <div className="grid min-h-0 flex-1 md:grid-cols-[210px_1fr] md:divide-x md:divide-white/[0.07]">
             <ul className="hidden flex-col md:flex">
               {CONVERSAS.map((item, index) => (
-                <li key={item.nome} className={`flex items-start gap-2 border-b border-white/[0.06] px-3 py-2.5 ${index === 0 ? "bg-white/[0.05]" : ""}`}>
+                <li key={item.nome} className={`flex items-start gap-2 border-b border-od-border px-3 py-2.5 ${index === 0 ? "bg-white/[0.05]" : ""}`}>
                   <Avatar name={item.nome} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-xs font-medium text-white">{item.nome}</span>
@@ -486,7 +486,7 @@ export function DashboardPreview() {
               ))}
             </ul>
             <div className="flex min-h-0 flex-col justify-end gap-2.5 px-4 py-4">
-              <p className="max-w-[78%] rounded-lg bg-white/[0.06] px-3 py-2 text-xs text-white/80">Consigo fechar até sexta?</p>
+              <p className="max-w-[78%] rounded-lg bg-white/[0.06] px-3 py-2 text-xs text-od-text-2">Consigo fechar até sexta?</p>
               <p className="ml-auto max-w-[78%] rounded-lg bg-od-accent px-3 py-2 text-xs text-white">Consegue sim, Carla. Te mando a proposta ainda hoje.</p>
               <div className="mt-1 flex items-center gap-2 rounded-lg border border-od-border px-3 py-2">
                 <MessageCircle className="size-3.5 shrink-0 text-od-text-3" strokeWidth={2} />
@@ -521,7 +521,7 @@ export function DashboardPreview() {
                   {profession.dateLabel}
                 </p>
                 <p className="mt-1.5 text-[19px] font-extrabold tracking-[-0.01em] text-white">{profession.greeting}</p>
-                <p className="mt-1 text-xs text-white/55">
+                <p className="mt-1 text-xs text-od-text-3">
                   {profession.summaryPrefix}{" "}
                   <strong className="font-semibold text-[#fca79b]">{profession.summaryAlert}</strong>{" "}
                   e <strong className="font-semibold text-white">{profession.summaryCount}</strong>{" "}
@@ -529,14 +529,14 @@ export function DashboardPreview() {
                 </p>
               </div>
               <div className="flex shrink-0 gap-1.5">
-                <span className="rounded border border-od-border px-2.5 py-1.5 text-xs font-semibold text-white/70">{profession.secondaryAction}</span>
+                <span className="rounded border border-od-border px-2.5 py-1.5 text-xs font-semibold text-od-text-2">{profession.secondaryAction}</span>
                 <span className="rounded bg-od-accent px-2.5 py-1.5 text-xs font-semibold text-white">{profession.primaryAction}</span>
               </div>
             </div>
 
-            <div className="mx-4 flex items-center gap-2 border-y border-white/[0.07] py-2.5">
+            <div className="mx-4 flex items-center gap-2 border-y border-od-border py-2.5">
               <Sparkles className="size-3.5 shrink-0 text-od-accent-hover" strokeWidth={2} />
-              <span className="min-w-0 flex-1 truncate text-xs text-white/52">{profession.timPrompt}</span>
+              <span className="min-w-0 flex-1 truncate text-xs text-od-text-3">{profession.timPrompt}</span>
               <ArrowRight className="size-3 shrink-0 text-od-text-3" strokeWidth={2} />
             </div>
 
@@ -545,17 +545,17 @@ export function DashboardPreview() {
                 <p className="text-xs font-medium text-od-text-3">Área de trabalho</p>
                 <p className="text-[12px] font-semibold text-white">{profession.workspaceLabel}</p>
               </div>
-              <span className="rounded border border-od-border px-2 py-1 text-xs font-semibold text-white/60">Personalizar painel</span>
+              <span className="rounded border border-od-border px-2 py-1 text-xs font-semibold text-od-text-3">Personalizar painel</span>
             </div>
 
-            <div className="grid grid-cols-2 divide-x divide-y divide-white/[0.07] border-y border-white/[0.07] sm:grid-cols-4 sm:divide-y-0">
+            <div className="grid grid-cols-2 divide-x divide-y divide-white/[0.07] border-y border-od-border sm:grid-cols-4 sm:divide-y-0">
               {profession.metrics.map(({ icon: Icon, label, value, note }) => (
                 <div key={label} className="min-w-0 px-4 py-3">
                   <div className="flex items-center gap-2">
                     <span className="grid size-6 shrink-0 place-items-center rounded bg-white/[0.06]">
                       <Icon className="size-3 text-od-text-2" strokeWidth={2} />
                     </span>
-                    <span className="truncate text-xs text-white/55">{label}</span>
+                    <span className="truncate text-xs text-od-text-3">{label}</span>
                   </div>
                   <p className="mt-1.5 truncate text-[17px] font-bold text-white">{value}</p>
                   <p className="mt-0.5 truncate text-xs text-od-text-3">{note}</p>
@@ -590,7 +590,7 @@ export function DashboardPreview() {
                         <span className="block truncate text-xs font-medium text-white">{item.name}</span>
                         <span className="block truncate text-xs text-od-text-3">{item.note}</span>
                       </span>
-                      <span className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold ${item.urgent ? "bg-[#fb7767]/12 text-[#fca79b]" : "bg-white/[0.07] text-white/60"}`}>
+                      <span className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold ${item.urgent ? "bg-[#fb7767]/12 text-[#fca79b]" : "bg-white/[0.07] text-od-text-3"}`}>
                         {item.urgent ? "Hoje" : "Aberto"}
                       </span>
                     </li>
@@ -599,7 +599,7 @@ export function DashboardPreview() {
               </div>
             </div>
 
-            <div className="border-t border-white/[0.07] px-4 py-3">
+            <div className="border-t border-od-border px-4 py-3">
               <p className="text-[12px] font-semibold text-white">{profession.indicatorsTitle}</p>
               <p className="mt-0.5 text-xs text-od-text-3">{profession.indicatorsNote}</p>
               <div className="mt-3 grid gap-x-5 gap-y-3 md:grid-cols-3">
@@ -610,7 +610,7 @@ export function DashboardPreview() {
                       {rows.slice(0, 2).map(([label, value, note]) => (
                         <li key={label} className="flex items-baseline justify-between gap-2">
                           <span className="min-w-0">
-                            <span className="block truncate text-xs text-white/70">{label}</span>
+                            <span className="block truncate text-xs text-od-text-2">{label}</span>
                             <span className="block truncate text-xs text-od-text-3">{note}</span>
                           </span>
                           <span className="shrink-0 text-xs font-semibold text-white">{value}</span>

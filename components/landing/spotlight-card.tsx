@@ -25,7 +25,7 @@ export function SpotlightCard({ localSpotlight = true }: { localSpotlight?: bool
     <div
       ref={ref}
       onMouseMove={onMouseMove}
-      className="relative flex flex-col items-start gap-10 border-b border-od-border pb-10 md:flex-row md:items-center"
+      className="relative flex flex-col items-start gap-10 pb-8 md:flex-row md:items-center"
       style={{ ["--x" as string]: "50%", ["--y" as string]: "50%" }}
     >
       {localSpotlight ? (
@@ -50,7 +50,7 @@ export function SpotlightCard({ localSpotlight = true }: { localSpotlight?: bool
           cria contato, move negociação e agenda compromisso.
         </p>
       </div>
-      <ul className="relative z-[1] w-full flex-1 divide-y divide-od-border border-y border-od-border">
+      <ul className="relative z-[1] w-full flex-1 divide-y divide-white/[0.09] border-y border-white/[0.09]">
         {[
           "Quem eu preciso chamar hoje?",
           "Cadastra a Carla e abre uma negociação",

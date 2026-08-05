@@ -94,7 +94,7 @@ export function AssistantPageClient({
     <div
       ref={shellRef}
       style={{ height: height ?? undefined }}
-      className="assistant-page-shell -mx-4 -mt-4 -mb-6 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden bg-[#1e1d22] md:-mx-8 md:-mt-8 md:-mb-8"
+      className="assistant-page-shell -mx-4 -mt-4 -mb-6 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden md:-mx-8 md:-mt-8 md:-mb-8"
     >
       <h1 className="sr-only">Tim, seu assistente de negócios</h1>
       <TimHeader status={status} onPersonalize={() => setPersonalizeOpen(true)} />

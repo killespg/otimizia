@@ -35,7 +35,11 @@ export function FaqAccordion({ items }: { items: FaqItem[] }) {
     : { duration: 0.2, ease: [0.16, 1, 0.3, 1] as const };
 
   return (
-    <div className="faq-list divide-y divide-od-border border-y border-od-border">
+    <div
+      data-landing-glass-stage="true"
+      data-landing-faq-stage="true"
+      className="faq-list landing-liquid-stage divide-y divide-white/[0.09] px-5 sm:px-7"
+    >
       {items.map((faq, index) => {
         const isOpen = !!openItems[index];
 
@@ -43,7 +47,7 @@ export function FaqAccordion({ items }: { items: FaqItem[] }) {
           <div key={faq.q} className="group" data-open={isOpen ? "true" : undefined}>
             <button
               type="button"
-              className="flex w-full cursor-pointer items-center justify-between gap-4 py-5 text-left"
+              className="flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 py-5 text-left"
               aria-expanded={isOpen}
               aria-controls={`faq-answer-${index}`}
               onClick={() => toggle(index)}

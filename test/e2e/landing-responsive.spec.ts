@@ -1,5 +1,30 @@
 import { expect, test } from "@playwright/test";
 
+test("expõe o canvas e os volumes Liquid Glass da landing", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  const canvas = page.locator('[data-landing-liquid-canvas="true"]');
+  const navigation = page.locator("header.landing-liquid-nav");
+  const stage = page.locator('[data-landing-glass-stage="true"]').first();
+
+  await expect(canvas).toBeVisible();
+  await expect(navigation).toBeVisible();
+  await expect(stage).toBeVisible();
+
+  const material = await stage.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      backdropFilter: style.backdropFilter,
+      backgroundColor: style.backgroundColor,
+      borderRadius: style.borderRadius,
+    };
+  });
+
+  expect(material.backdropFilter).not.toBe("none");
+  expect(material.backgroundColor).not.toBe("rgba(0, 0, 0, 0)");
+  expect(Number.parseFloat(material.borderRadius)).toBeGreaterThanOrEqual(20);
+});
+
 test("mantém a landing sem overflow e com controles tocáveis no celular", async ({
   page,
 }, testInfo) => {
@@ -14,7 +39,9 @@ test("mantém a landing sem overflow e com controles tocáveis no celular", asyn
   expect(hasOverflow).toBe(false);
 
   await page.getByRole("button", { name: "Abrir menu" }).click();
-  const resourcesLink = page.getByRole("navigation").getByRole("link", { name: "Recursos" });
+  const resourcesLink = page
+    .getByRole("dialog", { name: "Menu" })
+    .getByRole("link", { name: "Recursos" });
   await expect(resourcesLink).toBeVisible();
   await resourcesLink.click();
   await expect(page.getByRole("button", { name: "Abrir menu" })).toHaveAttribute(

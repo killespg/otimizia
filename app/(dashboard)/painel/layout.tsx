@@ -7,7 +7,6 @@ import { SellerProductNavigation } from "@/components/design-system/seller-produ
 import { SellerProductTopbar } from "@/components/design-system/seller-product-topbar";
 import { RealEstateProductNavigation } from "@/components/design-system/real-estate-product-navigation";
 import { RealEstateProductTopbar } from "@/components/design-system/real-estate-product-topbar";
-import { AmbientParticles } from "@/components/design-system/ambient-particles";
 import { SellerDashboardBackground } from "@/components/design-system/seller-dashboard-background";
 import NeuralBackground from "@/components/design-system/neural-background";
 import { DashboardRoutePreloader } from "@/components/design-system/dashboard-route-preloader";
@@ -210,12 +209,8 @@ export default async function PainelLayout({
           />
         )}
         <div
-          className={`product-content relative isolate flex min-h-screen flex-col ${isLawOffice || isAutonomousSeller || isRealEstateBroker ? "overflow-hidden bg-[#151419]" : ""}`}
+          className={`product-content relative isolate flex min-h-screen flex-col ${isLawOffice || isAutonomousSeller || isRealEstateBroker ? "overflow-hidden" : ""}`}
         >
-          {/* Poeira de fundo de todo o painel, abaixo do shader (z-0 contra
-              z-[1]) e do conteúdo (z-10). Vale pra qualquer vertical: o
-              workspace inteiro é sempre-escuro. */}
-          <AmbientParticles />
           {isLawOffice || isAutonomousSeller || isRealEstateBroker ? (
             <>
               {isAutonomousSeller || isRealEstateBroker ? (

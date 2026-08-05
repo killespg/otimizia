@@ -52,6 +52,8 @@
   --color-od-bg: var(--od-bg);
   --color-od-surface: var(--od-surface);
   --color-od-muted-surface: var(--od-muted-surface);
+  --color-od-surface-solid: var(--od-surface-solid);
+  --color-od-muted-surface-solid: var(--od-muted-surface-solid);
   --color-od-border: var(--od-border);
   --color-od-border-hover: var(--od-border-hover);
   --color-od-text: var(--od-text);
@@ -62,13 +64,16 @@
   --color-od-accent-tint: var(--od-accent-tint);
   --color-od-sidebar: var(--od-sidebar);
 
-  --radius-sm: 4px;
-  --radius-md: 4px;
-  --radius-lg: 4px;
-  --radius-xl: 6px;
-  --radius-2xl: 8px;
-  --radius-3xl: 8px;
-  --radius-4xl: 8px;
+  /* Raios contínuos, mas contidos: o vidro funcional recebe o squircle maior;
+     conteúdo denso continua compacto o bastante para leitura operacional. */
+  --radius: 16px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 28px;
+  --radius-3xl: 32px;
+  --radius-4xl: 36px;
 
   --shadow-focus: 0 0 0 3px color-mix(in oklab, var(--od-accent) 28%, transparent);
   --shadow-od-primary: 0 8px 20px -8px rgba(92, 34, 232, 0.6);
@@ -117,29 +122,43 @@
 :root {
   color-scheme: dark;
   --font-inter: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  /* Escada de superfícies com passo de ~0.045 de L em OKLCH (295deg, C 0.010).
-     Antes os quatro planos ficavam em L 0.163 / 0.195 / 0.212 / 0.234 — passos
-     de 0.018 a 0.031, abaixo do que o olho separa, então a estrutura da tela
-     dependia só do matiz roxo. Agora o valor carrega a hierarquia e o acento
-     fica livre pra significar ação. */
-  --od-bg: #151419;
-  --od-surface: #2a292f;
-  --od-muted-surface: #1f1e24;
-  --od-border: #3a3840;
-  --od-border-hover: #515058;
-  /* Rampa recalculada junto com as superfícies: ao clarear os planos, o texto
-     silencioso perdia contraste (od-text-3 caía a 3.61 sobre od-surface, abaixo
-     do AA de 4.5). Agora o pior caso da rampa é 4.53, sobre a superfície mais
-     clara, e a separação entre os três níveis se mantém em ~0.1 de L. */
-  --od-text: #f5f4f7;
-  --od-text-2: #b2b0b7;
-  --od-text-3: #928f98;
-  /* Branco sobre o acento antigo (#8b5cf6) dava 4.23 — o rótulo do CTA é 13px
-     semibold, não conta como texto grande, então o botão primário reprovava em
-     AA. Um passo de L mais escuro leva a 4.51 sem mudar a identidade. */
+  /* Canvas escuro e colorido: ele dá contexto óptico ao vidro sem competir
+     com os dados. O conteúdo e o chrome usam materiais diferentes. */
+  --od-bg: #07142d;
+  --od-surface-solid: #363744;
+  --od-muted-surface-solid: #30313d;
+  --od-content-surface: rgba(54, 55, 68, 0.88);
+  --od-content-surface-muted: rgba(47, 49, 62, 0.86);
+  --od-content-border: rgba(255, 255, 255, 0.13);
+  --od-content-border-hover: rgba(255, 255, 255, 0.2);
+  --od-content-shadow: none;
+  --od-surface: var(--od-content-surface);
+  --od-muted-surface: var(--od-content-surface-muted);
+  --od-border: var(--od-content-border);
+  --od-border-hover: var(--od-content-border-hover);
+  /* Liquid Glass é a camada funcional: navegação, busca, ações e overlays.
+     Ela permanece translúcida para que o canvas responda ao movimento. */
+  --od-glass-fill: rgba(255, 255, 255, 0.075);
+  --od-glass-fill-hover: rgba(255, 255, 255, 0.13);
+  --od-glass-border: rgba(255, 255, 255, 0.26);
+  --od-glass-border-hover: rgba(255, 255, 255, 0.46);
+  --od-glass-chrome-bg: rgba(28, 28, 34, 0.38);
+  --od-glass-chrome-blur: blur(20px) saturate(145%);
+  --od-glass-panel-blur: blur(16px) saturate(140%);
+  --od-glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.48), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --od-glass-shadow: 0 24px 56px -28px rgba(4, 2, 12, 0.82);
+  --od-glass-sheen: linear-gradient(148deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.055) 30%, rgba(255, 255, 255, 0) 54%);
+  --od-glass-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* Sem cinza de verdade em lugar nenhum da rampa — branco em opacidades
+     diferentes pro secundário/terciário, não um hex cinza fixo. Hex cinza
+     lê "sujo"/sem contraste contra um fundo colorido; branco com alpha
+     sempre harmoniza com o que estiver atrás, só varia o quanto se nota. */
+  --od-text: #ffffff;
+  --od-text-2: rgba(255, 255, 255, 0.78);
+  --od-text-3: rgba(255, 255, 255, 0.58);
   --od-accent: #8757f0;
   --od-accent-hover: #a78bfa;
-  --od-accent-tint: #241c38;
+  --od-accent-tint: #2b2149;
   --od-success-bg: oklch(0.31 0.06 150);
   --od-success-fg: oklch(0.81 0.13 150);
   --od-warning-bg: oklch(0.31 0.05 75);
@@ -147,7 +166,7 @@
   --od-danger-bg: oklch(0.3 0.07 25);
   --od-danger-fg: oklch(0.78 0.15 25);
   --od-sidebar: #0b0a0f;
-  --od-sidebar-active: rgba(255, 255, 255, 0.07);
+  --od-sidebar-active: rgba(255, 255, 255, 0.09);
   --z-dropdown: 50;
   --z-sticky: 60;
   --z-modal-backdrop: 70;
@@ -165,7 +184,15 @@ html { min-height: 100%; background: var(--od-bg); font-family: var(--font-inter
 /* Rolagem por toque não "estica" além do topo/fim revelando o branco padrão
    do navegador atrás do body — em vez disso, o próprio plano de fundo já
    escuro aparece, como um scroll de app nativo. */
-body { min-height: 100%; margin: 0; background: var(--od-bg); color: var(--od-text); text-rendering: optimizeLegibility; overscroll-behavior-y: contain; }
+body {
+  min-height: 100%;
+  margin: 0;
+  background-color: var(--od-bg);
+  color: var(--od-text);
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: contain;
+  position: relative;
+}
 /* Mesmo motivo do reset de link: fora de @layer, isto vence as utilities. E
    `font` e atalho — reseta tamanho, peso e familia de uma vez. Solto aqui fora,
    toda classe text-[13px]/text-xs/font-semibold aplicada a <button>, <input> ou
@@ -219,8 +246,27 @@ p { text-wrap: pretty; }
 .product-workspace {
   display: flex;
   min-height: 100dvh;
-  background: var(--od-bg);
+  /* A paisagem aprovada pertence apenas ao produto autenticado. O centro
+     permanece escuro para os dados; magenta e azul alimentam o chrome.
+     A imagem é WebP: o master PNG tem 1,4 MB e o produto é usado no celular,
+     em trânsito. Navegador sem suporte a WebP fica no marinho `--od-bg`, que
+     já é o fallback aprovado do canvas. */
+  --od-canvas-landscape: url("/backgrounds/dashboard-landscape.webp");
+  background-color: var(--od-bg);
+  background-image: linear-gradient(rgba(9, 10, 14, 0.56), rgba(9, 10, 14, 0.56)), var(--od-canvas-landscape);
+  background-size: 100% 100%, cover;
+  background-position: center, center;
+  background-attachment: fixed, fixed;
+  background-repeat: no-repeat, no-repeat;
   color: var(--od-text);
+}
+
+/* No celular a paisagem é reamostrada em 900 px: 7 KB em vez de 31 KB, sem
+   diferença perceptível depois do `cover` e da película. */
+@media (max-width: 767px) {
+  .product-workspace {
+    --od-canvas-landscape: url("/backgrounds/dashboard-landscape-mobile.webp");
+  }
 }
 
 .product-content { min-width: 0; flex: 1; }
@@ -260,11 +306,11 @@ p { text-wrap: pretty; }
 }
 
 .workspace-autonomous_seller .seller-settings [data-settings-card] {
-  border-radius: 4px;
+  border-radius: var(--radius-xl);
 }
 
 .workspace-autonomous_seller .install-app-prompt {
-  border-radius: 4px;
+  border-radius: var(--radius-xl);
 }
 
 #novo-produto[open] + .seller-catalog-empty {
@@ -296,19 +342,22 @@ p { text-wrap: pretty; }
 }
 
 .workspace-real_estate_broker .real-estate-area .panel,
-.workspace-real_estate_broker .real-estate-area .card,
+.workspace-real_estate_broker .real-estate-area .card {
+  background: var(--od-surface) !important;
+  box-shadow: var(--od-content-shadow) !important;
+}
+
 .workspace-real_estate_broker .real-estate-area .bg-surface {
-  background: rgba(30, 29, 34, .94) !important;
-  box-shadow: none !important;
+  background: var(--od-surface) !important;
 }
 
 .workspace-real_estate_broker .real-estate-area .bg-surface-2 {
-  background: rgba(255, 255, 255, .035) !important;
+  background: var(--od-muted-surface) !important;
 }
 
 .workspace-real_estate_broker .real-estate-area .panel {
-  border-color: rgba(255, 255, 255, .09);
-  border-radius: 4px;
+  border-color: var(--od-border);
+  border-radius: var(--radius-md);
 }
 
 .workspace-real_estate_broker main button:not([aria-label]),
@@ -324,8 +373,8 @@ p { text-wrap: pretty; }
 }
 
 .real-estate-flat-section {
-  border-top: 1px solid rgba(255, 255, 255, .08);
-  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  border-top: 1px solid var(--od-border);
+  border-bottom: 1px solid var(--od-border);
   border-radius: 0;
   background: transparent;
   box-shadow: none;
@@ -355,28 +404,593 @@ p { text-wrap: pretty; }
   padding-left: 0;
 }
 
+/* Conteúdo é uma camada estável. Dados, formulários e tabelas não recebem
+   blur: isso preserva contraste, hierarquia e custo de GPU previsível. */
 .panel,
 .card,
 .card-quiet,
-.glass,
-.glass-soft,
-.panel-soft,
-.assistant-sheet,
-.voice-panel,
-.dashboard-customize-panel,
-.mobile-create-menu {
+.panel-soft {
   border: 1px solid var(--od-border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: var(--od-surface);
-  box-shadow: none;
+  backdrop-filter: none;
+  box-shadow: var(--od-content-shadow);
 }
 
 .panel-soft,
-.card-quiet,
-.glass-soft { background: var(--od-muted-surface); }
+.card-quiet { background: var(--od-muted-surface); }
 
 .panel:hover,
 .card:hover { border-color: var(--od-border-hover); }
+
+/* Vidro flutuante: menus, sheets e overlays que aparecem por cima de
+   conteúdo rolável de verdade — aqui o blur é o efeito, não decoração. */
+.glass,
+.glass-soft,
+.assistant-sheet,
+.voice-panel,
+.dashboard-customize-panel,
+.mobile-create-menu,
+.od-chrome {
+  isolation: isolate;
+  border: 1px solid var(--od-glass-border);
+  -webkit-backdrop-filter: var(--od-glass-panel-blur);
+  backdrop-filter: var(--od-glass-panel-blur);
+  box-shadow: var(--od-glass-highlight), var(--od-glass-shadow);
+}
+
+.glass,
+.glass-soft,
+.assistant-sheet,
+.voice-panel,
+.dashboard-customize-panel,
+.mobile-create-menu,
+.od-chrome {
+  border-radius: var(--radius-2xl);
+}
+
+/* O degrau na junção rail→painel de detalhe→topbar (relato: "não ficam
+   juntas") era o topbar tendo cantos+material próprios batendo contra os
+   do rail/painel de detalhe. Resolvido tirando o material do topbar por
+   completo (abaixo) em vez de tirar o arredondado de todo mundo — rail e
+   painel de detalhe voltam a ter o squircle normal do vidro. */
+
+/* Topbar não fica marcado como faixa separada do conteúdo abaixo — nem
+   borda, nem material próprio (fundo+blur+brilho do .od-chrome). Sem
+   isso ele ainda lia como uma faixa diferente só pela cor/textura, mesmo
+   sem linha nenhuma (relato: "mas a topbar ainda tá lá"). Fica totalmente
+   transparente — busca e ícones flutuam direto no canvas, sem superfície
+   própria. Rail/painel de detalhe mantêm o material normal do .od-chrome
+   (ali ele separa colunas de verdade, não conteúdo empilhado). */
+header.od-chrome {
+  border-bottom: 0;
+  border: 0;
+  background: transparent;
+  /* .od-chrome também empilha --od-glass-highlight (realce inset no topo,
+     como um traço claro) + --od-glass-shadow (sombra externa) via
+     box-shadow — sem zerar isso, sobrava a marcação mesmo com fundo e
+     borda já transparentes (relato: "ainda tem a marcação"). */
+  box-shadow: none;
+}
+header.od-chrome::before,
+header.od-chrome::after {
+  display: none;
+}
+
+/* Refração real, em duas camadas dedicadas em vez de nas propriedades do
+   próprio elemento: ::before só desloca+borra o que está atrás (sem cor
+   própria — se tivesse fundo, o filtro se auto-referenciaria e distorceria
+   a própria cor em vez de só o canvas por trás); ::after empilha
+   grão+brilho+cor por cima do resultado já distorcido. O conteúdo real
+   (texto, ícones) fica de fora dos dois — não-posicionado, sempre pinta
+   por cima — então nunca é distorcido, só o material embaixo dele. */
+.glass::before,
+.glass-soft::before,
+.assistant-sheet::before,
+.voice-panel::before,
+.dashboard-customize-panel::before,
+.mobile-create-menu::before,
+.od-chrome::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  border-radius: inherit;
+  pointer-events: none;
+  backdrop-filter: var(--od-glass-panel-blur);
+  filter: url(#od-glass-distortion);
+}
+
+.glass::after,
+.glass-soft::after,
+.assistant-sheet::after,
+.voice-panel::after,
+.dashboard-customize-panel::after,
+.mobile-create-menu::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--od-glass-grain), var(--od-glass-sheen), var(--od-glass-fill);
+  background-blend-mode: overlay, normal, normal;
+}
+
+.glass-soft::after { background: var(--od-glass-grain), var(--od-glass-sheen), rgba(255, 255, 255, 0.055); background-blend-mode: overlay, normal, normal; }
+
+/* A tabela de indicadores fica sobre a área mais texturizada da paisagem.
+   O vidro continua transparente, mas recebe uma película escura um pouco
+   mais densa que a faixa de métricas para sustentar leitura prolongada. */
+.real-estate-indicators-glass {
+  background: rgba(8, 11, 20, 0.42);
+  border-top-color: rgba(255, 255, 255, 0.19);
+  border-left-color: rgba(255, 255, 255, 0.15);
+  border-right-color: rgba(255, 255, 255, 0.07);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.055),
+    var(--od-glass-shadow);
+}
+
+.real-estate-indicators-glass::after {
+  background:
+    var(--od-glass-grain),
+    linear-gradient(148deg, rgba(255, 255, 255, 0.11), transparent 46%),
+    linear-gradient(145deg, rgba(36, 41, 58, 0.58), rgba(12, 16, 28, 0.66));
+  background-blend-mode: overlay, normal, normal;
+}
+
+.real-estate-metrics-glass {
+  background: rgba(32, 27, 32, 0.08);
+  -webkit-backdrop-filter: blur(26px) saturate(65%) brightness(0.92);
+  backdrop-filter: blur(26px) saturate(65%) brightness(0.92);
+  border-top-color: rgba(255, 255, 255, 0.22);
+  border-left-color: rgba(255, 255, 255, 0.17);
+  border-right-color: rgba(255, 255, 255, 0.08);
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.065),
+    var(--od-glass-shadow);
+}
+
+.real-estate-metrics-glass::after {
+  background:
+    var(--od-glass-grain),
+    linear-gradient(148deg, rgba(255, 255, 255, 0.1), transparent 46%),
+    linear-gradient(180deg, rgba(48, 40, 47, 0.07), rgba(23, 21, 27, 0.1));
+  background-blend-mode: overlay, normal, normal;
+}
+
+.real-estate-metric-card {
+  background: rgba(34, 29, 35, 0.07);
+}
+
+.real-estate-metric-card:hover {
+  background: rgba(41, 34, 42, 0.13);
+}
+
+/* Chrome: barra lateral, topbar, drawers — vidro cheio, blur+distorção mais
+   fortes, fundo mais escuro/claro que o canvas (perto de --od-sidebar) pra
+   ler como moldura do app, não como mais um cartão de conteúdo. */
+.od-chrome::before { backdrop-filter: var(--od-glass-chrome-blur); }
+.od-chrome::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--od-glass-grain), var(--od-glass-sheen), var(--od-glass-chrome-bg);
+  background-blend-mode: overlay, normal, normal;
+}
+
+/* Um único volume de vidro une rail e painel de detalhe. Divisores internos
+   organizam a navegação sem criar vidro sobre vidro. */
+.product-nav-glass-shell {
+  align-self: flex-start;
+  border-radius: 28px;
+  contain: paint;
+  overflow: hidden;
+  -webkit-backdrop-filter: var(--od-glass-chrome-blur);
+  backdrop-filter: var(--od-glass-chrome-blur);
+}
+
+/* A navegação desktop usa o mesmo vidro claro dos controles contextuais.
+   O volume continua único, mas não recebe a película fumê do chrome geral. */
+.product-nav-glass-shell::before {
+  display: none;
+}
+
+.product-nav-glass-shell::after {
+  display: block;
+  background: radial-gradient(115% 42% at 50% 108%, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.1) 44%, transparent 74%);
+  opacity: 0.72;
+}
+
+/* Controles funcionais podem usar vidro sem pseudo-elementos: são volumes
+   pequenos, interativos e fáceis de manter nítidos em hover/focus. */
+.liquid-glass-control,
+.liquid-glass-dock,
+.product-nav-glass-shell {
+  border: 1px solid var(--od-glass-border);
+  background:
+    linear-gradient(148deg, rgba(255, 255, 255, 0.15), transparent 48%),
+    var(--od-glass-fill);
+  -webkit-backdrop-filter: var(--od-glass-panel-blur);
+  backdrop-filter: var(--od-glass-panel-blur);
+  box-shadow: var(--od-glass-highlight), 0 18px 38px -28px rgba(0, 0, 0, 0.78);
+  transition: border-color 180ms cubic-bezier(0.16, 1, 0.3, 1), background-color 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 120ms ease-out;
+}
+
+.product-nav-glass-shell {
+  /* Película grafite quase neutra: reduz a contaminação azul da paisagem
+     sem transformar a sidebar em um painel sólido. */
+  background:
+    linear-gradient(148deg, rgba(255, 255, 255, 0.11), transparent 48%),
+    linear-gradient(180deg, rgba(42, 35, 41, 0.07), rgba(18, 17, 23, 0.09)),
+    rgba(32, 27, 32, 0.1);
+  -webkit-backdrop-filter: blur(30px) saturate(65%) brightness(0.92);
+  backdrop-filter: blur(30px) saturate(65%) brightness(0.92);
+  border-top-color: rgba(255, 255, 255, 0.16);
+  border-left-color: rgba(255, 255, 255, 0.18);
+  border-right-color: rgba(255, 255, 255, 0.09);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.48),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.045),
+    0 18px 38px -28px rgba(0, 0, 0, 0.78);
+}
+
+/* A rolagem interna preserva a interação nativa, mas o thumb recebe o mesmo
+   brilho translúcido do chrome. O trilho fica invisível para não criar uma
+   segunda linha vertical ao lado do redimensionador. */
+.liquid-glass-scrollbar {
+  scrollbar-gutter: stable;
+}
+
+/* Chrome e Safari precisam deixar os pseudo-elementos WebKit controlarem o
+   desenho; as propriedades padronizadas não-auto têm precedência sobre eles.
+   Firefox recebe o fallback fino e translúcido neste ramo exclusivo. */
+@supports not selector(::-webkit-scrollbar) {
+  .liquid-glass-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(229, 232, 255, 0.32) transparent;
+  }
+
+  .liquid-glass-scrollbar:hover {
+    scrollbar-color: rgba(239, 240, 255, 0.5) transparent;
+  }
+}
+
+.liquid-glass-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.liquid-glass-scrollbar::-webkit-scrollbar-track {
+  margin-block: 12px;
+  background: transparent;
+}
+
+.liquid-glass-scrollbar::-webkit-scrollbar-button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+.liquid-glass-scrollbar::-webkit-scrollbar-thumb {
+  min-height: 44px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(213, 219, 255, 0.14)) padding-box;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.22),
+    0 0 8px rgba(226, 229, 255, 0.1);
+}
+
+.liquid-glass-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(222, 226, 255, 0.24)) padding-box;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.32),
+    0 0 10px rgba(226, 229, 255, 0.16);
+}
+
+.liquid-glass-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.liquid-glass-control:hover,
+.liquid-glass-control:focus-within {
+  border-color: var(--od-glass-border-hover);
+  background-color: var(--od-glass-fill-hover);
+}
+
+.liquid-glass-control:active { transform: scale(0.985); }
+
+.liquid-glass-control--tinted {
+  border-color: color-mix(in oklab, var(--od-accent) 62%, white 18%);
+  background:
+    linear-gradient(148deg, rgba(255, 255, 255, 0.22), transparent 50%),
+    color-mix(in oklab, var(--od-accent) 72%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42), 0 16px 34px -22px rgba(91, 45, 210, 0.82);
+}
+
+.liquid-glass-control--tinted:hover {
+  background-color: color-mix(in oklab, var(--od-accent-hover) 72%, transparent);
+}
+
+.liquid-glass-dock {
+  border-radius: 24px;
+  background-color: rgba(19, 17, 26, 0.54);
+  -webkit-backdrop-filter: var(--od-glass-chrome-blur);
+  backdrop-filter: var(--od-glass-chrome-blur);
+  box-shadow: var(--od-glass-highlight), 0 24px 52px -24px rgba(0, 0, 0, 0.88);
+}
+
+/* Landing: canvas contínuo e poucos volumes refrativos. As regras ficam
+   deliberadamente isoladas da área autenticada pelo prefixo landing-liquid. */
+.landing-liquid-page {
+  min-height: 100vh;
+  isolation: isolate;
+  color: var(--od-text);
+  background-color: #09080d;
+  background-image:
+    radial-gradient(100% 32% at 52% 0%, rgba(135, 87, 240, 0.2), transparent 72%),
+    linear-gradient(180deg, #09080d 0%, #0d0b12 48%, #09080d 100%);
+}
+
+.landing-liquid-page::before,
+.landing-liquid-page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.landing-liquid-page::before {
+  background:
+    radial-gradient(48% 18% at 7% 16%, rgba(111, 49, 95, 0.25), transparent 76%),
+    radial-gradient(42% 20% at 96% 35%, rgba(135, 87, 240, 0.18), transparent 78%),
+    radial-gradient(52% 18% at 12% 63%, rgba(93, 53, 132, 0.18), transparent 80%),
+    radial-gradient(44% 17% at 92% 84%, rgba(111, 49, 95, 0.2), transparent 78%);
+}
+
+.landing-liquid-page::after {
+  opacity: 0.6;
+  background-image:
+    linear-gradient(112deg, transparent 8%, rgba(255, 255, 255, 0.018) 28%, transparent 45%),
+    linear-gradient(72deg, transparent 55%, rgba(167, 139, 250, 0.025) 72%, transparent 88%);
+}
+
+.landing-liquid-section {
+  position: relative;
+  background: transparent;
+}
+
+.landing-liquid-stage {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-top-color: rgba(255, 255, 255, 0.24);
+  border-left-color: rgba(255, 255, 255, 0.2);
+  border-right-color: rgba(255, 255, 255, 0.09);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-2xl);
+  background-color: rgba(255, 255, 255, 0.075);
+  -webkit-backdrop-filter: blur(24px) saturate(155%);
+  backdrop-filter: blur(24px) saturate(155%);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.08),
+    inset -1px -1px 0 rgba(255, 255, 255, 0.025),
+    0 28px 72px -46px rgba(0, 0, 0, 0.88);
+}
+
+.landing-liquid-stage::before,
+.landing-liquid-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.landing-liquid-stage::before {
+  -webkit-backdrop-filter: blur(24px) saturate(155%);
+  backdrop-filter: blur(24px) saturate(155%);
+  filter: url(#od-glass-distortion);
+}
+
+.landing-liquid-stage::after {
+  background:
+    var(--od-glass-grain),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.13), transparent 38%),
+    radial-gradient(80% 55% at 12% 0%, rgba(135, 87, 240, 0.1), transparent 72%);
+  background-blend-mode: overlay, normal, normal;
+}
+
+.landing-liquid-stage--soft {
+  background-color: rgba(255, 255, 255, 0.055);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  backdrop-filter: blur(18px) saturate(145%);
+}
+
+.landing-liquid-final-cta {
+  background-image: radial-gradient(85% 120% at 50% 120%, rgba(135, 87, 240, 0.18), transparent 68%);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.1),
+    0 30px 80px -44px rgba(83, 43, 168, 0.72);
+}
+
+.landing-hero-orbit {
+  position: relative;
+  height: clamp(128px, 16vw, 210px);
+  overflow: hidden;
+}
+
+.landing-hero-orbit::before,
+.landing-hero-orbit::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: min(900px, 145vw);
+  aspect-ratio: 1;
+  translate: -50% 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.landing-hero-orbit::before {
+  top: 20px;
+  border: 1px solid rgba(196, 181, 253, 0.2);
+  background:
+    radial-gradient(circle at 42% 22%, rgba(255, 255, 255, 0.18), transparent 12%),
+    radial-gradient(circle at 38% 28%, rgba(135, 87, 240, 0.32), transparent 38%),
+    radial-gradient(circle at 65% 36%, rgba(111, 49, 95, 0.32), transparent 46%),
+    #0d0a16;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 -18px 80px rgba(135, 87, 240, 0.24),
+    0 0 120px rgba(111, 49, 95, 0.18);
+}
+
+.landing-hero-orbit::after {
+  top: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  background-image:
+    repeating-radial-gradient(circle at 50% 18%, transparent 0 28px, rgba(255, 255, 255, 0.025) 29px 30px),
+    linear-gradient(110deg, transparent 34%, rgba(167, 139, 250, 0.08) 50%, transparent 66%);
+}
+
+header.landing-liquid-nav.od-chrome {
+  top: max(10px, env(safe-area-inset-top));
+  width: min(calc(100% - 24px), 1180px);
+  margin: 10px auto 0;
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-top-color: rgba(255, 255, 255, 0.25);
+  border-left-color: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-2xl);
+  background: rgba(20, 17, 27, 0.48);
+  -webkit-backdrop-filter: blur(24px) saturate(155%);
+  backdrop-filter: blur(24px) saturate(155%);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.08),
+    0 24px 64px -38px rgba(0, 0, 0, 0.92);
+}
+
+header.landing-liquid-nav.od-chrome::before,
+header.landing-liquid-nav.od-chrome::after {
+  display: block;
+}
+
+header.landing-liquid-nav.od-chrome::after {
+  background:
+    var(--od-glass-grain),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.12), transparent 42%),
+    rgba(20, 17, 27, 0.28);
+  background-blend-mode: overlay, normal, normal;
+}
+
+@media (min-width: 1536px) {
+  header.landing-liquid-nav.od-chrome { width: min(calc(100% - 32px), 1480px); }
+}
+
+@media (max-width: 639px) {
+  .landing-liquid-stage { border-radius: var(--radius-xl); }
+  header.landing-liquid-nav.od-chrome {
+    width: calc(100% - 16px);
+    margin-top: 8px;
+    border-radius: var(--radius-xl);
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass,
+  .glass-soft,
+  .assistant-sheet,
+  .voice-panel,
+  .dashboard-customize-panel,
+  .mobile-create-menu,
+  .od-chrome,
+  .liquid-glass-control,
+  .liquid-glass-dock,
+  .product-nav-glass-shell,
+  .landing-liquid-stage,
+  header.landing-liquid-nav.od-chrome {
+    background: rgba(28, 26, 35, 0.96);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass::before,
+  .glass-soft::before,
+  .assistant-sheet::before,
+  .voice-panel::before,
+  .dashboard-customize-panel::before,
+  .mobile-create-menu::before,
+  .od-chrome::before,
+  .glass::after,
+  .glass-soft::after,
+  .assistant-sheet::after,
+  .voice-panel::after,
+  .dashboard-customize-panel::after,
+  .mobile-create-menu::after,
+  .od-chrome::after,
+  .landing-liquid-stage::before,
+  .landing-liquid-stage::after,
+  header.landing-liquid-nav.od-chrome::before,
+  header.landing-liquid-nav.od-chrome::after { display: none; }
+
+  .glass,
+  .glass-soft,
+  .assistant-sheet,
+  .voice-panel,
+  .dashboard-customize-panel,
+  .mobile-create-menu,
+  .od-chrome,
+  .liquid-glass-control,
+  .liquid-glass-dock,
+  .product-nav-glass-shell,
+  .landing-liquid-stage,
+  header.landing-liquid-nav.od-chrome {
+    background: rgba(28, 26, 35, 0.96);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .product-nav-glass-shell::after {
+    opacity: 0.42;
+  }
+
+  .glass,
+  .glass-soft,
+  .assistant-sheet,
+  .voice-panel,
+  .dashboard-customize-panel,
+  .mobile-create-menu,
+  .od-chrome,
+  .liquid-glass-control,
+  .liquid-glass-dock,
+  .product-nav-glass-shell,
+  .landing-liquid-stage,
+  header.landing-liquid-nav.od-chrome {
+    border-color: rgba(255, 255, 255, 0.72);
+  }
+
+  .panel,
+  .card,
+  .card-quiet,
+  .panel-soft {
+    border-color: rgba(255, 255, 255, 0.34);
+  }
+}
 
 .field,
 .glass-input,
@@ -386,8 +1000,8 @@ textarea {
   width: 100%;
   min-height: 44px;
   border: 1px solid var(--od-border);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.025);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--od-text);
   padding: 9px 12px;
   outline: none;
@@ -398,7 +1012,9 @@ textarea { min-height: 96px; resize: vertical; }
 .field::placeholder, .glass-input::placeholder, input::placeholder, textarea::placeholder { color: var(--od-text-3); opacity: 1; }
 .field:hover, .glass-input:hover, input:hover, select:hover, textarea:hover { border-color: var(--od-border-hover); }
 .field:focus, .glass-input:focus, input:focus, select:focus, textarea:focus { border-color: var(--od-accent); box-shadow: var(--shadow-focus); }
-select option { background: var(--od-muted-surface); color: var(--od-text); }
+/* O popup nativo do <select> não tem nada atrás pra misturar com
+   translucidez — usa o fallback sólido em vez de --od-muted-surface. */
+select option { background: var(--od-muted-surface-solid); color: var(--od-text); }
 
 .label {
   display: block;
@@ -418,7 +1034,7 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
   justify-content: center;
   gap: 8px;
   border: 0;
-  border-radius: 4px;
+  border-radius: 999px;
   background: var(--od-accent);
   color: #fff;
   padding: 0 18px;
@@ -437,14 +1053,14 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
   justify-content: center;
   gap: 8px;
   border: 1px solid var(--od-border);
-  border-radius: 4px;
+  border-radius: 999px;
   background: transparent;
   color: var(--od-text);
   padding: 0 18px;
   font-size: 14px;
   font-weight: 600;
 }
-.btn-secondary:hover { border-color: var(--od-border-hover); background: rgba(255,255,255,.04); }
+.btn-secondary:hover { border-color: var(--od-border-hover); background: rgba(255,255,255,.06); }
 
 /* Tela de autenticação é o primeiro contato com o produto — o botão de ação
    principal ganha um alvo maior, cantos mais arredondados e a sombra de
@@ -453,7 +1069,7 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
    o .btn compacto usado no restante do painel. */
 .btn-lg {
   min-height: 52px;
-  border-radius: var(--radius-2xl);
+  border-radius: 999px;
   padding: 0 24px;
   font-size: 16px;
   box-shadow: var(--shadow-od-primary);
@@ -464,7 +1080,7 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
   display: inline-flex;
   align-items: center;
   border: 1px solid var(--od-border);
-  border-radius: 4px;
+  border-radius: 999px;
   background: transparent;
   color: var(--od-text-2);
   padding: 4px 8px;
@@ -476,14 +1092,14 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
 .press:active, .press-sm:active { transform: translateY(1px); }
 .enter { animation: od-fade-up 180ms cubic-bezier(0.16, 1, 0.3, 1) both; }
 .text-safe { overflow-wrap: anywhere; }
-.skeleton { background: rgba(255,255,255,.06); animation: pulse 1.5s ease-in-out infinite; }
+.skeleton { background: rgba(255,255,255,.08); animation: pulse 1.5s ease-in-out infinite; }
 
 .dashboard-widget-grid[data-editing="true"] .dashboard-widget-shell { cursor: grab; }
 .dashboard-widget-shell[data-drop-target="true"] { outline: 2px solid var(--od-accent); outline-offset: 3px; }
 .dashboard-widget-dragging { opacity: .55; }
 .dashboard-widget-drag-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--od-border); padding: 8px 12px; }
 .dashboard-widget-order-actions { display: flex; gap: 4px; }
-.dashboard-widget-order-actions button { min-height: 32px; min-width: 32px; border-radius: 4px; color: var(--od-text-2); }
+.dashboard-widget-order-actions button { min-height: 32px; min-width: 32px; border-radius: 999px; color: var(--od-text-2); }
 
 /* Papel de parede das conversas (WhatsApp e Tim usam o mesmo): padrão sutil
    repetido num data URI pequeno, sem depender de imagem externa. */
@@ -492,12 +1108,18 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.028' stroke-width='1.4'%3E%3Ccircle cx='18' cy='22' r='6'/%3E%3Cpath d='M46 14h12v12H46z'/%3E%3Cpath d='M78 30l7-9 7 9z'/%3E%3Cpath d='M14 62c4-6 10-6 14 0s10 6 14 0'/%3E%3Ccircle cx='96' cy='66' r='8'/%3E%3Cpath d='M58 54v14M51 61h14'/%3E%3Cpath d='M24 96h14v10H24z'/%3E%3Cpath d='M62 98l6-8 6 8z'/%3E%3Ccircle cx='102' cy='104' r='5'/%3E%3Cpath d='M86 12c3 3 3 7 0 10'/%3E%3C/g%3E%3C/svg%3E");
 }
 
-.modal-backdrop { position: fixed; inset: 0; z-index: var(--z-modal-backdrop); background: rgba(9, 7, 12, .72); }
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal-backdrop);
+  background: rgba(9, 7, 12, .6);
+  backdrop-filter: blur(6px);
+}
 .modal { position: fixed; z-index: var(--z-modal); }
 
 @media (max-width: 767px) {
-  /* Espaço para a barra fixa de 64px não cobrir o fim do conteúdo. */
-  .product-content { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  /* Espaço para o dock flutuante não cobrir o fim do conteúdo. */
+  .product-content { padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
 
   /* Conversa aberta no WhatsApp: a tela vira o chat inteiro, como no app —
      topbar e barra de abas somem enquanto ela está aberta (o botão voltar do
@@ -517,6 +1139,15 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .landing-liquid-page,
+  .landing-liquid-page::before,
+  .landing-liquid-page::after,
+  .landing-liquid-stage,
+  header.landing-liquid-nav.od-chrome {
+    animation: none !important;
+    transition: none !important;
+  }
+
   *, *::before, *::after {
     scroll-behavior: auto !important;
     animation-duration: .01ms !important;

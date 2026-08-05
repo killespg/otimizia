@@ -76,7 +76,7 @@ export function MessageTemplates({
                 "press-sm min-h-9 rounded-md border px-3 py-1.5 text-xs font-bold transition " +
                 (activeKey === template.key
                   ? "border-brand-400 bg-brand-50 text-brand-800"
-                  : "border-line bg-white text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800")
+                  : "border-line bg-transparent text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800")
               }
             >
               {template.label}
@@ -95,7 +95,7 @@ export function MessageTemplates({
           <button
             type="button"
             onClick={copyText}
-            className="press inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-line bg-white px-4 py-2 text-sm font-black text-ink-soft hover:bg-surface-2 hover:text-ink"
+            className="press inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-line bg-transparent px-4 py-2 text-sm font-black text-ink-soft hover:bg-surface-2 hover:text-ink"
           >
             {copied ? <IconCheck className="h-4 w-4" /> : null}
             {copied ? "Copiado!" : "Copiar"}

@@ -2,14 +2,12 @@ import * as React from "react";
 import { Paperclip, Send, Sparkles } from "lucide-react";
 
 /**
- * AI chat composer — the "Sócio-Assistente" entry point. Flat surface (no
- * glass, no decorative blur blob): one command lane defined by horizontal
- * rules. Attach/command icon buttons, send button and thinking status remain
- * part of the flow instead of becoming nested cards or chips.
+ * AI chat composer — entrada do sócio-assistente. O stage externo fornece o
+ * vidro; aqui dentro há apenas uma faixa de comando translúcida e seus controles.
  */
 export function AiComposer() {
   return (
-    <div className="border-b border-od-border py-10">
+    <div className="py-8">
       <div className="mx-auto max-w-[520px]">
         <div className="mb-5 text-center">
           <h3 className="mb-1 text-xl font-semibold text-white">Como posso ajudar hoje?</h3>
@@ -18,7 +16,7 @@ export function AiComposer() {
           </p>
         </div>
 
-        <div className="border-y border-white/[0.08]">
+        <div className="overflow-hidden rounded-2xl border border-white/[0.1] bg-white/[0.035] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
           <div className="px-4 py-4 text-sm text-white/60">
             Mensagem para o Tim…
           </div>
@@ -26,14 +24,14 @@ export function AiComposer() {
             <div className="flex gap-2">
               <button
                 type="button"
-                className="flex size-11 items-center justify-center text-od-text-3 transition-colors hover:bg-white/[0.035] hover:text-white/75"
+                className="flex size-11 items-center justify-center rounded-full text-od-text-3 transition-colors hover:bg-white/[0.055] hover:text-white/75"
                 aria-label="Anexar arquivo"
               >
                 <Paperclip className="size-[15px]" strokeWidth={2} />
               </button>
               <button
                 type="button"
-                className="flex size-11 items-center justify-center text-od-text-3 transition-colors hover:bg-white/[0.035] hover:text-white/75"
+                className="flex size-11 items-center justify-center rounded-full text-od-text-3 transition-colors hover:bg-white/[0.055] hover:text-white/75"
                 aria-label="Comandos"
               >
                 <Sparkles className="size-[15px]" strokeWidth={2} />
@@ -41,7 +39,7 @@ export function AiComposer() {
             </div>
             <button
               type="button"
-              className="flex min-h-11 items-center gap-1.5 rounded bg-white/[0.06] px-4 text-[13px] font-semibold text-od-text-3"
+              className="flex min-h-11 items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.06] px-4 text-[13px] font-semibold text-od-text-3"
               disabled
             >
               Enviar

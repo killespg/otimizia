@@ -64,6 +64,10 @@ describe("frontend route parity", () => {
       resolve(process.cwd(), "components/design-system/seller-product-navigation.tsx"),
       "utf8",
     );
+    const sharedNavigation = readFileSync(
+      resolve(process.cwd(), "components/design-system/product-nav-groups.tsx"),
+      "utf8",
+    );
     const routes = [
       "/painel",
       "/painel/contatos",
@@ -78,10 +82,13 @@ describe("frontend route parity", () => {
     ];
 
     for (const route of routes) expect(navigation).toContain(`"${route}"`);
-    expect(navigation).toContain("Redimensionar menu lateral");
-    expect(navigation).toContain('bg-[#0f0d11] md:flex ${collapsed ? "w-16" : ""}');
-    expect(navigation).toContain('data-sidebar-state={collapsed ? "collapsed" : "expanded"}');
-    expect(navigation).toContain("WorkspaceSwitcher");
+    expect(navigation).toContain("TwoLevelNav");
+    expect(sharedNavigation).toContain('data-product-nav-expanded="true"');
+    expect(sharedNavigation).toContain("Redimensionar menu lateral");
+    expect(sharedNavigation).toContain('role="separator"');
+    expect(sharedNavigation).not.toContain("Ocultar detalhes");
+    expect(sharedNavigation).toContain("data-liquid-glass-shell");
+    expect(sharedNavigation).toContain("WorkspaceSwitcher");
     const topbar = readFileSync(
       resolve(process.cwd(), "components/design-system/seller-product-topbar.tsx"),
       "utf8",
@@ -101,7 +108,7 @@ describe("frontend route parity", () => {
     expect(dashboard).toContain("action={claimDeal}");
     expect(dashboard).toContain("DashboardCustomizePanel");
     expect(dashboard).toContain("DashboardWidgetGrid");
-    expect(dashboard).toContain("bg-[rgba(30,29,34,0.94)]");
+    expect(dashboard).toContain("panel");
     expect(dashboard).toContain('layout="balanced"');
     expect(dashboard).toContain("sellerWidgetShellClass");
     expect(dashboard).toContain("data-dashboard-card");
@@ -170,34 +177,6 @@ describe("frontend route parity", () => {
     expect(neuralBackground).not.toContain("frameInterval");
   });
 
-  it("mantem a poeira de fundo em toda a area autenticada", () => {
-    const ambientParticles = readFileSync(
-      resolve(process.cwd(), "components/design-system/ambient-particles.tsx"),
-      "utf8",
-    );
-    const shells = ["app/(dashboard)/painel/layout.tsx"];
-
-    // A area autenticada tem um shell so. Os shells antigos (legal-app-shell e
-    // platform-shell) ficavam aqui, mas nenhuma rota os montava desde que tudo
-    // passou a viver sob /painel, entao o guard so protegia arquivo morto.
-    for (const shell of shells) {
-      const source = readFileSync(resolve(process.cwd(), shell), "utf8");
-      expect(source).toContain("<AmbientParticles />");
-      expect(source).toContain("@/components/design-system/ambient-particles");
-    }
-
-    // Textura, nao superficie: canvas transparente (clearRect, sem fillRect de
-    // fundo), atras do shader (z-0 contra z-[1]) e sem capturar ponteiro.
-    expect(ambientParticles).toContain("context.clearRect(0, 0, width, height)");
-    expect(ambientParticles).toContain("pointer-events-none inset-0 z-0");
-    expect(ambientParticles).toContain('contained ? "absolute" : "fixed"');
-    expect(ambientParticles).toContain('aria-hidden="true"');
-    // Acessibilidade e custo: para com movimento reduzido e com a aba oculta.
-    expect(ambientParticles).toContain('matchMedia("(prefers-reduced-motion: reduce)")');
-    expect(ambientParticles).toContain('document.addEventListener("visibilitychange"');
-    expect(ambientParticles).toContain("if (document.hidden)");
-  });
-
   it("uses a continuous seller and real-estate performance surface without changing the generic report", () => {
     const report = readFileSync(
       resolve(process.cwd(), "app/(dashboard)/painel/funil/relatorio/page.tsx"),
@@ -228,7 +207,7 @@ describe("frontend route parity", () => {
     expect(settings).toContain('isSeller ? "Vendas / Configurações"');
     expect(settings).toContain('isSeller ? "Configurações do negócio"');
     expect(team).toContain('isSeller ? "Vendas / Meu negócio"');
-    expect(tasks).toContain('isSeller ? "scroll-mt-24 border-y');
+    expect(tasks).toContain('id="new-task" action={createTask} className="scroll-mt-24 border-y');
     expect(tasks).toContain('isSeller ? "grid border-y');
     expect(tasks).not.toContain('isSeller ? "overflow-hidden rounded-xl');
   });
@@ -374,6 +353,14 @@ describe("frontend route parity", () => {
       resolve(process.cwd(), "app/(dashboard)/painel/imoveis/dashboard/RealEstateDashboard.tsx"),
       "utf8",
     );
+    const dashboardHeader = readFileSync(
+      resolve(process.cwd(), "components/real-estate/real-estate-dashboard-header.tsx"),
+      "utf8",
+    );
+    const dashboardPage = readFileSync(
+      resolve(process.cwd(), "app/(dashboard)/painel/imoveis/dashboard/page.tsx"),
+      "utf8",
+    );
     const areaLayout = readFileSync(
       resolve(process.cwd(), "app/(dashboard)/painel/imoveis/layout.tsx"),
       "utf8",
@@ -399,12 +386,18 @@ describe("frontend route parity", () => {
       "/painel/equipe",
     ]) expect(navigation).toContain(`"${route}"`);
 
-    expect(dashboard).toContain("Bom dia,");
-    expect(dashboard).toContain("Pergunte ao Tim");
+    expect(dashboardHeader).toContain("greeting.salutation");
+    expect(dashboardHeader).toContain("Acione o Tim na sua operação");
+    expect(dashboardHeader).not.toContain("Pergunte ao Tim");
     expect(dashboard).toContain("Visão geral de imóveis");
     expect(dashboard).toContain("Personalizar painel");
+    expect(dashboardHeader).toContain("data-dashboard-primary-actions");
+    expect(dashboardHeader).toContain("liquid-glass-control--tinted");
+    expect(dashboard).toContain("data-dashboard-filters");
+    expect(dashboard).toContain("sm:left-auto sm:right-0");
     expect(dashboard).toContain("updateDashboardBackgroundVisibility");
     expect(dashboard).toContain("Desativar fundo");
+    expect(dashboardPage).toContain('.eq("id", user!.id)');
     expect(dashboard).toContain("Indicadores imobiliários");
     expect(dashboard).toContain('href: "/painel/imoveis/comissoes#metas"');
     expect(dashboard).toContain('href: "/painel/imoveis/comissoes"');
@@ -412,7 +405,12 @@ describe("frontend route parity", () => {
     expect(dashboard).toContain('href: "/painel/imoveis/visitas"');
     expect(dashboard).toContain("Baixar relatório");
     expect(dashboard).toContain("download className=");
-    expect(dashboard).toContain("xl:grid-cols-4");
+    expect(dashboard).toContain('data-liquid-stage="real-estate"');
+    expect(dashboard).toContain("data-liquid-metric-rail");
+    expect(dashboard).toContain('data-liquid-metrics-layout="horizontal"');
+    expect(dashboard).toContain("data-liquid-indicators");
+    expect(dashboard).toContain('data-liquid-indicators-surface="dense"');
+    expect(dashboard).toContain("data-liquid-context-tray");
     expect(dashboard).not.toContain("Dashboard imobiliário");
 
     const migratedUi = [

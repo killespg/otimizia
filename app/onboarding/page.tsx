@@ -36,7 +36,7 @@ export default async function OnboardingPage() {
               Conte um pouco sobre sua empresa
             </h1>
             <p className="mt-2 text-sm font-medium leading-relaxed text-ink-soft">
-              Isso alimenta seu assistente de IA — quanto mais contexto, mais ele ajuda do
+              Isso alimenta seu assistente de IA. Quanto mais contexto, mais ele ajuda do
               jeito certo desde a primeira conversa. Você pode mudar tudo depois em
               Equipe.
             </p>

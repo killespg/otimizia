@@ -218,7 +218,7 @@ function SellerOperationsPulse({ operations }: { operations: Props["operations"]
   const attentionItems = items.filter((item) => item.value > 0);
   if (attentionItems.length === 0) {
     return (
-      <section className="flex min-h-16 items-center gap-3 rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] px-4" aria-labelledby="seller-operation-title">
+      <section className="flex min-h-16 items-center gap-3 panel px-4" aria-labelledby="seller-operation-title">
         <span className="grid size-8 shrink-0 place-items-center rounded border border-emerald-400/20 bg-emerald-400/[0.07] text-emerald-300"><CheckCircle2 size={16} /></span>
         <div className="min-w-0 flex-1">
           <h2 id="seller-operation-title" className="text-sm font-semibold text-white">Operação em dia</h2>
@@ -230,7 +230,7 @@ function SellerOperationsPulse({ operations }: { operations: Props["operations"]
   }
   const columnClass = attentionItems.length === 1 ? "lg:grid-cols-1" : attentionItems.length === 2 ? "lg:grid-cols-2" : attentionItems.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4";
   return (
-    <section className="overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]" aria-labelledby="seller-operation-title">
+    <section className="overflow-hidden panel lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]" aria-labelledby="seller-operation-title">
       <header className="flex min-h-20 items-center justify-between gap-3 px-4">
         <div><h2 id="seller-operation-title" className="text-sm font-semibold text-white">Pulso da operação</h2><p className="mt-0.5 text-xs text-white/52">O que precisa de atenção depois da venda.</p></div>
         <Link href="/painel/produtos" className="inline-flex min-h-11 shrink-0 items-center px-2 text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir operação</Link>
@@ -273,7 +273,7 @@ function SellerStatistics({
 
 function SellerMetrics({ metrics }: { metrics: SellerMetric[] }) {
   return (
-    <section data-dashboard-card className="grid grid-cols-2 overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] xl:grid-cols-4">
+    <section data-dashboard-card className="grid grid-cols-2 overflow-hidden panel xl:grid-cols-4">
       {metrics.map((metric) => {
         const Icon = metric.icon;
         return (
@@ -307,7 +307,7 @@ function SellerCommercialIndicators({
 }) {
   const closedThisMonth = insights.wonCountThisMonth + insights.lostCountThisMonth;
   return (
-    <section data-dashboard-card data-commercial-insights className="overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)]">
+    <section data-dashboard-card data-commercial-insights className="overflow-hidden panel">
       <header className="flex items-end justify-between gap-4 border-b border-white/[0.08] px-4 py-4 sm:px-5">
         <div>
           <h2 className="text-sm font-semibold text-white">Indicadores comerciais</h2>
@@ -410,7 +410,7 @@ function SellerPriorities({ tasks, overdue, now, contacts }: { tasks: Task[]; ov
   const contactOptions = [...contacts.values()];
   return (
     <section className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)] xl:gap-6">
-      <div data-dashboard-card className="overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)]">
+      <div data-dashboard-card className="overflow-hidden panel">
         <div className="flex items-end justify-between gap-4 border-b border-white/[0.08] px-4 py-4">
           <div>
             <h2 className="text-od-subtitle text-white">Prioridades de hoje</h2>
@@ -445,7 +445,7 @@ function SellerPriorities({ tasks, overdue, now, contacts }: { tasks: Task[]; ov
         )}
       </div>
 
-      <form id="novo-lembrete" action={createTask} data-dashboard-card className="rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] p-4">
+      <form id="novo-lembrete" action={createTask} data-dashboard-card className="panel p-4">
         <input type="hidden" name="return_to" value="/painel" />
         <div className="flex items-start gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><BellRing size={17} /></span>
@@ -465,7 +465,7 @@ function SellerPriorities({ tasks, overdue, now, contacts }: { tasks: Task[]; ov
 function SellerDeals({ deals, contacts, preset }: { deals: Deal[]; contacts: Map<string, ContactOption>; preset: ProfessionPreset }) {
   const recent = deals.slice(0, 6);
   return (
-    <section data-dashboard-card className="h-full overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)]">
+    <section data-dashboard-card className="h-full overflow-hidden panel">
       <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-4 py-4">
         <div><h2 className="text-sm font-semibold text-white">Vendas em acompanhamento</h2><p className="mt-1 text-xs text-od-text-3">Ordenadas pela atividade mais recente</p></div>
         <Link href="/painel/funil" className="-my-3 inline-flex min-h-11 items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text">Ver funil <ArrowRight size={13} /></Link>
@@ -497,7 +497,7 @@ function SellerRevenue({ openValue, wonValue, series, conversionRate, avgTicketC
   const wonShare = totalTracked > 0 ? Math.round((wonValue / totalTracked) * 100) : 0;
   const hasRevenueData = series.some((point) => point.cumulativeCents > 0);
   return (
-    <section data-dashboard-card className="h-full rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] p-4 sm:p-6">
+    <section data-dashboard-card className="h-full panel p-4 sm:p-6">
       <div className="flex items-start justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Resultado comercial</h2><p className="mt-1 text-xs text-od-text-3">Valores reais da sua carteira neste mês</p></div><TrendingUp size={18} className="text-od-text-3" /></div>
       {hasRevenueData ? (
         <>
@@ -546,7 +546,7 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 
 function SellerAssistantPreview() {
   return (
-    <section data-dashboard-card className="h-full overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)]">
+    <section data-dashboard-card className="h-full overflow-hidden panel">
       <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-4 py-4">
         <div className="flex items-center gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2">
@@ -588,7 +588,7 @@ function SellerAssistantPreview() {
 function SellerAgenda({ now, items }: { now: Date; items: CalendarItem[] }) {
   const upcoming = items.filter((item) => item.date >= now || item.tone === "danger").sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 6);
   return (
-    <section data-dashboard-card className="h-full rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] p-4">
+    <section data-dashboard-card className="h-full panel p-4">
       <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Próximos lembretes</h2><p className="mt-1 text-xs text-od-text-3">Quem chamar e quando</p></div><Link href="/painel/calendario" className="-my-1 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Calendário</Link></div>
       {upcoming.length === 0 ? <div className="mt-4 flex flex-col gap-3 border-t border-white/[0.07] pt-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3"><Clock3 size={18} className="shrink-0 text-od-text-3" /><div><p className="text-sm font-medium text-white/62">Sua agenda está livre.</p><p className="mt-1 text-xs text-od-text-3">Crie um lembrete para não perder o próximo retorno.</p></div></div><Link href="#novo-lembrete" className="inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Criar lembrete</Link></div> : <ul className="mt-4 divide-y divide-white/[0.07]">{upcoming.map((item, index) => <li key={`${item.title}-${index}`}><Link href={item.href} className="flex items-center gap-3 py-3 hover:text-white"><span className={`size-2 rounded-full ${item.tone === "danger" ? "bg-[#fb7767]" : item.tone === "warning" ? "bg-amber-300" : "bg-od-text-3"}`} /><span className="min-w-0 flex-1 truncate text-xs font-medium text-white/68">{item.title}</span><span className="text-xs text-od-text-3">{formatDate(item.date.toISOString())}</span></Link></li>)}</ul>}
     </section>

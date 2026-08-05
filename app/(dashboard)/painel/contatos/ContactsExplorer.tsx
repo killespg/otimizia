@@ -90,7 +90,7 @@ export function ContactsExplorer({
         </div>
 
         <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
-          <div className="flex h-11 min-w-0 flex-1 items-center gap-2 rounded-md border border-white/[0.1] bg-[#1e1d22] px-3 lg:w-[360px]">
+          <div className="panel flex h-11 min-w-0 flex-1 items-center gap-2 px-3 lg:w-[360px]">
             <IconSearch className="h-4 w-4 shrink-0 text-od-text-3" />
             <label className="sr-only" htmlFor="contacts-search">
               Buscar contatos
@@ -122,7 +122,7 @@ export function ContactsExplorer({
       </section>
 
       <div className="grid gap-5">
-        <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "overflow-hidden border border-white/[0.09] bg-[#1e1d22]"}>
+        <section className="overflow-hidden border-y border-white/[0.08]">
           <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
             <div>
               <h2 className="text-base font-semibold text-white">

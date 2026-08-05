@@ -50,7 +50,7 @@ export function OffersSection({
       {roots.length === 0 ? (
         <p className="text-sm font-medium text-ink-muted">Nenhuma proposta registrada ainda.</p>
       ) : (
-        <div className="divide-y divide-white/[0.08] border-y border-white/[0.08]">
+        <div className="divide-y divide-white/[0.08] border-y border-od-border">
           {roots.map((offer) => (
             <OfferThread key={offer.id} offer={offer} chain={byParent.get(offer.id) ?? []} canManage={canManage} />
           ))}

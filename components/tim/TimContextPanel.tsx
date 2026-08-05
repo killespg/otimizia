@@ -46,11 +46,11 @@ export function TimContextPanel({
         role="dialog"
         aria-modal="true"
         aria-label="Personalizar o Tim"
-        className="relative flex h-full w-full max-w-[440px] flex-col overflow-hidden border-l border-white/[0.09] bg-[#1a1820]"
+        className="glass relative flex h-full w-full max-w-[440px] flex-col overflow-hidden"
       >
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-od-border px-5 py-4">
           <div>
-            <p className="text-[15px] font-semibold text-white">Personalizar o Tim</p>
+            <p className="text-[15px] font-semibold text-od-text">Personalizar o Tim</p>
             <p className="mt-0.5 text-[12px] text-od-text-3">
               Isso ajuda o Tim a entender sua empresa, o jeito que ele deve falar com vocês, e dar respostas melhores.
             </p>
@@ -59,7 +59,7 @@ export function TimContextPanel({
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="grid min-h-11 min-w-11 shrink-0 place-items-center rounded text-lg leading-none text-white/60 hover:bg-white/[0.06] hover:text-white"
+            className="grid min-h-11 min-w-11 shrink-0 place-items-center rounded text-lg leading-none text-od-text-3 hover:bg-white/[0.06] hover:text-od-text"
           >
             ×
           </button>
@@ -126,12 +126,12 @@ export function TimContextPanel({
               </PendingButton>
             </form>
           ) : (
-            <div className="space-y-3 text-sm font-medium text-white/60">
+            <div className="space-y-3 text-sm font-medium text-od-text-3">
               <p>O contexto do Tim é definido por um admin da empresa e vale pra todo mundo que conversa com ele.</p>
               {org?.ai_tone ? (
-                <div className="rounded border border-white/[0.08] bg-white/[0.02] px-3 py-2.5">
+                <div className="rounded-sm border border-od-border bg-surface-2 px-3 py-2.5">
                   <span className="label">Jeito de falar</span>
-                  <p className="mt-1 text-[13px] text-white/80">{org.ai_tone}</p>
+                  <p className="mt-1 text-[13px] text-od-text-2">{org.ai_tone}</p>
                 </div>
               ) : null}
             </div>

@@ -219,7 +219,7 @@ export default async function ContactDetailPage(
 
           <form
             action={deleteContact}
-            className={usesFlatSurface ? "flex items-center justify-between gap-3 border-t border-white/[0.08] px-5 py-4" : "flex items-center justify-between gap-3 border-t border-line bg-[#f8fbff] px-5 py-4"}
+            className="flex items-center justify-between gap-3 border-t border-white/[0.08] px-5 py-4"
           >
             <div>
               <p className="text-sm font-black text-ink">{copy.deleteTitle}</p>
@@ -229,7 +229,7 @@ export default async function ContactDetailPage(
             </div>
             <input type="hidden" name="id" value={c.id} />
             <PendingButton
-              className="press inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-danger-200 bg-white px-3.5 py-2 text-sm font-black text-danger-700 hover:bg-danger-50"
+              className="press inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-danger-200 bg-danger-50 px-3.5 py-2 text-sm font-black text-danger-700 hover:bg-danger-100"
               pendingLabel="Excluindo"
             >
               <IconTrash className="h-4 w-4" />
@@ -240,7 +240,7 @@ export default async function ContactDetailPage(
 
         <div className="space-y-5">
           {isSeller ? (
-            <section className="overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)]">
+            <section className="overflow-hidden border-y border-white/[0.08]">
               <div className="border-b border-white/[0.08] px-5 py-4">
                 <h2 className="text-base font-semibold text-white">Preferências de compra</h2>
                 <p className="mt-1 text-sm text-white/52">Tamanhos, medidas e hábitos para atender e recomprar sem perguntar tudo de novo.</p>
@@ -310,7 +310,7 @@ export default async function ContactDetailPage(
                       value={new Date(now.getTime() + offset.days * 86_400_000).toISOString()}
                     />
                     <PendingButton
-                      className="press-sm min-h-9 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                      className="press-sm min-h-9 rounded-md border border-line bg-transparent px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
                       pendingLabel="Agendando"
                     >
                       {offset.label}
@@ -347,7 +347,7 @@ export default async function ContactDetailPage(
               </form>
 
               {logs.length === 0 ? (
-                <div className={usesFlatSurface ? "mt-5 py-5 text-left" : "mt-5 rounded-lg border border-dashed border-line bg-[#f8fbff] p-5 text-center"}>
+                <div className="mt-5 py-5 text-left">
                   <IconMessage className="mx-auto h-7 w-7 text-brand-700" />
                   <p className="mt-3 text-sm font-black text-ink">
                     Nenhuma conversa anotada ainda.
@@ -391,7 +391,7 @@ export default async function ContactDetailPage(
                       <span
                         className={
                           "grid h-5 w-5 shrink-0 place-items-center rounded-full " +
-                          (task.done ? "bg-brand-700 text-white" : "border border-line bg-white")
+                          (task.done ? "bg-brand-700 text-white" : "border border-line bg-transparent")
                         }
                       >
                         {task.done && <IconCheck className="h-3 w-3" />}

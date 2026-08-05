@@ -41,7 +41,7 @@ export default async function SellerOrdersPage({ searchParams }: { searchParams:
       ]} />
 
       {orders.length === 0 ? <SellerEmptyState title="Nenhum pedido confirmado" description="Mova uma negociação para Ganho. Antes de fechar, o sistema pedirá os itens e permitirá criar um produto na hora." action={<Link href="/painel/funil" className="btn">Abrir funil</Link>} icon="box" /> : (
-        <section className="overflow-hidden border border-white/[0.09] bg-[#1e1d22]/90">
+        <section className="overflow-hidden panel">
           <div className="hidden grid-cols-[9rem_minmax(12rem,1.4fr)_7rem_8rem_8rem_9rem_3rem] border-b border-white/[0.08] px-4 py-2 text-xs font-semibold text-od-text-3 lg:grid"><span>Pedido</span><span>Cliente</span><span>Itens</span><span>Total</span><span>Pagamento</span><span>Status</span><span /></div>
           {filtered.length ? <div className="divide-y divide-white/[0.08]">{filtered.map((order) => {
             const contact = order.contact_id ? contacts.get(order.contact_id) : null;

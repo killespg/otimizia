@@ -37,9 +37,9 @@ export function SellerOperationSettingsForm(props: Props) {
 
   return (
     <form action={formAction} className="space-y-6">
-      <section className="border border-white/[0.09] bg-[#1e1d22]/90">
-        <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">O que você vende</h2><p className="mt-1 max-w-3xl text-xs leading-relaxed text-od-text-3">Marque tudo que fizer parte da sua operação. Um mesmo negócio pode trabalhar com moda, garantia e encomendas ao mesmo tempo.</p></header>
-        <div className="grid border-l border-white/[0.07] sm:grid-cols-2 xl:grid-cols-3">
+      <section className="panel">
+        <header className="border-b border-od-border px-4 py-4"><h2 className="text-sm font-semibold text-od-text">O que você vende</h2><p className="mt-1 max-w-3xl text-xs leading-relaxed text-od-text-3">Marque tudo que fizer parte da sua operação. Um mesmo negócio pode trabalhar com moda, garantia e encomendas ao mesmo tempo.</p></header>
+        <div className="grid border-l border-od-border sm:grid-cols-2 xl:grid-cols-3">
           {SELLER_SALES_MODELS.map((model) => {
             const selected = models.includes(model.value);
             return <label key={model.value} className={`relative flex min-h-28 cursor-pointer gap-3 border-b border-r border-white/[0.07] p-4 ${selected ? "bg-od-accent/[0.055]" : "hover:bg-white/[0.02]"}`}>
@@ -51,7 +51,7 @@ export function SellerOperationSettingsForm(props: Props) {
         </div>
       </section>
 
-      <section className="border border-white/[0.09] bg-[#1e1d22]/90">
+      <section className="panel">
         <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">Ferramentas da operação</h2><p className="mt-1 text-xs text-od-text-3">As opções sugeridas foram ativadas conforme os tipos de venda selecionados. Você pode ajustar.</p></header>
         <div className="divide-y divide-white/[0.07]">
           {SELLER_MODULES.map((module) => {
@@ -68,7 +68,7 @@ export function SellerOperationSettingsForm(props: Props) {
         </div>
       </section>
 
-      <section className="border border-white/[0.09] bg-[#1e1d22]/90">
+      <section className="panel">
         <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">Padrões de cadastro</h2><p className="mt-1 text-xs text-od-text-3">Esses valores entram automaticamente na criação rápida durante a venda e podem ser alterados por item.</p></header>
         <div className="grid gap-4 p-4 md:grid-cols-3">
           <label><span className="label">Garantia padrão em dias</span><input name="default_warranty_days" type="number" min="0" max="3650" defaultValue={props.defaultWarrantyDays} disabled={!props.canEdit} className="field mt-1.5" /></label>
@@ -78,7 +78,7 @@ export function SellerOperationSettingsForm(props: Props) {
       </section>
 
       {state.error ? <div role="alert" className="flex items-start gap-3 border border-[#fb7767]/30 bg-[#fb7767]/[0.06] p-4 text-sm text-[#fca79b]"><AlertTriangle size={18} className="mt-0.5 shrink-0" /><div><strong className="font-semibold">A configuração não foi salva.</strong><p className="mt-1 text-[#fca79b]/80">{state.error}</p></div></div> : null}
-      {props.canEdit ? <div className="sticky bottom-[calc(64px+env(safe-area-inset-bottom))] z-[var(--z-sticky)] flex justify-end border-t border-white/[0.08] bg-[#151419]/95 py-3 md:bottom-0"><PendingButton className="btn" pendingLabel="Salvando configuração"><SlidersHorizontal size={15} /> Salvar configuração</PendingButton></div> : <p className="border border-amber-300/20 bg-amber-300/[0.04] p-4 text-sm text-amber-200">Você pode consultar esta configuração, mas somente a administração pode alterá-la.</p>}
+      {props.canEdit ? <div className="od-chrome sticky bottom-[calc(76px+env(safe-area-inset-bottom))] z-[var(--z-sticky)] flex justify-end border-t border-white/[0.08] py-3 md:bottom-0"><PendingButton className="btn" pendingLabel="Salvando configuração"><SlidersHorizontal size={15} /> Salvar configuração</PendingButton></div> : <p className="border border-amber-300/20 bg-amber-300/[0.04] p-4 text-sm text-amber-200">Você pode consultar esta configuração, mas somente a administração pode alterá-la.</p>}
     </form>
   );
 }

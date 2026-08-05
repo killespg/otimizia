@@ -107,7 +107,7 @@ export default async function LawPage(props: { searchParams?: Promise<{ busca?: 
         <Metric icon={IconUsers} label="Clientes com caso" value={String(new Set(activeCases.map((item) => item.contact_id).filter(Boolean)).size)} />
       </section>
 
-      <section className="overflow-hidden border border-white/[0.09] bg-[#1e1d22]">
+      <section className="overflow-hidden panel">
         <div className="flex flex-col gap-3 border-b border-white/[0.08] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-base font-semibold text-white">Processos em acompanhamento</h2>

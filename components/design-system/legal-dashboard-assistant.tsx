@@ -32,7 +32,7 @@ export function LegalDashboardAssistant({
     : "";
 
   return (
-    <section className="border-y border-od-border py-3">
+    <section className="border-y border-od-border bg-surface-2 py-3">
       <form onSubmit={submit} className="flex min-h-11 items-center gap-3">
         <Sparkles
           size={16}

@@ -1,6 +1,7 @@
 # Apple Liquid Glass no painel do OtimizIA
 
-Status: direcao A, Apple contido, aprovada no comparador visual em 2026-08-04.
+Status: Apple contido com paisagem magenta e azul fornecida pelo usuario,
+aprovada em 2026-08-04.
 
 ## Objetivo
 
@@ -31,10 +32,12 @@ camada funcional, nao em uma colorizacao dramatica do relatorio.
 O comparador visual registrou a escolha **A. Apple contido**. A implementacao
 deve reproduzir esta composicao:
 
-- Canvas `#17171b`, praticamente neutro.
-- Conteudo principal `rgba(39,39,46,.94)`; conteudo secundario
-  `rgba(32,32,38,.96)`. Nenhum painel usa preto puro ou fundo violeta.
-- Divisores e bordas `rgba(255,255,255,.09)`, sem contorno violeta em repouso.
+- Canvas com fallback azul-marinho `#07142d` e a paisagem
+  `public/backgrounds/dashboard-landscape.png` cobrindo o viewport, sob uma
+  pelicula marinho `rgba(4,9,24,.38)`.
+- Conteudo principal `rgba(54,55,68,.88)`; conteudo secundario
+  `rgba(47,49,62,.86)`. Nenhum painel usa preto puro ou fundo violeta.
+- Divisores e bordas `rgba(255,255,255,.13)`, sem contorno violeta em repouso.
 - Texto principal `#f5f5f7`; texto secundario e terciario usam branco com
   opacidade suficiente para WCAG AA.
 - Violeta `#8757f0` apenas em acao primaria, selecao, foco e pequenos sinais de
@@ -42,9 +45,9 @@ deve reproduzir esta composicao:
 - Vidro neutro com preenchimento branco de 7,5%, borda branca de 26%, blur
   entre 16 e 20 px e highlight interno curto. Ele aparece no shell, busca,
   grupos de acoes e overlays.
-- A luz ambiente fica restrita a uma mancha violeta muito discreta perto do
-  shell e uma mancha azul-acinzentada ainda mais fraca. Laranja, rosa e ciano
-  saem do canvas. A tela nao pode ser lida como gradiente multicolorido.
+- A paisagem preserva o brilho magenta na borda esquerda, azul/ciano na direita,
+  montanhas em wireframe e o centro azul-marinho escuro. A imagem nao recebe
+  texto, marca, objetos ou hotspots atras do conteudo principal.
 - Paineis usam raio de 12 a 16 px. Pills ficam reservadas a busca, botoes e
   controles compactos.
 
@@ -105,7 +108,8 @@ O produto passa a ter tres camadas sem sobreposicao semantica.
 
 ### 1. Canvas e conteudo
 
-- O canvas continua escuro, com luz ambiente muito discreta e localizada.
+- O canvas usa a paisagem magenta e azul aprovada, com centro escuro e fallback
+  azul-marinho enquanto o asset carrega.
 - `.panel`, `.card`, `.card-quiet`, faixas de metricas, tabelas e formularios
   deixam de usar `backdrop-filter`, grao, sheen e refração.
 - Superficies de conteudo usam cor solida ou material padrao quase opaco, borda
@@ -116,6 +120,9 @@ O produto passa a ter tres camadas sem sobreposicao semantica.
 ### 2. Liquid Glass funcional
 
 - `.od-chrome` representa vidro regular para navegacao e controles persistentes.
+- A sidebar desktop e a referencia de controle `Personalizar painel` usam o
+  mesmo vidro claro: preenchimento branco a 7,5%, sheen curto, borda a 26% e
+  blur de 16 px. A sidebar nao recebe a pelicula fumê do chrome generico.
 - `.glass` representa vidro regular transitorio para menus, popovers e sheets.
 - Nao se mistura variante regular e clear na mesma tela. Clear nao sera usado na
   primeira entrega porque o dashboard nao e conteudo de midia rica.
@@ -140,6 +147,8 @@ O produto passa a ter tres camadas sem sobreposicao semantica.
 
 - Rail e painel lateral deixam de parecer duas placas de vidro encostadas. Eles
   formam um unico grupo flutuante, com divisao interna e raios concentricos.
+- Esse grupo preserva a estrutura ampla da navegacao, mas replica o material do
+  controle `Personalizar painel`; drawers continuam com o chrome mais denso.
 - O grupo recebe inset do viewport para revelar conteudo por baixo e reforcar a
   elevacao, sem sacrificar a area util.
 - O redimensionamento do painel lateral continua funcionando e persiste no
@@ -168,8 +177,8 @@ O produto passa a ter tres camadas sem sobreposicao semantica.
   internos e sem brilho especular em cada celula.
 - Indicadores imobiliarios, comissoes e metas usam material padrao consistente;
   valores e estados ficam mais importantes que a superficie.
-- O fundo multicolorido atual deve ser substituido pela luz ambiente restrita da
-  direcao A. Nao permanecem manchas laranja, rosa ou ciano atras dos dados.
+- O fundo anterior e substituido por `dashboard-landscape.png`, mantendo a
+  assinatura magenta-esquerda/azul-direita sem hotspots no centro dos dados.
 
 ## Componentes e tokens
 
@@ -226,8 +235,8 @@ O produto passa a ter tres camadas sem sobreposicao semantica.
 
 - A primeira leitura visual e de um app Apple contemporaneo, nao de um template
   de glassmorphism.
-- Em captura de tela inteira, o canvas e percebido primeiro como grafite neutro,
-  nao como um gradiente. Nenhuma zona colorida compete com valores ou titulos.
+- Em captura de tela inteira, o canvas reproduz a paisagem aprovada: magenta na
+  esquerda, azul/ciano na direita, relevo em wireframe e centro marinho calmo.
 - Cards nao parecem buracos pretos nem placas roxas: ficam um passo de
   luminosidade acima do canvas, com borda neutra discreta e sem sombra ampla.
 - Vidro aparece principalmente onde a pessoa toca ou navega.

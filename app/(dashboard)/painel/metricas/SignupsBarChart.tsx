@@ -42,7 +42,7 @@ export function SignupsBarChart({ series }: { series: Point[] }) {
         role="img"
         aria-label="Novos cadastros por dia, últimos 30 dias"
       >
-        <line x1={LEFT} x2={RIGHT} y1={BOTTOM} y2={BOTTOM} stroke="#dbe2ef" strokeWidth="1" />
+        <line x1={LEFT} x2={RIGHT} y1={BOTTOM} y2={BOTTOM} stroke="var(--od-border)" strokeWidth="1" />
 
         {series.map((point, index) => (
           <rect
@@ -54,7 +54,7 @@ export function SignupsBarChart({ series }: { series: Point[] }) {
             width={barWidth}
             height={Math.max(0, barHeight(point.count))}
             rx="2"
-            fill={index === hoverIndex ? "#6d28d9" : "#a78bfa"}
+            fill={index === hoverIndex ? "var(--od-accent-hover)" : "var(--od-accent)"}
             onPointerEnter={() => setHoverIndex(index)}
             onPointerLeave={() => setHoverIndex((current) => (current === index ? null : current))}
           />
@@ -71,7 +71,7 @@ export function SignupsBarChart({ series }: { series: Point[] }) {
                   x={barX(index) + barWidth / 2}
                   y={BOTTOM + 18}
                   textAnchor="middle"
-                  fill="#60708f"
+                  fill="var(--od-text-3)"
                   fontSize="11"
                   fontWeight="700"
                 >
@@ -85,7 +85,7 @@ export function SignupsBarChart({ series }: { series: Point[] }) {
       {displayed && hoverXPercent !== null && (
         <div
           className={
-            "pointer-events-none absolute top-2 -translate-x-1/2 rounded-md border border-line bg-white px-2.5 py-1.5 text-xs font-bold text-ink shadow-[0_10px_28px_-16px_rgba(15,23,42,0.55)] transition-[left,opacity,transform] duration-100 ease-out " +
+            "pointer-events-none absolute top-2 -translate-x-1/2 rounded-md border border-line bg-[var(--od-surface-solid)] px-2.5 py-1.5 text-xs font-bold text-ink shadow-od-float transition-[left,opacity,transform] duration-100 ease-out " +
             (isHovering ? "opacity-100 scale-100" : "scale-95 opacity-0")
           }
           style={{ left: `${Math.min(92, Math.max(8, hoverXPercent))}%` }}

@@ -416,7 +416,7 @@ export function WhatsappInbox({
         className={
           "order-2 min-h-0 flex-col overflow-hidden lg:static lg:z-auto lg:bg-transparent " +
           (selectedId
-            ? "fixed inset-0 z-[var(--z-modal)] flex bg-[#1e1d22] lg:flex"
+            ? "fixed inset-0 z-[var(--z-modal)] flex bg-[var(--od-muted-surface-solid)] lg:flex"
             : "hidden lg:flex")
         }
       >
@@ -564,7 +564,7 @@ export function WhatsappInbox({
                         <div
                           className={
                             "relative max-w-[85%] px-2.5 pb-[18px] pt-1.5 text-[14px] leading-[1.45] shadow-[0_1px_1px_rgba(0,0,0,0.35)] sm:max-w-[65%] " +
-                            (isOutbound ? "bg-[#5b2ec9] text-white" : "bg-[#26232e] text-white/92")
+                            (isOutbound ? "bg-od-accent text-white" : "bg-[var(--od-muted-surface-solid)] text-white/92")
                           }
                           style={{
                             borderRadius: firstInGroup
@@ -583,12 +583,12 @@ export function WhatsappInbox({
                                 isOutbound
                                   ? {
                                       right: "-7px",
-                                      borderTop: "8px solid #5b2ec9",
+                                      borderTop: "8px solid var(--od-accent)",
                                       borderRight: "8px solid transparent",
                                     }
                                   : {
                                       left: "-7px",
-                                      borderTop: "8px solid #26232e",
+                                      borderTop: "8px solid var(--od-muted-surface-solid)",
                                       borderLeft: "8px solid transparent",
                                     }
                               }

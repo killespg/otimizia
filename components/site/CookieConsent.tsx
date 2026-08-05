@@ -68,7 +68,7 @@ export function CookieConsent() {
       aria-labelledby="cookie-consent-title"
       className="fixed inset-x-0 bottom-0 z-[100] p-3 sm:p-4"
     >
-      <div className="mx-auto max-w-[880px] rounded-xl border border-od-border bg-od-surface p-5 shadow-2xl sm:p-6">
+      <div className="glass mx-auto max-w-[880px] p-5 sm:p-6">
         <h2 id="cookie-consent-title" className="text-[15px] font-black text-od-text">
           Cookies neste site
         </h2>

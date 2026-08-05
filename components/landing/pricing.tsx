@@ -8,7 +8,7 @@ import { ArrowRight, Check } from "lucide-react";
  * R$ 10 por pessoa extra — e não de um valor de vitrine. O teste grátis é o
  * mesmo que o cadastro entrega hoje, sem pedir cartão.
  *
- * Duas colunas divididas por régua, sem card em volta: é comparação, não dois
+ * Duas colunas dentro de um único volume de vidro: é uma comparação, não dois
  * recipientes concorrendo.
  */
 const INCLUSO = [
@@ -22,8 +22,12 @@ const INCLUSO = [
 
 export function Pricing() {
   return (
-    <div className="grid divide-y divide-od-border border-y border-od-border md:grid-cols-2 md:divide-x md:divide-y-0">
-      <div className="px-0 py-8 md:pr-10">
+    <div
+      data-landing-glass-stage="true"
+      data-landing-pricing-stage="true"
+      className="landing-liquid-stage grid divide-y divide-white/[0.09] px-6 md:grid-cols-2 md:divide-x md:divide-y-0 md:px-0"
+    >
+      <div className="py-8 md:px-10">
         <p className="text-od-label text-od-text-3">Para começar</p>
         <p className="mt-3 text-od-title text-od-text">Teste grátis</p>
         <p className="mt-2 text-[14px] leading-relaxed text-od-text-2">
@@ -32,14 +36,14 @@ export function Pricing() {
         </p>
         <Link
           href="/signup"
-          className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-md bg-od-accent px-5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-600"
+          className="liquid-glass-control liquid-glass-control--tinted mt-6 inline-flex min-h-11 items-center gap-2 rounded-full px-5 text-[13px] font-semibold text-white"
         >
           Criar minha conta
           <ArrowRight className="size-4" strokeWidth={2} />
         </Link>
       </div>
 
-      <div className="px-0 py-8 md:pl-10">
+      <div className="py-8 md:px-10">
         <p className="text-od-label text-od-text-3">Depois do teste</p>
         <p className="mt-3 flex items-baseline gap-2">
           <span className="text-od-title text-od-text">R$ 39,90</span>

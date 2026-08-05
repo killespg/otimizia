@@ -21,7 +21,7 @@ export default async function DocumentsPage() {
     supabase.from("legal_document_signatures").select("*").eq("org_id", orgId),
   ]);
   const isAdmin = orgRole === "admin";
-  if (!canViewLegal(membership?.job_role, isAdmin)) return <section className="border border-white/[0.09] bg-[#1e1d22] p-6"><h1 className="text-xl font-semibold">Acesso jurídico restrito</h1></section>;
+  if (!canViewLegal(membership?.job_role, isAdmin)) return <section className="panel p-6"><h1 className="text-xl font-semibold">Acesso jurídico restrito</h1></section>;
 
   const docs = (rows ?? []) as LegalDocument[];
   const cases = (caseRows ?? []) as Pick<LegalCase, "id" | "title">[];

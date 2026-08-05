@@ -117,7 +117,7 @@ export default async function TasksPage() {
         <MetricCard label="Feitas" value={String(done.length)} icon={IconCheckCircle} />
       </section>
 
-      <form id="new-task" action={createTask} className={isSeller ? "scroll-mt-24 border-y border-white/[0.08] py-5" : "scroll-mt-24 border border-white/[0.09] bg-[#1e1d22] p-5"}>
+      <form id="new-task" action={createTask} className="scroll-mt-24 border-y border-white/[0.08] py-5">
         <input type="hidden" name="return_to" value="/painel/tarefas" />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_13rem_minmax(0,1fr)_auto] lg:items-end">
           <div>
@@ -262,10 +262,10 @@ function TaskGroup({
   isSeller: boolean;
 }) {
   const toneClass: Record<Tone, string> = {
-    danger: "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
+    danger: "bg-danger-50 text-danger-700",
     today: "bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-brand-200",
     upcoming: "bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-200",
-    done: "bg-success-50 text-success-700 dark:bg-[#062d1c] dark:text-[#9ff0c5]",
+    done: "bg-success-50 text-success-700",
   };
 
   return (
@@ -285,11 +285,11 @@ function TaskGroup({
       </div>
 
       {items.length === 0 ? (
-        <div className={isSeller ? "flex min-h-20 items-center px-5 py-4" : "px-5 py-6"}>
-          <div className={isSeller ? "text-left" : "rounded-lg border border-dashed border-line bg-[#f8fbff] p-5 text-center"}>
+        <div className="flex min-h-20 items-center px-5 py-4">
+          <div className="text-left">
             <div>
-            <p className={isSeller ? "text-sm font-semibold text-white/68" : "text-sm font-black text-ink"}>Fila vazia</p>
-            <p className={isSeller ? "mt-1 text-xs text-od-text-3" : "mt-1 text-sm font-medium text-ink-muted"}>{empty}</p>
+            <p className="text-sm font-semibold text-white/68">Fila vazia</p>
+            <p className="mt-1 text-xs text-od-text-3">{empty}</p>
             </div>
           </div>
         </div>

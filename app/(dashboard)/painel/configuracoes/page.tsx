@@ -436,9 +436,7 @@ function SectionCard({
   return (
     <section
       data-settings-card
-      className={
-        "space-y-4 border bg-[#1e1d22] p-5 " + (danger ? "border-red-400/20" : "border-white/[0.09]")
-      }
+      className={"panel space-y-4 p-5 " + (danger ? "border-red-400/20" : "")}
     >
       <div>
         <h2 className="text-[14px] font-semibold text-white">

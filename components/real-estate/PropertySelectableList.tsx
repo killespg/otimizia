@@ -73,7 +73,7 @@ export function PropertySelectableList({ rows, selectable = true }: { rows: Prop
         ))}
       </div>
       {selectable && selected.size > 0 && (
-        <div className="sticky bottom-[calc(4.9rem+env(safe-area-inset-bottom))] z-10 flex items-center justify-between gap-3 border-t border-line bg-surface/95 px-5 py-3 backdrop-blur-xl sm:bottom-0">
+        <div className="sticky bottom-[calc(5.65rem+env(safe-area-inset-bottom))] z-10 flex items-center justify-between gap-3 border-t border-line bg-surface/95 px-5 py-3 backdrop-blur-xl sm:bottom-0">
           <span className="text-xs font-bold text-ink-muted">{selected.size} imóvel(is) selecionado(s)</span>
           <div className="flex items-center gap-2">
             <button type="button" onClick={() => setSelected(new Set())} className="text-xs font-bold text-ink-muted hover:text-ink">

@@ -765,7 +765,7 @@ function FinanceSummary({
   count: number;
 }) {
   return (
-    <section className="h-full overflow-hidden rounded-xl border border-od-border bg-[#292530] p-5">
+    <section className="h-full overflow-hidden panel-soft p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-base font-semibold">Meta de recebimento</h2>

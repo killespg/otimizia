@@ -59,8 +59,10 @@ Expected: FAIL pela ausência dos marcadores e classes exclusivos da landing.
 
 **Files:**
 - Modify: `app/page.tsx`
+- Create: `components/ui/hero.tsx`
 - Modify: `components/landing/landing-nav.tsx`
 - Modify: `components/landing/hero.tsx`
+- Modify: `components/landing/dashboard-preview.tsx`
 - Modify: `components/landing/mobile-sticky-cta.tsx`
 - Modify: `app/globals.css`
 - Test: `lib/landing-liquid-glass.test.ts`
@@ -77,9 +79,9 @@ Adicionar `data-landing-liquid-canvas="true"` e `.landing-liquid-page` à raiz. 
 
 Passar `className="landing-liquid-nav"` ao `NavBar` e adicionar CSS com largura contida, afastamento da viewport, blur de 24 px, saturação, borda branca assimétrica, sheen e fallback opaco.
 
-- [ ] **Step 3: Refinar hero e CTAs**
+- [ ] **Step 3: Integrar o hero orbital e os CTAs**
 
-Remover a borda e fundo sólido do hero, manter o título aberto e trocar o CTA por:
+Adaptar o componente de referência para `components/ui/hero.tsx` com props de copy, ações, visual e ambiente. Desenhar a órbita em CSS, injetar `DashboardPreview` como visual real e remover a seção duplicada `ContainerScroll` de `app/page.tsx`. Remover a borda e fundo sólido do hero, manter o título aberto e trocar o CTA por:
 
 ```tsx
 className="liquid-glass-control liquid-glass-control--tinted inline-flex min-h-11 items-center gap-2 rounded-full px-6 text-sm font-semibold text-white"
@@ -98,7 +100,6 @@ Expected: PASS para canvas, navegação e CTA; os testes de stages e fallbacks p
 **Files:**
 - Modify: `app/page.tsx`
 - Modify: `components/landing/feature-tabs.tsx`
-- Modify: `components/landing/container-scroll-animation.tsx`
 - Modify: `components/landing/spotlight-card.tsx`
 - Modify: `components/landing/ai-composer.tsx`
 - Modify: `components/landing/pricing.tsx`
@@ -119,9 +120,9 @@ Definir `.landing-liquid-stage` com posição relativa, isolamento, fundo branco
 
 Envolver a faixa de logos em stage suave. Tornar o tablist um controle Liquid Glass e envolver todo o conteúdo selecionado em um único stage, preservando `.map()`, papéis ARIA e linhas internas.
 
-- [ ] **Step 3: Transformar o preview na peça central**
+- [ ] **Step 3: Validar o preview como peça central do hero**
 
-Aplicar `landing-liquid-stage` somente na moldura externa animada de `ContainerScroll`. Manter `DashboardPreview` sobre superfície de conteúdo sem `backdrop-filter`, evitando vidro sobre vidro.
+Aplicar `landing-liquid-stage` somente na moldura externa criada por `components/ui/hero.tsx`. Manter `DashboardPreview` sobre superfície de conteúdo sem `backdrop-filter`, evitando vidro sobre vidro, e preservar `#painel` como âncora pública.
 
 - [ ] **Step 4: Unificar Tim, preço, FAQ e comparação**
 
@@ -156,7 +157,7 @@ Expected: PASS sem overflow, com menu, tabs, targets de 44 px e material visíve
 
 - [ ] **Step 3: Executar teste E2E desktop**
 
-Run: `$env:E2E_BASE_URL='http://localhost:3000'; npx playwright test test/e2e/landing-responsive.spec.ts --project=chromium`
+Run: `$env:E2E_BASE_URL='http://localhost:3000'; npx playwright test test/e2e/landing-responsive.spec.ts --project=desktop-chromium`
 
 Expected: o cenário específico de desktop passa; o cenário exclusivamente mobile é ignorado pelo `test.skip` existente.
 

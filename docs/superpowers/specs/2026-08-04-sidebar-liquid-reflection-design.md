@@ -6,10 +6,10 @@ Reduzir a dominancia azul do canvas e dar mais iluminacao e reflexo a sidebar de
 
 ## Direcao aprovada
 
-Aplicar a direcao C aprovada: fundo mais neutro e sidebar com reflexo branco/prateado. A sidebar continua sendo um unico volume translúcido e recebe dois sinais de material:
+Aplicar a direcao C aprovada: fundo mais neutro e sidebar com reflexo branco/prateado concentrado no rodape. A sidebar continua sendo um unico volume translúcido e recebe dois sinais de material:
 
-1. Um highlight branco mais presente na borda superior.
-2. Um reflexo diagonal amplo e suave, usando o sheen ja definido pelo design system.
+1. Um highlight branco na borda inferior, distante da area mais densa de informacoes.
+2. Um reflexo radial amplo e suave, surgindo abaixo do volume.
 
 O canvas mantém azul apenas como luz lateral secundaria. O centro e a maior parte da area de trabalho leem como grafite quase preto. O resultado da sidebar deve ser percebido como luz branca atravessando vidro, nao como gradiente colorido aplicado sobre a navegacao.
 
@@ -25,9 +25,9 @@ O canvas mantém azul apenas como luz lateral secundaria. O centro e a maior par
 
 - Manter `--od-glass-fill`, `--od-glass-border` e o blur atuais para preservar a paridade de transparencia com os controles Liquid Glass.
 - Reativar somente `::after` em `.product-nav-glass-shell` como camada optica exclusiva da sidebar.
-- Compor essa camada somente com `--od-glass-sheen` e um reflexo linear branco de ate 18% de opacidade; nao usar radial azul, violeta ou colorido.
+- Compor essa camada com um reflexo radial branco de ate 26% de opacidade, ancorado em `50% 108%`; nao usar luz no topo, azul, violeta ou outra cor.
 - Manter a camada em `opacity: 0.72`, suficiente para leitura optica sem formar uma faixa branca sobre os itens.
-- Reforcar o highlight superior por `box-shadow` inset, sem adicionar uma sombra externa ampla.
+- Mover o highlight inset de `0 1px` para `0 -1px`, iluminando a borda inferior sem adicionar uma nova sombra externa.
 - Manter `pointer-events: none`, `border-radius: inherit` e confinamento pelo `contain: paint` existente.
 - Nao animar o reflexo. A sidebar e chrome persistente e deve permanecer visualmente estavel.
 

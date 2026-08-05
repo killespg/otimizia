@@ -39,7 +39,11 @@ const POSICOES = [
 
 export function About() {
   return (
-    <div>
+    <div
+      data-landing-glass-stage="true"
+      data-landing-about-stage="true"
+      className="landing-liquid-stage landing-liquid-stage--soft px-5 py-10 sm:px-8 md:px-12 md:py-14"
+    >
       {/* A primeira versão era "ninguém perde cliente por falta de esforço",
           que serve para qualquer empresa de qualquer setor. Esta fala de uma
           coisa só, concreta e reconhecível: a conversa que o WhatsApp empurra

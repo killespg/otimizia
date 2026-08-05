@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -52,6 +53,13 @@ export function MobileAppNav({
   const panelRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
 
+  const closeMenu = useCallback((restoreFocus = true) => {
+    setOpen(false);
+    if (restoreFocus) {
+      window.requestAnimationFrame(() => menuButtonRef.current?.focus());
+    }
+  }, []);
+
   useEffect(() => {
     if (!pendingHref) return;
     const timer = window.setTimeout(() => setPendingHref(null), 4000);
@@ -71,8 +79,7 @@ export function MobileAppNav({
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
-        setOpen(false);
-        window.requestAnimationFrame(() => menuButtonRef.current?.focus());
+        closeMenu();
       }
     }
 
@@ -82,7 +89,7 @@ export function MobileAppNav({
       document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", onKey);
     };
-  }, [open]);
+  }, [closeMenu, open]);
 
   const tabActive = (item: { href: string; exact?: boolean }) =>
     pendingHref ? pendingHref === item.href : isCurrent(pathname, item);
@@ -120,7 +127,7 @@ export function MobileAppNav({
             <motion.button
               type="button"
               aria-label="Fechar menu"
-              onClick={() => setOpen(false)}
+              onClick={() => closeMenu()}
               className="fixed inset-0 z-[var(--z-dropdown)] bg-black/55 md:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -134,7 +141,7 @@ export function MobileAppNav({
               aria-modal="true"
               aria-label="Todas as áreas"
               onKeyDown={trapFocus}
-              className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-[var(--z-sticky)] mx-auto max-h-[66dvh] max-w-md overflow-y-auto rounded-t-lg border border-b-0 border-od-border bg-od-muted-surface md:hidden"
+              className="glass liquid-glass-mobile-sheet fixed inset-x-3 bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-[var(--z-sticky)] mx-auto max-h-[66dvh] max-w-md overflow-y-auto rounded-3xl md:hidden"
               initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
@@ -147,7 +154,7 @@ export function MobileAppNav({
               <Link
                 href={timHref}
                 onClick={() => setOpen(false)}
-                className="flex min-h-14 items-center gap-3 border-b border-od-border px-4 hover:bg-white/[0.04]"
+                className="flex min-h-14 items-center gap-3 border-b border-od-border px-4 hover:bg-white/[0.035]"
               >
                 <span className="grid size-9 shrink-0 place-items-center rounded-full bg-od-accent">
                   <LogoMark size={18} />
@@ -196,12 +203,11 @@ export function MobileAppNav({
         ) : null}
       </AnimatePresence>
 
-      <div className="fixed inset-x-0 bottom-0 z-[var(--z-sticky)] border-t border-od-border bg-od-sidebar pb-[env(safe-area-inset-bottom)] md:hidden">
-        <nav
-          data-mobile-nav
-          className="mx-auto grid min-h-16 max-w-md grid-cols-5 px-1"
-          aria-label={ariaLabel}
-        >
+      <nav
+        data-mobile-nav
+        className="od-chrome liquid-glass-dock fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-[var(--z-sticky)] mx-auto grid min-h-16 max-w-md grid-cols-5 px-1 md:hidden"
+        aria-label={ariaLabel}
+      >
           <BarTab
             item={tabs[0]}
             active={tabActive(tabs[0])}
@@ -220,7 +226,7 @@ export function MobileAppNav({
             aria-controls="mobile-area-menu"
             className={`relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded px-1 text-[10px] font-medium leading-none transition-colors ${
               open || anyGroupActive
-                ? "bg-white/[0.07] text-od-text"
+                ? "bg-white/[0.05] text-od-text"
                 : "text-od-text-3 hover:text-od-text-2"
             }`}
           >
@@ -237,8 +243,7 @@ export function MobileAppNav({
             active={timActive}
             onTap={() => setPendingHref(timHref)}
           />
-        </nav>
-      </div>
+      </nav>
     </>
   );
 }
@@ -261,7 +266,7 @@ function BarTab({
       aria-current={active ? "page" : undefined}
       className={`relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded px-1 text-center text-[10px] font-medium leading-[1.1] transition-colors ${
         active
-          ? "bg-white/[0.07] text-od-text"
+          ? "bg-white/[0.05] text-od-text"
           : "text-od-text-3 hover:text-od-text-2"
       }`}
     >
@@ -369,7 +374,7 @@ function TimTab({
       aria-label="Falar com o Tim"
       className={`relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded px-1 text-[10px] font-medium leading-none transition-colors ${
         active
-          ? "bg-white/[0.07] text-od-text"
+          ? "bg-white/[0.05] text-od-text"
           : "text-od-text-3 hover:text-od-text-2"
       }`}
     >

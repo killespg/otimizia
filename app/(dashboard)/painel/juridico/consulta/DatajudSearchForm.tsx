@@ -112,7 +112,7 @@ export function DatajudSearchForm({
 
   return (
     <>
-      <section className={compact ? "" : "border border-white/[0.09] bg-[#1e1d22] p-5"}>
+      <section className={compact ? "" : "panel p-5"}>
         <form onSubmit={search} className="grid gap-3 sm:grid-cols-[1fr_auto_1fr_auto]">
           <label className="block">
             <span className="label">Tribunal</span>
@@ -175,7 +175,7 @@ export function DatajudSearchForm({
       </section>
 
       {process && (
-        <section className="overflow-hidden border border-white/[0.09] bg-[#1e1d22]">
+        <section className="overflow-hidden panel">
           <div className="border-b border-white/[0.08] p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">

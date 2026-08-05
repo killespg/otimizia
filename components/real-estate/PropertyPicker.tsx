@@ -65,11 +65,11 @@ export function PropertyPicker({
       </div>
       <p className="mt-2 text-xs font-bold text-ink-muted">{selected.size} imóvel(is) selecionado(s)</p>
       {filtered.length === 0 ? (
-        <p className="mt-1.5 rounded-md border border-line px-3 py-6 text-center text-sm font-medium text-ink-muted">
+        <p className="card-quiet mt-1.5 px-3 py-6 text-center text-sm font-medium text-ink-muted">
           Nenhum imóvel ativo encontrado.
         </p>
       ) : (
-        <div className="mt-1.5 max-h-80 divide-y divide-line overflow-y-auto rounded-md border border-line">
+        <div className="card-quiet mt-1.5 max-h-80 divide-y divide-line overflow-y-auto">
           {filtered.map((property) => (
             <label key={property.id} className="flex cursor-pointer items-center gap-3 px-3 py-2.5 hover:bg-surface-2">
               <input

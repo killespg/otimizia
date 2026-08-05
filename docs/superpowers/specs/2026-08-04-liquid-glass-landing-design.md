@@ -48,6 +48,8 @@ Não haverá texto em gradiente, bordas violetas em todos os elementos ou aurora
 - A luz ambiente fica atrás do título e do CTA; formas decorativas perdem bordas e linhas que conflitem com a refração.
 - “Começar grátis” usa o controle Liquid Glass tingido da ação primária.
 - A prova social abaixo do hero vive em uma faixa de vidro suave única.
+- O componente orbital reutilizável vive em `components/ui/hero.tsx`; a camada de marketing injeta copy, ações e o `DashboardPreview` real pelo slot visual.
+- A órbita é desenhada localmente em CSS. Não usa imagens remotas, stock genérico ou captura estática do produto.
 
 ### Profissões e recursos
 
@@ -57,9 +59,9 @@ Não haverá texto em gradiente, bordas violetas em todos os elementos ou aurora
 
 ### Demonstração do painel
 
-- A moldura do preview é o maior volume de vidro da página e funciona como peça central de prova.
+- A moldura do preview é o maior volume de vidro da página, encerra o hero e funciona como peça central de prova.
 - O dashboard interno continua fiel ao produto e não recebe uma segunda camada de blur.
-- A animação 3D existente é preservada com `prefers-reduced-motion`.
+- A seção duplicada de preview deixa de existir; o destino `#painel` aponta para a demonstração integrada ao hero.
 
 ### Tim
 

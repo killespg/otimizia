@@ -70,6 +70,12 @@ const METRIC_ICONS: Record<MetricKey, (props: { className?: string }) => React.R
 type ContactOption = Pick<Contact, "id" | "name" | "company" | "source">;
 type CalendarItem = { date: Date; title: string; href: string; tone: "danger" | "warning" | "brand" };
 
+const MOBILE_SHORTCUTS = [
+  { label: "Clientes", href: "/painel/contatos", icon: IconUsers },
+  { label: "Lembretes", href: "/painel/tarefas", icon: IconBell },
+  { label: "Calendário", href: "/painel/calendario", icon: IconCalendar },
+];
+
 const DASHBOARD_GREETINGS: Record<ProfessionPreset["key"], string> = {
   autonomous_seller: "Bora olhar os clientes quentes e destravar os próximos fechamentos.",
   law_office: "Triagens, propostas e retornos em ordem para o escritório respirar melhor.",
@@ -673,6 +679,24 @@ export default async function DashboardPage() {
         </div>
       </header>
 
+      <nav aria-label="Atalhos" className="enter -mx-1 flex gap-3 overflow-x-auto px-1 pb-1 sm:hidden">
+        {MOBILE_SHORTCUTS.map((shortcut) => {
+          const Icon = shortcut.icon;
+          return (
+            <Link
+              key={shortcut.href}
+              href={shortcut.href}
+              className="nav-item flex shrink-0 flex-col items-center gap-1.5 rounded-md border border-od-border bg-od-surface px-4 py-3 text-center"
+            >
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-100 text-brand-700">
+                <Icon className="h-[18px] w-[18px]" />
+              </span>
+              <span className="text-xs font-bold text-od-text-2">{shortcut.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
       {workspaceKey === "real_estate_broker" &&
         isRealEstateV2Enabled(orgContext) &&
         !profile?.real_estate_v2_intro_dismissed_at && <RealEstateV2IntroCard />}
@@ -781,8 +805,8 @@ function MetricCard({
   const toneClass =
     tone === "pink"
       ? {
-          icon: "bg-[#fff7e6] text-[#8a6500]",
-          badge: "bg-[#fff7e6] text-[#8a6500]",
+          icon: "bg-warning-50 text-warning-700",
+          badge: "bg-warning-50 text-warning-700",
         }
       : {
           icon: "bg-brand-100 text-brand-700",
@@ -792,10 +816,13 @@ function MetricCard({
   return (
     <article
       data-dashboard-metric={metricKey}
-      className="enter relative min-h-[96px] overflow-hidden rounded-md border border-od-border bg-od-surface p-3 sm:min-h-[150px] sm:p-5"
+      className="enter relative min-h-[124px] overflow-hidden rounded-md border border-od-border bg-od-surface p-3 sm:min-h-[150px] sm:p-5"
       style={{ display: visible ? undefined : "none", order }}
     >
-      <div className="flex items-start justify-between gap-2 sm:gap-3">
+      <div className="flex flex-col items-center gap-2 text-center sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:text-left">
+        <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full sm:order-last sm:h-11 sm:w-11 ${toneClass.icon}`}>
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+        </span>
         <div className="min-w-0">
           <p
             data-dashboard-metric-label={metricKey}
@@ -807,9 +834,6 @@ function MetricCard({
             {value}
           </p>
         </div>
-        <span className={`hidden h-9 w-9 shrink-0 place-items-center rounded-full sm:grid sm:h-11 sm:w-11 ${toneClass.icon}`}>
-          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-        </span>
       </div>
 
       {(delta || compare) && (
@@ -1042,7 +1066,7 @@ function DealsTable({
       </div>
 
       {recent.length === 0 ? (
-        <p className="mt-4 rounded-md border border-dashed border-od-border bg-[#f8fbff] px-3 py-8 text-center text-sm font-medium text-od-text-3">
+        <p className="mt-4 rounded-md border border-dashed border-od-border bg-od-muted-surface px-3 py-8 text-center text-sm font-medium text-od-text-3">
           Nenhum negócio aberto ainda.
         </p>
       ) : (
@@ -1085,7 +1109,7 @@ function DealsTable({
           {/* Tablet/desktop: tabela completa. */}
           <div className="mt-4 hidden overflow-x-auto rounded-md border border-od-border sm:block">
             <table className="w-full min-w-[620px] border-collapse text-left">
-              <thead className="bg-[#f8faff]">
+              <thead className="bg-od-muted-surface">
                 <tr className="text-xs font-bold text-od-text-3">
                   <th className="px-3 py-3">Negócio</th>
                   <th className="px-3 py-3">Cliente</th>
@@ -1147,7 +1171,7 @@ function TaskQueue({
       </div>
 
       {tasks.length === 0 ? (
-        <div className="mt-4 rounded-md border border-dashed border-od-border bg-[#f8faff] p-5 text-center">
+        <div className="mt-4 rounded-md border border-dashed border-od-border bg-od-muted-surface p-5 text-center">
           <IconCheckCircle className="mx-auto h-8 w-8 text-brand-700" />
           <p className="mt-3 text-sm font-black text-od-text">Tudo em dia por aqui.</p>
           <p className="mt-1 text-sm font-medium text-od-text-3">
@@ -1269,7 +1293,7 @@ function CalendarWidget({
       </div>
 
       {upcoming.length === 0 ? (
-        <p className="mt-4 rounded-md border border-dashed border-od-border bg-[#f8faff] px-3 py-6 text-center text-xs font-medium text-od-text-3">
+        <p className="mt-4 rounded-md border border-dashed border-od-border bg-od-muted-surface px-3 py-6 text-center text-xs font-medium text-od-text-3">
           Nada agendado por enquanto.
         </p>
       ) : (
@@ -1488,8 +1512,8 @@ function stageMeta(stage: DealStage, preset: ProfessionPreset) {
     novo: "bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-200",
     em_contato: "bg-brand-50 text-brand-700 dark:bg-brand-950/70 dark:text-brand-200",
     negociacao: "bg-warning-50 text-warning-700",
-    ganho: "bg-success-50 text-success-700 dark:bg-[#062d1c] dark:text-[#9ff0c5]",
-    perdido: "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
+    ganho: "bg-success-50 text-success-700",
+    perdido: "bg-danger-50 text-danger-700",
   };
 
   return {
@@ -1502,7 +1526,7 @@ function taskPriority(task: Task, overdue: Task[], index: number) {
   if (overdue.some((item) => item.id === task.id) || index === 0) {
     return {
       label: "Alta",
-      className: "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
+      className: "bg-danger-50 text-danger-700",
     };
   }
   if (index === 1) {

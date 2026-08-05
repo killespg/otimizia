@@ -224,7 +224,7 @@ export function DashboardPreferencesForm({
               role="switch"
               aria-checked={showAnimatedBackground}
               onClick={() => setShowAnimatedBackground((current) => !current)}
-              className="flex min-h-12 w-full items-center justify-between gap-4 rounded-md border border-white/[0.09] bg-[#151419] px-3 text-left transition-colors hover:border-white/[0.16]"
+              className="flex min-h-12 w-full items-center justify-between gap-4 rounded-md border border-white/[0.09] bg-od-muted-surface px-3 text-left transition-colors hover:border-white/[0.16]"
             >
               <span>
                 <span className="block text-sm font-semibold text-white/82">Fundo animado</span>
@@ -265,7 +265,7 @@ export function DashboardPreferencesForm({
             </div>
             <label className="block w-full sm:w-52">
               <span className="sr-only">Custo mensal de vendas e marketing</span>
-              <span className="flex h-11 items-center rounded-md border border-white/[0.09] bg-[#151419] px-3 focus-within:border-od-accent">
+              <span className="flex h-11 items-center rounded-md border border-white/[0.09] bg-od-muted-surface px-3 focus-within:border-od-accent">
                 <span className="mr-2 text-sm text-od-text-3">R$</span>
                 <input
                   value={salesMarketingCost}
@@ -305,7 +305,7 @@ export function DashboardPreferencesForm({
                       "mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border " +
                       (active
                         ? isSeller ? "border-od-accent bg-od-accent text-white" : "border-brand-600 bg-brand-700 text-white"
-                        : isSeller ? "border-white/[0.12] bg-transparent text-transparent" : "border-line bg-white text-transparent")
+                        : isSeller ? "border-white/[0.12] bg-transparent text-transparent" : "border-line bg-transparent text-transparent")
                     }
                   >
                     <IconCheck className="h-3.5 w-3.5" />
@@ -331,7 +331,7 @@ export function DashboardPreferencesForm({
                   }
                   placeholder={preset.metrics.find((metric) => metric.key === key)?.label ?? fallbackLabel}
                   maxLength={42}
-                  className={isSeller ? "mt-2 h-10 w-full rounded-md border border-white/[0.09] bg-[#151419] px-3 text-sm text-white/72 outline-none placeholder:text-od-text-3 focus:border-od-accent" : "field mt-2 h-9 text-sm"}
+                  className={isSeller ? "mt-2 h-10 w-full rounded-md border border-white/[0.09] bg-od-muted-surface px-3 text-sm text-white/72 outline-none placeholder:text-od-text-3 focus:border-od-accent" : "field mt-2 h-9 text-sm"}
                 />
                 {active && (
                     <MobileOrderButtons

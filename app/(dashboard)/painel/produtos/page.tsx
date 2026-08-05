@@ -97,7 +97,7 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
         <SellerEmptyState className="seller-catalog-empty" title="Seu catálogo começa aqui" description="Cadastre o primeiro produto. Ele poderá ser selecionado — ou criado — durante a confirmação de uma venda." action={<Link href="#novo-produto" className="btn"><Plus size={16} /> Cadastrar produto</Link>} />
       ) : (
         <div className="grid min-w-0 gap-4 2xl:grid-cols-[minmax(0,1fr)_280px]">
-          <section className="min-w-0 overflow-hidden border border-white/[0.09] bg-[#1e1d22]/90">
+          <section className="min-w-0 overflow-hidden panel">
             <div className="seller-product-grid hidden gap-3 border-b border-white/[0.08] px-4 py-2 text-xs font-semibold text-od-text-3 xl:grid" style={productGridStyle}>
               <span>Produto</span>{usesCollections ? <span>Coleção</span> : null}{usesVariants ? <span>Variações</span> : null}<span>Preço</span>{usesInventory ? <span>Estoque</span> : null}<span className="text-right">Ações</span>
             </div>
@@ -134,16 +134,16 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
           </section>
 
           <aside className="space-y-3">
-            {usesCollections ? <section className="border border-white/[0.09] bg-[#1e1d22]/90 p-4">
+            {usesCollections ? <section className="panel p-4">
               <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-semibold text-white">Coleções ativas</h2><Layers3 size={16} className="text-od-text-3" /></div>
               {activeCollections.length ? <ul className="mt-3 divide-y divide-white/[0.07]">{activeCollections.map((collection) => <li key={collection.id}><Link href={`/painel/colecoes#${collection.id}`} className="flex min-h-12 items-center justify-between gap-3 text-xs text-white/66"><span className="truncate">{collection.name}</span><SellerStatus tone="success">Ativa</SellerStatus></Link></li>)}</ul> : <p className="mt-3 text-xs leading-relaxed text-od-text-3">Nenhuma coleção ativa. Use coleções para organizar lançamentos sem apagar o histórico.</p>}
               <Link href="/painel/colecoes" className="mt-3 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2">Gerenciar coleções <ChevronRight size={14} /></Link>
             </section> : null}
-            {usesInventory ? <section className="border border-white/[0.09] bg-[#1e1d22]/90 p-4">
+            {usesInventory ? <section className="panel p-4">
               <div className="flex items-center gap-2"><TriangleAlert size={16} className="text-amber-300" /><h2 className="text-sm font-semibold text-white">Estoque baixo</h2></div>
               {lowStock.length ? <ul className="mt-3 divide-y divide-white/[0.07]">{lowStock.slice(0, 8).map((product) => <li key={product.id}><Link href={`/painel/produtos/${product.id}`} className="flex min-h-11 items-center justify-between gap-3 text-xs"><span className="truncate text-white/62">{product.name}</span><strong className="tabular-nums text-amber-300">{availableStock(product)} un.</strong></Link></li>)}</ul> : <p className="mt-3 text-xs text-od-text-3">Nenhum produto abaixo do limite configurado.</p>}
             </section> : null}
-            <section className="border border-white/[0.09] bg-[#1e1d22]/90 p-4"><div className="flex items-center gap-2"><Archive size={16} className="text-od-text-3" /><h2 className="text-sm font-semibold text-white">Inativos</h2></div><p className="mt-2 text-2xl font-semibold tabular-nums text-white/80">{products.filter((product) => product.status === "inactive").length}</p></section>
+            <section className="panel p-4"><div className="flex items-center gap-2"><Archive size={16} className="text-od-text-3" /><h2 className="text-sm font-semibold text-white">Inativos</h2></div><p className="mt-2 text-2xl font-semibold tabular-nums text-white/80">{products.filter((product) => product.status === "inactive").length}</p></section>
           </aside>
         </div>
       )}

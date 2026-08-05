@@ -172,7 +172,7 @@ export default async function ColecoesPage() {
                 key={collection.id}
                 data-vitrine
                 data-search={`${collection.title} ${clientName}`.toLowerCase()}
-                className="border-t border-white/[0.07] pt-5 first:border-t-0 first:pt-0"
+                className="border-t border-od-border pt-5 first:border-t-0 first:pt-0"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="min-w-0">

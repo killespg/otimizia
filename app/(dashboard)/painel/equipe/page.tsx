@@ -178,7 +178,7 @@ export default async function TeamPage(
       </SectionCard>
 
       {isAdmin && (
-        <section className={usesFlatSurface ? "space-y-3 border-y border-white/[0.08] py-5" : "space-y-3 border border-white/[0.09] bg-[#1e1d22] p-5"}>
+        <section className={usesFlatSurface ? "space-y-3 border-y border-white/[0.08] py-5" : "space-y-3 border border-white/[0.09] bg-od-muted-surface p-5"}>
           <div>
             <h2 className="text-base font-semibold text-white">
               Convidar
@@ -239,7 +239,7 @@ export default async function TeamPage(
         </section>
       )}
 
-      <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "overflow-hidden border border-white/[0.09] bg-[#1e1d22]"}>
+      <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "overflow-hidden border border-white/[0.09] bg-od-muted-surface"}>
         <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
           <h2 className="text-base font-semibold text-white">
             Membros
@@ -355,7 +355,7 @@ function SectionCard({
   flat?: boolean;
 }) {
   return (
-    <section className={flat ? "space-y-4 border-y border-white/[0.08] py-5" : "space-y-4 border border-white/[0.09] bg-[#1e1d22] p-5"}>
+    <section className={flat ? "space-y-4 border-y border-white/[0.08] py-5" : "space-y-4 border border-white/[0.09] bg-od-muted-surface p-5"}>
       <div>
         <h2 className="text-base font-semibold text-white">
           {title}

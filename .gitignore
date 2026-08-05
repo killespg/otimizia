@@ -25,6 +25,7 @@ next-dev-*.err.log
 .claude/
 .copilot/
 .impeccable/
+.superpowers/
 .vscode/
 .vscode-shared/
 ~/**
@@ -43,6 +44,10 @@ hook.cache.json
 # Instaladores baixados por engano para public/ (nao devem ser servidos pelo site)
 /public/*.exe
 /public/*.msi
+
+# Master PNG da paisagem do painel: 1,4 MB, so serve para regerar os WebP.
+# O produto serve os .webp versionados ao lado; o master fica local.
+/public/backgrounds/*.png
 
 # Local development logs
 dashboard-dev.*.log

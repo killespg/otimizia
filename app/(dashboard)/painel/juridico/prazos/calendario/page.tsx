@@ -84,21 +84,21 @@ export default async function DeadlinesCalendarPage(props: { searchParams: Promi
         <div className="flex gap-2">
           <Link
             href="/painel/juridico/prazos"
-            className="nav-item inline-flex min-h-11 items-center justify-center rounded-lg border border-line bg-white px-4 text-sm font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-600"
+            className="nav-item inline-flex min-h-11 items-center justify-center rounded-lg border border-line bg-od-surface px-4 text-sm font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 focus-visible:ring-2 focus-visible:ring-brand-600"
           >
             Ver lista
           </Link>
           <Link
             href={`/painel/juridico/prazos/calendario?month=${prevParam}`}
             aria-label="Mês anterior"
-            className="nav-item grid h-11 w-11 place-items-center rounded-lg border border-line bg-white hover:border-brand-300 hover:bg-brand-50"
+            className="nav-item grid h-11 w-11 place-items-center rounded-lg border border-line bg-od-surface hover:border-brand-300 hover:bg-brand-50"
           >
             <IconArrowRight className="h-4 w-4 rotate-180" />
           </Link>
           <Link
             href={`/painel/juridico/prazos/calendario?month=${nextParam}`}
             aria-label="Próximo mês"
-            className="nav-item grid h-11 w-11 place-items-center rounded-lg border border-line bg-white hover:border-brand-300 hover:bg-brand-50"
+            className="nav-item grid h-11 w-11 place-items-center rounded-lg border border-line bg-od-surface hover:border-brand-300 hover:bg-brand-50"
           >
             <IconArrowRight className="h-4 w-4" />
           </Link>

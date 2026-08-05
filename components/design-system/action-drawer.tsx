@@ -58,7 +58,7 @@ export function ActionDrawer({
         onClick={() => setOpen(true)}
         className={
           triggerClassName ??
-          "inline-flex min-h-11 items-center gap-2 rounded-md bg-[#6d35df] px-4 text-[12px] font-semibold text-white transition-colors hover:bg-[#7c4bea]"
+          "inline-flex min-h-11 items-center gap-2 rounded-md bg-od-accent px-4 text-[12px] font-semibold text-white transition-colors hover:bg-od-accent-hover"
         }
       >
         {icon}
@@ -78,7 +78,7 @@ export function ActionDrawer({
             role="dialog"
             aria-modal="true"
             aria-labelledby={`${dialogId}-title`}
-            className="absolute inset-y-0 right-0 flex w-full max-w-[680px] flex-col border-l border-od-border bg-[#151419] shadow-[-24px_0_80px_rgba(0,0,0,0.45)]"
+            className="od-chrome absolute inset-y-0 right-0 flex w-full max-w-[680px] flex-col border-l border-od-border shadow-[-24px_0_80px_rgba(0,0,0,0.45)]"
           >
             <header className="flex shrink-0 items-start justify-between gap-6 border-b border-od-border px-5 py-5 sm:px-7">
               <div>

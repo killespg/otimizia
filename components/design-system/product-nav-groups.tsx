@@ -1,8 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useEffect, useState } from "react";
-import { ChevronRight, Pin, type LucideIcon } from "lucide-react";
+import { usePathname } from "next/navigation";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import { ChevronRight, LogOut, Settings, type LucideIcon } from "lucide-react";
+import { PendingButton } from "@/components/ui/PendingButton";
+import { LogoMark } from "@/components/design-system/logo";
+import { MobileAppNav } from "@/components/design-system/mobile-app-nav";
+import { WorkspaceSwitcher } from "@/app/(dashboard)/painel/WorkspaceSwitcher";
 
 export type NavItem = {
   href: string;
@@ -13,23 +24,14 @@ export type NavItem = {
   danger?: boolean;
 };
 
-export type NavGroup = { label: string; items: NavItem[] };
+/** O ícone identifica a categoria na sidebar expandida; quando omitido,
+    a navegação usa o ícone do primeiro item do grupo. */
+export type NavGroup = { label: string; items: NavItem[]; icon?: LucideIcon };
 
-/** Submenu opcional pendurado num item pai, com divulgação própria. */
+/** Submenu opcional pendurado num item, com divulgacao propria. */
 export type NavSubmenu = {
   parentHref: string;
   items: Array<{ href: string; label: string }>;
-};
-
-type Props = {
-  /** Prefixo das chaves de localStorage. Uma vertical não herda a preferência da outra. */
-  namespace: string;
-  groups: NavGroup[];
-  collapsed: boolean;
-  pathname: string;
-  /** Itens que sobem pro topo antes de o usuário mexer. */
-  defaultPinned?: string[];
-  submenu?: NavSubmenu;
 };
 
 export function isCurrent(pathname: string, item: Pick<NavItem, "href" | "exact">) {
@@ -37,200 +39,320 @@ export function isCurrent(pathname: string, item: Pick<NavItem, "href" | "exact"
   return pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
 
-function readList(key: string): string[] | null {
-  const raw = window.localStorage.getItem(key);
-  if (!raw) return null;
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === "string") : null;
-  } catch {
-    // storage corrompido nao pode derrubar a navegacao
-    return null;
-  }
+const DEFAULT_NAVIGATION_WIDTH = 288;
+const MIN_NAVIGATION_WIDTH = 256;
+const MAX_NAVIGATION_WIDTH = 360;
+const KEYBOARD_RESIZE_STEP = 16;
+
+function clampNavigationWidth(width: number) {
+  return Math.min(MAX_NAVIGATION_WIDTH, Math.max(MIN_NAVIGATION_WIDTH, width));
 }
 
-/**
- * Grupos, submenu e fixados da navegação de produto.
- *
- * Existia uma cópia disto em cada vertical, e as quatro já divergiam em altura,
- * tipografia e raio para o mesmo papel — o que o DESIGN.md proíbe. Aqui a
- * gramática é única; cada vertical só declara seus grupos.
- */
-export function ProductNavGroups({ namespace, groups, collapsed, pathname, defaultPinned = [], submenu }: Props) {
-  const closedKey = `otimizia-${namespace}-nav-closed`;
-  const pinnedKey = `otimizia-${namespace}-nav-pinned`;
-  const submenuKey = `otimizia-${namespace}-nav-submenu`;
+function initials(name: string) {
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "OT";
+}
 
-  const [closedGroups, setClosedGroups] = useState<string[]>([]);
-  const [pinned, setPinned] = useState<string[]>(defaultPinned);
-  const [submenuOpen, setSubmenuOpen] = useState(true);
+function DetailItem({
+  item,
+  pathname,
+  submenu,
+  submenuOpen,
+  onToggleSubmenu,
+}: {
+  item: NavItem;
+  pathname: string;
+  submenu?: NavSubmenu;
+  submenuOpen: boolean;
+  onToggleSubmenu: () => void;
+}) {
+  const active = isCurrent(pathname, item);
+  const Icon = item.icon;
+  const hasBadge = typeof item.badge === "number" && item.badge > 0;
+  const showDisclosure = submenu?.parentHref === item.href;
 
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      const savedClosed = readList(closedKey);
-      if (savedClosed) setClosedGroups(savedClosed);
-      const savedPinned = readList(pinnedKey);
-      if (savedPinned) setPinned(savedPinned);
-      setSubmenuOpen(window.localStorage.getItem(submenuKey) !== "0");
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [closedKey, pinnedKey, submenuKey]);
-
-  // O efeito fica fora do updater: em StrictMode o React invoca o updater duas
-  // vezes, e escrita no storage dentro dele dispara em duplicado.
-  function toggleGroup(label: string) {
-    const next = closedGroups.includes(label) ? closedGroups.filter((item) => item !== label) : [...closedGroups, label];
-    setClosedGroups(next);
-    window.localStorage.setItem(closedKey, JSON.stringify(next));
-  }
-
-  function togglePin(href: string) {
-    const next = pinned.includes(href) ? pinned.filter((item) => item !== href) : [...pinned, href];
-    setPinned(next);
-    window.localStorage.setItem(pinnedKey, JSON.stringify(next));
-  }
-
-  function toggleSubmenu() {
-    const next = !submenuOpen;
-    setSubmenuOpen(next);
-    window.localStorage.setItem(submenuKey, next ? "1" : "0");
-  }
-
-  // O primeiro grupo é a âncora: fica no topo e seus itens não são fixáveis,
-  // porque já estão lá e desafixá-los deixaria a navegação sem base.
-  const anchor = groups[0];
-  const anchorHrefs = new Set((anchor?.items ?? []).map((item) => item.href));
-  const pinnable = groups.slice(1).flatMap((group) => group.items);
-  const pinnedItems = pinned
-    .map((href) => pinnable.find((item) => item.href === href))
-    .filter((item): item is NavItem => Boolean(item));
-  const pinnedHrefs = new Set(pinnedItems.map((item) => item.href));
-
-  // Fixado sobe pro grupo âncora e sai do de origem: subir sem sair faria o
-  // item aparecer duas vezes na mesma navegação.
-  const resolved: NavGroup[] = groups
-    .map((group, index) =>
-      index === 0
-        ? { ...group, items: [...group.items, ...pinnedItems] }
-        : { ...group, items: group.items.filter((item) => !pinnedHrefs.has(item.href)) },
-    )
-    .filter((group) => group.items.length > 0);
-
-  function Item({ item }: { item: NavItem }) {
-    const active = isCurrent(pathname, item);
-    const Icon = item.icon;
-
-    if (collapsed) {
-      return <Link
-        href={item.href}
-        prefetch={true}
-        title={item.label}
-        aria-current={active ? "page" : undefined}
-        className={`group mx-auto flex size-9 min-h-8 items-center justify-center rounded-xl text-[13px] transition-colors ${active ? "bg-white/[0.075] font-semibold text-white" : "text-white/58 hover:bg-white/[0.045] hover:text-white"}`}
-      >
-        <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/55 group-hover:text-white/75"} />
-      </Link>;
-    }
-
-    const isPinned = pinned.includes(item.href);
-    const canPin = !anchorHrefs.has(item.href);
-    const hasBadge = typeof item.badge === "number" && item.badge > 0;
-    const showDisclosure = submenu?.parentHref === item.href;
-
-    // O realce mora no contêiner e link, contador e alfinete ficam dentro dele:
-    // um retângulo só, e nenhum elemento clicável aninhado dentro do link.
-    return <div className={`group flex min-h-8 items-center rounded-xl pr-1 transition-colors ${active ? "bg-white/[0.075]" : "hover:bg-white/[0.045]"}`}>
+  return (
+    <div>
+      <div className={`flex min-h-11 items-center rounded-xl transition-colors ${active ? "bg-white/[0.05]" : "hover:bg-white/[0.035]"}`}>
       <Link
         href={item.href}
         prefetch={true}
         aria-current={active ? "page" : undefined}
-        className={`flex min-w-0 flex-1 items-center gap-2 px-2.5 text-[13px] ${active ? "font-semibold text-white" : "text-white/58 group-hover:text-white"}`}
+        className={`flex min-h-11 min-w-0 flex-1 items-center gap-2.5 px-2.5 text-[13px] ${active ? "font-semibold text-od-text" : "text-od-text-2 hover:text-od-text"}`}
       >
-        <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/55 group-hover:text-white/75"} />
+        <span className={`relative grid size-7 shrink-0 place-items-center rounded-lg ring-1 ring-inset ${active ? "bg-violet-400/[0.14] text-white ring-violet-200/[0.14]" : "bg-white/[0.035] text-od-text-3 ring-white/[0.04]"}`}>
+          <Icon size={15} strokeWidth={active ? 2 : 1.7} />
+          {active ? <span aria-hidden="true" className="absolute bottom-1 right-1 size-1 rounded-full bg-violet-300" /> : null}
+        </span>
         <span className="min-w-0 flex-1 truncate">{item.label}</span>
       </Link>
       {showDisclosure ? (
-        <button
-          type="button"
-          onClick={toggleSubmenu}
-          aria-expanded={submenuOpen}
-          aria-controls={`nav-sub-${namespace}`}
-          title={submenuOpen ? "Recolher" : "Expandir"}
-          className="grid size-6 shrink-0 place-items-center text-od-text-3 transition-colors hover:text-white"
-        >
+        <button type="button" onClick={onToggleSubmenu} aria-expanded={submenuOpen} aria-label={submenuOpen ? `Recolher ${item.label}` : `Expandir ${item.label}`} title={submenuOpen ? "Recolher" : "Expandir"} className="grid size-11 shrink-0 place-items-center text-od-text-3 hover:text-od-text">
           <ChevronRight size={13} className={`transition-transform duration-150 ${submenuOpen ? "rotate-90" : ""}`} />
         </button>
+      ) : hasBadge ? (
+        <span className={`px-1.5 text-xs font-semibold tabular-nums ${item.danger ? "text-[#c0392b]" : "text-od-text-3"}`}>{item.badge}</span>
       ) : null}
-      {/* Contador e alfinete dividem a mesma vaga, trocando no hover. Em vagas
-          separadas o alfinete roubava 24px fixos e truncava rótulos longos
-          mesmo sem ninguém passar o mouse. */}
-      {canPin || hasBadge ? (
-        <span className="relative grid min-w-6 shrink-0 place-items-center px-1">
-          {hasBadge ? (
-            <span className={`text-xs font-semibold tabular-nums transition-opacity ${canPin ? "group-hover:opacity-0" : ""} ${item.danger ? "text-[#fb7767]" : "text-white/65"}`}>{item.badge}</span>
-          ) : null}
-          {canPin ? (
-            <button
-              type="button"
-              onClick={() => togglePin(item.href)}
-              aria-pressed={isPinned}
-              title={isPinned ? "Desafixar do topo" : "Fixar no topo"}
-              className={`absolute inset-0 grid place-items-center text-od-text-3 transition-opacity hover:text-white ${isPinned ? "" : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"}`}
-            >
-              <Pin size={12} className={isPinned ? "fill-current" : ""} />
-            </button>
-          ) : null}
-        </span>
+      </div>
+      {showDisclosure && submenu && submenuOpen ? (
+        <div className="ml-7 mt-1 flex flex-col gap-1 pr-2.5">
+          {submenu.items.map((sub) => (
+            <Link key={sub.href} href={sub.href} className={`flex min-h-11 items-center rounded-xl px-2 text-[12px] ${pathname === sub.href ? "bg-white/[0.04] font-medium text-od-text" : "text-od-text-3 hover:text-od-text"}`}>
+              {sub.label}
+            </Link>
+          ))}
+        </div>
       ) : null}
-    </div>;
+    </div>
+  );
+}
+
+type Props = {
+  /** Identificador da vertical, preservado na API compartilhada com o mobile. */
+  namespace: string;
+  /** groups[0] contém destinos globais; groups[1+] são categorias visíveis. */
+  groups: NavGroup[];
+  submenu?: NavSubmenu;
+  logoHref: string;
+  subtitle: string;
+  organizationName: string;
+  displayName: string;
+  workspaceOptions?: Array<{ value: string; label: string }>;
+  workspaceKey?: string;
+  onLogout: (formData: FormData) => void;
+  railAriaLabel: string;
+  detailAriaLabel: string;
+  mobileTabs: [NavItem, NavItem, NavItem];
+  mobileTimHref: string;
+  mobileGroups: NavGroup[];
+  mobileAriaLabel: string;
+  mobileQuickActions?: NavItem[];
+};
+
+/**
+ * Navegação de produto expandida no desktop: um único painel de vidro
+ * mantém destinos globais, categorias e itens visíveis durante toda a
+ * sessão. As quatro verticais compartilham a mesma gramática; o mobile
+ * continua isolado no dock e no sheet próprios.
+ */
+export function TwoLevelNav({
+  namespace,
+  groups,
+  submenu,
+  logoHref,
+  subtitle,
+  organizationName,
+  displayName,
+  workspaceOptions = [],
+  workspaceKey,
+  onLogout,
+  railAriaLabel,
+  detailAriaLabel,
+  mobileTabs,
+  mobileTimHref,
+  mobileGroups,
+  mobileAriaLabel,
+  mobileQuickActions,
+}: Props) {
+  const pathname = usePathname();
+  const [submenuOpen, setSubmenuOpen] = useState(true);
+  const [navigationWidth, setNavigationWidth] = useState(DEFAULT_NAVIGATION_WIDTH);
+  const stopResizeRef = useRef<(() => void) | null>(null);
+  const anchor = groups[0] ?? { label: "", items: [] };
+  const categories = groups.slice(1);
+  const navigationWidthStorageKey = `otimizia:navigation-width:${namespace}`;
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      let storedWidth: string | null = null;
+      try {
+        storedWidth = window.localStorage.getItem(navigationWidthStorageKey);
+      } catch {
+        return;
+      }
+      if (storedWidth === null) return;
+
+      const parsedWidth = Number(storedWidth);
+      if (Number.isFinite(parsedWidth)) {
+        setNavigationWidth(clampNavigationWidth(parsedWidth));
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [navigationWidthStorageKey]);
+
+  useEffect(() => () => stopResizeRef.current?.(), []);
+
+  function updateNavigationWidth(width: number, persist = true) {
+    const nextWidth = clampNavigationWidth(width);
+    setNavigationWidth(nextWidth);
+
+    if (persist) {
+      try {
+        window.localStorage.setItem(navigationWidthStorageKey, String(nextWidth));
+      } catch {
+        // O ajuste continua funcional mesmo quando o armazenamento está indisponível.
+      }
+    }
   }
 
-  return <>
-    {resolved.map((group) => {
-      const closed = closedGroups.includes(group.label);
-      // Recolhido em ícones não há rótulo pra clicar, então lá o grupo é sempre
-      // mostrado — senão itens sumiriam sem controle visível.
-      const hidden = closed && !collapsed && group.label !== "";
-      return <section key={group.label || "__anchor"} className="mb-0 p-2">
-        {!collapsed && group.label ? (
-          <button
-            type="button"
-            onClick={() => toggleGroup(group.label)}
-            aria-expanded={!closed}
-            aria-controls={`nav-grupo-${group.label}`}
-            className="flex h-7 w-full items-center gap-1.5 px-2 text-xs font-medium text-od-text-3 transition-colors hover:text-white/60"
-          >
-            <ChevronRight size={11} className={`shrink-0 transition-transform duration-150 ${closed ? "" : "rotate-90"}`} />
-            <span className="min-w-0 flex-1 truncate text-left">{group.label}</span>
-            {/* Recolher o grupo da página atual escondia o item ativo e o
-                usuário perdia a referência de onde está. */}
-            {closed && group.items.some((item) => isCurrent(pathname, item)) ? (
-              <span className="size-1.5 shrink-0 rounded-full bg-od-accent" aria-label="Contém a página atual" />
-            ) : null}
-            {closed ? <span className="text-xs tabular-nums text-od-text-3">{group.items.length}</span> : null}
-          </button>
-        ) : null}
-        {!hidden ? (
-          <div id={group.label ? `nav-grupo-${group.label}` : undefined}>
-            {group.items.map((item) => <Fragment key={item.href + item.label}>
-              <Item item={item} />
-              {submenu && submenu.parentHref === item.href && !collapsed && submenuOpen ? (
-                <div id={`nav-sub-${namespace}`} className="mx-3.5 flex translate-x-px flex-col gap-1 border-l border-white/[0.08] px-2.5 py-0.5">
-                  {submenu.items.map((sub) => (
-                    <Link
-                      key={sub.href}
-                      href={sub.href}
-                      className={`flex h-7 -translate-x-px items-center rounded-xl px-2 text-[12px] ${pathname === sub.href ? "bg-white/[0.055] font-medium text-white" : "text-od-text-3 hover:text-white"}`}
-                    >
-                      {sub.label}
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
-            </Fragment>)}
+  function startNavigationResize(event: ReactPointerEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    stopResizeRef.current?.();
+
+    const startX = event.clientX;
+    const startWidth = navigationWidth;
+    const pointerId = event.pointerId;
+    const controller = new AbortController();
+    const previousCursor = document.body.style.cursor;
+    const previousUserSelect = document.body.style.userSelect;
+
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+
+    const stopResize = () => {
+      controller.abort();
+      document.body.style.cursor = previousCursor;
+      document.body.style.userSelect = previousUserSelect;
+      if (stopResizeRef.current === stopResize) stopResizeRef.current = null;
+    };
+
+    const widthFromPointer = (pointerEvent: globalThis.PointerEvent) =>
+      clampNavigationWidth(startWidth + pointerEvent.clientX - startX);
+
+    const handlePointerMove = (pointerEvent: globalThis.PointerEvent) => {
+      if (pointerEvent.pointerId !== pointerId) return;
+      updateNavigationWidth(widthFromPointer(pointerEvent), false);
+    };
+
+    const finishPointerResize = (pointerEvent: globalThis.PointerEvent) => {
+      if (pointerEvent.pointerId !== pointerId) return;
+      updateNavigationWidth(widthFromPointer(pointerEvent));
+      stopResize();
+    };
+
+    stopResizeRef.current = stopResize;
+    window.addEventListener("pointermove", handlePointerMove, { signal: controller.signal });
+    window.addEventListener("pointerup", finishPointerResize, { signal: controller.signal });
+    window.addEventListener("pointercancel", finishPointerResize, { signal: controller.signal });
+  }
+
+  function resizeNavigationWithKeyboard(event: ReactKeyboardEvent<HTMLButtonElement>) {
+    const nextWidth = {
+      ArrowLeft: navigationWidth - KEYBOARD_RESIZE_STEP,
+      ArrowRight: navigationWidth + KEYBOARD_RESIZE_STEP,
+      Home: MIN_NAVIGATION_WIDTH,
+      End: MAX_NAVIGATION_WIDTH,
+    }[event.key];
+
+    if (nextWidth === undefined) return;
+    event.preventDefault();
+    updateNavigationWidth(nextWidth);
+  }
+
+  function toggleSubmenu() {
+    setSubmenuOpen((current) => !current);
+  }
+
+  return (
+    <>
+      <div
+        data-liquid-glass-shell
+        data-product-nav-expanded="true"
+        data-navigation-width={navigationWidth}
+        className="od-chrome product-nav-glass-shell sticky top-3 z-50 ml-3 hidden h-[calc(100dvh-1.5rem)] shrink-0 md:flex"
+        style={{ width: navigationWidth }}
+      >
+        <aside className="flex h-full min-h-0 min-w-0 flex-1 flex-col" aria-label={detailAriaLabel}>
+          <header className="flex items-start gap-3 p-4 pb-3">
+            <Link href={logoHref} prefetch={true} aria-label="Visão geral" className="grid size-11 shrink-0 place-items-center rounded-xl bg-white/[0.04]">
+              <LogoMark size={26} />
+            </Link>
+            <div className="min-w-0 flex-1 pt-0.5">
+              <p className="truncate text-xs font-semibold text-od-text">{organizationName}</p>
+              <p className="mt-0.5 truncate text-xs text-od-text-3">{subtitle}</p>
+            </div>
+          </header>
+
+          {workspaceOptions.length > 1 && workspaceKey ? (
+            <div className="px-4 pb-3"><WorkspaceSwitcher options={workspaceOptions} value={workspaceKey} /></div>
+          ) : null}
+
+          <nav aria-label={railAriaLabel} className="liquid-glass-scrollbar min-h-0 flex-1 overflow-y-auto px-3 pb-3">
+            <div className="flex flex-col gap-0.5">
+              {anchor.items.map((item) => (
+                <DetailItem key={item.href} item={item} pathname={pathname} submenu={submenu} submenuOpen={submenuOpen} onToggleSubmenu={toggleSubmenu} />
+              ))}
+            </div>
+
+            {categories.map((group) => {
+              const GroupIcon = group.icon ?? group.items[0]?.icon;
+              return (
+                <section key={group.label} className="mt-4" aria-label={group.label}>
+                  <div className="flex min-h-8 items-center gap-2 px-2.5 text-od-text-3">
+                    {GroupIcon ? <GroupIcon size={14} strokeWidth={1.8} className="text-violet-300" aria-hidden="true" /> : null}
+                    <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em]">{group.label}</h2>
+                  </div>
+                  <div className="mt-1 flex flex-col gap-0.5">
+                    {group.items.map((item) => (
+                      <DetailItem key={item.href} item={item} pathname={pathname} submenu={submenu} submenuOpen={submenuOpen} onToggleSubmenu={toggleSubmenu} />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+          </nav>
+
+          <div className="p-3 pt-1">
+            <Link
+              href="/painel/configuracoes"
+              prefetch={true}
+              aria-current={pathname.startsWith("/painel/configuracoes") ? "page" : undefined}
+              className={`flex min-h-11 items-center gap-2.5 rounded-xl px-2.5 text-[13px] transition-colors ${pathname.startsWith("/painel/configuracoes") ? "bg-white/[0.05] font-semibold text-od-text" : "text-od-text-2 hover:bg-white/[0.035] hover:text-od-text"}`}
+            >
+              <Settings size={16} strokeWidth={1.8} className="text-od-text-3" />
+              Configurações
+            </Link>
+            <form action={onLogout}>
+              <PendingButton pendingLabel="Saindo" className="group relative flex min-h-11 w-full items-center justify-start gap-2.5 rounded-xl px-2.5 text-[13px] text-od-text-2 transition-colors hover:bg-white/[0.035] hover:text-od-text" aria-label="Sair">
+                <LogOut size={16} strokeWidth={1.8} className="text-od-text-3" />
+                Sair
+              </PendingButton>
+            </form>
+            <div className="mt-1 flex min-h-11 items-center gap-2.5 px-2.5">
+              <span title={displayName} className="grid size-8 shrink-0 place-items-center rounded-full bg-white/[0.07] text-[11px] font-semibold text-od-text-2">{initials(displayName)}</span>
+              <span className="min-w-0 truncate text-xs text-od-text-3">{displayName}</span>
+            </div>
           </div>
-        ) : null}
-      </section>;
-    })}
-  </>;
+        </aside>
+        <button
+          type="button"
+          role="separator"
+          aria-label="Redimensionar menu lateral"
+          aria-orientation="vertical"
+          aria-valuemin={MIN_NAVIGATION_WIDTH}
+          aria-valuemax={MAX_NAVIGATION_WIDTH}
+          aria-valuenow={navigationWidth}
+          aria-keyshortcuts="ArrowLeft ArrowRight Home End"
+          title="Arraste ou use as setas para ajustar a largura. Clique duas vezes para restaurar."
+          onPointerDown={startNavigationResize}
+          onKeyDown={resizeNavigationWithKeyboard}
+          onDoubleClick={() => updateNavigationWidth(DEFAULT_NAVIGATION_WIDTH)}
+          className="group relative z-10 flex h-full w-3 shrink-0 cursor-col-resize touch-none items-center justify-center focus-visible:outline-none"
+        >
+          <span
+            aria-hidden="true"
+            className="h-14 w-1 rounded-full bg-white/25 opacity-50 shadow-[0_0_10px_rgba(255,255,255,0.12)] transition-all duration-200 group-hover:bg-white/45 group-hover:opacity-100 group-focus-visible:bg-violet-300 group-focus-visible:opacity-100"
+          />
+        </button>
+      </div>
+
+      <MobileAppNav
+        tabs={mobileTabs}
+        timHref={mobileTimHref}
+        groups={mobileGroups}
+        quickActions={mobileQuickActions}
+        ariaLabel={mobileAriaLabel}
+      />
+    </>
+  );
 }

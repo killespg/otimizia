@@ -26,7 +26,7 @@ export default async function UpgradePage() {
     access.status === "expired" ? "Seu teste grátis acabou" : "Assine pra continuar";
 
   return (
-    <main className="flex min-h-[100dvh] items-center justify-center bg-[#171320] p-4">
+    <main className="flex min-h-[100dvh] items-center justify-center bg-od-bg p-4">
       <div className="w-full max-w-md border-y border-white/[0.09] py-10 text-center">
         <div>
           <p className="text-sm font-black text-ink"><BrandName /></p>

@@ -29,7 +29,7 @@ export function TimTodayPanel({
 }) {
   return (
     <aside
-      className="hidden w-[280px] shrink-0 flex-col gap-5 overflow-y-auto border-l border-white/[0.08] px-5 py-5 xl:flex"
+      className="hidden w-[280px] shrink-0 flex-col gap-5 overflow-y-auto border-l border-od-border px-5 py-5 xl:flex"
       aria-busy={loading}
     >
       <p className="text-xs font-semibold uppercase tracking-[0.06em] text-od-text-3">Hoje</p>
@@ -62,7 +62,7 @@ export function TimTodayPanel({
 
           <Link
             href="/painel/tarefas"
-            className="min-h-11 rounded border border-white/[0.09] px-3 py-2.5 text-center text-[12px] font-semibold text-white/65 hover:bg-white/[0.04] hover:text-white"
+            className="min-h-11 rounded border border-od-border px-3 py-2.5 text-center text-[12px] font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text"
           >
             Ver todos os lembretes
           </Link>
@@ -74,8 +74,8 @@ export function TimTodayPanel({
 
 function StatBlock({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border-t border-white/[0.08] pt-2">
-      <p className="text-[18px] font-bold leading-tight text-white">{value}</p>
+    <div className="border-t border-od-border pt-2">
+      <p className="text-[18px] font-bold leading-tight text-od-text">{value}</p>
       <p className="mt-0.5 text-xs text-od-text-3">{label}</p>
     </div>
   );
@@ -100,8 +100,8 @@ function TaskGroup({
       ) : (
         <ul className="space-y-2.5">
           {tasks.map((task) => (
-            <li key={task.id} className="border-t border-white/[0.06] pt-2 first:border-t-0 first:pt-0">
-              <p className="truncate text-[13px] font-medium text-white/85">{task.title}</p>
+            <li key={task.id} className="border-t border-od-border pt-2 first:border-t-0 first:pt-0">
+              <p className="truncate text-[13px] font-medium text-od-text-2">{task.title}</p>
               <p className="mt-0.5 text-xs text-od-text-3">{formatDue(task.due_at)}</p>
             </li>
           ))}

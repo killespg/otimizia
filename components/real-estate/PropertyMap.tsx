@@ -168,7 +168,7 @@ export function PropertyMap({ properties }: { properties: MapProperty[] }) {
 
   if (properties.length === 0) {
     return (
-      <div className="rounded-md border border-white/[0.09] bg-white/[0.02] p-8 text-center text-sm font-medium text-ink-muted">
+      <div className="card-quiet p-8 text-center text-sm font-medium text-ink-muted">
         Nenhum imóvel com coordenadas cadastradas ainda.
       </div>
     );
@@ -182,14 +182,14 @@ export function PropertyMap({ properties }: { properties: MapProperty[] }) {
         className="h-[520px] w-full overflow-hidden"
       />
       {status === "loading" ? (
-        <div className="absolute inset-0 grid place-items-center bg-[#151419]/75 text-sm font-medium text-white/62">
+        <div className="absolute inset-0 grid place-items-center bg-[color:var(--od-bg)]/75 text-sm font-medium text-od-text-2">
           Carregando mapa…
         </div>
       ) : null}
       {status === "error" ? (
-        <div className="absolute inset-0 grid place-items-center bg-[#151419]/90 p-6 text-center">
+        <div className="absolute inset-0 grid place-items-center bg-[color:var(--od-bg)]/90 p-6 text-center">
           <div>
-            <p className="text-sm font-semibold text-white">
+            <p className="text-sm font-semibold text-od-text">
               Não foi possível carregar o mapa agora.
             </p>
             <p className="mt-2 text-xs text-od-text-3">

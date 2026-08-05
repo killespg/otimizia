@@ -32,7 +32,7 @@ export default async function SellerOrderDetailPage({ params }: { params: Promis
       <Link href="/painel/pedidos" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-white/52 hover:text-white"><ArrowLeft size={15} /> Voltar aos pedidos</Link>
       <SellerPageHeader title={order.order_number} description={`Confirmado em ${date(order.confirmed_at || order.created_at)} · ${contact?.name ?? "Cliente não vinculado"}`} actions={<><SellerStatus tone={order.payment_status === "paid" ? "success" : order.payment_status === "partial" ? "warning" : "neutral"}>{sellerPaymentStatusLabel(order.payment_status)}</SellerStatus><SellerStatus tone={order.status === "completed" ? "success" : order.status === "cancelled" ? "danger" : order.status === "ready" ? "violet" : "neutral"}>{sellerOrderStatusLabel(order.status)}</SellerStatus></>} />
 
-      <section className="overflow-hidden border border-white/[0.09] bg-[#1e1d22]/90">
+      <section className="overflow-hidden panel">
         <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">Itens do pedido</h2><p className="mt-1 text-xs text-od-text-3">Os nomes, preços e garantias abaixo são a fotografia do momento da venda.</p></header>
         <div className="hidden grid-cols-[minmax(14rem,1.5fr)_7rem_8rem_8rem_9rem] border-b border-white/[0.08] px-4 py-2 text-xs font-semibold text-od-text-3 lg:grid"><span>Produto</span><span>Quantidade</span><span>Preço</span><span>Subtotal</span><span>Garantia</span></div>
         <div className="divide-y divide-white/[0.08]">{items.map((item) => {
@@ -47,7 +47,7 @@ export default async function SellerOrderDetailPage({ params }: { params: Promis
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="border border-white/[0.09] bg-[#1e1d22]/90">
+        <section className="panel">
           <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">Atualizar andamento</h2><p className="mt-1 text-xs text-od-text-3">Pagamento e entrega são independentes: um pedido pode estar pago e ainda em preparação.</p></header>
           <form action={updateSellerOrder} className="grid gap-4 p-4 md:grid-cols-2">
             <input type="hidden" name="order_id" value={order.id} />
@@ -59,9 +59,9 @@ export default async function SellerOrderDetailPage({ params }: { params: Promis
         </section>
 
         <aside className="space-y-4">
-          <section className="border border-white/[0.09] bg-[#1e1d22]/90 p-4"><h2 className="text-sm font-semibold text-white">Valores</h2><dl className="mt-3 text-sm"><Row label="Subtotal" value={money(order.subtotal_cents)} /><Row label="Desconto" value={`− ${money(order.discount_cents)}`} /><Row label="Frete" value={money(order.shipping_cents)} />{commissionTotal > 0 ? <Row label="Comissão prevista" value={money(commissionTotal)} /> : null}<div className="mt-3 flex items-end justify-between gap-4 border-t border-white/[0.1] pt-4"><dt className="font-semibold text-white/54">Total</dt><dd className="text-xl font-semibold tabular-nums text-od-text">{money(order.total_cents)}</dd></div></dl></section>
-          <section className="border border-white/[0.09] bg-[#1e1d22]/90 p-4"><h2 className="text-sm font-semibold text-white">Operação</h2><dl className="mt-3 divide-y divide-white/[0.07] text-sm"><IconRow icon={<CircleDollarSign size={15} />} label="Pagamento" value={sellerPaymentStatusLabel(order.payment_status)} /><IconRow icon={<Truck size={15} />} label="Entrega" value={deliveryLabel(order.delivery_method)} /><IconRow icon={<PackageCheck size={15} />} label="Pedido" value={sellerOrderStatusLabel(order.status)} /><IconRow icon={<ShieldCheck size={15} />} label="Garantias" value={String(warranties.length)} /></dl></section>
-          {contact ? <section className="border border-white/[0.09] bg-[#1e1d22]/90 p-4"><h2 className="text-sm font-semibold text-white">Cliente</h2><p className="mt-3 text-sm font-semibold text-white/76">{contact.name}</p><p className="mt-1 text-xs text-od-text-3">{contact.phone || contact.email || "Sem contato informado"}</p><Link href={`/painel/contatos/${contact.id}`} className="mt-3 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2">Abrir cliente</Link></section> : null}
+          <section className="panel p-4"><h2 className="text-sm font-semibold text-white">Valores</h2><dl className="mt-3 text-sm"><Row label="Subtotal" value={money(order.subtotal_cents)} /><Row label="Desconto" value={`− ${money(order.discount_cents)}`} /><Row label="Frete" value={money(order.shipping_cents)} />{commissionTotal > 0 ? <Row label="Comissão prevista" value={money(commissionTotal)} /> : null}<div className="mt-3 flex items-end justify-between gap-4 border-t border-white/[0.1] pt-4"><dt className="font-semibold text-white/54">Total</dt><dd className="text-xl font-semibold tabular-nums text-od-text">{money(order.total_cents)}</dd></div></dl></section>
+          <section className="panel p-4"><h2 className="text-sm font-semibold text-white">Operação</h2><dl className="mt-3 divide-y divide-white/[0.07] text-sm"><IconRow icon={<CircleDollarSign size={15} />} label="Pagamento" value={sellerPaymentStatusLabel(order.payment_status)} /><IconRow icon={<Truck size={15} />} label="Entrega" value={deliveryLabel(order.delivery_method)} /><IconRow icon={<PackageCheck size={15} />} label="Pedido" value={sellerOrderStatusLabel(order.status)} /><IconRow icon={<ShieldCheck size={15} />} label="Garantias" value={String(warranties.length)} /></dl></section>
+          {contact ? <section className="panel p-4"><h2 className="text-sm font-semibold text-white">Cliente</h2><p className="mt-3 text-sm font-semibold text-white/76">{contact.name}</p><p className="mt-1 text-xs text-od-text-3">{contact.phone || contact.email || "Sem contato informado"}</p><Link href={`/painel/contatos/${contact.id}`} className="mt-3 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2">Abrir cliente</Link></section> : null}
         </aside>
       </div>
     </div>
