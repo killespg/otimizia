@@ -44,6 +44,11 @@ export function useVoiceCall() {
   const assistantTextRef = useRef("");
   const callSecondsRef = useRef(0);
   const sessionIdRef = useRef<string | null>(null);
+  // Identifica a tentativa de chamada atual. Cada `startVoice` pega um número
+  // e o confere depois de cada `await`: se outro start começou ou se
+  // `stopVoice` rodou nesse meio-tempo, a tentativa desiste e devolve o que
+  // já tinha adquirido em vez de gravar por cima do estado vigente.
+  const runIdRef = useRef(0);
 
   function startLevelLoop() {
     function tick() {
@@ -58,8 +63,8 @@ export function useVoiceCall() {
   // O tempo cobrado é sempre calculado pelo servidor a partir do relógio do
   // banco, nunca do valor de "seconds" contado aqui no cliente (esse contador
   // só serve para exibir o cronômetro na tela).
-  const checkpointUsage = useCallback((close: boolean) => {
-    const sessionId = sessionIdRef.current;
+  const checkpointUsage = useCallback((close: boolean, explicitSessionId?: string | null) => {
+    const sessionId = explicitSessionId !== undefined ? explicitSessionId : sessionIdRef.current;
     if (!sessionId) return;
     try {
       void fetch("/api/realtime/usage", {
@@ -75,6 +80,12 @@ export function useVoiceCall() {
   }, []);
 
   const stopVoice = useCallback(() => {
+    // Invalida qualquer startVoice em voo. Sem isso, encerrar a chamada
+    // enquanto o getUserMedia ainda está pendente deixava o microfone ligado:
+    // o stop não achava stream nenhum para parar e o stream chegava depois,
+    // sem ninguém para desligá-lo.
+    runIdRef.current += 1;
+
     checkpointUsage(true);
     sessionIdRef.current = null;
     peerRef.current?.close();
@@ -118,6 +129,11 @@ export function useVoiceCall() {
 
   async function startVoice() {
     if (voiceStatus === "connecting" || voiceStatus === "live") return;
+
+    const runId = runIdRef.current + 1;
+    runIdRef.current = runId;
+    const cancelled = () => runIdRef.current !== runId;
+
     setVoiceError(null);
     setVoiceStatus("connecting");
 
@@ -136,7 +152,15 @@ export function useVoiceCall() {
       if (!tokenResponse.ok || !ephemeralKey) {
         throw new Error(tokenData?.error ?? "Nao consegui iniciar a chamada.");
       }
-      sessionIdRef.current = typeof tokenData?.session_id === "string" ? tokenData.session_id : null;
+
+      const sessionId = typeof tokenData?.session_id === "string" ? tokenData.session_id : null;
+      if (cancelled()) {
+        // A sessão já existe no servidor; fecha explicitamente pelo id desta
+        // tentativa, porque `sessionIdRef` pode já pertencer a outra.
+        checkpointUsage(true, sessionId);
+        return;
+      }
+      sessionIdRef.current = sessionId;
 
       const peer = new RTCPeerConnection();
       peerRef.current = peer;
@@ -165,6 +189,16 @@ export function useVoiceCall() {
       };
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (cancelled()) {
+        // Este é o caso que deixava o microfone aberto: a permissão só volta
+        // depois que a janela já foi fechada. Quem pediu o stream é quem
+        // desliga — os refs aqui podem já ser de outra tentativa.
+        stream.getTracks().forEach((track) => track.stop());
+        peer.close();
+        void audioCtx.close().catch(() => undefined);
+        checkpointUsage(true, sessionId);
+        return;
+      }
       streamRef.current = stream;
       for (const track of stream.getAudioTracks()) {
         peer.addTrack(track, stream);
@@ -260,6 +294,18 @@ export function useVoiceCall() {
         type: "answer",
         sdp: answerSdp,
       });
+
+      if (cancelled()) {
+        // Aqui o stream já tinha sido guardado, então o `stopVoice` que rodou
+        // no meio do caminho desligou o microfone. O que não pode acontecer é
+        // seguir para o bloco abaixo: ele marcaria a chamada como "live" e
+        // ligaria o cronômetro e o heartbeat, que continuaria pulsando — e
+        // cobrando — uma sessão já encerrada.
+        peer.close();
+        void audioCtx.close().catch(() => undefined);
+        return;
+      }
+
       setVoiceStatus("live");
       startLevelLoop();
       callTimerRef.current = setInterval(() => {
@@ -270,6 +316,10 @@ export function useVoiceCall() {
         checkpointUsage(false);
       }, HEARTBEAT_INTERVAL_MS);
     } catch (error) {
+      // Falha de uma tentativa já cancelada não vira erro na tela: o estado
+      // visível pertence a quem cancelou, ou à tentativa seguinte.
+      if (cancelled()) return;
+
       stopVoice();
       setVoiceStatus("error");
       setVoiceError(
