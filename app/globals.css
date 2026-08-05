@@ -148,6 +148,13 @@
   --od-glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.48), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   --od-glass-shadow: 0 24px 56px -28px rgba(4, 2, 12, 0.82);
   --od-glass-sheen: linear-gradient(148deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.055) 30%, rgba(255, 255, 255, 0) 54%);
+  /* Reflexo dos overlays: uma faixa especular curta na quina superior
+     esquerda e um segundo brilho fraco saindo da borda inferior, como a luz
+     que contorna um vidro real. Substitui o preenchimento branco chapado —
+     é o que dá leitura de vidro sem esbranquiçar o painel inteiro. */
+  --od-glass-reflection:
+    linear-gradient(146deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.08) 22%, rgba(255, 255, 255, 0) 46%),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 18%);
   --od-glass-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   /* Sem cinza de verdade em lugar nenhum da rampa — branco em opacidades
      diferentes pro secundário/terciário, não um hex cinza fixo. Hex cinza
@@ -526,7 +533,10 @@ header.od-chrome::after {
   z-index: -1;
   border-radius: inherit;
   pointer-events: none;
-  background: var(--od-glass-grain), var(--od-glass-sheen), var(--od-glass-fill);
+  /* Sem preenchimento chapado: o painel fica na cor do que está atrás, já
+     borrado pelo ::before, e recebe só grão e reflexo. O branco a 7,5% que
+     ficava aqui era o que deixava o vidro leitoso. */
+  background: var(--od-glass-grain), var(--od-glass-reflection);
   background-blend-mode: overlay, normal, normal;
 }
 

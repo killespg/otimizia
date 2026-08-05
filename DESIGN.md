@@ -79,6 +79,11 @@ calmos e previsíveis.
   contextuais. A variação tingida fica restrita à ação primária.
 - **Overlays** (`.glass`, `.glass-soft`, `.assistant-sheet`, `.voice-panel`,
   `.mobile-create-menu`): menus, sheets e modais acima de conteúdo rolável.
+  Não levam preenchimento chapado: a cor vem do que está atrás, já borrado, e
+  por cima ficam só o grão e o `--od-glass-reflection` — uma faixa especular
+  curta na quina superior e um brilho fraco na borda inferior. O branco a 7,5%
+  que havia aqui deixava o painel leitoso e foi retirado em 2026-08-05, com o
+  contraste do texto reverificado (pior caso 4,86:1, acima de AA).
 - **Conteúdo** (`.panel`, `.card`, `.card-quiet`, `.panel-soft` e tokens
   `bg-od-surface`): superfície grafite neutra sem `backdrop-filter`, com borda
   discreta, raio de 12–16 px e sem sombra ampla. Não existe vidro sobre vidro.
