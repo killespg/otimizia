@@ -284,7 +284,12 @@ function RealEstateMetrics({ metrics }: { metrics: DashboardMetric[] }) {
             </span>
             <div className="relative z-10 min-w-0">
               <p className="text-[11px] font-medium leading-tight text-od-text-3 sm:text-xs">{metric.label}</p>
-              <p data-metric-value-style="gradient" className="mt-1 truncate bg-gradient-to-r from-white to-gray-400 bg-clip-text text-xl font-bold tracking-[-0.03em] text-transparent sm:mt-2 sm:text-2xl">{metric.value}</p>
+              {/* Valor em branco sólido, não em gradiente. Com o vidro mais
+                  transparente a ponta cinza do gradiente caía para 2,52:1
+                  contra o material — abaixo de AA-large, justo no dado mais
+                  importante do card. DESIGN.md também não admite texto em
+                  gradiente no produto. */}
+              <p data-metric-value-style="solid" className="mt-1 truncate text-xl font-bold tracking-[-0.03em] text-white sm:mt-2 sm:text-2xl">{metric.value}</p>
               <p data-metric-note="true" className="hidden sm:block mt-2 truncate text-xs text-od-text-3 transition-colors group-hover:text-od-text-3">{metric.note}</p>
             </div>
           </Link>

@@ -93,6 +93,14 @@ calmos e previsíveis.
 - **Conteúdo** (`.panel`, `.card`, `.card-quiet`, `.panel-soft` e tokens
   `bg-od-surface`): superfície grafite neutra sem `backdrop-filter`, com borda
   discreta, raio de 12–16 px e sem sombra ampla. Não existe vidro sobre vidro.
+  A faixa de métricas do painel imobiliário não é exceção a isso: as células
+  (`.real-estate-metric-card`) não têm `backdrop-filter` próprio — são divisões
+  do volume de vidro do rail, com um preenchimento mínimo só para separar a
+  célula. Desde 2026-08-05 o rail usa a mesma transparência dos overlays
+  (`saturate(140%)`, sem película escura) e o reflexo embaixo.
+  Valor de métrica é branco sólido, nunca gradiente: em gradiente a ponta
+  cinza media 2,52:1 contra o vidro, abaixo de AA-large. Em branco sólido são
+  9,61:1, e o rótulo fica em 5,52:1.
 
 O material tem fallback opaco quando `backdrop-filter` não existe e respeita
 `prefers-reduced-transparency`; `prefers-contrast` reforça todas as bordas.

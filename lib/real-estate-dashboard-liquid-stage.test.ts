@@ -42,7 +42,7 @@ describe("Layout horizontal do dashboard imobiliário", () => {
     expect(html).toContain('data-liquid-context-tray="true"');
     expect(html.match(/data-liquid-metric="true"/g)).toHaveLength(4);
     expect(html.match(/data-metric-sparkline="true"/g)).toHaveLength(4);
-    expect(html.match(/data-metric-value-style="gradient"/g)).toHaveLength(4);
+    expect(html.match(/data-metric-value-style="solid"/g)).toHaveLength(4);
     expect(html.match(/data-hover-lift="true"/g)).toHaveLength(4);
     expect(html.match(/data-indicator-group="true"/g)).toHaveLength(3);
     expect(html.match(/data-financial-progress="true"/g)).toHaveLength(3);
@@ -101,15 +101,18 @@ describe("Layout horizontal do dashboard imobiliário", () => {
     expect(html.match(/data-metric-note="true" class="hidden sm:block/g)).toHaveLength(4);
     expect(html.match(/data-metric-sparkline="true"[^>]+class="[^"]*hidden md:block/g)).toHaveLength(4);
 
+    // O valor e o dado que a pessoa le para decidir: fica em branco solido.
+    // Em gradiente, a ponta cinza media 2,52:1 contra o vidro transparente --
+    // abaixo de AA-large -- e o DESIGN.md nao admite texto em gradiente.
     const metricValueClasses = Array.from(
-      html.matchAll(/data-metric-value-style="gradient" class="([^"]+)"/g),
+      html.matchAll(/data-metric-value-style="solid" class="([^"]+)"/g),
       (match) => match[1],
     );
     expect(metricValueClasses).toHaveLength(4);
     for (const className of metricValueClasses) {
-      expect(className).toContain("bg-gradient-to-r from-white to-gray-400");
-      expect(className).toContain("bg-clip-text");
-      expect(className).toContain("text-transparent");
+      expect(className).toContain("text-white");
+      expect(className).not.toContain("bg-clip-text");
+      expect(className).not.toContain("text-transparent");
     }
 
     const timPosition = html.indexOf("Acione o Tim na sua operação");
