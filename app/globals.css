@@ -195,17 +195,19 @@
    translúcido por cima do elemento — o retoque clássico de "isto é uma
    página", nunca visto num app instalado. O feedback de toque real continua
    vindo de :active (.btn, .press). */
-html { min-height: 100%; background: var(--od-bg); font-family: var(--font-inter); scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+html { min-height: 100%; background: var(--od-bg); font-family: var(--font-inter); scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
 /* Rolagem por toque não "estica" além do topo/fim revelando o branco padrão
-   do navegador atrás do body — em vez disso, o próprio plano de fundo já
-   escuro aparece, como um scroll de app nativo. */
+   do navegador atrás do body, nem dispara o gesto de atualizar a página —
+   nenhuma tela usa "puxar pra atualizar" de propósito, então zera os dois
+   eixos. `-x: none` também mata o arrastar de lado que volta/avança no
+   histórico do navegador. */
 body {
   min-height: 100%;
   margin: 0;
-  background-color: var(--od-bg);
+  background: var(--od-bg);
   color: var(--od-text);
   text-rendering: optimizeLegibility;
-  overscroll-behavior-y: contain;
+  overscroll-behavior: none;
   position: relative;
 }
 /* Mesmo motivo do reset de link: fora de @layer, isto vence as utilities. E

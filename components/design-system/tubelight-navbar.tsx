@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll } from "framer-motion";
 import Link from "next/link";
 import { Menu, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils/utils";
@@ -27,12 +27,11 @@ interface NavBarProps {
  * Barra de navegação com indicador que desliza entre os itens.
  *
  * Adaptada da versão original ("tubelight"), que vinha como pílula flutuante
- * com backdrop-blur e sombra em repouso — na época proibidos pelo DESIGN.md.
- * A barra voltou a ser vidro (.od-chrome) quando o sistema migrou pra liquid
- * glass como material padrão do site; o raio total fora de círculo continua
- * fora (lê como balão) e a sombra ainda só aparece como resposta a estado. O
- * que se preservou desde sempre é o que fazia a peça boa — o indicador que se
- * move de um item para o outro com `layoutId`, em vez de aparecer e sumir.
+ * com backdrop-blur e sombra em repouso. As três coisas são proibidas pelo
+ * DESIGN.md: raio total fora de círculo lê como balão, glassmorphism não é
+ * decoração padrão, e sombra só aparece como resposta a estado. O que se
+ * preservou é o que fazia a peça boa — o indicador que se move de um item para
+ * o outro com `layoutId`, em vez de aparecer e sumir.
  *
  * A versão original também mantinha um estado `isMobile` calculado num listener
  * de resize e nunca usado: a troca de rótulo por ícone já era feita por
@@ -41,9 +40,18 @@ interface NavBarProps {
 export function NavBar({ items, className, brand, actions, mobileActions }: NavBarProps) {
   const [activeTab, setActiveTab] = React.useState(items[0]?.name ?? "");
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [scrolled, setScrolled] = React.useState(false);
   const menuButtonRef = React.useRef<HTMLButtonElement>(null);
   const panelRef = React.useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
+
+  // Barra sólida em repouso (topo da página); ao rolar, o fundo fica a 50%
+  // — só opacidade, sem blur/glassmorphism (isso já foi tirado daqui antes,
+  // ver comentário do componente).
+  const { scrollY } = useScroll();
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setScrolled(latest > 8);
+  });
 
   function selectItem(name: string) {
     setActiveTab(name);
@@ -101,7 +109,8 @@ export function NavBar({ items, className, brand, actions, mobileActions }: NavB
     <>
     <header
       className={cn(
-        "od-chrome sticky top-0 z-[var(--z-sticky)] border-b border-od-border",
+        "sticky top-0 z-[var(--z-sticky)] border-b border-od-border transition-colors duration-200",
+        scrolled ? "bg-od-bg/80" : "bg-od-bg",
         className,
       )}
       style={{ paddingTop: "env(safe-area-inset-top)" }}
@@ -156,7 +165,7 @@ export function NavBar({ items, className, brand, actions, mobileActions }: NavB
             aria-expanded={mobileOpen}
             aria-controls="landing-mobile-menu"
             onClick={() => setMobileOpen((current) => !current)}
-            className="grid size-11 place-items-center rounded-md border border-od-border text-od-text-2 transition-colors hover:border-od-border-hover hover:text-od-text lg:hidden"
+            className="grid size-11 place-items-center rounded-md text-od-text-2 transition-colors hover:bg-white/[0.05] hover:text-od-text lg:hidden"
           >
             {mobileOpen ? <X className="size-5" strokeWidth={2} /> : <Menu className="size-5" strokeWidth={2} />}
           </button>
@@ -189,7 +198,7 @@ export function NavBar({ items, className, brand, actions, mobileActions }: NavB
               aria-modal="true"
               aria-label="Menu"
               onKeyDown={trapFocus}
-              className="od-chrome fixed inset-x-0 bottom-0 z-[var(--z-sticky)] mx-auto max-h-[80dvh] max-w-md overflow-y-auto rounded-t-lg border border-b-0 border-od-border pb-[env(safe-area-inset-bottom)] lg:hidden"
+              className="fixed inset-x-0 bottom-0 z-[var(--z-sticky)] mx-auto max-h-[80dvh] max-w-md overflow-y-auto rounded-t-lg border border-b-0 border-od-border bg-od-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
               initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 16 }}
@@ -210,7 +219,7 @@ export function NavBar({ items, className, brand, actions, mobileActions }: NavB
                           "flex min-h-14 items-center gap-3 rounded px-3 text-[15px] font-semibold transition-colors",
                           isActive
                             ? "bg-od-accent-tint text-od-text"
-                            : "text-od-text-2 hover:bg-white/[0.035] hover:text-od-text",
+                            : "text-od-text-2 hover:bg-white/[0.04] hover:text-od-text",
                         )}
                       >
                         <Icon className="size-[18px] shrink-0" strokeWidth={2} />

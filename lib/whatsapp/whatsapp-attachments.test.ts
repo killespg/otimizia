@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  extensionForImageType,
+  extensionForMediaType,
   legacyWhatsappStoragePath,
   whatsappAttachmentExpiresAt,
   whatsappAttachmentUrl,
@@ -34,8 +34,10 @@ describe("whatsapp attachments", () => {
   });
 
   it("uses a safe extension derived from the accepted content type", () => {
-    expect(extensionForImageType("image/jpeg")).toBe("jpg");
-    expect(extensionForImageType("image/png")).toBe("png");
-    expect(extensionForImageType("application/octet-stream")).toBe("jpg");
+    expect(extensionForMediaType("image/jpeg")).toBe("jpg");
+    expect(extensionForMediaType("image/png")).toBe("png");
+    expect(extensionForMediaType("audio/ogg")).toBe("ogg");
+    expect(extensionForMediaType("application/pdf")).toBe("pdf");
+    expect(extensionForMediaType("application/octet-stream")).toBe("jpg");
   });
 });

@@ -39,7 +39,7 @@ export function ContainerScroll({
       <motion.div
         style={
           reduceMotion
-            ? undefined
+            ? { rotateX: 0, scale: 1, y: 0 }
             : {
                 rotateX: rotate,
                 scale,

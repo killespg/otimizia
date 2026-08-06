@@ -226,7 +226,7 @@ export function FeatureTabs() {
       <div
         role="tablist"
         aria-label="Escolha a profissão"
-        className="liquid-glass-control mx-auto flex max-w-[620px] gap-1 rounded-full p-1.5"
+        className="mx-auto flex max-w-[620px] gap-1 rounded-lg border border-od-border bg-od-muted-surface p-1"
       >
         {VERTICALS.map((item) => {
           const selected = item.key === vertical.key;
@@ -238,10 +238,8 @@ export function FeatureTabs() {
               aria-label={item.tab}
               aria-selected={selected}
               onClick={() => setActiveKey(item.key)}
-              className={`flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-full px-2 text-[13px] font-semibold transition-all duration-200 sm:px-3 ${
-                selected
-                  ? "bg-white/[0.12] text-od-text shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_8px_22px_-18px_rgba(0,0,0,0.85)]"
-                  : "text-od-text-3 hover:bg-white/[0.055] hover:text-od-text-2"
+              className={`flex min-h-11 min-w-0 flex-1 items-center justify-center rounded px-2 text-[13px] font-semibold transition-colors sm:px-3 ${
+                selected ? "bg-od-surface text-od-text" : "text-od-text-3 hover:text-od-text-2"
               }`}
             >
               <span className="sm:hidden" aria-hidden>{item.mobileTab}</span>
@@ -256,16 +254,16 @@ export function FeatureTabs() {
       {/* Grupos empilhados em faixa: o rótulo à esquerda nomeia a faixa e os
           itens ocupam a largura em duas colunas. Antes eram quatro blocos de
           alturas diferentes num grid de dois, com a base toda irregular. */}
-      <div
-        data-landing-glass-stage="true"
-        data-landing-profession-stage="true"
-        className="landing-liquid-stage mt-10 divide-y divide-white/[0.09] px-5 sm:px-7"
-      >
+      {/* As linhas entre grupos só valem no desktop, onde reforçam a fileira
+          rótulo+conteúdo lado a lado. Empilhado no mobile, o rótulo em
+          maiúsculas de cada grupo já separa visualmente — repetir a régua a
+          cada bloco ficava cansativo, sempre a mesma linha se repetindo. */}
+      <div className="mt-10 md:divide-y md:divide-od-border md:border-y md:border-od-border">
         {/* O Tim é a peça central do produto, então não pode dividir peso com
             "Honorários" numa lista de dez. Ganha faixa própria no topo, com
             ícone maior, texto de corpo e ordens reais. Continua sendo faixa,
             não card: o destaque vem de escala e do acento, não de moldura. */}
-        <div className="grid gap-x-8 py-8 md:grid-cols-[160px_minmax(0,1fr)]">
+        <div className="grid gap-x-8 gap-y-4 py-10 md:grid-cols-[160px_minmax(0,1fr)]">
           <p className="text-od-label text-od-accent-hover">Sócio-assistente</p>
           <div className="min-w-0">
             <div className="flex items-start gap-4">
@@ -276,16 +274,16 @@ export function FeatureTabs() {
                 <p className="text-[19px] font-bold tracking-[-0.01em] text-od-text">
                   Tim, o sócio-assistente
                 </p>
-                <p className="mt-1.5 max-w-[62ch] text-[14px] leading-relaxed text-od-text-2">
+                <p className="mt-2.5 max-w-[62ch] text-[14px] leading-relaxed text-od-text-2">
                   {vertical.tim.line}
                 </p>
               </div>
             </div>
-            <ul className="mt-5 flex flex-wrap gap-2 md:pl-15">
+            <ul className="mt-6 flex flex-wrap gap-2.5 md:pl-15">
               {vertical.tim.examples.map((example) => (
                 <li
                   key={example}
-                  className="rounded-full border border-white/[0.11] bg-white/[0.045] px-3 py-1.5 text-[12px] text-od-text-2"
+                  className="rounded border border-od-border bg-od-muted-surface px-3 py-2 text-[13px] leading-relaxed text-od-text-2"
                 >
                   “{example}”
                 </li>

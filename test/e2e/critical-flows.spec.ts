@@ -16,7 +16,10 @@ async function signIn(
 ) {
   await page.goto("/login?next=/painel");
   await page.getByLabel("E-mail").fill(credentials.email);
-  await page.getByLabel("Senha").fill(credentials.password);
+  // getByLabel("Senha") casa por substring — o botão de mostrar/ocultar senha
+  // (aria-label "Mostrar senha"/"Ocultar senha") também contém "senha" e
+  // causava strict mode violation. #password é único e estável.
+  await page.locator("#password").fill(credentials.password);
   const captchaToken = page.locator('input[name="cf-turnstile-response"]');
   if (await captchaToken.count()) {
     await expect(captchaToken.first()).not.toHaveValue("", { timeout: 15_000 });

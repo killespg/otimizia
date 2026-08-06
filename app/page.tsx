@@ -6,26 +6,31 @@ import { createClient } from "@/lib/supabase/server";
 import { Hero } from "@/components/landing/hero";
 import { LogoMarquee } from "@/components/landing/logo-marquee";
 import { FeatureTabs } from "@/components/landing/feature-tabs";
+import { DashboardPreview } from "@/components/landing/dashboard-preview";
 import { Pricing } from "@/components/landing/pricing";
-import { Reveal } from "@/components/landing/reveal";
+import { Glow, Reveal } from "@/components/landing/reveal";
 import { FaqAccordion } from "@/components/landing/FaqAccordion";
 import { CookiePreferencesLink } from "@/components/site/CookieConsent";
 import { SpotlightCard } from "@/components/landing/spotlight-card";
 import { AiComposer } from "@/components/landing/ai-composer";
+import { ContainerScroll } from "@/components/landing/container-scroll-animation";
 import { About } from "@/components/landing/about";
 import { LogoWordmark } from "@/components/design-system/logo";
 import { MobileStickyCta } from "@/components/landing/mobile-sticky-cta";
 
 /**
- * Capítulo editorial da landing.
+ * Faixa de seção de largura total.
  *
- * O canvas é contínuo. Cada capítulo ganha ritmo por espaço e iluminação,
- * enquanto somente os módulos interativos recebem volumes Liquid Glass.
+ * A landing era um `main` único com as seções separadas só por padding-bottom
+ * variável — sem régua, sem topo, sem mudança de fundo. Lia como um bloco só.
+ * Agora cada categoria ocupa uma faixa, com rótulo próprio, ritmo igual e
+ * superfície alternada: a divisão aparece antes de o visitante ler.
  */
 function Section({
   id,
   title,
   description,
+  raised = false,
   children,
 }: {
   id?: string;
@@ -33,13 +38,15 @@ function Section({
    *  sem ele, para não empilhar um h2 pequeno em cima de uma frase grande. */
   title?: string;
   description?: string;
+  raised?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <section
       id={id}
-      className="landing-liquid-section relative isolate scroll-mt-16 overflow-hidden"
+      className={`relative isolate scroll-mt-[calc(4rem+env(safe-area-inset-top))] overflow-hidden border-t border-od-border ${raised ? "bg-od-muted-surface" : "bg-od-bg"}`}
     >
+      <Glow className="-top-40 left-1/2 -translate-x-1/2" size={640} intensity={0.1} pulse />
       <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-20 sm:px-8 md:py-24">
         {title || description ? (
           <Reveal className="mx-auto mb-12 max-w-[560px] text-center">
@@ -65,25 +72,36 @@ export default async function LandingPage() {
   if (user) redirect("/painel");
 
   return (
-    <div
-      data-landing-liquid-canvas="true"
-      className="landing-page landing-liquid-page dark relative min-h-screen overflow-hidden"
-    >
+    <div className="landing-page dark relative bg-od-bg">
+
+      {/* Glow de fundo único, atravessando hero → features → dashboard, pra costurar
+          as seções em vez de cada uma "recomeçar" visualmente do zero. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[1400px]"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 45% at 50% 0%, rgba(92,34,232,0.22), transparent 65%)",
+        }}
+      />
+
       <LandingNav />
       <MobileStickyCta />
-      <main className="relative z-[1] overflow-hidden">
-        {/* Abertura: hero e prova social continuam emendados, sem regua entre
-            eles — sao um bloco de entrada, nao duas categorias. */}
-        <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 pt-10 sm:px-8">
-          <Hero animated />
-          <div
-            data-landing-glass-stage="true"
-            className="landing-liquid-stage landing-liquid-stage--soft -mt-4 mb-20 px-4 py-8 sm:px-8"
-          >
+      <main className="relative overflow-hidden">
+        {/* O hero quebra o container padrão e ocupa a largura inteira da tela
+            — o fundo/glow vai de ponta a ponta em vez de ficar preso dentro
+            de uma faixa com respiro nas laterais (o texto continua com seu
+            próprio recuo, só o pano de fundo é que estica). A prova social
+            volta pro container padrão logo abaixo, colada (sem régua) no
+            rodapé do hero — hero e prova social continuam sendo um bloco de
+            entrada só, não duas categorias. */}
+        <Hero animated />
+        <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 sm:px-8">
+          <div className="-mt-4 pb-20 pt-14">
             <p className="mb-7 text-center text-od-label text-od-text-3">
               Feito para quem trabalha sozinho e para equipes inteiras
             </p>
-            <LogoMarquee bare fadeColor="rgba(14, 12, 20, 0.01)" />
+            <LogoMarquee bare fadeColor="var(--od-bg)" />
           </div>
         </div>
 
@@ -91,20 +109,45 @@ export default async function LandingPage() {
           id="recursos"
           title="O que muda de profissão pra profissão"
           description="O núcleo é o mesmo; o que está em volta é feito pro seu trabalho. Escolha a sua."
+          raised
         >
           <FeatureTabs />
         </Section>
+
+        <section id="painel" className="scroll-mt-[calc(4rem+env(safe-area-inset-top))] border-t border-od-border bg-od-bg">
+          <ContainerScroll
+            titleComponent={
+              <>
+                <p className="mb-3 text-od-label text-od-text-3">O painel</p>
+                <h2 className="text-4xl font-extrabold leading-none tracking-tight text-od-text md:text-6xl">
+                  Um painel só,
+                  <br />
+                  <span className="text-od-accent-hover">sem planilha escondida.</span>
+                </h2>
+                {/* A instrucao fica aqui fora: dentro do card, o bloco da
+                    organizacao e o WorkspaceSwitcher do produto, e destaca-lo
+                    quebraria a fidelidade da sidebar. */}
+                <p className="mx-auto mt-5 max-w-[440px] pb-10 text-[13px] leading-relaxed text-od-text-2">
+                  O exemplo abaixo é navegável: use os controles para trocar de tela e o{" "}
+                  <strong className="font-semibold text-od-text">nome do negócio</strong> para
+                  conhecer o painel de outra profissão.
+                </p>
+              </>
+            }
+          >
+            <div className="h-full w-full overflow-auto rounded bg-od-bg p-2 sm:p-4">
+              <DashboardPreview />
+            </div>
+          </ContainerScroll>
+        </section>
 
         <Section
           id="ia"
           title="Tim, o sócio que nunca dorme"
           description="Ele não devolve conselho: cria o contato, abre a negociação e agenda o compromisso, por voz ou por escrito."
+          raised
         >
-          <div
-            data-landing-glass-stage="true"
-            data-landing-tim-stage="true"
-            className="landing-liquid-stage flex flex-col gap-3 p-5 sm:p-7"
-          >
+          <div className="flex flex-col gap-3">
             <SpotlightCard localSpotlight={false} />
             <AiComposer />
           </div>
@@ -121,6 +164,7 @@ export default async function LandingPage() {
         <Section
           id="duvidas"
           title="Perguntas frequentes"
+          raised
         >
           <div className="mx-auto max-w-[760px]">
             <FaqAccordion
@@ -160,29 +204,22 @@ export default async function LandingPage() {
           <About />
         </Section>
 
-        <section id="cta-final" className="landing-liquid-section px-5 py-20 sm:px-8 md:py-24">
-          <div
-            data-landing-glass-stage="true"
-            data-landing-final-cta="true"
-            className="landing-liquid-stage landing-liquid-final-cta mx-auto max-w-[980px] px-6 py-14 text-center sm:px-10 md:py-16"
-          >
+        <section id="cta-final" className="border-t border-od-border bg-od-muted-surface">
+          <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-24 text-center sm:px-8">
             <h2 className="mx-auto mb-4 max-w-[520px] text-od-title text-od-text">
-              Pronto pra entrar na nova era do empreendimento?
+              Pronto pra parar de perder negócio por esquecimento?
             </h2>
             <p className="mx-auto mb-8 max-w-[440px] text-[15px] text-od-text-2">
               Comece grátis hoje, sem cartão de crédito e sem complicação.
             </p>
-            <Link
-              href="/signup"
-              className="liquid-glass-control liquid-glass-control--tinted inline-flex min-h-11 items-center gap-2 rounded-full px-6 text-sm font-semibold text-white"
-            >
+            <Link href="/signup" className="btn inline-flex items-center gap-2">
               Começar grátis
               <ArrowRight className="size-4" strokeWidth={2} />
             </Link>
           </div>
         </section>
 
-        <footer className="relative border-t border-white/[0.08]">
+        <footer className="border-t border-od-border bg-od-bg">
           <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-12 sm:px-8">
             <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
               <div className="max-w-[320px]">

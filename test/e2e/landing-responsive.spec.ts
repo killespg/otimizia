@@ -1,30 +1,5 @@
 import { expect, test } from "@playwright/test";
 
-test("expõe o canvas e os volumes Liquid Glass da landing", async ({ page }) => {
-  await page.goto("/", { waitUntil: "networkidle" });
-
-  const canvas = page.locator('[data-landing-liquid-canvas="true"]');
-  const navigation = page.locator("header.landing-liquid-nav");
-  const stage = page.locator('[data-landing-glass-stage="true"]').first();
-
-  await expect(canvas).toBeVisible();
-  await expect(navigation).toBeVisible();
-  await expect(stage).toBeVisible();
-
-  const material = await stage.evaluate((element) => {
-    const style = getComputedStyle(element);
-    return {
-      backdropFilter: style.backdropFilter,
-      backgroundColor: style.backgroundColor,
-      borderRadius: style.borderRadius,
-    };
-  });
-
-  expect(material.backdropFilter).not.toBe("none");
-  expect(material.backgroundColor).not.toBe("rgba(0, 0, 0, 0)");
-  expect(Number.parseFloat(material.borderRadius)).toBeGreaterThanOrEqual(20);
-});
-
 test("mantém a landing sem overflow e com controles tocáveis no celular", async ({
   page,
 }, testInfo) => {
@@ -39,9 +14,9 @@ test("mantém a landing sem overflow e com controles tocáveis no celular", asyn
   expect(hasOverflow).toBe(false);
 
   await page.getByRole("button", { name: "Abrir menu" }).click();
-  const resourcesLink = page
-    .getByRole("dialog", { name: "Menu" })
-    .getByRole("link", { name: "Recursos" });
+  // O menu mobile é um dialog (bottom sheet), não um <nav> — mesmo contrato
+  // do menu "Mais" da área logada (components/design-system/tubelight-navbar.tsx).
+  const resourcesLink = page.getByRole("dialog", { name: "Menu" }).getByRole("link", { name: "Recursos" });
   await expect(resourcesLink).toBeVisible();
   await resourcesLink.click();
   await expect(page.getByRole("button", { name: "Abrir menu" })).toHaveAttribute(
@@ -56,6 +31,16 @@ test("mantém a landing sem overflow e com controles tocáveis no celular", asyn
     .locator("button:visible, a:visible, select:visible")
     .evaluateAll((elements) =>
       elements
+        // O indicador de dev do Next.js (<nextjs-portal>) só existe em `next
+        // dev` — nunca no build de produção que vai pro ar — e vive dentro de
+        // shadow DOM, então closest() não alcança o host; precisa checar a
+        // raiz da árvore. Não é controlado pelo produto, então não faz
+        // sentido auditar o alvo de toque dele.
+        .filter((element) => {
+          const root = element.getRootNode();
+          const host = root instanceof ShadowRoot ? root.host : null;
+          return host?.tagName !== "NEXTJS-PORTAL";
+        })
         .map((element) => {
           const rect = element.getBoundingClientRect();
           return {
