@@ -81,7 +81,7 @@ export default async function SettingsPage(
 
   return (
     <div className={`settings-hub mx-auto w-full max-w-[1640px] space-y-5 ${isSeller ? "seller-settings" : isRealEstate ? "real-estate-settings" : ""}`}>
-      <header className="border-b border-white/[0.08] pb-5">
+      <header className="pb-5">
         <p className="text-xs font-semibold text-od-text-2">{isSeller ? "Vendas / Configurações" : isRealEstate ? "Imobiliário / Configurações" : "Escritório / Configurações"}</p>
         <h1 className="mt-2 text-od-title text-white">
           {isSeller ? "Configurações do negócio" : isRealEstate ? "Configurações da operação imobiliária" : "Seu espaço de trabalho"}
@@ -144,7 +144,7 @@ export default async function SettingsPage(
 
           <Link
             href="/painel/equipe"
-            className="row-link flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3 text-sm font-bold text-ink-soft hover:border-brand-400 hover:text-brand-700"
+            className="row-link flex items-center justify-between gap-3 rounded-md border border-line bg-surface px-4 py-3 text-sm font-bold text-ink-soft hover:border-brand-400 hover:text-brand-700"
           >
             {isSeller ? "Dados do negócio e contexto do assistente ficam em Meu negócio" : "Nome da empresa, contexto e preferências da IA ficam em Equipe"}
             <span aria-hidden="true">→</span>
@@ -156,7 +156,7 @@ export default async function SettingsPage(
           >
             <PushNotificationToggle vapidPublicKey={vapidPublicKey} />
             <form action={updateNotificationPreferences} className="space-y-2 border-t border-line pt-4">
-              <label className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line px-3 py-2 text-sm font-bold text-ink-soft">
+              <label className="flex min-h-11 items-center gap-2.5 rounded-md border border-line px-3 py-2 text-sm font-bold text-ink-soft">
                 <input
                   type="checkbox"
                   name="daily_push"
@@ -165,7 +165,7 @@ export default async function SettingsPage(
                 />
                 Aviso push diário (hoje + atrasados)
               </label>
-              <label className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line px-3 py-2 text-sm font-bold text-ink-soft">
+              <label className="flex min-h-11 items-center gap-2.5 rounded-md border border-line px-3 py-2 text-sm font-bold text-ink-soft">
                 <input
                   type="checkbox"
                   name="daily_summary_email"
@@ -174,7 +174,7 @@ export default async function SettingsPage(
                 />
                 Resumo diário por e-mail
               </label>
-              <label className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line px-3 py-2 text-sm font-bold text-ink-soft">
+              <label className="flex min-h-11 items-center gap-2.5 rounded-md border border-line px-3 py-2 text-sm font-bold text-ink-soft">
                 <input
                   type="checkbox"
                   name="stalled_deal_email"
@@ -285,7 +285,7 @@ export default async function SettingsPage(
               {PROFESSION_OPTIONS.map((option) => (
                 <label
                   key={option.value}
-                  className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line bg-surface px-3 py-2 text-sm font-bold text-ink-soft"
+                  className="flex min-h-11 items-center gap-2.5 rounded-md border border-line bg-surface px-3 py-2 text-sm font-bold text-ink-soft"
                 >
                   <input
                     type="checkbox"

@@ -17,7 +17,7 @@ export default async function LegalMovementsPage() {
   ]);
 
   if (!canViewLegal(membership?.job_role, orgRole === "admin")) {
-    return <section className="max-w-xl rounded-xl border border-od-border bg-od-surface p-6"><h1 className="text-xl font-semibold">Acesso jurídico restrito</h1><p className="mt-2 text-sm text-od-text-2">Seu cargo não permite visualizar movimentações processuais.</p></section>;
+    return <section className="max-w-xl rounded-md border border-od-border bg-od-surface p-6"><h1 className="text-xl font-semibold">Acesso jurídico restrito</h1><p className="mt-2 text-sm text-od-text-2">Seu cargo não permite visualizar movimentações processuais.</p></section>;
   }
 
   const items = (data ?? []) as LegalWatchedProcess[];
@@ -26,7 +26,7 @@ export default async function LegalMovementsPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-6">
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-4 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold text-od-text-2">Jurídico / Movimentações</p>
           <h1 className="mt-2 text-od-title text-od-text">Movimentações processuais</h1>

@@ -130,7 +130,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-4 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold text-od-text-2">{isSeller ? "Vendas / Agenda" : isRealEstate ? "Imobiliário / Agenda" : "Jurídico / Agenda"}</p>
           <h1 className="mt-2 text-od-title text-white">
@@ -144,7 +144,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
         </div>
       </header>
 
-      <section className="grid grid-cols-1 border-t border-white/[0.08] sm:grid-cols-3">
+      <section className="od-band grid grid-cols-1 sm:grid-cols-3">
         <MetricCard
           label="Atrasados"
           value={String(overdueTasks.length + overdueDeadlines.length)}
@@ -196,14 +196,14 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
             <Link
               href={`/painel/calendario?month=${prevParam}`}
               aria-label="Mês anterior"
-              className="nav-item grid h-9 w-9 place-items-center rounded-lg border border-line bg-od-surface text-od-text-2 hover:border-brand-300 hover:bg-brand-50 hover:text-od-text"
+              className="nav-item grid h-9 w-9 place-items-center rounded-md border border-line bg-od-surface text-od-text-2 hover:border-brand-300 hover:bg-brand-50 hover:text-od-text"
             >
               <IconArrowRight className="h-4 w-4 rotate-180" />
             </Link>
             <Link
               href={`/painel/calendario?month=${nextParam}`}
               aria-label="Próximo mês"
-              className="nav-item grid h-9 w-9 place-items-center rounded-lg border border-line bg-od-surface text-od-text-2 hover:border-brand-300 hover:bg-brand-50 hover:text-od-text"
+              className="nav-item grid h-9 w-9 place-items-center rounded-md border border-line bg-od-surface text-od-text-2 hover:border-brand-300 hover:bg-brand-50 hover:text-od-text"
             >
               <IconArrowRight className="h-4 w-4" />
             </Link>
@@ -322,7 +322,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
                               <input type="hidden" name="case_id" value={entry.deadline.case_id} />
                               <PendingButton
                                 aria-label="Concluir prazo"
-                                className="nav-item grid h-9 w-9 place-items-center rounded-lg border border-line hover:bg-brand-50"
+                                className="nav-item grid h-9 w-9 place-items-center rounded-md border border-line hover:bg-brand-50"
                                 iconOnly
                                 pendingLabel="Concluindo"
                               >

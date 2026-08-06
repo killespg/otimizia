@@ -70,7 +70,7 @@ export function ContactsExplorer({
 
   return (
     <>
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-4 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold text-od-text-2">{eyebrow}</p>
           <h1 className="mt-2 text-od-title text-white">
@@ -115,15 +115,15 @@ export function ContactsExplorer({
         </div>
       </header>
 
-      <section className="grid grid-cols-1 border-y border-white/[0.08] sm:grid-cols-3">
+      <section className="od-band grid grid-cols-1 sm:grid-cols-3">
         <MetricCard label="Total" value={String(contacts.length)} icon={IconUsers} />
         <MetricCard label="Com WhatsApp" value={String(withPhone)} icon={IconPhone} pink />
         <MetricCard label="Com empresa" value={String(withCompany)} icon={IconMessage} />
       </section>
 
       <div className="grid gap-5">
-        <section className="overflow-hidden border-y border-white/[0.08]">
-          <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
+        <section className="overflow-hidden">
+          <div className="flex items-center justify-between gap-3 px-5 py-4">
             <div>
               <h2 className="text-base font-semibold text-white">
                 Lista de contatos
@@ -216,7 +216,7 @@ function MetricCard({
   pink?: boolean;
 }) {
   return (
-    <article className="border-b border-white/[0.08] p-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
+    <article className="p-4 sm:border-r sm:border-white/[0.06] sm:last:border-r-0">
       <div className="flex items-center gap-3">
         <span className={pink ? "text-amber-300" : "text-od-text-2"}><Icon className="h-4 w-4" /></span>
         <div className="min-w-0">

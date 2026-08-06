@@ -407,6 +407,19 @@ p { text-wrap: pretty; }
   color: var(--od-text-2);
 }
 
+/* Região separada por material, não por régua.
+   Mesma ideia do `.od-rows`, um nível acima: em vez de desenhar um traço entre
+   duas regiões, a de baixo ganha plano próprio. A aresta aparece pela mudança
+   de material — que é como o vidro separa — e não por uma linha.
+   3% de branco é o bastante para o bloco se descolar do que está em volta sem
+   virar um card: continua sem borda, sem sombra e sem raio grande. */
+.od-band {
+  background-color: rgba(255, 255, 255, 0.03);
+  /* Mesmo raio da camada de conteúdo: a faixa fica encostada em `.panel` e
+     `.card`, e 12 ao lado de 16 lê como desalinho. */
+  border-radius: var(--radius-md);
+}
+
 /* Separação de linhas sem régua.
    O traço de 1px servia ao design anterior, de superfícies opacas: ali ele era
    a única coisa capaz de dizer onde um registro terminava. No vidro a
@@ -422,19 +435,14 @@ p { text-wrap: pretty; }
   }
 }
 
-/* Uma régua entre seções, não duas. Com borda em cima e embaixo, duas seções
-   empilhadas encostavam a borda de baixo de uma na borda de cima da outra e
-   desenhavam uma linha dupla — o efeito de "cheio de linha". Só a de cima
-   fica, e a primeira seção não abre com régua: o título já marca o começo. */
+/* Seção sem régua nenhuma. Primeiro virou uma só no lugar de duas; depois
+   nenhuma: o título da seção e o espaço entre elas já dizem onde uma termina
+   e a outra começa, e no vidro a fronteira não precisa ser desenhada. Onde a
+   região precisa se destacar de verdade, o caminho é `.od-band`. */
 .real-estate-flat-section {
-  border-top: 1px solid var(--od-border);
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-}
-
-.real-estate-flat-section:first-of-type {
-  border-top: 0;
 }
 
 .workspace-real_estate_broker .settings-hub [data-settings-card] {

@@ -154,7 +154,7 @@ export default async function LegalDashboardPage({
   const isAdmin = orgRole === "admin";
   if (!canViewLegal(membership?.job_role, isAdmin)) {
     return (
-      <section className="rounded-xl border border-od-border bg-od-surface p-6">
+      <section className="rounded-md border border-od-border bg-od-surface p-6">
         <h1 className="text-xl font-semibold">Acesso jurídico restrito</h1>
         <p className="mt-2 text-sm text-white/55">
           Peça a um administrador do escritório para revisar seu cargo.
@@ -594,7 +594,7 @@ export default async function LegalDashboardPage({
               count={openReceivables.length}
             />
           ) : (
-            <div className="rounded-xl border border-od-border bg-od-surface p-5">
+            <div className="rounded-md border border-od-border bg-od-surface p-5">
               <h2 className="text-base font-semibold">
                 Carteira do escritório
               </h2>
@@ -642,7 +642,7 @@ function StatCard({
         ? "text-amber-300"
         : "text-od-text-2";
   return (
-    <article className="min-w-0 rounded-xl border border-od-border bg-od-surface p-4">
+    <article className="min-w-0 rounded-md border border-od-border bg-od-surface p-4">
       <div className="flex items-center gap-2">
         <Icon size={16} className={`shrink-0 ${color}`} strokeWidth={2} />
         <span className="text-xs font-semibold text-white/65">{label}</span>
@@ -702,7 +702,7 @@ function PortfolioChart({ cases }: { cases: LegalCase[] }) {
     .join(" ");
   const delta = months[6].opened - months[6].closed;
   return (
-    <section className="h-full rounded-xl border border-od-border bg-od-surface p-5">
+    <section className="h-full rounded-md border border-od-border bg-od-surface p-5">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-base font-semibold">Fluxo da carteira</h2>
@@ -829,8 +829,8 @@ function CasesTable({
   const urgentLimit = new Date();
   urgentLimit.setDate(urgentLimit.getDate() + 7);
   return (
-    <section className="overflow-hidden rounded-xl border border-od-border bg-od-surface p-5">
-      <div className="mb-4 flex items-center justify-between border-b border-white/[0.08] pb-4">
+    <section className="overflow-hidden rounded-md border border-od-border bg-od-surface p-5">
+      <div className="mb-4 flex items-center justify-between pb-4">
         <div>
           <h2 className="text-base font-semibold">Casos em acompanhamento</h2>
           <p className="mt-1 text-xs text-white/65">

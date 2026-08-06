@@ -151,7 +151,7 @@ export function SellerDashboard({
       data-dashboard-accent={preferences.accent}
       data-dashboard-metrics={preferences.metrics.join(",")}
     >
-      <header className="flex flex-col gap-5 border-b border-white/[0.08] pb-6 xl:flex-row xl:items-end xl:justify-between">
+      <header className="flex flex-col gap-5 pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <p className="flex items-center gap-2 text-xs font-semibold capitalize text-od-text-3">
             <CalendarDays size={14} />

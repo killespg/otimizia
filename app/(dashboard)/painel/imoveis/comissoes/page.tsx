@@ -109,7 +109,7 @@ export default async function RealEstateCommissionsPage({
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-6">
-      <header className="flex flex-col gap-5 border-b border-od-border pb-6 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-5 pb-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <Link href="/painel/imoveis/dashboard" className="inline-flex items-center gap-2 text-xs font-semibold text-od-text-3 hover:text-od-text-2"><ArrowLeft size={14} /> Voltar à visão geral</Link>
           <h1 className="mt-4 text-od-title text-od-text">Comissões e metas</h1>
@@ -121,7 +121,7 @@ export default async function RealEstateCommissionsPage({
       {/* Barra de controle, nao modulo: fica aberta e colada no cabecalho, com
           uma regra abaixo separando controle de conteudo. Virar card daria a
           um filtro o mesmo peso visual dos paineis de trabalho. */}
-      <form method="get" className="-mt-2 grid gap-3 border-b border-od-border pb-5 sm:grid-cols-[minmax(9rem,1fr)_minmax(9rem,1fr)_minmax(12rem,1.3fr)_auto] sm:items-end">
+      <form method="get" className="-mt-2 grid gap-3 pb-5 sm:grid-cols-[minmax(9rem,1fr)_minmax(9rem,1fr)_minmax(12rem,1.3fr)_auto] sm:items-end">
         <label><span className="label">De</span><input type="date" name="from" defaultValue={from} className="field mt-1" /></label>
         <label><span className="label">Até</span><input type="date" name="to" defaultValue={to} className="field mt-1" /></label>
         <label><span className="label">Corretor</span><select name="broker" defaultValue={brokerFilter} className="field mt-1"><option value="">Todos</option>{members.map((member) => <option key={member.user_id} value={member.user_id}>{member.name ?? "Sem nome"}</option>)}</select></label>
@@ -131,8 +131,8 @@ export default async function RealEstateCommissionsPage({
       {/* MetricStrip continua aberta, com border-y e divisores — e a assinatura
           documentada. Quem ancora a tela sao os paineis de conteudo abaixo;
           transformar isto num card faria a quarta caixa identica da pagina. */}
-      <section className="grid grid-cols-2 border-y border-od-border xl:grid-cols-4">
-        {summary.map(({ icon: Icon, ...item }) => <div key={item.label} className="min-w-0 border-b border-r border-od-border py-4 pr-4 even:border-r-0 [&:nth-last-child(-n+2)]:border-b-0 xl:border-b-0 xl:pl-5 xl:even:border-r xl:last:border-r-0 xl:first:pl-0"><div className="flex items-center gap-2 text-xs font-medium text-od-text-3"><Icon size={15} className="text-od-text-2" />{item.label}</div><p className="mt-3 truncate text-xl font-semibold text-od-text" title={item.value}>{item.value}</p><p className="mt-2 text-xs text-od-text-3">{item.note}</p></div>)}
+      <section className="od-band grid grid-cols-2 xl:grid-cols-4">
+        {summary.map(({ icon: Icon, ...item }) => <div key={item.label} className="min-w-0 border-r border-od-border px-4 py-4 even:border-r-0 xl:border-b-0 xl:pl-5 xl:even:border-r xl:last:border-r-0 xl:first:pl-0"><div className="flex items-center gap-2 text-xs font-medium text-od-text-3"><Icon size={15} className="text-od-text-2" />{item.label}</div><p className="mt-3 truncate text-xl font-semibold text-od-text" title={item.value}>{item.value}</p><p className="mt-2 text-xs text-od-text-3">{item.note}</p></div>)}
       </section>
 
       <section className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(21rem,.55fr)]">

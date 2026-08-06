@@ -86,7 +86,7 @@ export function PushNotificationToggle({ vapidPublicKey }: { vapidPublicKey: str
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between gap-3 rounded-lg border border-line px-3.5 py-2.5">
+      <div className="flex items-center justify-between gap-3 rounded-md border border-line px-3.5 py-2.5">
         <div>
           <p className="text-sm font-bold text-ink">Notificações no navegador/app</p>
           <p className="text-xs font-medium text-ink-muted">

@@ -99,7 +99,7 @@ export default async function TasksPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-4 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold text-od-text-2">{workspaceKey === "autonomous_seller" ? "Vendas" : "Escritório"} / {workspaceLabels.followups}</p>
           <h1 className="mt-2 text-od-title text-white">
@@ -111,7 +111,7 @@ export default async function TasksPage() {
         </div>
       </header>
 
-      <section className="grid grid-cols-1 border-t border-white/[0.08] sm:grid-cols-3">
+      <section className="od-band grid grid-cols-1 sm:grid-cols-3">
         <MetricCard label="Pendentes" value={String(pending.length)} icon={IconBell} />
         <MetricCard label="Hoje" value={String(todayTasks.length)} icon={IconClock} pink />
         <MetricCard label="Feitas" value={String(done.length)} icon={IconCheckCircle} />
@@ -229,7 +229,7 @@ export default async function TasksPage() {
         <section className={isSeller ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}><div className="border-b border-line px-5 py-4"><h2 className="text-lg font-black text-ink">Aguardando aprovação</h2><p className="mt-1 text-sm font-medium text-ink-muted">Tarefas que você já entregou ao responsável.</p></div><ul className="divide-y divide-line px-5">{submittedByMe.map((task)=><TaskItem key={task.id} task={task} overdue={false} members={members} currentUserId={user!.id} isAdmin={isAdmin} canReviewAll={canReviewAll}/>)}</ul></section>
       )}
 
-      <div className={isSeller ? "grid border-t border-white/[0.08] xl:grid-cols-2" : "grid gap-5 xl:grid-cols-2"}>
+      <div className={isSeller ? "od-band grid xl:grid-cols-2" : "grid gap-5 xl:grid-cols-2"}>
         {groups.map((group) => (
           <TaskGroup key={group.title} {...group} members={members} currentUserId={user!.id} isAdmin={isAdmin} canReviewAll={canReviewAll} isSeller={isSeller} />
         ))}

@@ -124,7 +124,7 @@ export default async function ContactDetailPage(
         {copy.backLabel}
       </Link>
 
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 sm:flex-row sm:items-center sm:justify-between">
+      <header className="flex flex-col gap-4 pb-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <Avatar name={contactName} className="size-12 text-sm" />
           <div className="min-w-0">

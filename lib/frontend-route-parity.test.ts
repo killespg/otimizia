@@ -186,7 +186,7 @@ describe("frontend route parity", () => {
     expect(report).toContain('workspaceKey === "autonomous_seller"');
     expect(report).toContain('workspaceKey === "real_estate_broker"');
     expect(report).toContain('flat={usesFlatSurface}');
-    expect(report).toMatch(/border-[yt] border-white\/\[0\.08\]/);
+    expect(report).toMatch(/od-band|border-[ytb] border-white\/\[0\.08\]/);
     expect(report).toContain('"panel p-4"');
   });
 
@@ -207,8 +207,8 @@ describe("frontend route parity", () => {
     expect(settings).toContain('isSeller ? "Vendas / Configurações"');
     expect(settings).toContain('isSeller ? "Configurações do negócio"');
     expect(team).toContain('isSeller ? "Vendas / Meu negócio"');
-    expect(tasks).toMatch(/id="new-task" action=\{createTask\} className="scroll-mt-24 border-[yt]/);
-    expect(tasks).toMatch(/isSeller \? "grid border-[yt]/);
+    expect(tasks).toMatch(/id="new-task" action=\{createTask\} className="scroll-mt-24 border-[ytb]/);
+    expect(tasks).toMatch(/isSeller \? "(od-band )?grid( border-[ytb])?/);
     expect(tasks).not.toContain('isSeller ? "overflow-hidden rounded-xl');
   });
 
@@ -225,10 +225,11 @@ describe("frontend route parity", () => {
 
     for (const file of files) {
       const source = readFileSync(resolve(process.cwd(), file), "utf8");
-      // Régua no lugar de card arredondado — a aresta que a carrega é
-      // implementação. Blocos empilhados com espaço entre si e régua nas duas
-      // arestas desenhavam duas linhas por emenda.
-      expect(source).toMatch(/border-[yt] border-white\/\[0\.08\]/);
+      // O contrato e a superficie ser achatada, e nao virar card arredondado.
+      // Como ela se separa do vizinho e implementacao: regua numa aresta ou,
+      // desde 2026-08-06, plano proprio via `od-band` — no vidro a separacao
+      // vem do material, nao de um traco.
+      expect(source).toMatch(/od-band|border-[ytb] border-white\/\[0\.08\]/);
     }
 
     const board = readFileSync(resolve(process.cwd(), files[1]), "utf8");

@@ -58,7 +58,7 @@ export default async function DeadlinesPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-4 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold text-od-text-2">Jurídico / Agenda e prazos</p>
           <h1 className="mt-2 text-od-title text-white">Agenda e prazos</h1>
@@ -80,7 +80,7 @@ export default async function DeadlinesPage() {
         </div>
       </header>
 
-      <section className="grid border-y border-white/[0.08] sm:grid-cols-2 xl:grid-cols-4">
+      <section className="od-band grid sm:grid-cols-2 xl:grid-cols-4">
         <Metric icon={IconAlert} label="Atrasados" value={String(overdue.length)} danger />
         <Metric icon={IconBell} label="Próximos 7 dias" value={String(upcoming.length)} />
         <Metric icon={IconColumns} label="Depois disso" value={String(later.length)} />

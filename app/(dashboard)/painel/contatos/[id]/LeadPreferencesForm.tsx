@@ -21,7 +21,7 @@ export function LeadPreferencesForm({
   preferences: RealEstateLeadPreferences | null;
 }) {
   return (
-    <div className="rounded-lg border border-line p-4">
+    <div className="rounded-md border border-line p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-black text-ink">{deal.title}</p>
         <Link href={`/painel/imoveis/match/${deal.id}`} className="nav-item text-xs font-black text-brand-700 hover:underline">

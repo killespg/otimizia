@@ -59,7 +59,7 @@ export default async function SellerOrdersPage({ searchParams }: { searchParams:
         </section>
       )}
 
-      <section className="grid border-y border-white/[0.08] sm:grid-cols-3"><Guide icon={<CircleDollarSign size={17} />} title="Pagamento" text="Marque como parcial, pago ou estornado sem alterar o valor histórico do pedido." /><Guide icon={<PackageCheck size={17} />} title="Preparação" text="Acompanhe confirmado, em preparação e pronto para retirada ou envio." /><Guide icon={<Truck size={17} />} title="Entrega" text="Finalize somente depois que o produto chegar ao cliente." /></section>
+      <section className="od-band grid sm:grid-cols-3"><Guide icon={<CircleDollarSign size={17} />} title="Pagamento" text="Marque como parcial, pago ou estornado sem alterar o valor histórico do pedido." /><Guide icon={<PackageCheck size={17} />} title="Preparação" text="Acompanhe confirmado, em preparação e pronto para retirada ou envio." /><Guide icon={<Truck size={17} />} title="Entrega" text="Finalize somente depois que o produto chegar ao cliente." /></section>
     </div>
   );
 }

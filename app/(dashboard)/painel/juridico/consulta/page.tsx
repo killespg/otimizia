@@ -46,7 +46,7 @@ export default async function DatajudSearchPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-4 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <Link
             href="/painel/juridico/processos"

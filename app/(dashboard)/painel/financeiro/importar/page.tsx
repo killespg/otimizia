@@ -45,7 +45,7 @@ export default async function FinanceImportPage() {
 
   return (
     <div className="max-w-3xl space-y-4 sm:space-y-5">
-      <header className="enter rounded-lg border border-line bg-surface p-5 sm:p-6">
+      <header className="enter rounded-md border border-line bg-surface p-5 sm:p-6">
         <Link
           href="/painel/financeiro"
           className="inline-flex items-center gap-1 text-sm font-bold text-ink-muted hover:text-ink"

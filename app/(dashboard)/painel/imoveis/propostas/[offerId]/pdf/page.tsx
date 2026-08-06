@@ -69,7 +69,7 @@ export default async function OfferPdfPage(props: { params: Promise<{ offerId: s
         <p className="text-sm text-ink-soft">{[contact?.email, contact?.phone].filter(Boolean).join(" · ")}</p>
       </section>
 
-      <section className="rounded-lg border border-line p-4">
+      <section className="rounded-md border border-line p-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">Condições propostas</h2>
         <dl className="mt-3 grid gap-3 sm:grid-cols-2">
           <div>

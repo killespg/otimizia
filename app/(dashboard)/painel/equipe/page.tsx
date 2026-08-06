@@ -55,7 +55,7 @@ export default async function TeamPage(
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
-      <header className="border-b border-white/[0.08] pb-5">
+      <header className="pb-5">
         <p className="text-xs font-semibold text-od-text-2">{isSeller ? "Vendas / Meu negócio" : isRealEstate ? "Imobiliário / Equipe" : "Escritório / Equipe"}</p>
         <h1 className="mt-2 text-od-title text-white">
           {org?.name ?? "Sua empresa"}

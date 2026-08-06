@@ -224,7 +224,7 @@ function DashboardFilters({
         </form>
         <form
           action={updateDashboardBackgroundVisibility}
-          className="mt-4 flex flex-col gap-3 rounded-2xl bg-white/[0.04] p-3 sm:flex-row sm:items-center sm:justify-between"
+          className="mt-4 flex flex-col gap-3 od-band p-3 sm:flex-row sm:items-center sm:justify-between"
         >
           <input
             type="hidden"
@@ -435,7 +435,7 @@ export function CommissionPanel({ commissions, members, deals, properties, canMa
       <div className={isTray ? "mt-5" : "pt-4"}>
         <div className="space-y-2">
           {commissions.length === 0 ? <p className="text-sm text-od-text-3">Nenhuma comissão registrada no período.</p> : commissions.map((commission) => (
-            <div key={commission.id} className={isTray ? "flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white/[0.04] px-3 py-3" : "flex flex-wrap items-center justify-between gap-3 border-b border-od-border py-3 first:pt-0 last:border-b-0"}>
+            <div key={commission.id} className={isTray ? "flex flex-wrap items-center justify-between gap-3 od-band px-3 py-3" : "flex flex-wrap items-center justify-between gap-3 border-b border-od-border py-3 first:pt-0 last:border-b-0"}>
               <div><p className="text-sm font-semibold text-od-text">{centsToReais(commission.expected_amount_cents)}</p><p className="mt-1 text-xs text-od-text-3">{commission.commission_percent}% de comissão</p></div>
               <span className={`tag ${isCommissionOverdue(commission) ? "bg-danger-50 text-danger-700" : "bg-surface-2 text-ink-muted"}`}>{isCommissionOverdue(commission) ? "Vencida" : commission.status === "received" ? "Recebida" : commission.status === "partial" ? "Parcial" : commission.status === "cancelled" ? "Cancelada" : "Prevista"}</span>
               {canManage && commission.status !== "received" && commission.status !== "cancelled" ? (
@@ -449,7 +449,7 @@ export function CommissionPanel({ commissions, members, deals, properties, canMa
           ))}
         </div>
         {canManage ? (
-          <form action={createCommission} className={isTray ? "mt-5 grid gap-2 rounded-2xl bg-white/[0.04] p-3 sm:grid-cols-2" : "mt-5 grid gap-2 border-t border-od-border pt-5 sm:grid-cols-2"}>
+          <form action={createCommission} className={isTray ? "mt-5 grid gap-2 od-band p-3 sm:grid-cols-2" : "mt-5 grid gap-2 border-t border-od-border pt-5 sm:grid-cols-2"}>
             <select name="deal_id" required className="field"><option value="">Atendimento</option>{deals.map((deal) => <option key={deal.id} value={deal.id}>{deal.title}</option>)}</select>
             <select name="property_id" required className="field"><option value="">Imóvel</option>{properties.map((property) => <option key={property.id} value={property.id}>{property.title}</option>)}</select>
             <select name="broker_id" required className="field"><option value="">Corretor</option>{members.map((member) => <option key={member.user_id} value={member.user_id}>{member.name ?? "Sem nome"}</option>)}</select>
@@ -472,10 +472,10 @@ export function TargetsPanel({ targets, members, canManage, from, to, variant = 
       <header className={isTray ? "" : "border-b border-od-border pb-4"}><div className="flex items-center gap-2"><Target size={16} className="text-od-text-3" /><h2 className="text-sm font-semibold text-od-text">Metas do período</h2></div><p className="mt-1 text-xs text-od-text-3">Acompanhe o objetivo da equipe ou de cada corretor.</p></header>
       <div className={isTray ? "mt-5" : "pt-4"}>
         {targets.length === 0 ? <p className="text-sm text-od-text-3">Nenhuma meta definida para este período.</p> : (
-          <ul className={isTray ? "space-y-2" : "divide-y divide-white/[0.07]"}>{targets.map((target) => { const broker = members.find((member) => member.user_id === target.broker_id); return <li key={target.id} className={isTray ? "flex items-center justify-between gap-3 rounded-2xl bg-white/[0.04] px-3 py-3" : "flex items-center justify-between gap-3 py-3 first:pt-0"}><span className="text-sm text-od-text-2">{broker ? broker.name ?? "Sem nome" : "Equipe"}</span><strong className="text-sm font-semibold text-od-text">{centsToReais(target.target_amount_cents)}</strong></li>; })}</ul>
+          <ul className={isTray ? "space-y-2" : "divide-y divide-white/[0.07]"}>{targets.map((target) => { const broker = members.find((member) => member.user_id === target.broker_id); return <li key={target.id} className={isTray ? "flex items-center justify-between gap-3 od-band px-3 py-3" : "flex items-center justify-between gap-3 py-3 first:pt-0"}><span className="text-sm text-od-text-2">{broker ? broker.name ?? "Sem nome" : "Equipe"}</span><strong className="text-sm font-semibold text-od-text">{centsToReais(target.target_amount_cents)}</strong></li>; })}</ul>
         )}
         {canManage ? (
-          <form action={createTarget} className={isTray ? "mt-5 grid gap-2 rounded-2xl bg-white/[0.04] p-3" : "mt-5 grid gap-2 border-t border-od-border pt-5"}>
+          <form action={createTarget} className={isTray ? "mt-5 grid gap-2 od-band p-3" : "mt-5 grid gap-2 border-t border-od-border pt-5"}>
             <select name="broker_id" className="field"><option value="">Equipe inteira</option>{members.map((member) => <option key={member.user_id} value={member.user_id}>{member.name ?? "Sem nome"}</option>)}</select>
             <input name="target_amount" required placeholder="Meta (R$)" className="field" />
             <div className="grid grid-cols-2 gap-2"><input type="date" name="period_start" required defaultValue={from} className="field" aria-label="Início da meta" /><input type="date" name="period_end" required defaultValue={to} className="field" aria-label="Fim da meta" /></div>

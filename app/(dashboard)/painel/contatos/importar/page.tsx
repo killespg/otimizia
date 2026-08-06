@@ -28,7 +28,7 @@ export default async function ImportContactsPage() {
 
   return (
     <div className="max-w-3xl space-y-4 sm:space-y-5">
-      <header className={usesFlatSurface ? "border-b border-white/[0.08] pb-5" : "enter rounded-lg border border-line bg-surface p-5 sm:p-6"}>
+      <header className={usesFlatSurface ? "pb-5" : "enter rounded-md border border-line bg-surface p-5 sm:p-6"}>
         <Link
           href="/painel/contatos"
           className="inline-flex items-center gap-1 text-sm font-bold text-ink-muted hover:text-ink"

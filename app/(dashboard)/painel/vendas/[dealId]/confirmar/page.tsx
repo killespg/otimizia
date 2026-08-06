@@ -37,7 +37,7 @@ export default async function ConfirmSellerSalePage({ params }: { params: Promis
     <div className="mx-auto w-full max-w-[1550px] space-y-5">
       <Link href="/painel/funil" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-white/52 hover:text-white"><ArrowLeft size={15} /> Voltar ao funil</Link>
       <SellerPageHeader title="Confirmar venda" description="Revise o cliente, adicione os itens reais e só então autentique o fechamento. O pedido, o estoque e as garantias serão criados juntos." />
-      <section className="grid border-y border-white/[0.08] bg-od-surface sm:grid-cols-2 xl:grid-cols-4">
+      <section className="od-band grid bg-od-surface sm:grid-cols-2 xl:grid-cols-4">
         <Summary icon={<UserRound size={16} />} label="Cliente" value={contact?.name ?? "Sem cliente vinculado"} detail={contact?.phone || contact?.email || "Cadastre depois no pedido"} />
         <Summary icon={<CircleDollarSign size={16} />} label="Negociação" value={deal.title} detail={money(deal.value_cents)} />
         <Summary icon={<CalendarDays size={16} />} label="Criada em" value={date(deal.created_at)} detail={deal.stage === "ganho" ? "Fechamento antigo sem pedido" : "Aguardando confirmação"} />

@@ -65,7 +65,7 @@ export default async function PipelineReportPage(
 
   return (
     <div className={usesFlatSurface ? "w-full max-w-[1640px] space-y-6" : "max-w-5xl space-y-4 sm:space-y-5"}>
-      <header className={usesFlatSurface ? "flex flex-col gap-5 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between" : "enter flex flex-col gap-4 rounded-lg border border-line bg-surface p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between"}>
+      <header className={usesFlatSurface ? "flex flex-col gap-5 pb-5 lg:flex-row lg:items-end lg:justify-between" : "enter flex flex-col gap-4 rounded-md border border-line bg-surface p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between"}>
         <div>
           <Link
             href="/painel/funil"
@@ -113,7 +113,7 @@ export default async function PipelineReportPage(
         </div>
       </header>
 
-      <section className={usesFlatSurface ? "grid border-t border-white/[0.08] sm:grid-cols-4" : "grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"}>
+      <section className={usesFlatSurface ? "od-band grid sm:grid-cols-4" : "grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"}>
         <MetricCard label={isRealEstate ? "Atendimentos iniciados" : "Negócios criados"} value={String(totals.created)} flat={usesFlatSurface} />
         <MetricCard label={isRealEstate ? "Fechados" : "Ganhos"} value={String(totals.won)} flat={usesFlatSurface} />
         <MetricCard label={isRealEstate ? "Valor fechado" : "Valor ganho"} value={formatBRL(totals.wonValueCents)} flat={usesFlatSurface} />

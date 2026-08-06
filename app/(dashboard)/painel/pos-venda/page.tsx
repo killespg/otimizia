@@ -94,7 +94,7 @@ export default async function SellerAfterSalesPage({ searchParams }: { searchPar
         })}</div>}
       </section>
 
-      <section className="grid border-y border-white/[0.08] sm:grid-cols-3"><Guide icon={<ShieldCheck size={17} />} title="Garantia por item" text="O prazo vendido fica preservado mesmo se o cadastro do produto mudar." /><Guide icon={<CalendarClock size={17} />} title="Vencimento derivado" text="Ativa, próxima do fim ou vencida é calculado pela data real." /><Guide icon={<CircleCheck size={17} />} title="Histórico completo" text="Cada problema mantém status, relato e solução registrada." /></section>
+      <section className="od-band grid sm:grid-cols-3"><Guide icon={<ShieldCheck size={17} />} title="Garantia por item" text="O prazo vendido fica preservado mesmo se o cadastro do produto mudar." /><Guide icon={<CalendarClock size={17} />} title="Vencimento derivado" text="Ativa, próxima do fim ou vencida é calculado pela data real." /><Guide icon={<CircleCheck size={17} />} title="Histórico completo" text="Cada problema mantém status, relato e solução registrada." /></section>
     </div>
   );
 }

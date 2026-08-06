@@ -90,7 +90,7 @@ export default async function DevMetricsPage() {
         </div>
 
         {metrics.recentSignups.length === 0 ? (
-          <p className="mt-4 rounded-lg border border-dashed border-line bg-od-muted-surface px-3 py-8 text-center text-sm font-medium text-ink-muted">
+          <p className="mt-4 rounded-md border border-dashed border-line bg-od-muted-surface px-3 py-8 text-center text-sm font-medium text-ink-muted">
             Nenhum cadastro ainda.
           </p>
         ) : (

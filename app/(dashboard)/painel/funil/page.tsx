@@ -95,7 +95,7 @@ export default async function PipelinePage() {
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-4 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold text-od-text-2">{isSeller ? "CRM" : isRealEstate ? "Imobiliário" : "Escritório"} / {workspaceLabels.pipeline}</p>
           <h1 className="mt-2 text-od-title text-white">
@@ -111,7 +111,7 @@ export default async function PipelinePage() {
         </Link>
       </header>
 
-      <section className="grid border-y border-white/[0.08] sm:grid-cols-3">
+      <section className="od-band grid sm:grid-cols-3">
         <MetricCard label="Abertas" value={String(openDeals.length)} icon={IconColumns} />
         <MetricCard label={workspaceLabels.value} value={formatBRL(openValue)} icon={IconWallet} />
         <MetricCard label={preset.wonLabel} value={formatBRL(wonValue)} icon={IconUsers} pink />

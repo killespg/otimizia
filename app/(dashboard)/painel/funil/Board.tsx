@@ -280,7 +280,7 @@ export default function Board({
             ))}
           </select>
         </label>
-        <label className={flat ? "flex min-h-[42px] items-center gap-2 px-1 text-sm font-semibold text-white/60" : "flex min-h-[42px] items-center gap-2 rounded-lg border border-line bg-od-surface px-3 text-sm font-bold text-ink-soft"}>
+        <label className={flat ? "flex min-h-[42px] items-center gap-2 px-1 text-sm font-semibold text-white/60" : "flex min-h-[42px] items-center gap-2 rounded-md border border-line bg-od-surface px-3 text-sm font-bold text-ink-soft"}>
           <input
             type="checkbox"
             checked={hideEmpty}
@@ -292,11 +292,11 @@ export default function Board({
       </section>
 
       {columns.length > 1 && (
-        <div className={flat ? "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 border-t border-white/[0.08] bg-od-surface py-2 sm:hidden" : "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 rounded-xl border border-line bg-surface/92 p-1.5 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] backdrop-blur-xl sm:hidden"}>
+        <div className={flat ? "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 border-t border-white/[0.08] bg-od-surface py-2 sm:hidden" : "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 rounded-md border border-line bg-surface/92 p-1.5 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] backdrop-blur-xl sm:hidden"}>
           <button
             type="button"
             onClick={() => scrollBoard("previous")}
-            className="nav-item flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-surface-2 px-3 text-xs font-black text-ink-soft hover:text-brand-700"
+            className="nav-item flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md bg-surface-2 px-3 text-xs font-black text-ink-soft hover:text-brand-700"
           >
             <IconChevronRight className="h-4 w-4 rotate-180" />
             Anterior
@@ -365,7 +365,7 @@ export default function Board({
 
               <div className={flat ? "flex min-h-[22rem] flex-1 flex-col gap-3 bg-transparent p-3" : "enter flex min-h-[22rem] flex-1 flex-col gap-3 bg-od-muted-surface p-3"}>
                 {columnDeals.length === 0 ? (
-                  <div className={flat ? "flex flex-1 flex-col items-center justify-center px-4 py-8 text-center" : "flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-line bg-od-surface px-4 py-8 text-center"}>
+                  <div className={flat ? "flex flex-1 flex-col items-center justify-center px-4 py-8 text-center" : "flex flex-1 flex-col items-center justify-center rounded-md border border-dashed border-line bg-od-surface px-4 py-8 text-center"}>
                     <p className="text-sm font-black text-ink">
                       {isOver ? "Solte aqui" : isSeller ? "Sem vendas" : isRealEstate ? "Sem atendimentos" : "Vazio"}
                     </p>
@@ -388,7 +388,7 @@ export default function Board({
                           setOverList(null);
                         }}
                         className={
-                          (flat ? "row-link group rounded-md border border-white/[0.09] bg-white/[0.025] p-3 hover:border-od-accent/30 " : "row-link group rounded-lg border border-line bg-od-surface p-3 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] hover:border-brand-200 ") +
+                          (flat ? "row-link group rounded-md border border-white/[0.09] bg-white/[0.025] p-3 hover:border-od-accent/30 " : "row-link group rounded-md border border-line bg-od-surface p-3 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] hover:border-brand-200 ") +
                           (boardBusy ? "cursor-wait opacity-70" : canDrag ? "cursor-grab active:cursor-grabbing" : "") +
                           " " +
                           (dragId === deal.id ? "scale-[0.985] opacity-45 ring-2 ring-brand-300" : "")
@@ -499,7 +499,7 @@ export default function Board({
                               ))}
                             </div>
 
-                            <form action={updateDealOptions} className={flat ? "space-y-2 border-t border-white/[0.08] pt-3" : "space-y-2 rounded-lg border border-line bg-od-muted-surface p-3"}>
+                            <form action={updateDealOptions} className={flat ? "space-y-2 border-t border-white/[0.08] pt-3" : "space-y-2 rounded-md border border-line bg-od-muted-surface p-3"}>
                               <input type="hidden" name="id" value={deal.id} />
                               <input type="hidden" name="return_to" value="/painel/funil" />
                               <label className="block">
@@ -556,7 +556,7 @@ export default function Board({
                               </PendingButton>
                             </form>
 
-                            <form action={uploadDealPhoto} className={flat ? "space-y-2 border-t border-white/[0.08] pt-3" : "space-y-2 rounded-lg border border-line bg-od-surface p-3"}>
+                            <form action={uploadDealPhoto} className={flat ? "space-y-2 border-t border-white/[0.08] pt-3" : "space-y-2 rounded-md border border-line bg-od-surface p-3"}>
                               <input type="hidden" name="id" value={deal.id} />
                               <input type="hidden" name="return_to" value="/painel/funil" />
                               <label className="block">

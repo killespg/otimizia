@@ -102,7 +102,7 @@ export function ConnectWhatsappPanel({
           <img
             src={qrcode}
             alt="QR Code do WhatsApp"
-            className="h-64 w-64 rounded-lg border border-line bg-white p-2"
+            className="h-64 w-64 rounded-md border border-line bg-white p-2"
           />
           <p className="flex items-center gap-2 text-xs font-bold text-ink-muted">
             <span className="h-2 w-2 animate-pulse rounded-full bg-brand-600" />

@@ -95,7 +95,7 @@ export function MessageTemplates({
           <button
             type="button"
             onClick={copyText}
-            className="press inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-line bg-transparent px-4 py-2 text-sm font-black text-ink-soft hover:bg-surface-2 hover:text-ink"
+            className="press inline-flex min-h-11 items-center gap-1.5 rounded-md border border-line bg-transparent px-4 py-2 text-sm font-black text-ink-soft hover:bg-surface-2 hover:text-ink"
           >
             {copied ? <IconCheck className="h-4 w-4" /> : null}
             {copied ? "Copiado!" : "Copiar"}
