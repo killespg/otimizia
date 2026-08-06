@@ -159,11 +159,11 @@ export function ContactsCsvImporter({ flat = false }: { flat?: boolean }) {
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="od-rows">
                 {dataRows.slice(0, 5).map((row, ri) => (
                   <tr key={ri}>
                     {header.map((_, ci) => (
-                      <td key={ci} className="truncate border-b border-line px-2 py-1.5 text-xs text-ink-soft">
+                      <td key={ci} className="truncate px-2 py-1.5 text-xs text-ink-soft">
                         {row[ci]}
                       </td>
                     ))}

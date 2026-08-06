@@ -136,15 +136,19 @@ export default async function PipelineReportPage(
               <th className={usesFlatSurface ? "border-b border-white/[0.08] px-4 py-3" : "border-b border-line pb-2"}>Conversão</th>
             </tr>
           </thead>
-          <tbody>
+          {/* Régua por linha vira listra numa tabela de doze meses. O cabeçalho
+              mantém a dele — é estrutura; o corpo separa pela faixa alternada
+              do `.od-rows`, que ainda deixa seguir o mês até a coluna de
+              conversão, lá na direita. */}
+          <tbody className="od-rows">
             {stats.map((m) => (
               <tr key={m.monthKey}>
-                <td className={usesFlatSurface ? "border-b border-white/[0.07] px-4 py-3 font-semibold text-white/86" : "border-b border-line py-2 font-bold text-ink"}>{m.monthLabel}</td>
-                <td className={usesFlatSurface ? "border-b border-white/[0.07] px-4 py-3 text-white/54" : "border-b border-line py-2 text-ink-soft"}>{m.created}</td>
-                <td className={usesFlatSurface ? "border-b border-white/[0.07] px-4 py-3 text-white/54" : "border-b border-line py-2 text-ink-soft"}>{m.won}</td>
-                <td className={usesFlatSurface ? "border-b border-white/[0.07] px-4 py-3 text-white/54" : "border-b border-line py-2 text-ink-soft"}>{m.lost}</td>
-                <td className={usesFlatSurface ? "border-b border-white/[0.07] px-4 py-3 text-white/54" : "border-b border-line py-2 text-ink-soft"}>{formatBRL(m.wonValueCents)}</td>
-                <td className={usesFlatSurface ? "border-b border-white/[0.07] px-4 py-3 text-white/54" : "border-b border-line py-2 text-ink-soft"}>
+                <td className={usesFlatSurface ? "px-4 py-3 font-semibold text-white/86" : "px-4 py-2 font-bold text-ink"}>{m.monthLabel}</td>
+                <td className={usesFlatSurface ? "px-4 py-3 text-white/54" : "px-4 py-2 text-ink-soft"}>{m.created}</td>
+                <td className={usesFlatSurface ? "px-4 py-3 text-white/54" : "px-4 py-2 text-ink-soft"}>{m.won}</td>
+                <td className={usesFlatSurface ? "px-4 py-3 text-white/54" : "px-4 py-2 text-ink-soft"}>{m.lost}</td>
+                <td className={usesFlatSurface ? "px-4 py-3 text-white/54" : "px-4 py-2 text-ink-soft"}>{formatBRL(m.wonValueCents)}</td>
+                <td className={usesFlatSurface ? "px-4 py-3 text-white/54" : "px-4 py-2 text-ink-soft"}>
                   {m.conversionRate !== null ? `${m.conversionRate}%` : "—"}
                 </td>
               </tr>

@@ -80,6 +80,9 @@ Os valores executáveis vivem em `app/globals.css`.
    Contraste medido na faixa: 11,9:1 no branco e 5,2:1 no terciário.
    Régua continua valendo para estrutura: cabeçalho de tabela, cabeçalho de
    painel e fronteira entre seções — e uma só por fronteira, nunca duas.
+   Corpo de tabela segue a mesma regra: `<tbody className="od-rows">` e nenhum
+   `border-b` por célula. Aplicado ao relatório do funil e aos dois
+   pré-visualizadores de CSV em 2026-08-06.
    4b. Configurações não é pilha de card. Cada seção era um `.panel` com as
    bordas laterais removidas, o que deixava só uma régua em cima e outra
    embaixo: doze seções viravam vinte e quatro traços horizontais. Agora
