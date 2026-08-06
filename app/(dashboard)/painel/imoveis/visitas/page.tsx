@@ -75,7 +75,7 @@ export default async function VisitasPage() {
           {/* Linha operacional: identificacao a esquerda, acao ancorada na
               direita. Empilhado, cada solicitacao ocupava tres alturas e
               deixava metade da largura vazia. */}
-          <div className="divide-y divide-white/[0.08] border-t border-od-border">
+          <div className="divide-y divide-line">
             {requested.map((visit) => (
               <div
                 key={visit.id}
@@ -108,7 +108,7 @@ export default async function VisitasPage() {
         {scheduled.length === 0 ? (
           <p className="text-sm font-medium text-ink-muted">Nenhuma visita agendada.</p>
         ) : (
-          <div className="divide-y divide-white/[0.08] border-t border-od-border">
+          <div className="divide-y divide-line">
             {scheduled.map((visit) => (
               <div key={visit.id} className="py-4">
                 <div className="flex flex-wrap items-start justify-between gap-2">

@@ -25,10 +25,16 @@ Os valores executáveis vivem em `app/globals.css`.
   do versionamento e só serve para regerar as variantes. Navegador sem WebP
   cai no marinho, que já é o fallback aprovado.
 - Superfícies de conteúdo: `--od-content-surface` e
-  `--od-content-surface-muted`. Usam grafite frio translúcido
-  (`rgba(54,55,68,.88)` / `rgba(47,49,62,.86)`), sem blur nem sombra ampla.
-  Os fallbacks sólidos (`--od-surface-solid` / `--od-muted-surface-solid`)
-  cobrem controles nativos como o popup de `<select>`.
+  `--od-content-surface-muted`. Translúcidas (`rgba(42,55,81,.88)` /
+  `rgba(36,48,71,.86)`), sem blur nem sombra ampla. Os fallbacks sólidos
+  (`--od-surface-solid` / `--od-muted-surface-solid`) cobrem controles nativos
+  como o popup de `<select>`.
+  Ficam na mesma família do canvas, e não em cinza. Até 2026-08-06 eram um
+  grafite de saturação 11% sobre um canvas de saturação 73%: o matiz já estava
+  quase certo, mas saturação baixa demais sobre fundo azul saturado lê como
+  cinza — dava a impressão de sobra do frontend antigo. A luminosidade não
+  mudou, então o contraste do texto continua o mesmo: 12,7:1 no branco, 8,4:1
+  no secundário e 5,4:1 no terciário.
 - Material funcional: `--od-glass-fill`, `--od-glass-border` e os filtros
   `--od-glass-*-blur`. É reservado a navegação, busca, ações e overlays.
 - Borda de conteúdo: branco a 13% em repouso, sem violeta decorativo.

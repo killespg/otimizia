@@ -125,10 +125,15 @@
   /* Canvas escuro e colorido: ele dá contexto óptico ao vidro sem competir
      com os dados. O conteúdo e o chrome usam materiais diferentes. */
   --od-bg: #07142d;
-  --od-surface-solid: #363744;
-  --od-muted-surface-solid: #30313d;
-  --od-content-surface: rgba(54, 55, 68, 0.88);
-  --od-content-surface-muted: rgba(47, 49, 62, 0.86);
+  /* Superfícies na mesma família do canvas. O grafite anterior tinha o matiz
+     quase certo (236 contra 219) mas saturação de 11% contra os 73% do canvas
+     — e saturação de 11% sobre um fundo azul saturado lê como cinza, não como
+     neutro. Mesma luminosidade de antes, então o contraste do texto não muda:
+     medido em 12,7:1 no branco, 8,4:1 no secundário e 5,4:1 no terciário. */
+  --od-surface-solid: #2a3751;
+  --od-muted-surface-solid: #243047;
+  --od-content-surface: rgba(42, 55, 81, 0.88);
+  --od-content-surface-muted: rgba(36, 48, 71, 0.86);
   --od-content-border: rgba(255, 255, 255, 0.13);
   --od-content-border-hover: rgba(255, 255, 255, 0.2);
   --od-content-shadow: none;
@@ -142,7 +147,7 @@
   --od-glass-fill-hover: rgba(255, 255, 255, 0.13);
   --od-glass-border: rgba(255, 255, 255, 0.26);
   --od-glass-border-hover: rgba(255, 255, 255, 0.46);
-  --od-glass-chrome-bg: rgba(28, 28, 34, 0.38);
+  --od-glass-chrome-bg: rgba(20, 29, 46, 0.38);
   --od-glass-chrome-blur: blur(20px) saturate(145%);
   --od-glass-panel-blur: blur(16px) saturate(140%);
   /* Overlays abrem sobre conteúdo denso, não sobre o canvas: sem escurecer o
@@ -180,7 +185,7 @@
   --od-warning-fg: oklch(0.82 0.13 75);
   --od-danger-bg: oklch(0.3 0.07 25);
   --od-danger-fg: oklch(0.78 0.15 25);
-  --od-sidebar: #0b0a0f;
+  --od-sidebar: #0a1120;
   --od-sidebar-active: rgba(255, 255, 255, 0.09);
   --z-dropdown: 50;
   --z-sticky: 60;
@@ -402,12 +407,19 @@ p { text-wrap: pretty; }
   color: var(--od-text-2);
 }
 
+/* Uma régua entre seções, não duas. Com borda em cima e embaixo, duas seções
+   empilhadas encostavam a borda de baixo de uma na borda de cima da outra e
+   desenhavam uma linha dupla — o efeito de "cheio de linha". Só a de cima
+   fica, e a primeira seção não abre com régua: o título já marca o começo. */
 .real-estate-flat-section {
   border-top: 1px solid var(--od-border);
-  border-bottom: 1px solid var(--od-border);
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+}
+
+.real-estate-flat-section:first-of-type {
+  border-top: 0;
 }
 
 .workspace-real_estate_broker .settings-hub [data-settings-card] {

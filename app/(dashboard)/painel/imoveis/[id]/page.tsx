@@ -261,7 +261,7 @@ export default async function ImovelDetailPage(props: { params: Promise<{ id: st
               <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </summary>
-          <form action={updateProperty} className="divide-y divide-line border-t border-line p-5 sm:p-6">
+          <form action={updateProperty} className="divide-y divide-line p-5 sm:p-6">
             <input type="hidden" name="id" value={property.id} />
 
             <FormSection
