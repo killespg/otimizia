@@ -128,11 +128,13 @@ export default async function RealEstateCommissionsPage({
         <button type="submit" className="btn-secondary">Aplicar filtros</button>
       </form>
 
-      {/* MetricStrip continua aberta, com border-y e divisores — e a assinatura
-          documentada. Quem ancora a tela sao os paineis de conteudo abaixo;
-          transformar isto num card faria a quarta caixa identica da pagina. */}
-      <section className="od-band grid grid-cols-2 xl:grid-cols-4">
-        {summary.map(({ icon: Icon, ...item }) => <div key={item.label} className="min-w-0 border-r border-od-border px-4 py-4 even:border-r-0 xl:border-b-0 xl:pl-5 xl:even:border-r xl:last:border-r-0 xl:first:pl-0"><div className="flex items-center gap-2 text-xs font-medium text-od-text-3"><Icon size={15} className="text-od-text-2" />{item.label}</div><p className="mt-3 truncate text-xl font-semibold text-od-text" title={item.value}>{item.value}</p><p className="mt-2 text-xs text-od-text-3">{item.note}</p></div>)}
+      {/* Faixa aberta de verdade: sem caixa e sem divisor. Quem ancora a tela
+          sao os paineis de conteudo abaixo, e virar card faria a quarta caixa
+          identica da pagina. Sem a caixa, quem separa as colunas e o espaco
+          entre elas, e quem cria hierarquia dentro de cada uma e o salto do
+          rotulo para o numero — nao uma regua. */}
+      <section className="grid grid-cols-2 gap-x-10 gap-y-7 py-2 xl:grid-cols-4">
+        {summary.map(({ icon: Icon, ...item }) => <div key={item.label} className="min-w-0"><div className="flex items-center gap-2 text-xs font-medium text-od-text-3"><Icon size={15} className="text-od-text-2" />{item.label}</div><p className="mt-2.5 truncate text-2xl font-bold tracking-[-0.03em] text-od-text" title={item.value}>{item.value}</p><p className="mt-1.5 text-xs text-od-text-3">{item.note}</p></div>)}
       </section>
 
       <section className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(21rem,.55fr)]">
