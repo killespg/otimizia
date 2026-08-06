@@ -18,7 +18,9 @@ export function TimAvatar({
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
-      <LogoMark size={Math.round(size * 0.56)} />
+      {/* Invertida para branco: a marca é azul-violeta e o avatar usa o roxo
+          da marca, então sem inverter o símbolo fica em 1,13:1 e desaparece. */}
+      <LogoMark size={Math.round(size * 0.56)} className="brightness-0 invert" />
       {online ? (
         <span
           className="absolute rounded-full border-2 border-od-bg bg-emerald-400"

@@ -455,8 +455,8 @@ describe("frontend route parity", () => {
       ["public/otimizia-mark.png", [512, 512]],
       ["public/otimizia-app-icon.png", [512, 512]],
       ["public/otimizia-app-icon-maskable.png", [512, 512]],
-      ["public/otimizia-logo-2026-dark.png", [1280, 329]],
-      ["public/otimizia-logo-2026.png", [1280, 329]],
+      ["public/otimizia-logo-2026-dark.png", [1280, 277]],
+      ["public/otimizia-logo-2026.png", [1280, 277]],
       ["public/otimizia-mark-2026-dark.png", [512, 512]],
       ["public/otimizia-mark-2026.png", [512, 512]],
       ["public/otimizia-app-icon-2026.png", [512, 512]],
@@ -479,7 +479,7 @@ describe("frontend route parity", () => {
     const layout = readFileSync(resolve(process.cwd(), "app/layout.tsx"), "utf8");
     const serviceWorker = readFileSync(resolve(process.cwd(), "public/sw.js"), "utf8");
 
-    expect(logo).toContain("const WORDMARK_RATIO = 1280 / 329");
+    expect(logo).toContain("const WORDMARK_RATIO = 1280 / 277");
     // A identidade e a mesma arte: -approved-dark e -2026-dark tem dimensoes
     // identicas (1280x329 e 512x512). A diferenca e tecnica — a -approved-dark
     // e RGB sem canal alfa, e por isso exigia mix-blend-screen para simular

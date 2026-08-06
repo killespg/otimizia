@@ -170,7 +170,10 @@ export function MobileAppNav({
                 className="flex min-h-14 items-center gap-3 border-b border-od-border px-4 hover:bg-white/[0.035]"
               >
                 <span className="grid size-9 shrink-0 place-items-center rounded-full bg-od-accent">
-                  <LogoMark size={18} />
+                  {/* A marca é azul-violeta e o círculo é o roxo da marca:
+                      sobrepostas dão 1,13:1 e o símbolo some. Invertida para
+                      branco, a silhueta se mantém e o contraste vai a ~5:1. */}
+                  <LogoMark size={18} className="brightness-0 invert" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-semibold text-od-text">

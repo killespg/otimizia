@@ -49,6 +49,10 @@ hook.cache.json
 # O produto serve os .webp versionados ao lado; o master fica local.
 /public/backgrounds/*.png
 
+# Arte de origem da marca: pesada e so serve para regerar os assets de
+# public/. O que o produto serve fica versionado la.
+/brand/
+
 # Local development logs
 dashboard-dev.*.log
 next-dev.*.log
