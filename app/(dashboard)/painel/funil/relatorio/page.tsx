@@ -113,7 +113,7 @@ export default async function PipelineReportPage(
         </div>
       </header>
 
-      <section className={usesFlatSurface ? "grid border-y border-white/[0.08] sm:grid-cols-4" : "grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"}>
+      <section className={usesFlatSurface ? "grid border-t border-white/[0.08] sm:grid-cols-4" : "grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"}>
         <MetricCard label={isRealEstate ? "Atendimentos iniciados" : "Negócios criados"} value={String(totals.created)} flat={usesFlatSurface} />
         <MetricCard label={isRealEstate ? "Fechados" : "Ganhos"} value={String(totals.won)} flat={usesFlatSurface} />
         <MetricCard label={isRealEstate ? "Valor fechado" : "Valor ganho"} value={formatBRL(totals.wonValueCents)} flat={usesFlatSurface} />
@@ -124,7 +124,7 @@ export default async function PipelineReportPage(
         />
       </section>
 
-      <section className={usesFlatSurface ? "overflow-x-auto border-y border-white/[0.08]" : "panel overflow-x-auto p-5 sm:p-6"}>
+      <section className={usesFlatSurface ? "overflow-x-auto border-t border-white/[0.08]" : "panel overflow-x-auto p-5 sm:p-6"}>
         <table className={usesFlatSurface ? "w-full min-w-[680px] border-collapse text-sm" : "w-full min-w-[560px] border-collapse text-sm"}>
           <thead>
             <tr className={usesFlatSurface ? "text-left text-xs font-semibold uppercase tracking-[0.04em] text-od-text-3" : "text-left text-xs font-bold uppercase tracking-wide text-ink-muted"}>

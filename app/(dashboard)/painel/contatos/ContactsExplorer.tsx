@@ -165,12 +165,12 @@ export function ContactsExplorer({
               </div>
             </div>
           ) : (
-            <ul>
+            <ul className="od-rows">
               {results.map((contact) => (
                 <li key={contact.id}>
                   <Link
                     href={`/painel/contatos/${contact.id}`}
-                    className="group flex items-center gap-3 border-b border-white/[0.06] px-5 py-4 hover:bg-white/[0.025]"
+                    className="group flex items-center gap-3 px-5 py-4 hover:bg-white/[0.025]"
                   >
                     <Avatar name={contact.name} />
                     <div className="min-w-0 flex-1">

@@ -506,7 +506,7 @@ function SellerRevenue({ openValue, wonValue, series, conversionRate, avgTicketC
           <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/[0.09]"><span className="block h-full rounded-full bg-od-accent" style={{ width: `${wonShare}%` }} /></div>
           <p className="mt-2 text-xs text-od-text-3">{wonShare}% do volume acompanhado já foi ganho</p>
           <RevenueLineChart series={series} dark />
-          <div className="mt-5 grid divide-y divide-white/[0.08] border-y border-white/[0.08] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <div className="mt-5 grid divide-y divide-white/[0.08] border-t border-white/[0.08] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
             <MiniStat label="Em aberto" value={formatBRL(openValue)} />
             <MiniStat label="Conversão" value={conversionRate === null ? "—" : `${conversionRate}%`} />
             <MiniStat label="Ticket médio" value={avgTicketCents === null ? "—" : formatBRL(avgTicketCents)} />
@@ -521,14 +521,14 @@ function SellerRevenue({ openValue, wonValue, series, conversionRate, avgTicketC
             <p className="mt-2 text-xs text-od-text-3">{wonShare}% do volume acompanhado já foi ganho</p>
           </div>
           <div>
-            <div className="flex flex-col gap-4 border-y border-white/[0.08] py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 border-t border-white/[0.08] pt-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 <span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><TrendingUp size={17} /></span>
                 <div><p className="text-sm font-semibold text-white/76">Seu gráfico começa com a primeira venda ganha.</p><p className="mt-1 text-xs text-od-text-3">Mova uma oportunidade para ganha no funil.</p></div>
               </div>
               <Link href="/painel/funil" className="inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir funil</Link>
             </div>
-            <div className="mt-4 grid divide-y divide-white/[0.08] border-y border-white/[0.08] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            <div className="mt-4 grid divide-y divide-white/[0.08] border-t border-white/[0.08] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
               <MiniStat label="Em aberto" value={formatBRL(openValue)} />
               <MiniStat label="Conversão" value={conversionRate === null ? "—" : `${conversionRate}%`} />
               <MiniStat label="Ticket médio" value={avgTicketCents === null ? "—" : formatBRL(avgTicketCents)} />
@@ -599,7 +599,7 @@ function SellerOpenClaims({ tasks, deals, preset }: { tasks: Task[]; deals: Deal
   return (
     <section data-dashboard-card className="rounded border border-od-accent/25 bg-od-accent/[0.055] p-4 sm:p-6">
       <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Disponíveis para assumir</h2><p className="mt-1 text-xs text-od-text-3">Itens da equipe ainda sem responsável</p></div><span className="rounded bg-od-accent/15 px-2 py-1 text-xs font-semibold text-od-text">{tasks.length + deals.length}</span></div>
-      <div className="mt-4 divide-y divide-od-accent/12 border-y border-od-accent/12">
+      <div className="mt-4 divide-y divide-od-accent/12 border-t border-od-accent/12">
         {tasks.map((task) => <div key={task.id} className="flex min-h-14 items-center gap-3 py-2"><BellRing size={15} className="text-od-text-3" /><span className="min-w-0 flex-1 truncate text-sm font-medium text-white/72">{task.title}</span><form action={claimTask}><input type="hidden" name="task_id" value={task.id} /><input type="hidden" name="return_to" value="/painel" /><PendingButton className="min-h-9 rounded bg-od-accent px-3 text-xs font-semibold text-white" pendingLabel="Assumindo">Assumir</PendingButton></form></div>)}
         {deals.map((deal) => <div key={deal.id} className="flex min-h-14 items-center gap-3 py-2"><CircleDollarSign size={15} className="text-od-text-3" /><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-white/72">{deal.title}</span><span className="text-xs text-od-text-3">{preset.dealSingular} · {formatBRL(deal.value_cents ?? 0)}</span></span><form action={claimDeal}><input type="hidden" name="deal_id" value={deal.id} /><input type="hidden" name="return_to" value="/painel" /><PendingButton className="min-h-9 rounded bg-od-accent px-3 text-xs font-semibold text-white" pendingLabel="Assumindo">Assumir</PendingButton></form></div>)}
       </div>

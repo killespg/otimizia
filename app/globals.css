@@ -407,6 +407,21 @@ p { text-wrap: pretty; }
   color: var(--od-text-2);
 }
 
+/* Separação de linhas sem régua.
+   O traço de 1px servia ao design anterior, de superfícies opacas: ali ele era
+   a única coisa capaz de dizer onde um registro terminava. No vidro a
+   separação vem do material — uma faixa alternada muda o plano sem desenhar
+   nada. E preserva o que a régua tinha de útil: seguir a linha da esquerda até
+   a coluna da direita numa lista larga.
+   2,2% de branco é o suficiente para o olho registrar a alternância e baixo o
+   bastante para não alterar o contraste do texto. Só a partir de `sm`: no
+   celular a linha ocupa a largura toda e não há coluna distante para seguir. */
+@media (min-width: 640px) {
+  .od-rows > *:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.022);
+  }
+}
+
 /* Uma régua entre seções, não duas. Com borda em cima e embaixo, duas seções
    empilhadas encostavam a borda de baixo de uma na borda de cima da outra e
    desenhavam uma linha dupla — o efeito de "cheio de linha". Só a de cima

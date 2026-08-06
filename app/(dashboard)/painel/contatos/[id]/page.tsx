@@ -161,7 +161,7 @@ export default async function ContactDetailPage(
       </header>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "panel overflow-hidden"}>
+        <section className={usesFlatSurface ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}>
           <div className="border-b border-line px-5 py-4">
             <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
               {copy.dataTitle}
@@ -240,7 +240,7 @@ export default async function ContactDetailPage(
 
         <div className="space-y-5">
           {isSeller ? (
-            <section className="overflow-hidden border-y border-white/[0.08]">
+            <section className="overflow-hidden border-t border-white/[0.08]">
               <div className="border-b border-white/[0.08] px-5 py-4">
                 <h2 className="text-base font-semibold text-white">Preferências de compra</h2>
                 <p className="mt-1 text-sm text-white/52">Tamanhos, medidas e hábitos para atender e recomprar sem perguntar tudo de novo.</p>
@@ -259,7 +259,7 @@ export default async function ContactDetailPage(
           ) : null}
 
           {showLeadPreferences && (
-            <section className="overflow-hidden border-y border-white/[0.08]">
+            <section className="overflow-hidden border-t border-white/[0.08]">
               <div className="border-b border-line px-5 py-4">
                 <h2 className="text-lg font-black tracking-[-0.02em] text-ink">Perfil de busca do cliente</h2>
                 <p className="mt-1 text-sm font-medium text-ink-muted">
@@ -289,7 +289,7 @@ export default async function ContactDetailPage(
           />
 
           {preset.followUpOffsets.length > 0 && (
-            <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "panel overflow-hidden"}>
+            <section className={usesFlatSurface ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}>
               <div className="border-b border-line px-5 py-4">
                 <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
                   Lembrete rápido
@@ -321,7 +321,7 @@ export default async function ContactDetailPage(
             </section>
           )}
 
-          <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "panel overflow-hidden"}>
+          <section className={usesFlatSurface ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}>
             <div className="border-b border-line px-5 py-4">
               <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
                 Conversas
@@ -354,7 +354,7 @@ export default async function ContactDetailPage(
                   </p>
                 </div>
               ) : (
-                <ol className="enter mt-5 divide-y divide-white/[0.08] border-y border-white/[0.08]">
+                <ol className="enter mt-5 divide-y divide-white/[0.08] border-t border-white/[0.08]">
                   {logs.map((log) => (
                     <li key={log.id} className="py-4">
                       <p className="text-safe text-sm font-medium leading-relaxed text-ink">
@@ -370,7 +370,7 @@ export default async function ContactDetailPage(
             </div>
           </section>
 
-          <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "panel overflow-hidden"}>
+          <section className={usesFlatSurface ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}>
             <div className="border-b border-line px-5 py-4">
               <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
                 {copy.tasksTitle}

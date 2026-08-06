@@ -186,7 +186,7 @@ describe("frontend route parity", () => {
     expect(report).toContain('workspaceKey === "autonomous_seller"');
     expect(report).toContain('workspaceKey === "real_estate_broker"');
     expect(report).toContain('flat={usesFlatSurface}');
-    expect(report).toContain('border-y border-white/[0.08]');
+    expect(report).toMatch(/border-[yt] border-white\/\[0\.08\]/);
     expect(report).toContain('"panel p-4"');
   });
 
@@ -207,8 +207,8 @@ describe("frontend route parity", () => {
     expect(settings).toContain('isSeller ? "Vendas / Configurações"');
     expect(settings).toContain('isSeller ? "Configurações do negócio"');
     expect(team).toContain('isSeller ? "Vendas / Meu negócio"');
-    expect(tasks).toContain('id="new-task" action={createTask} className="scroll-mt-24 border-y');
-    expect(tasks).toContain('isSeller ? "grid border-y');
+    expect(tasks).toMatch(/id="new-task" action=\{createTask\} className="scroll-mt-24 border-[yt]/);
+    expect(tasks).toMatch(/isSeller \? "grid border-[yt]/);
     expect(tasks).not.toContain('isSeller ? "overflow-hidden rounded-xl');
   });
 
@@ -225,7 +225,10 @@ describe("frontend route parity", () => {
 
     for (const file of files) {
       const source = readFileSync(resolve(process.cwd(), file), "utf8");
-      expect(source).toContain("border-y border-white/[0.08]");
+      // Régua no lugar de card arredondado — a aresta que a carrega é
+      // implementação. Blocos empilhados com espaço entre si e régua nas duas
+      // arestas desenhavam duas linhas por emenda.
+      expect(source).toMatch(/border-[yt] border-white\/\[0\.08\]/);
     }
 
     const board = readFileSync(resolve(process.cwd(), files[1]), "utf8");

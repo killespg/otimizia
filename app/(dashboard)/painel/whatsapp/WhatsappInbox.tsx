@@ -656,7 +656,7 @@ export function WhatsappInbox({
             {/* Composer */}
             <div className="shrink-0 bg-white/[0.03] pb-[env(safe-area-inset-bottom)]">
               {pendingImage ? (
-                <div className="flex items-center gap-3 border-b border-white/[0.06] px-3 py-2">
+                <div className="flex items-center gap-3 px-3 py-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={pendingImage.dataUrl} alt="" className="size-12 rounded object-cover" />
                   <span className="min-w-0 flex-1 truncate text-[12px] text-white/60">{pendingImage.name}</span>

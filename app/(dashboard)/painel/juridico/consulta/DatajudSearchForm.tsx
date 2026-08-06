@@ -209,11 +209,11 @@ export function DatajudSearchForm({
           {process.movimentos.length === 0 ? (
             <p className="p-5 text-[12px] text-od-text-3">Nenhuma movimentação retornada pelo DataJud.</p>
           ) : (
-            <div className="max-h-[32rem] overflow-y-auto">
+            <div className="od-rows max-h-[32rem] overflow-y-auto">
               {[...process.movimentos]
                 .sort((a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime())
                 .map((movimento, index) => (
-                  <article key={`${movimento.codigo}-${movimento.dataHora}-${index}`} className="flex items-start gap-3 border-b border-white/[0.06] px-5 py-4">
+                  <article key={`${movimento.codigo}-${movimento.dataHora}-${index}`} className="flex items-start gap-3 px-5 py-4">
                     <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-md bg-white/[0.06] text-od-text-2">
                       <IconClock className="h-4 w-4" />
                     </span>

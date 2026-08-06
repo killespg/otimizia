@@ -144,7 +144,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
         </div>
       </header>
 
-      <section className="grid grid-cols-1 border-y border-white/[0.08] sm:grid-cols-3">
+      <section className="grid grid-cols-1 border-t border-white/[0.08] sm:grid-cols-3">
         <MetricCard
           label="Atrasados"
           value={String(overdueTasks.length + overdueDeadlines.length)}
@@ -155,7 +155,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
         <MetricCard label="Este mês" value={String(monthEntries.length)} icon={IconCalendar} />
       </section>
 
-      <form id="new-reminder" action={createTask} className="scroll-mt-24 border-y border-white/[0.08] py-5">
+      <form id="new-reminder" action={createTask} className="scroll-mt-24 border-t border-white/[0.08] py-5">
         <input type="hidden" name="return_to" value="/painel/calendario" />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_13rem_minmax(0,1fr)_auto] lg:items-end">
           <div>
@@ -189,7 +189,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
         </div>
       </form>
 
-      <section className="overflow-hidden border-y border-white/[0.08]">
+      <section className="overflow-hidden border-t border-white/[0.08]">
         <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
           <h2 className="text-[14px] font-semibold capitalize text-white">{monthTitle}</h2>
           <div className="flex gap-2">
@@ -260,7 +260,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
         </div>
       </section>
 
-      <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "panel overflow-hidden"}>
+      <section className={usesFlatSurface ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}>
         <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
           <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
             Compromissos do mês

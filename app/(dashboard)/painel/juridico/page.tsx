@@ -372,7 +372,7 @@ export default async function LegalDashboardPage({
             </div>
           ) : null}
           {priorityItems.length ? (
-            <div className="divide-y divide-od-border border-y border-od-border">
+            <div className="divide-y divide-od-border border-t border-od-border">
               {priorityItems.map((deadline) => {
                 const item = caseById.get(deadline.case_id);
                 const urgent = new Date(deadline.due_at) <= todayEnd;
@@ -435,7 +435,7 @@ export default async function LegalDashboardPage({
             /* Carteira em dia: boa notícia dita como boa notícia. Se existem
                prazos fora do escopo atual, dizemos quantos — senão o usuário
                conclui que zerou quando só está olhando por uma fresta. */
-            <div className="flex flex-col gap-3 border-y border-od-border px-3 py-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-t border-od-border px-3 py-6 sm:flex-row sm:items-center sm:justify-between">
               <p className="flex items-start gap-2.5 text-sm text-white/70">
                 <span className="mt-px grid size-8 shrink-0 place-items-center rounded-xl bg-emerald-400/10 text-emerald-300">
                   <Check size={15} />
@@ -790,7 +790,7 @@ function FinanceSummary({
           style={{ width: `${progress}%` }}
         />
       </div>
-      <dl className="mt-6 grid grid-cols-2 divide-x divide-white/15 border-y border-white/15 py-4">
+      <dl className="mt-6 grid grid-cols-2 divide-x divide-white/15 border-t border-white/15 py-4">
         <div className="pr-4">
           <dt className="text-xs font-medium text-white/65">Recebido</dt>
           <dd className="mt-2 text-lg font-bold">{formatBRL(paid)}</dd>

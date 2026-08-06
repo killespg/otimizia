@@ -219,7 +219,7 @@ export default function Board({
 
   return (
     <div className={flat ? "space-y-5" : "space-y-4"}>
-      <form action={createPipelineList} className={flat ? "flex flex-col gap-3 border-y border-white/[0.08] py-4 sm:flex-row sm:items-end" : "panel flex flex-col gap-3 p-4 sm:flex-row sm:items-end"}>
+      <form action={createPipelineList} className={flat ? "flex flex-col gap-3 border-t border-white/[0.08] py-4 sm:flex-row sm:items-end" : "panel flex flex-col gap-3 p-4 sm:flex-row sm:items-end"}>
         <input type="hidden" name="return_to" value="/painel/funil" />
         <div className="min-w-0 flex-1">
           <label className="label" htmlFor="pipeline-list-name">
@@ -240,7 +240,7 @@ export default function Board({
         </PendingButton>
       </form>
 
-      <section className={flat ? "grid gap-3 border-y border-white/[0.08] py-4 md:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto] md:items-end" : "panel grid gap-3 p-4 md:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto] md:items-end"}>
+      <section className={flat ? "grid gap-3 border-t border-white/[0.08] py-4 md:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto] md:items-end" : "panel grid gap-3 p-4 md:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto] md:items-end"}>
         <label className="block min-w-0">
           <span className="label">Buscar no quadro</span>
           <input
@@ -292,7 +292,7 @@ export default function Board({
       </section>
 
       {columns.length > 1 && (
-        <div className={flat ? "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 border-y border-white/[0.08] bg-od-surface py-2 sm:hidden" : "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 rounded-xl border border-line bg-surface/92 p-1.5 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] backdrop-blur-xl sm:hidden"}>
+        <div className={flat ? "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 border-t border-white/[0.08] bg-od-surface py-2 sm:hidden" : "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 rounded-xl border border-line bg-surface/92 p-1.5 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] backdrop-blur-xl sm:hidden"}>
           <button
             type="button"
             onClick={() => scrollBoard("previous")}
@@ -318,7 +318,7 @@ export default function Board({
       <div
         ref={boardRef}
         aria-busy={boardBusy}
-        className={flat ? "pipeline-board -mx-4 flex snap-x snap-mandatory gap-0 overflow-x-auto border-y border-white/[0.08] px-4 sm:mx-0 sm:px-0" : "pipeline-board -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:gap-4 sm:px-0"}
+        className={flat ? "pipeline-board -mx-4 flex snap-x snap-mandatory gap-0 overflow-x-auto border-t border-white/[0.08] px-4 sm:mx-0 sm:px-0" : "pipeline-board -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:gap-4 sm:px-0"}
       >
         {columns.map((column) => {
           const meta = trelloMeta(column);
@@ -665,7 +665,7 @@ export default function Board({
           );
         })}
         {columns.length === 0 && (
-          <div className={flat ? "flex min-h-48 min-w-full items-center justify-center border-y border-white/[0.08] p-8 text-center" : "panel flex min-h-48 min-w-full items-center justify-center p-8 text-center"}>
+          <div className={flat ? "flex min-h-48 min-w-full items-center justify-center border-t border-white/[0.08] p-8 text-center" : "panel flex min-h-48 min-w-full items-center justify-center p-8 text-center"}>
             <p className="text-sm font-bold text-ink-muted">{isSeller ? "Nenhuma venda bate com os filtros." : isRealEstate ? "Nenhum atendimento bate com os filtros." : "Nenhum card bate com os filtros."}</p>
           </div>
         )}

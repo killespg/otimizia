@@ -111,13 +111,13 @@ export default async function TasksPage() {
         </div>
       </header>
 
-      <section className="grid grid-cols-1 border-y border-white/[0.08] sm:grid-cols-3">
+      <section className="grid grid-cols-1 border-t border-white/[0.08] sm:grid-cols-3">
         <MetricCard label="Pendentes" value={String(pending.length)} icon={IconBell} />
         <MetricCard label="Hoje" value={String(todayTasks.length)} icon={IconClock} pink />
         <MetricCard label="Feitas" value={String(done.length)} icon={IconCheckCircle} />
       </section>
 
-      <form id="new-task" action={createTask} className="scroll-mt-24 border-y border-white/[0.08] py-5">
+      <form id="new-task" action={createTask} className="scroll-mt-24 border-t border-white/[0.08] py-5">
         <input type="hidden" name="return_to" value="/painel/tarefas" />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_13rem_minmax(0,1fr)_auto] lg:items-end">
           <div>
@@ -194,7 +194,7 @@ export default async function TasksPage() {
       </form>
 
       {handoffRequests.length > 0 && (
-        <section className={isSeller ? "overflow-hidden border-y border-white/[0.08]" : "panel overflow-hidden"}>
+        <section className={isSeller ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}>
           <div className="border-b border-line px-5 py-4">
             <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
               Pedidos de transferência para você
@@ -216,7 +216,7 @@ export default async function TasksPage() {
       )}
 
       {reviewQueue.length > 0 && (
-        <section className={isSeller ? "overflow-hidden border-y border-od-accent/20" : "panel overflow-hidden border-brand-200"}>
+        <section className={isSeller ? "overflow-hidden border-t border-od-accent/20" : "panel overflow-hidden border-brand-200"}>
           <div className="flex items-center justify-between border-b border-line bg-brand-50 px-5 py-4">
             <div><h2 className="text-lg font-black text-ink">Entregas para aprovar</h2><p className="mt-1 text-sm font-medium text-ink-muted">Revise o trabalho, aprove ou devolva com uma orientação.</p></div>
             <span className="tag bg-od-muted-surface text-od-text-2">{reviewQueue.length}</span>
@@ -226,10 +226,10 @@ export default async function TasksPage() {
       )}
 
       {submittedByMe.length > 0 && (
-        <section className={isSeller ? "overflow-hidden border-y border-white/[0.08]" : "panel overflow-hidden"}><div className="border-b border-line px-5 py-4"><h2 className="text-lg font-black text-ink">Aguardando aprovação</h2><p className="mt-1 text-sm font-medium text-ink-muted">Tarefas que você já entregou ao responsável.</p></div><ul className="divide-y divide-line px-5">{submittedByMe.map((task)=><TaskItem key={task.id} task={task} overdue={false} members={members} currentUserId={user!.id} isAdmin={isAdmin} canReviewAll={canReviewAll}/>)}</ul></section>
+        <section className={isSeller ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}><div className="border-b border-line px-5 py-4"><h2 className="text-lg font-black text-ink">Aguardando aprovação</h2><p className="mt-1 text-sm font-medium text-ink-muted">Tarefas que você já entregou ao responsável.</p></div><ul className="divide-y divide-line px-5">{submittedByMe.map((task)=><TaskItem key={task.id} task={task} overdue={false} members={members} currentUserId={user!.id} isAdmin={isAdmin} canReviewAll={canReviewAll}/>)}</ul></section>
       )}
 
-      <div className={isSeller ? "grid border-y border-white/[0.08] xl:grid-cols-2" : "grid gap-5 xl:grid-cols-2"}>
+      <div className={isSeller ? "grid border-t border-white/[0.08] xl:grid-cols-2" : "grid gap-5 xl:grid-cols-2"}>
         {groups.map((group) => (
           <TaskGroup key={group.title} {...group} members={members} currentUserId={user!.id} isAdmin={isAdmin} canReviewAll={canReviewAll} isSeller={isSeller} />
         ))}

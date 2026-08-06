@@ -64,6 +64,16 @@ Os valores executáveis vivem em `app/globals.css`.
    de navegação ao redor. A exceção é dele; não abre precedente para cards,
    faixas de métrica ou tipografia.
 4. Não aninhar cards. Métricas relacionadas formam uma faixa ou painel com propósito.
+   4a. Lista longa não leva régua por item. O traço de 1px servia ao design
+   anterior, de superfícies opacas, onde era a única coisa capaz de marcar onde
+   um registro terminava; repetido quarenta vezes vira listra. No vidro a
+   separação vem do material: `.od-rows` alterna 2,2% de branco entre as
+   linhas, o que marca o registro e preserva o que a régua tinha de útil —
+   seguir a linha até a coluna da direita. Só a partir de `sm`, porque no
+   celular a linha ocupa a largura toda e não há coluna distante para seguir.
+   Contraste medido na faixa: 11,9:1 no branco e 5,2:1 no terciário.
+   Régua continua valendo para estrutura: cabeçalho de tabela, cabeçalho de
+   painel e fronteira entre seções — e uma só por fronteira, nunca duas.
 5. Desktop usa relações e densidade; mobile reorganiza a mesma hierarquia.
 6. Conteúdo continua visível sem JavaScript. JavaScript melhora interação e movimento.
 7. `prefers-reduced-motion` deve ser respeitado e animação não bloqueia a entrada.
