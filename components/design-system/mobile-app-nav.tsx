@@ -12,15 +12,15 @@ import {
   type ReactNode,
 } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ChevronRight, Menu, X, type LucideIcon } from "lucide-react";
-import { LogoMark } from "@/components/design-system/logo";
+import { ChevronRight, Menu, X } from "lucide-react";
+import type { NavIcon } from "@/components/design-system/product-nav-groups";
 import { TimIcon } from "@/components/design-system/tim-icon";
 import { VoiceSheet } from "@/components/tim/VoiceSheet";
 
 export type MobileNavItem = {
   href: string;
   label: string;
-  icon: LucideIcon;
+  icon: NavIcon;
   exact?: boolean;
   badge?: number;
   danger?: boolean;
@@ -170,10 +170,7 @@ export function MobileAppNav({
                 className="flex min-h-14 items-center gap-3 border-b border-od-border px-4 hover:bg-white/[0.035]"
               >
                 <span className="grid size-9 shrink-0 place-items-center rounded-full bg-od-accent">
-                  {/* A marca é azul-violeta e o círculo é o roxo da marca:
-                      sobrepostas dão 1,13:1 e o símbolo some. Invertida para
-                      branco, a silhueta se mantém e o contraste vai a ~5:1. */}
-                  <LogoMark size={18} className="brightness-0 invert" />
+                  <TimIcon size={20} className="text-white" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-semibold text-od-text">

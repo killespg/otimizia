@@ -39,11 +39,18 @@ const SPARKLES = [
   { cx: 23.1, cy: 19.6, r: 2.9, opacity: 0.78 },
 ];
 
+/**
+ * Aceita `strokeWidth` para poder ocupar o lugar de um ícone do lucide na
+ * navegação, que engrossa o traço do item ativo. Não é adereço ignorado: o
+ * valor vai para os anéis, que é o traço que o ícone realmente tem.
+ */
 export function TimIcon({
   size = 30,
+  strokeWidth = 1.8,
   className,
 }: {
   size?: number;
+  strokeWidth?: number;
   className?: string;
 }) {
   return (
@@ -63,7 +70,7 @@ export function TimIcon({
           cy="16"
           r={ring.r}
           stroke="currentColor"
-          strokeWidth="0.9"
+          strokeWidth={strokeWidth * 0.5}
           opacity={ring.opacity}
         />
       ))}

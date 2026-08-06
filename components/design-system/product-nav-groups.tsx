@@ -15,10 +15,21 @@ import { LogoMark } from "@/components/design-system/logo";
 import { MobileAppNav } from "@/components/design-system/mobile-app-nav";
 import { WorkspaceSwitcher } from "@/app/(dashboard)/painel/WorkspaceSwitcher";
 
+/**
+ * Um ícone de navegação. Mais largo que `LucideIcon` porque o item do Tim usa
+ * a marca dele, e não um ícone genérico de robô: qualquer componente que
+ * aceite tamanho, classe e espessura serve.
+ */
+export type NavIcon = React.ComponentType<{
+  size?: number;
+  className?: string;
+  strokeWidth?: number;
+}>;
+
 export type NavItem = {
   href: string;
   label: string;
-  icon: LucideIcon;
+  icon: NavIcon;
   exact?: boolean;
   badge?: number;
   danger?: boolean;

@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Bot,
   BriefcaseBusiness,
   Building2,
   CalendarDays,
@@ -21,6 +20,7 @@ import {
 } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { TwoLevelNav, type NavGroup, type NavItem } from "@/components/design-system/product-nav-groups";
+import { TimIcon } from "@/components/design-system/tim-icon";
 
 type Props = {
   workspaceKey: string;
@@ -36,7 +36,7 @@ type Props = {
 export function ProductNavigation(props: Props) {
   const overview: NavItem[] = [
     { href: "/painel", label: "Visão geral", icon: Gauge, exact: true },
-    { href: "/painel/assistente", label: "Tim", icon: Bot },
+    { href: "/painel/assistente", label: "Tim", icon: TimIcon },
   ];
   const core: NavItem[] = [
     { href: "/painel/contatos", label: props.labels.contacts, icon: ContactRound },

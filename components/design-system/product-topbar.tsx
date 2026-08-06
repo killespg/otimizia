@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, Bot, Search } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { LogoWordmark } from "@/components/design-system/logo";
+import { TimIcon } from "@/components/design-system/tim-icon";
 
 export function ProductTopbar({ initials }: { initials: string }) {
   const router = useRouter();
@@ -24,7 +25,7 @@ export function ProductTopbar({ initials }: { initials: string }) {
         <input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Buscar contatos" placeholder="Buscar cliente ou contato" className="!min-h-0 !border-0 !bg-transparent !p-0 text-[13px] !shadow-none outline-none placeholder:text-od-text-3" />
       </form>
       <div data-liquid-glass-actions className="liquid-glass-control flex shrink-0 items-center rounded-full p-1">
-        <Link href="/painel/assistente" aria-label="Abrir conversa com o Tim" className="grid size-11 place-items-center rounded-md text-od-text-3 hover:bg-white/[0.045] hover:text-od-text"><Bot size={17} /></Link>
+        <Link href="/painel/assistente" aria-label="Abrir conversa com o Tim" className="grid size-11 place-items-center rounded-md text-od-text-3 hover:bg-white/[0.045] hover:text-od-text"><TimIcon size={17} /></Link>
         <Link href="/painel/tarefas" aria-label="Ver lembretes" className="relative grid size-11 place-items-center rounded-md text-od-text-3 hover:bg-white/[0.045] hover:text-od-text"><Bell size={17} /><span className="absolute right-2.5 top-2.5 size-1.5 rounded-full bg-od-accent" /></Link>
         <Link href="/painel/configuracoes" aria-label="Abrir sua conta" className="grid size-11 place-items-center rounded-full bg-white/[0.07] text-xs font-semibold text-od-text-2">{initials}</Link>
       </div>

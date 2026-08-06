@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { MobileDashboardGreeting } from "@/lib/real-estate/mobile-dashboard-greeting";
+import { TimIcon } from "@/components/design-system/tim-icon";
 
 export type RealEstateDashboardHeaderProps = {
   displayName: string;
@@ -67,7 +68,7 @@ export function RealEstateDashboardHeader({
         data-liquid-glow="tim-action"
         className="liquid-glass-control group flex min-h-11 w-full items-center gap-3 rounded-full px-4 text-[13px] font-semibold text-od-text-2 shadow-[0_0_20px_rgba(139,92,246,0.12)] transition-shadow duration-300 hover:text-od-text hover:shadow-[0_0_28px_rgba(139,92,246,0.2)] motion-reduce:transition-none md:inline-flex md:w-auto md:max-w-full md:text-sm"
       >
-        <Sparkles size={16} className="shrink-0 text-violet-300" />
+        <TimIcon size={16} className="shrink-0 text-violet-300" />
         <span className="min-w-0 flex-1 truncate">Acione o Tim na sua operação</span>
         <ArrowRight size={15} className="shrink-0 text-od-text-3 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none" />
       </Link>

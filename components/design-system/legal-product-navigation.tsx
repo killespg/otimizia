@@ -2,7 +2,6 @@
 
 import {
   BadgeDollarSign,
-  Bot,
   BriefcaseBusiness,
   CalendarCheck2,
   CalendarDays,
@@ -21,6 +20,7 @@ import {
 } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { TwoLevelNav, type NavItem } from "@/components/design-system/product-nav-groups";
+import { TimIcon } from "@/components/design-system/tim-icon";
 
 type Props = {
   displayName: string;
@@ -32,7 +32,7 @@ type Props = {
 export function LegalProductNavigation({ displayName, organizationName, canViewFinance, counts }: Props) {
   const overview: NavItem[] = [
     { href: "/painel/juridico", label: "Visão geral", icon: CircleGauge, exact: true },
-    { href: "/painel/assistente", label: "Tim", icon: Bot },
+    { href: "/painel/assistente", label: "Tim", icon: TimIcon },
   ];
   const legal: NavItem[] = [
     { href: "/painel/juridico/processos", label: "Processos", icon: BriefcaseBusiness, badge: counts.cases },

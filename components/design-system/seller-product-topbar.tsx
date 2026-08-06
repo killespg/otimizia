@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, Maximize2, MessageSquare, Search } from "lucide-react";
+import { Bell, Maximize2, Search } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { LogoWordmark } from "@/components/design-system/logo";
+import { TimIcon } from "@/components/design-system/tim-icon";
 
 export function SellerProductTopbar({ initials, reminderCount }: { initials: string; reminderCount: number }) {
   const router = useRouter();
@@ -29,7 +30,7 @@ export function SellerProductTopbar({ initials, reminderCount }: { initials: str
         <input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Buscar cliente ou venda" placeholder="Buscar cliente ou venda" className="!min-h-0 !border-0 !bg-transparent !p-0 text-[13px] !shadow-none outline-none placeholder:text-od-text-3" />
       </form>
       <div data-liquid-glass-actions className="liquid-glass-control ml-auto flex items-center rounded-full p-1">
-        <Link href="/painel/assistente" aria-label="Abrir conversa com o Tim" className="grid size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text"><MessageSquare size={16} /></Link>
+        <Link href="/painel/assistente" aria-label="Abrir conversa com o Tim" className="grid size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text"><TimIcon size={16} /></Link>
         <button type="button" onClick={fullscreen} aria-label="Tela cheia" className="hidden size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text sm:grid"><Maximize2 size={15} /></button>
         <Link href="/painel/tarefas" aria-label="Ver lembretes" className="relative grid size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text">
           <Bell size={16} />

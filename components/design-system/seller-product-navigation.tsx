@@ -2,7 +2,6 @@
 
 import {
   BellRing,
-  Bot,
   CalendarDays,
   CircleGauge,
   ContactRound,
@@ -19,6 +18,7 @@ import {
 import { logout } from "@/app/(auth)/actions";
 import { TwoLevelNav, type NavItem } from "@/components/design-system/product-nav-groups";
 import type { SellerModule } from "@/lib/supabase/types";
+import { TimIcon } from "@/components/design-system/tim-icon";
 
 type SellerCounts = { contacts: number; deals: number; reminders: number };
 
@@ -34,7 +34,7 @@ type Props = {
 export function SellerProductNavigation({ workspaceKey, workspaceOptions, displayName, organizationName, counts, enabledModules }: Props) {
   const overview: NavItem[] = [
     { href: "/painel", label: "Visão geral", icon: CircleGauge, exact: true },
-    { href: "/painel/assistente", label: "Tim", icon: Bot },
+    { href: "/painel/assistente", label: "Tim", icon: TimIcon },
   ];
   const crm: NavItem[] = [
     { href: "/painel/contatos", label: "Clientes", icon: ContactRound, badge: counts.contacts },

@@ -2,7 +2,6 @@
 
 import {
   BarChart3,
-  Bot,
   Building2,
   CalendarDays,
   CircleGauge,
@@ -18,6 +17,7 @@ import {
 } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { TwoLevelNav, type NavGroup, type NavItem } from "@/components/design-system/product-nav-groups";
+import { TimIcon } from "@/components/design-system/tim-icon";
 
 type RealEstateCounts = { properties: number; visits: number; collections: number; deals: number };
 type Props = {
@@ -35,7 +35,7 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
   const whatsapp: NavItem = { href: "/painel/whatsapp", label: "WhatsApp", icon: MessageCircle };
   const overview: NavItem[] = [
     { href: "/painel/imoveis/dashboard", label: "Visão geral", icon: CircleGauge, exact: true },
-    { href: "/painel/assistente", label: "Tim", icon: Bot },
+    { href: "/painel/assistente", label: "Tim", icon: TimIcon },
   ];
   const portfolio: NavItem[] = [
     { href: "/painel/imoveis", label: "Carteira de imóveis", icon: Building2, badge: counts.properties, exact: true },

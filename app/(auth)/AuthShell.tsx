@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { InputHTMLAttributes } from "react";
-import { AlertCircle, CalendarCheck2, Check, ContactRound, Sparkles } from "lucide-react";
+import { AlertCircle, CalendarCheck2, Check, ContactRound } from "lucide-react";
 import { LogoWordmark } from "@/components/design-system/logo";
 import { AmbientParticles } from "@/components/design-system/ambient-particles";
 import { AnimatedShapesBackground } from "@/components/design-system/animated-shapes-background";
+import { TimIcon } from "@/components/design-system/tim-icon";
 
 /**
  * Moldura das telas de entrada.
@@ -29,7 +30,7 @@ import { AnimatedShapesBackground } from "@/components/design-system/animated-sh
  */
 const AUTH_FEATURES = [
   [ContactRound, "Clientes organizados", "Histórico completo e próximos passos sempre disponíveis."],
-  [Sparkles, "Tim, seu assistente de IA", "Responde no WhatsApp e sinaliza o momento certo de agir."],
+  [TimIcon, "Tim, seu assistente de IA", "Responde no WhatsApp e sinaliza o momento certo de agir."],
   [CalendarCheck2, "Lembretes no momento certo", "Você sempre terá noção clara dos seus vencimentos."],
 ] as const;
 
