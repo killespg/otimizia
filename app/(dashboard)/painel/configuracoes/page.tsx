@@ -155,7 +155,7 @@ export default async function SettingsPage(
             description="Como e quando você quer ser avisado de quem precisa de retorno."
           >
             <PushNotificationToggle vapidPublicKey={vapidPublicKey} />
-            <form action={updateNotificationPreferences} className="space-y-2 border-t border-line pt-4">
+            <form action={updateNotificationPreferences} className="space-y-2 pt-4">
               <label className="flex min-h-11 items-center gap-2.5 rounded-md border border-line px-3 py-2 text-sm font-bold text-ink-soft">
                 <input
                   type="checkbox"
@@ -206,7 +206,7 @@ export default async function SettingsPage(
           </PendingButton>
         </form>
 
-        <form action={updateEmail} className="space-y-2 border-t border-line pt-4">
+        <form action={updateEmail} className="space-y-2 pt-4">
           <Field
             name="email"
             label="E-mail"
@@ -232,7 +232,7 @@ export default async function SettingsPage(
           </PendingButton>
         </form>
 
-        <div className="border-t border-line pt-4">
+        <div className="pt-4">
           <span className="label">CPF</span>
           <p className="mt-1.5 text-sm font-bold text-ink">
             {profile?.cpf ? formatCPF(profile.cpf) : "Não informado"}
@@ -242,7 +242,7 @@ export default async function SettingsPage(
           </p>
         </div>
 
-        <form action={updatePassword} className="space-y-2 border-t border-line pt-4">
+        <form action={updatePassword} className="space-y-2 pt-4">
           <Field
             id="password-current-password"
             name="current_password"

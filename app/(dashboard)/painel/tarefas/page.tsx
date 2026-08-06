@@ -200,7 +200,7 @@ export default async function TasksPage() {
               Pedidos de transferência para você
             </h2>
           </div>
-          <ul className="divide-y divide-line px-5">
+          <ul className="od-rows px-5">
             {handoffRequests.map((task) => (
               <TaskItem
                 key={task.id}
@@ -221,12 +221,12 @@ export default async function TasksPage() {
             <div><h2 className="text-lg font-black text-ink">Entregas para aprovar</h2><p className="mt-1 text-sm font-medium text-ink-muted">Revise o trabalho, aprove ou devolva com uma orientação.</p></div>
             <span className="tag bg-od-muted-surface text-od-text-2">{reviewQueue.length}</span>
           </div>
-          <ul className="divide-y divide-line px-5">{reviewQueue.map((task)=><TaskItem key={task.id} task={task} overdue={false} members={members} currentUserId={user!.id} isAdmin={isAdmin} canReviewAll={canReviewAll}/>)}</ul>
+          <ul className="od-rows px-5">{reviewQueue.map((task)=><TaskItem key={task.id} task={task} overdue={false} members={members} currentUserId={user!.id} isAdmin={isAdmin} canReviewAll={canReviewAll}/>)}</ul>
         </section>
       )}
 
       {submittedByMe.length > 0 && (
-        <section className={isSeller ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}><div className="border-b border-line px-5 py-4"><h2 className="text-lg font-black text-ink">Aguardando aprovação</h2><p className="mt-1 text-sm font-medium text-ink-muted">Tarefas que você já entregou ao responsável.</p></div><ul className="divide-y divide-line px-5">{submittedByMe.map((task)=><TaskItem key={task.id} task={task} overdue={false} members={members} currentUserId={user!.id} isAdmin={isAdmin} canReviewAll={canReviewAll}/>)}</ul></section>
+        <section className={isSeller ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}><div className="border-b border-line px-5 py-4"><h2 className="text-lg font-black text-ink">Aguardando aprovação</h2><p className="mt-1 text-sm font-medium text-ink-muted">Tarefas que você já entregou ao responsável.</p></div><ul className="od-rows px-5">{submittedByMe.map((task)=><TaskItem key={task.id} task={task} overdue={false} members={members} currentUserId={user!.id} isAdmin={isAdmin} canReviewAll={canReviewAll}/>)}</ul></section>
       )}
 
       <div className={isSeller ? "od-band grid xl:grid-cols-2" : "grid gap-5 xl:grid-cols-2"}>
@@ -294,7 +294,7 @@ function TaskGroup({
           </div>
         </div>
       ) : (
-        <ul className="divide-y divide-line px-5">
+        <ul className="od-rows px-5">
           {items.map((task) => (
             <TaskItem
               key={task.id}

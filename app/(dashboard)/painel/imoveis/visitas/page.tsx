@@ -75,7 +75,7 @@ export default async function VisitasPage() {
           {/* Linha operacional: identificacao a esquerda, acao ancorada na
               direita. Empilhado, cada solicitacao ocupava tres alturas e
               deixava metade da largura vazia. */}
-          <div className="divide-y divide-line">
+          <div className="od-rows">
             {requested.map((visit) => (
               <div
                 key={visit.id}
@@ -108,7 +108,7 @@ export default async function VisitasPage() {
         {scheduled.length === 0 ? (
           <p className="text-sm font-medium text-ink-muted">Nenhuma visita agendada.</p>
         ) : (
-          <div className="divide-y divide-line">
+          <div className="od-rows">
             {scheduled.map((visit) => (
               <div key={visit.id} className="py-4">
                 <div className="flex flex-wrap items-start justify-between gap-2">
@@ -170,7 +170,7 @@ export default async function VisitasPage() {
       {history.length > 0 && (
         <section className="real-estate-flat-section py-5 sm:py-6">
           <h2 className="mb-3 text-base font-semibold text-ink">Histórico</h2>
-          <ul className="divide-y divide-line">
+          <ul className="od-rows">
             {history.map((visit) => (
               <li key={visit.id} className="flex items-center justify-between gap-3 py-2 text-sm">
                 <span className="font-bold text-ink">{propertyById.get(visit.property_id)?.title ?? "Imóvel"}</span>
