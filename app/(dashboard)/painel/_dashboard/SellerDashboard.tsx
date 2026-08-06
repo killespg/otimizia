@@ -146,9 +146,7 @@ export function SellerDashboard({
 
   return (
     <div
-      className={`dashboard-board dashboard-board-${preferences.style} dashboard-accent-${preferences.accent} relative isolate mx-auto w-full max-w-[1640px] space-y-6`}
-      data-dashboard-style={preferences.style}
-      data-dashboard-accent={preferences.accent}
+      className="dashboard-board relative isolate mx-auto w-full max-w-[1640px] space-y-6"
       data-dashboard-metrics={preferences.metrics.join(",")}
     >
       <header className="flex flex-col gap-5 pb-6 xl:flex-row xl:items-end xl:justify-between">

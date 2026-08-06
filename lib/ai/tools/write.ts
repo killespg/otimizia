@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createDeletionCode, hashDeletionCode } from "@/lib/ai/deletion-confirmation";
-import { cleanDashboardText, getDashboardPreferences, isDashboardAccent, isDashboardStyle, isDashboardWidgetKey, isMetricKey, mergeScopedPreferences } from "@/lib/workspace/dashboard-preferences";
+import { cleanDashboardText, getDashboardPreferences, isDashboardWidgetKey, isMetricKey, mergeScopedPreferences } from "@/lib/workspace/dashboard-preferences";
 import { getProfessionPreset } from "@/lib/people/professions";
 import { cleanWorkspaceLabel, parseWorkspacePreferences } from "@/lib/workspace/workspace-preferences";
 import type { ToolInput } from "./types";
@@ -242,8 +242,6 @@ export async function updateDashboardPreferencesByAi(
 
   const dashboardPreferences = {
     ...current,
-    style: isDashboardStyle(input.estilo) ? input.estilo : current.style,
-    accent: isDashboardAccent(input.cor) ? input.cor : current.accent,
     widgets: widgets.length > 0 ? widgets : current.widgets,
     metrics: metrics.length > 0 ? metrics : current.metrics,
     metricLabels,

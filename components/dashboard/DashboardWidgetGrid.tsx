@@ -70,8 +70,6 @@ export function DashboardWidgetGrid({
 
   function persist(nextWidgets: DashboardWidgetKey[]) {
     const formData = new FormData();
-    formData.set("dashboard_style", preferences.style);
-    formData.set("dashboard_accent", preferences.accent);
     formData.set(
       "dashboard_animated_background",
       preferences.showAnimatedBackground ? "1" : "0",

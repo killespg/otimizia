@@ -3,8 +3,6 @@ import {
   DASHBOARD_WIDGETS,
   cleanDashboardText,
   getDashboardPreferences,
-  isDashboardAccent,
-  isDashboardStyle,
   isMetricKey,
   mergeScopedPreferences,
   metricLabel,
@@ -21,8 +19,6 @@ const preset = {
 describe("getDashboardPreferences", () => {
   it("falls back to defaults when no stored value exists", () => {
     const prefs = getDashboardPreferences(undefined, preset);
-    expect(prefs.style).toBe("clean");
-    expect(prefs.accent).toBe("purple");
     expect(prefs.metrics).toEqual(["open_value", "contacts"]);
     expect(prefs.widgets).toEqual([...DASHBOARD_WIDGETS]);
     expect(prefs.showAnimatedBackground).toBe(false);
@@ -30,11 +26,9 @@ describe("getDashboardPreferences", () => {
 
   it("keeps only known metric/widget keys from stored value", () => {
     const prefs = getDashboardPreferences(
-      { style: "compact", accent: "cyan", metrics: ["open_value", "bogus"], widgets: ["chart", "nope"] },
+      { metrics: ["open_value", "bogus"], widgets: ["chart", "nope"] },
       preset
     );
-    expect(prefs.style).toBe("compact");
-    expect(prefs.accent).toBe("cyan");
     expect(prefs.metrics).toEqual(["open_value"]);
     expect(prefs.widgets).toEqual(["chart"]);
   });
@@ -48,25 +42,28 @@ describe("getDashboardPreferences", () => {
 
   it("ignores garbage input and falls back to defaults", () => {
     const prefs = getDashboardPreferences("not an object", preset);
-    expect(prefs.style).toBe("clean");
     expect(prefs.metrics).toEqual(["open_value", "contacts"]);
   });
 
   it("reads preferences scoped to the given workspace key", () => {
     const stored = {
-      law_office: { style: "compact", accent: "cyan" },
-      autonomous_seller: { style: "executive", accent: "pink" },
+      law_office: { metricLabels: { open_value: "Causas abertas" } },
+      autonomous_seller: { metricLabels: { open_value: "Pipeline" } },
     };
-    expect(getDashboardPreferences(stored, preset, "law_office").style).toBe("compact");
-    expect(getDashboardPreferences(stored, preset, "autonomous_seller").style).toBe("executive");
+    expect(getDashboardPreferences(stored, preset, "law_office").metricLabels)
+      .toEqual({ open_value: "Causas abertas" });
+    expect(getDashboardPreferences(stored, preset, "autonomous_seller").metricLabels)
+      .toEqual({ open_value: "Pipeline" });
     // Área ainda não personalizada cai nos defaults, não na config de outra área.
-    expect(getDashboardPreferences(stored, preset, "consultant").style).toBe("clean");
+    expect(getDashboardPreferences(stored, preset, "consultant").metricLabels).toEqual({});
   });
 
   it("uses legacy flat preferences as a fallback for every workspace", () => {
-    const legacy = { style: "compact", accent: "cyan" };
-    expect(getDashboardPreferences(legacy, preset, "law_office").style).toBe("compact");
-    expect(getDashboardPreferences(legacy, preset, "autonomous_seller").style).toBe("compact");
+    const legacy = { metricLabels: { open_value: "Herdado" } };
+    expect(getDashboardPreferences(legacy, preset, "law_office").metricLabels)
+      .toEqual({ open_value: "Herdado" });
+    expect(getDashboardPreferences(legacy, preset, "autonomous_seller").metricLabels)
+      .toEqual({ open_value: "Herdado" });
   });
 
   it("preserves an explicitly disabled animated background", () => {
@@ -126,18 +123,16 @@ describe("getDashboardPreferences", () => {
 
 describe("mergeScopedPreferences", () => {
   it("writes one workspace without touching the others", () => {
-    const existing = { law_office: { style: "compact" } };
+    const existing = { law_office: { widgets: ["chart"] } };
     const merged = mergeScopedPreferences(existing, "autonomous_seller", {
-      style: "clean",
-      accent: "purple",
       metrics: ["open_value"],
       metricLabels: {},
       widgets: ["metrics"],
       showAnimatedBackground: true,
     });
-    expect(merged.law_office).toEqual({ style: "compact" });
-    expect(getDashboardPreferences(merged, preset, "autonomous_seller").style).toBe("clean");
-    expect(getDashboardPreferences(merged, preset, "law_office").style).toBe("compact");
+    expect(merged.law_office).toEqual({ widgets: ["chart"] });
+    expect(getDashboardPreferences(merged, preset, "autonomous_seller").widgets).toEqual(["metrics"]);
+    expect(getDashboardPreferences(merged, preset, "law_office").widgets).toEqual(["chart"]);
   });
 });
 
@@ -166,12 +161,8 @@ describe("cleanDashboardText", () => {
 });
 
 describe("type guards", () => {
-  it("isMetricKey / isDashboardStyle / isDashboardAccent", () => {
+  it("isMetricKey", () => {
     expect(isMetricKey("open_value")).toBe(true);
     expect(isMetricKey("bogus")).toBe(false);
-    expect(isDashboardStyle("glow")).toBe(true);
-    expect(isDashboardStyle("bogus")).toBe(false);
-    expect(isDashboardAccent("purple")).toBe(true);
-    expect(isDashboardAccent("bogus")).toBe(false);
   });
 });

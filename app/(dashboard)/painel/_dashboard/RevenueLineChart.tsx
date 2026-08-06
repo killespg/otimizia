@@ -65,8 +65,8 @@ export function RevenueLineChart({ series, dark = false }: { series: Point[]; da
       >
         <defs>
           <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" style={{ stopColor: "var(--dashboard-accent, #7b3ff2)" }} stopOpacity="0.24" />
-            <stop offset="100%" style={{ stopColor: "var(--dashboard-accent, #7b3ff2)" }} stopOpacity="0" />
+            <stop offset="0%" style={{ stopColor: "var(--od-accent, #8757f0)" }} stopOpacity="0.24" />
+            <stop offset="100%" style={{ stopColor: "var(--od-accent, #8757f0)" }} stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -109,7 +109,7 @@ export function RevenueLineChart({ series, dark = false }: { series: Point[]; da
             pathLength={1}
             d={linePath}
             fill="none"
-            style={{ stroke: "var(--dashboard-accent-strong, #6d28d9)" }}
+            style={{ stroke: "var(--od-accent-hover, #a78bfa)" }}
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="2"
@@ -120,7 +120,7 @@ export function RevenueLineChart({ series, dark = false }: { series: Point[]; da
             cx={x(n - 1)}
             cy={y(series[n - 1].cumulativeCents)}
             r="4"
-            style={{ fill: "var(--dashboard-accent-strong, #6d28d9)" }}
+            style={{ fill: "var(--od-accent-hover, #a78bfa)" }}
             stroke="#fff"
             strokeWidth="2"
           />
@@ -151,7 +151,7 @@ export function RevenueLineChart({ series, dark = false }: { series: Point[]; da
             x2={x(displayIndex)}
             y1={TOP}
             y2={BOTTOM}
-            style={{ stroke: "var(--dashboard-accent, #7b3ff2)" }}
+            style={{ stroke: "var(--od-accent, #8757f0)" }}
             strokeWidth="1"
             strokeDasharray="4 4"
             opacity={isHovering ? 1 : 0}
@@ -163,7 +163,7 @@ export function RevenueLineChart({ series, dark = false }: { series: Point[]; da
             cx={x(displayIndex)}
             cy={y(displayed.cumulativeCents)}
             r="5"
-            style={{ fill: "var(--dashboard-accent-strong, #6d28d9)" }}
+            style={{ fill: "var(--od-accent-hover, #a78bfa)" }}
             stroke="#fff"
             strokeWidth="2"
             opacity={isHovering ? 1 : 0}

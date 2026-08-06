@@ -340,10 +340,6 @@ p { text-wrap: pretty; }
   min-height: 44px;
 }
 
-.workspace-autonomous_seller .seller-settings [data-settings-card] {
-  border-radius: var(--radius-xl);
-}
-
 .workspace-autonomous_seller .install-app-prompt {
   border-radius: var(--radius-xl);
 }
@@ -445,28 +441,33 @@ p { text-wrap: pretty; }
   box-shadow: none;
 }
 
-.workspace-real_estate_broker .settings-hub [data-settings-card] {
-  border-right: 0;
-  border-left: 0;
-  border-radius: 0;
-  background: transparent;
-  padding-right: 0;
-  padding-left: 0;
-  box-shadow: none;
-}
-
-.workspace-real_estate_broker .settings-hub [data-preferences-panel],
-.workspace-real_estate_broker .assistant-page-shell {
-  border-right: 0;
-  border-left: 0;
+/* Configurações é uma coluna de seções, não uma pilha de cards.
+   A regra anterior tirava só as bordas laterais: sobrava uma régua em cima e
+   outra embaixo de cada seção. Doze seções viravam vinte e quatro traços
+   horizontais empilhados — era isso que lia como "cheio de linhas".
+   Agora não sobra régua nenhuma: título, espaço e as faixas `.od-band` de
+   dentro já dizem onde uma seção termina. Vale para todos os workspaces; a
+   página é a mesma em qualquer área. */
+.settings-hub [data-settings-card],
+.settings-hub [data-preferences-panel],
+.assistant-page-shell {
+  border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
 }
 
-.workspace-real_estate_broker .settings-hub [data-preferences-panel] {
+.settings-hub [data-settings-card],
+.settings-hub [data-preferences-panel] {
   padding-right: 0;
   padding-left: 0;
+}
+
+/* Única seção que precisa se destacar do resto da coluna. */
+.settings-hub [data-settings-card].settings-danger {
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--od-danger-fg) 8%, transparent);
+  padding: 16px;
 }
 
 /* Conteúdo é uma camada estável. Dados, formulários e tabelas não recebem
@@ -1174,6 +1175,35 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
   font-weight: 600;
 }
 .btn-secondary:hover { border-color: var(--od-border-hover); background: rgba(255,255,255,.06); }
+
+/* `.btn-soft` é usado em 13 arquivos — salvar preferências, exportar dados,
+   gerar link de calendário, instalar o app — e ficou sem definição nenhuma na
+   troca do design system. Sem regra, `<button class="btn-soft">` renderiza
+   como texto solto: a ação principal de cada seção de Configurações não
+   parecia clicável. É a ação secundária do produto, então herda a forma do
+   `.btn-secondary` e ganha o preenchimento do vidro funcional em vez de
+   fundo transparente — é um controle, não um link. */
+.btn-soft {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--od-glass-border);
+  border-radius: 999px;
+  background: var(--od-glass-fill);
+  color: var(--od-text);
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+.btn-soft:hover {
+  border-color: var(--od-glass-border-hover);
+  background: var(--od-glass-fill-hover);
+}
+.btn-soft:active { transform: translateY(1px); }
+.btn-soft:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 
 /* Tela de autenticação é o primeiro contato com o produto — o botão de ação
    principal ganha um alvo maior, cantos mais arredondados e a sombra de

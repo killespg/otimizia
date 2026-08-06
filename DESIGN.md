@@ -50,6 +50,12 @@ Os valores executáveis vivem em `app/globals.css`.
   denso, não como vidro curvo — cantos grandes e contínuos são a assinatura
   visual do material.
 - Alvo mínimo de toque: 44 × 44 px.
+- Ações: `.btn` (primária, acento), `.btn-secondary` (contorno sobre
+  transparente) e `.btn-soft` (pílula sobre o preenchimento do vidro) —
+  a secundária padrão do painel. `.btn-soft` era usada em 13 arquivos sem
+  nunca ter sido definida na troca do design system: salvar preferências,
+  exportar dados e instalar o app renderizavam como texto solto. Definida em
+  2026-08-06.
 
 ## Regras
 
@@ -74,6 +80,12 @@ Os valores executáveis vivem em `app/globals.css`.
    Contraste medido na faixa: 11,9:1 no branco e 5,2:1 no terciário.
    Régua continua valendo para estrutura: cabeçalho de tabela, cabeçalho de
    painel e fronteira entre seções — e uma só por fronteira, nunca duas.
+   4b. Configurações não é pilha de card. Cada seção era um `.panel` com as
+   bordas laterais removidas, o que deixava só uma régua em cima e outra
+   embaixo: doze seções viravam vinte e quatro traços horizontais. Agora
+   `.settings-hub` zera borda, fundo e raio das seções em todos os workspaces —
+   título, espaço e as faixas `.od-band` de dentro dão a fronteira. A única
+   exceção é a zona de risco, que ganha plano vermelho a 8%.
 5. Desktop usa relações e densidade; mobile reorganiza a mesma hierarquia.
 6. Conteúdo continua visível sem JavaScript. JavaScript melhora interação e movimento.
 7. `prefers-reduced-motion` deve ser respeitado e animação não bloqueia a entrada.
@@ -123,6 +135,18 @@ O material tem fallback opaco quando `backdrop-filter` não existe e respeita
 Movimento respeita `prefers-reduced-motion`.
 Textos e ícones nunca entram nas camadas de distorção. Qualquer mudança de
 opacidade deve reverificar contraste WCAG AA e os alvos mínimos de 44 px.
+
+## Preferências que saíram
+
+Estilo do painel (`glow`/`clean`/`compact`/`executive`) e cor de destaque
+(`purple`/`violet`/`cyan`/`pink`) foram removidos em 2026-08-06. Eram gravados
+no perfil, aplicados como `dashboard-board-*`/`dashboard-accent-*` no DOM e
+oferecidos ao Tim como parâmetro de ferramenta — mas nenhuma regra de CSS
+existia para essas classes, e o `--dashboard-accent-strong` que o gráfico de
+receita lia nunca foi definido. Escolher estilo ou cor não mudava um pixel em
+área nenhuma. O gráfico passou a usar `--od-accent` e `--od-accent-hover`.
+Uma cor de ação é regra do sistema (regra 2); paleta por usuário contradizia
+isso e não volta.
 
 ## Compatibilidade
 

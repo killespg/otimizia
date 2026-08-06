@@ -84,7 +84,7 @@ export function InstallAppPrompt() {
   return (
     <div className="install-app-prompt flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-3">
-        <span className="grid size-11 shrink-0 place-items-center rounded-md bg-[#120f1c]">
+        <span className="grid size-11 shrink-0 place-items-center rounded-md bg-od-accent-tint">
           <LogoMark size={36} />
         </span>
         <div className="min-w-0">

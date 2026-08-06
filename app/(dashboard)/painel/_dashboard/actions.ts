@@ -7,8 +7,6 @@ import {
   DASHBOARD_WIDGETS,
   cleanDashboardText,
   getDashboardPreferences,
-  isDashboardAccent,
-  isDashboardStyle,
   isMetricKey,
   isDashboardWidgetKey,
   mergeScopedPreferences,
@@ -25,11 +23,6 @@ export async function updateDashboardPreferences(formData: FormData) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-
-  const styleValue = formData.get("dashboard_style");
-  const style = isDashboardStyle(styleValue) ? styleValue : "glow";
-  const accentValue = formData.get("dashboard_accent");
-  const accent = isDashboardAccent(accentValue) ? accentValue : "purple";
 
   const metrics = formData.getAll("dashboard_metrics").filter(isMetricKey).slice(0, 8);
   const widgets = formData.getAll("dashboard_widgets").filter(isDashboardWidgetKey);
@@ -58,8 +51,6 @@ export async function updateDashboardPreferences(formData: FormData) {
   );
 
   const dashboardPreferences: DashboardPreferences = {
-    style,
-    accent,
     metrics: metrics.length > 0 ? metrics : (preset.metrics.map((metric) => metric.key) as MetricKey[]),
     metricLabels,
     widgets: widgets.length > 0 ? widgets : existingPreferences.widgets.length > 0 ? existingPreferences.widgets : [...DASHBOARD_WIDGETS],

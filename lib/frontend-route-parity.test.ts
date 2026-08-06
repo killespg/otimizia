@@ -297,8 +297,11 @@ describe("frontend route parity", () => {
 
     const styles = readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8");
     expect(styles).toContain(".real-estate-flat-section");
-    expect(styles).toContain(".workspace-real_estate_broker .settings-hub [data-settings-card]");
-    expect(styles).toContain(".workspace-real_estate_broker .assistant-page-shell");
+    // O tratamento plano de Configurações deixou de ser exclusivo do imobiliário
+    // em 2026-08-06: a página é a mesma em qualquer workspace.
+    expect(styles).toContain(".settings-hub [data-settings-card]");
+    expect(styles).toContain(".assistant-page-shell");
+    expect(styles).not.toContain(".workspace-real_estate_broker .settings-hub");
   });
 
   it("uses the flat pipeline presentation for real estate without enabling seller order behavior", () => {

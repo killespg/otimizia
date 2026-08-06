@@ -38,13 +38,12 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetKey, string> = {
   onboarding: "Primeiros passos",
 };
 
-export const DASHBOARD_STYLES = ["glow", "clean", "compact", "executive"] as const;
-
-export type DashboardStyle = (typeof DASHBOARD_STYLES)[number];
-
-export const DASHBOARD_ACCENTS = ["purple", "violet", "cyan", "pink"] as const;
-
-export type DashboardAccent = (typeof DASHBOARD_ACCENTS)[number];
+// `style` e `accent` saíram em 2026-08-06. Eram gravados no perfil, aplicados
+// como `dashboard-board-*`/`dashboard-accent-*` no DOM e oferecidos ao Tim como
+// ferramenta — mas nenhuma regra de CSS existia para essas classes, e a
+// variável `--dashboard-accent-strong` que o gráfico lia nunca foi definida
+// (o gráfico passou a usar `--od-accent`).
+// Escolher estilo ou cor não mudava um pixel em nenhuma área.
 
 export const ALL_DASHBOARD_METRICS: { key: MetricKey; fallbackLabel: string }[] = [
   { key: "open_value", fallbackLabel: "Valor aberto" },
@@ -67,8 +66,6 @@ const LEGACY_AUTONOMOUS_SELLER_METRICS: MetricKey[] = [
 ];
 
 export type DashboardPreferences = {
-  style: DashboardStyle;
-  accent: DashboardAccent;
   metrics: MetricKey[];
   metricLabels: Partial<Record<MetricKey, string>>;
   widgets: DashboardWidgetKey[];
@@ -79,8 +76,6 @@ export type DashboardPreferences = {
 // Campos da forma "achatada" (legada), guardados direto na raiz do JSON antes
 // de as preferências passarem a ser separadas por workspace.
 const LEGACY_PREFERENCE_FIELDS = [
-  "style",
-  "accent",
   "metrics",
   "metricLabels",
   "widgets",
@@ -133,8 +128,6 @@ export function getDashboardPreferences(
     sameKeys(normalizedMetrics, LEGACY_AUTONOMOUS_SELLER_METRICS);
 
   return {
-    style: isDashboardStyle(raw.style) ? raw.style : "clean",
-    accent: isDashboardAccent(raw.accent) ? raw.accent : "purple",
     metrics: shouldUpgradeSellerDefaults ? presetMetrics : normalizedMetrics,
     metricLabels,
     widgets: normalizeWidgetKeys(raw.widgets),
@@ -168,14 +161,6 @@ export function isMetricKey(value: unknown): value is MetricKey {
 
 export function isDashboardWidgetKey(value: unknown): value is DashboardWidgetKey {
   return DASHBOARD_WIDGETS.some((widget) => widget === value);
-}
-
-export function isDashboardStyle(value: unknown): value is DashboardStyle {
-  return DASHBOARD_STYLES.some((style) => style === value);
-}
-
-export function isDashboardAccent(value: unknown): value is DashboardAccent {
-  return DASHBOARD_ACCENTS.some((accent) => accent === value);
 }
 
 function normalizeMetricKeys(value: unknown, fallback: MetricKey[]): MetricKey[] {

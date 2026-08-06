@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { ALL_DASHBOARD_METRICS, DASHBOARD_ACCENTS, DASHBOARD_STYLES, DASHBOARD_WIDGETS, getDashboardPreferences } from "@/lib/workspace/dashboard-preferences";
+import { ALL_DASHBOARD_METRICS, DASHBOARD_WIDGETS, getDashboardPreferences } from "@/lib/workspace/dashboard-preferences";
 import { getProfessionPreset } from "@/lib/people/professions";
 import { parseWorkspacePreferences } from "@/lib/workspace/workspace-preferences";
 import type { ToolInput } from "./types";
@@ -220,8 +220,6 @@ export async function getWorkspaceCustomization(
     dashboard: preferences,
     metricas_disponiveis: ALL_DASHBOARD_METRICS,
     widgets_disponiveis: DASHBOARD_WIDGETS,
-    estilos_disponiveis: DASHBOARD_STYLES,
-    cores_disponiveis: DASHBOARD_ACCENTS,
     labels_workspace: workspaceRecord[workspaceKey]?.labels ?? {},
     contexto_empresa: org ?? null,
   });

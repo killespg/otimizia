@@ -570,9 +570,7 @@ export default async function DashboardPage() {
   };
   return (
     <div
-      className={`dashboard-reference dashboard-board dashboard-board-${dashboardPreferences.style} dashboard-accent-${dashboardPreferences.accent} space-y-4 sm:space-y-5`}
-      data-dashboard-style={dashboardPreferences.style}
-      data-dashboard-accent={dashboardPreferences.accent}
+      className="dashboard-reference dashboard-board space-y-4 sm:space-y-5"
       data-dashboard-metrics={dashboardPreferences.metrics.join(",")}
     >
       <header className="dashboard-header enter flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">

@@ -1,8 +1,6 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import {
   ALL_DASHBOARD_METRICS,
-  DASHBOARD_ACCENTS,
-  DASHBOARD_STYLES,
   DASHBOARD_WIDGETS,
 } from "@/lib/workspace/dashboard-preferences";
 import { STAGE_KEYS } from "./validation";
@@ -77,7 +75,7 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
   {
     name: "get_workspace_customization",
     description:
-      "Mostra como o CRM e o painel do usuário estão personalizados agora: estilo, cor, widgets, métricas, nomes dos blocos e labels do workspace. Use antes de mudar aparência, dashboard ou preferências.",
+      "Mostra como o CRM e o painel do usuário estão personalizados agora: widgets, métricas, nomes dos blocos e labels do workspace. Use antes de mudar aparência, dashboard ou preferências.",
     input_schema: { type: "object", properties: {} },
   },
   {
@@ -237,12 +235,10 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
   {
     name: "update_dashboard_preferences",
     description:
-      "Muda o painel do usuário: estilo visual, cor, ordem dos widgets, widgets visíveis, métricas visíveis e nomes das métricas. Use quando ele pedir para reorganizar, esconder, mostrar, trocar estilo ou montar o painel do jeito dele.",
+      "Muda o painel do usuário: ordem dos widgets, widgets visíveis, métricas visíveis e nomes das métricas. Use quando ele pedir para reorganizar, esconder, mostrar ou montar o painel do jeito dele.",
     input_schema: {
       type: "object",
       properties: {
-        estilo: { type: "string", enum: DASHBOARD_STYLES, description: "Estilo visual do painel" },
-        cor: { type: "string", enum: DASHBOARD_ACCENTS, description: "Cor de destaque" },
         widgets: {
           type: "array",
           items: { type: "string", enum: DASHBOARD_WIDGETS },

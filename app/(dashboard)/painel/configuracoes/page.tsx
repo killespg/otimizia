@@ -108,7 +108,7 @@ export default async function SettingsPage(
         <div className="space-y-4">
           <SectionCard
             title={isSeller ? "Painel de vendas" : "Painel e widgets"}
-            description={isSeller ? "Escolha as métricas e a ordem das informações que você consulta todos os dias." : "Monte o dashboard com drag and drop, métricas próprias e estilo visual."}
+            description={isSeller ? "Escolha as métricas e a ordem das informações que você consulta todos os dias." : "Monte o dashboard com drag and drop, métricas próprias e nomes seus."}
           >
             <DashboardPreferencesForm
               preferences={dashboardPreferences}
@@ -144,7 +144,7 @@ export default async function SettingsPage(
 
           <Link
             href="/painel/equipe"
-            className="row-link flex items-center justify-between gap-3 rounded-md border border-line bg-surface px-4 py-3 text-sm font-bold text-ink-soft hover:border-brand-400 hover:text-brand-700"
+            className="row-link od-band flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-od-text-2 transition-colors hover:text-white"
           >
             {isSeller ? "Dados do negócio e contexto do assistente ficam em Meu negócio" : "Nome da empresa, contexto e preferências da IA ficam em Equipe"}
             <span aria-hidden="true">→</span>
@@ -155,34 +155,38 @@ export default async function SettingsPage(
             description="Como e quando você quer ser avisado de quem precisa de retorno."
           >
             <PushNotificationToggle vapidPublicKey={vapidPublicKey} />
-            <form action={updateNotificationPreferences} className="space-y-2 pt-4">
-              <label className="flex min-h-11 items-center gap-2.5 rounded-md border border-line px-3 py-2 text-sm font-bold text-ink-soft">
+            <form action={updateNotificationPreferences} className="space-y-3 pt-4">
+              {/* Sem chave VAPID o servidor não consegue disparar push nenhum, e
+                  oferecer a caixa seria prometer um aviso que nunca chega. Como
+                  caixa desabilitada não é enviada no submit, a escolha guardada
+                  viaja num hidden — fora do `.od-rows`, que conta filhos para
+                  alternar a faixa. Quando a chave existir, ela volta como estava. */}
+              {!vapidPublicKey && (
                 <input
-                  type="checkbox"
+                  type="hidden"
                   name="daily_push"
-                  defaultChecked={notificationPrefs?.daily_push ?? true}
-                  className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
+                  value={(notificationPrefs?.daily_push ?? true) ? "on" : "off"}
                 />
-                Aviso push diário (hoje + atrasados)
-              </label>
-              <label className="flex min-h-11 items-center gap-2.5 rounded-md border border-line px-3 py-2 text-sm font-bold text-ink-soft">
-                <input
-                  type="checkbox"
+              )}
+              <div className="od-band od-rows overflow-hidden">
+                {vapidPublicKey && (
+                  <CheckRow
+                    name="daily_push"
+                    defaultChecked={notificationPrefs?.daily_push ?? true}
+                    label="Aviso push diário (hoje + atrasados)"
+                  />
+                )}
+                <CheckRow
                   name="daily_summary_email"
                   defaultChecked={notificationPrefs?.daily_summary_email ?? true}
-                  className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
+                  label="Resumo diário por e-mail"
                 />
-                Resumo diário por e-mail
-              </label>
-              <label className="flex min-h-11 items-center gap-2.5 rounded-md border border-line px-3 py-2 text-sm font-bold text-ink-soft">
-                <input
-                  type="checkbox"
+                <CheckRow
                   name="stalled_deal_email"
                   defaultChecked={notificationPrefs?.stalled_deal_email ?? true}
-                  className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
+                  label="Alerta por e-mail quando uma venda fica parada"
                 />
-                Alerta por e-mail quando uma venda fica parada
-              </label>
+              </div>
               <PendingButton className="btn-soft" pendingLabel="Salvando">
                 Salvar preferências
               </PendingButton>
@@ -195,18 +199,53 @@ export default async function SettingsPage(
           >
             <CalendarFeedField token={profile?.calendar_ics_token ?? null} />
           </SectionCard>
+
+          {/* Aplicativo, exportação e atendimento eram três cards de uma linha cada.
+              Empilhados viravam três títulos, três descrições e três molduras para
+              três ações pequenas — parte do excesso de linhas da página. Juntos
+              continuam sendo três assuntos distintos, separados pelo material.
+              O suporte fica logo antes da zona de risco de propósito: quem chegou
+              até aqui pensando em excluir a conta encontra alguém para falar antes. */}
+          <SectionCard title="Aplicativo, dados e suporte" description="Instalação, cópia dos seus dados e contato direto.">
+            <div className="od-band od-rows overflow-hidden">
+              {/* Sem MiniRow: o componente já traz título, explicação e botão. */}
+              <div className="px-3 py-3">
+                <InstallAppPrompt />
+              </div>
+              <MiniRow
+                title="Baixar seus dados"
+                description="Perfil, preferências e registros ligados à sua conta. Não inclui dados dos seus colegas."
+              >
+                <DataExportButton />
+              </MiniRow>
+              <MiniRow
+                title="Falar com quem cuida do produto"
+                description="Dúvida, problema ou sugestão."
+              >
+                <a
+                  href="mailto:venancio@useotimizia.com?subject=Suporte%20OtimizIA"
+                  className="text-[13px] font-semibold text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"
+                >
+                  venancio@useotimizia.com
+                </a>
+              </MiniRow>
+            </div>
+          </SectionCard>
         </div>
 
         <div className="space-y-4">
+      {/* Sem a moldura do card, os três formulários da conta corriam juntos — e
+          dois deles pediam "Senha atual" para coisas diferentes. Cada um ganha
+          seu próprio plano: a fronteira aparece pelo material, não por régua. */}
       <SectionCard title="Conta" description="Dados de login e identificação.">
-        <form action={updateName} className="space-y-3">
+        <form action={updateName} className="od-band space-y-3 p-3">
           <Field name="name" label="Nome" defaultValue={displayName} required maxLength={120} />
           <PendingButton className="btn-soft" pendingLabel="Salvando">
             Salvar nome
           </PendingButton>
         </form>
 
-        <form action={updateEmail} className="space-y-2 pt-4">
+        <form action={updateEmail} className="od-band space-y-2 p-3">
           <Field
             name="email"
             label="E-mail"
@@ -225,24 +264,15 @@ export default async function SettingsPage(
             maxLength={200}
           />
           <p className="text-xs font-medium text-ink-muted">
-            Você vai receber um e-mail de confirmação no endereço novo antes da troca valer.
+            Confirme com a senha de hoje. Você vai receber um e-mail no endereço novo antes
+            da troca valer.
           </p>
           <PendingButton className="btn-soft" pendingLabel="Salvando">
             Salvar e-mail
           </PendingButton>
         </form>
 
-        <div className="pt-4">
-          <span className="label">CPF</span>
-          <p className="mt-1.5 text-sm font-bold text-ink">
-            {profile?.cpf ? formatCPF(profile.cpf) : "Não informado"}
-          </p>
-          <p className="mt-1 text-xs font-medium text-ink-muted">
-            O CPF não pode ser alterado depois do cadastro.
-          </p>
-        </div>
-
-        <form action={updatePassword} className="space-y-2 pt-4">
+        <form action={updatePassword} className="od-band space-y-2 p-3">
           <Field
             id="password-current-password"
             name="current_password"
@@ -257,13 +287,16 @@ export default async function SettingsPage(
             Atualizar senha
           </PendingButton>
         </form>
-      </SectionCard>
 
-      <SectionCard
-        title="Aplicativo"
-        description="Instale no seu dispositivo quando quiser, sem interromper seu trabalho."
-      >
-        <InstallAppPrompt />
+        <div className="px-3">
+          <span className="label">CPF</span>
+          <p className="mt-1.5 text-sm font-bold text-ink">
+            {profile?.cpf ? formatCPF(profile.cpf) : "Não informado"}
+          </p>
+          <p className="mt-1 text-xs font-medium text-ink-muted">
+            O CPF não pode ser alterado depois do cadastro.
+          </p>
+        </div>
       </SectionCard>
 
       {isFounder ? (
@@ -281,21 +314,15 @@ export default async function SettingsPage(
         <SectionCard title="Áreas de atuação" description="Escolha qual operação quer ver e alimentar agora.">
           <form action={updateProfessionTypes} className="space-y-3">
             <input type="hidden" name="active_profession_type" value={preset.key} />
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="od-band od-rows overflow-hidden">
               {PROFESSION_OPTIONS.map((option) => (
-                <label
+                <CheckRow
                   key={option.value}
-                  className="flex min-h-11 items-center gap-2.5 rounded-md border border-line bg-surface px-3 py-2 text-sm font-bold text-ink-soft"
-                >
-                  <input
-                    type="checkbox"
-                    name="profession_types"
-                    value={option.value}
-                    defaultChecked={(profile?.profession_types ?? [preset.key]).includes(option.value)}
-                    className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
-                  />
-                  <span>{option.label}</span>
-                </label>
+                  name="profession_types"
+                  value={option.value}
+                  defaultChecked={(profile?.profession_types ?? [preset.key]).includes(option.value)}
+                  label={option.label}
+                />
               ))}
             </div>
             <p className="text-xs font-medium leading-relaxed text-ink-muted">
@@ -391,28 +418,6 @@ export default async function SettingsPage(
         )}
       </SectionCard>
 
-      <SectionCard
-        title="Seus dados"
-        description="Baixe seu perfil, preferências e os registros operacionais diretamente vinculados à sua conta. O arquivo não inclui dados pertencentes aos seus colegas."
-      >
-        <DataExportButton />
-      </SectionCard>
-
-      {/* Fica antes da zona de risco de propósito: quem chegou até aqui pensando
-          em excluir a conta encontra um jeito de falar com alguém primeiro. O
-          assunto vem preenchido para você separar suporte do resto da caixa. */}
-      <SectionCard
-        title="Atendimento"
-        description="Dúvida, problema ou sugestão: escreva direto para quem cuida do produto."
-      >
-        <a
-          href="mailto:venancio@useotimizia.com?subject=Suporte%20OtimizIA"
-          className="text-[13px] font-semibold text-white underline decoration-white/30 underline-offset-4 transition-colors hover:decoration-white"
-        >
-          venancio@useotimizia.com
-        </a>
-      </SectionCard>
-
       <SectionCard title="Zona de risco" description="Ações permanentes, sem volta." danger>
         <DeleteAccountForm action={deleteAccount} />
       </SectionCard>
@@ -436,7 +441,10 @@ function SectionCard({
   return (
     <section
       data-settings-card
-      className={"panel space-y-4 p-5 " + (danger ? "border-red-400/20" : "")}
+      /* `.settings-hub` zera borda e fundo do card, então o aviso de risco não
+         pode depender de `border-red-*`: ele vem de um plano vermelho fraco,
+         no mesmo espírito do `.od-band`. */
+      className={"panel space-y-4 p-5 " + (danger ? "settings-danger" : "")}
     >
       <div>
         <h2 className="text-[14px] font-semibold text-white">
@@ -446,6 +454,58 @@ function SectionCard({
       </div>
       {children}
     </section>
+  );
+}
+
+/* Linha de escolha sem moldura própria. Cada caixa era um retângulo com borda;
+   três ou seis delas seguidas viravam listra dentro de um card que já tem
+   borda. Aqui a linha vive numa `.od-band` e a alternância do `.od-rows` marca
+   onde uma termina — mesma solução das listas do painel. */
+function CheckRow({
+  name,
+  label,
+  value,
+  defaultChecked,
+}: {
+  name: string;
+  label: string;
+  value?: string;
+  defaultChecked?: boolean;
+}) {
+  return (
+    <label className="flex min-h-11 cursor-pointer items-center gap-2.5 px-3 py-2.5 text-sm font-semibold text-od-text-2 transition-colors hover:text-white">
+      <input
+        type="checkbox"
+        name={name}
+        value={value}
+        defaultChecked={defaultChecked}
+        className="h-4 w-4 shrink-0 rounded border-white/25 bg-transparent text-od-accent focus:ring-od-accent"
+      />
+      <span>{label}</span>
+    </label>
+  );
+}
+
+function MiniRow({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    /* Empilhado sempre: `sm:` mede a viewport, não a coluna. Numa tela larga
+       a coluna direita ainda tem ~20rem, e lado a lado o título quebrava
+       palavra por palavra. */
+    <div className="flex flex-col gap-2.5 px-3 py-3">
+      <div className="min-w-0">
+        <p className="text-[13px] font-semibold text-white">{title}</p>
+        <p className="mt-0.5 text-xs leading-5 text-od-text-3">{description}</p>
+      </div>
+      <div>{children}</div>
+    </div>
   );
 }
 

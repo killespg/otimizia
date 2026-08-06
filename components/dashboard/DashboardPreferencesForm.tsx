@@ -5,11 +5,7 @@ import { useRouter } from "next/navigation";
 import { PendingButton } from "@/components/ui/PendingButton";
 import {
   ALL_DASHBOARD_METRICS,
-  DASHBOARD_ACCENTS,
-  DASHBOARD_STYLES,
-  type DashboardAccent,
   type DashboardPreferences,
-  type DashboardStyle,
   metricLabel,
 } from "@/lib/workspace/dashboard-preferences";
 import type { MetricKey, ProfessionPreset } from "@/lib/people/professions";
@@ -23,41 +19,6 @@ type DashboardPreferencesFormProps = {
   action: (formData: FormData) => void | Promise<void>;
 };
 
-const STYLE_LABELS: Record<DashboardStyle, string> = {
-  glow: "Roxo iluminado",
-  clean: "Claro e limpo",
-  compact: "Compacto",
-  executive: "Executivo escuro",
-};
-
-const STYLE_PREVIEWS: Record<DashboardStyle, string> = {
-  glow: "border-od-accent/45 bg-od-accent-tint text-od-text",
-  clean: "border-[#d8d2dc] bg-[#f7f5f8] text-[#241f29]",
-  compact: "border-od-border bg-od-muted-surface text-od-text-2",
-  executive: "border-[#38343d] bg-[#0f0d11] text-[#faf9f8]",
-};
-
-const SELLER_STYLE_LABELS: Record<DashboardStyle, string> = {
-  glow: "Roxo iluminado",
-  clean: "Escuro limpo",
-  compact: "Compacto",
-  executive: "Executivo",
-};
-
-const SELLER_STYLE_PREVIEWS: Record<DashboardStyle, string> = {
-  glow: "border-od-accent/45 bg-od-accent-tint text-od-text",
-  clean: "border-[#38343d] bg-[#1e1d22] text-[#faf9f8]",
-  compact: "border-[#323039] bg-[#19181d] text-[#a39da8]",
-  executive: "border-[#38343d] bg-[#0f0d11] text-[#faf9f8]",
-};
-
-const ACCENT_LABELS: Record<DashboardAccent, string> = {
-  purple: "Roxo OtimizIA",
-  violet: "Violeta",
-  cyan: "Ciano",
-  pink: "Magenta",
-};
-
 export function DashboardPreferencesForm({
   preferences,
   preset,
@@ -67,8 +28,6 @@ export function DashboardPreferencesForm({
 }: DashboardPreferencesFormProps) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-  const [style, setStyle] = useState(preferences.style);
-  const [accent, setAccent] = useState(preferences.accent);
   const [metrics, setMetrics] = useState(preferences.metrics);
   const [metricLabels, setMetricLabels] = useState(preferences.metricLabels);
   const [showAnimatedBackground, setShowAnimatedBackground] = useState(
@@ -101,12 +60,6 @@ export function DashboardPreferencesForm({
   useEffect(() => {
     const board = formRef.current?.closest(".dashboard-board");
     if (!board) return;
-    board.classList.remove(
-      ...DASHBOARD_STYLES.map((item) => `dashboard-board-${item}`),
-      ...DASHBOARD_ACCENTS.map((item) => `dashboard-accent-${item}`)
-    );
-    board.classList.add(`dashboard-board-${style}`, `dashboard-accent-${accent}`);
-
 
     ALL_DASHBOARD_METRICS.forEach(({ key, fallbackLabel }) => {
       const element = board.querySelector<HTMLElement>(`[data-dashboard-metric="${key}"]`);
@@ -123,7 +76,7 @@ export function DashboardPreferencesForm({
           fallbackLabel;
       }
     });
-  }, [accent, metricLabels, metrics, preset, style]);
+  }, [metricLabels, metrics, preset]);
 
   useEffect(() => {
     if (!supportsAnimatedBackground) return;
@@ -165,8 +118,6 @@ export function DashboardPreferencesForm({
 
   return (
     <form ref={formRef} action={submitPreferences} className={isSeller ? "seller-dashboard-preferences space-y-5" : "space-y-4"}>
-      <input type="hidden" name="dashboard_style" value={style} />
-      <input type="hidden" name="dashboard_accent" value={accent} />
       <input type="hidden" name="return_to" value={returnTo} />
       <input type="hidden" name="sales_marketing_cost" value={salesMarketingCost} />
       <input
@@ -184,33 +135,6 @@ export function DashboardPreferencesForm({
       </div>
 
       {section === "appearance" && <div className="grid gap-4 lg:grid-cols-2" role="tabpanel">
-        <Panel title="Estilo" description="A cara do painel, sem mexer nos dados." seller={isSeller}>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {DASHBOARD_STYLES.map((item) => (
-              <OptionButton
-                key={item}
-                active={style === item}
-                label={(isSeller ? SELLER_STYLE_LABELS : STYLE_LABELS)[item]}
-                previewClassName={(isSeller ? SELLER_STYLE_PREVIEWS : STYLE_PREVIEWS)[item]}
-                onClick={() => setStyle(item)}
-              />
-            ))}
-          </div>
-        </Panel>
-
-        <Panel title="Cor de destaque" description="Um toque visual para seu espaço de trabalho." seller={isSeller}>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {DASHBOARD_ACCENTS.map((item) => (
-              <OptionButton
-                key={item}
-                active={accent === item}
-                label={ACCENT_LABELS[item]}
-                swatch={`dashboard-swatch-${item}`}
-                onClick={() => setAccent(item)}
-              />
-            ))}
-          </div>
-        </Panel>
 
         {supportsAnimatedBackground ? (
           <Panel
@@ -389,36 +313,6 @@ function Panel({
       </div>
       {children}
     </section>
-  );
-}
-
-function OptionButton({
-  active,
-  label,
-  swatch,
-  previewClassName,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  swatch?: string;
-  previewClassName?: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={
-        "flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm font-black transition-colors focus-visible:ring-2 focus-visible:ring-brand-600 " +
-        (previewClassName ?? "border-od-border bg-od-muted-surface text-od-text-2 hover:border-od-border-hover hover:text-od-text") +
-        (active ? " ring-2 ring-od-accent ring-offset-1 ring-offset-[#151419]" : " opacity-80 hover:opacity-100")
-      }
-    >
-      {swatch && <span className={`h-4 w-4 rounded-full ${swatch}`} />}
-      {label}
-    </button>
   );
 }
 
