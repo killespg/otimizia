@@ -264,7 +264,7 @@ git commit -m "feat(landing): antecipa prova real do produto"
 
 - [ ] **Step 1: Turn the profession selector into the interactive business stage**
 
-Wrap the segmented control and selected profession content in one `landing-cinematic-stage`. Keep feature rows unframed. The selected tab uses violet; unselected tabs use transparent text states with 44 px targets.
+Wrap the segmented control and selected profession content in one `landing-cinematic-stage`. Keep feature rows unframed. The selected tab uses the logo blue scoped to the landing; unselected tabs use transparent text states with 44 px targets.
 
 - [ ] **Step 2: Turn Tim into a single conversational stage**
 

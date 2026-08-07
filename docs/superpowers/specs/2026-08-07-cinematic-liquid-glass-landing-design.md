@@ -44,7 +44,7 @@ O redesign deve melhorar percepção de valor e clareza de conversão sem repeti
 - O CTA secundário aponta para a demonstração do produto.
 - Três placas diagonais de vidro — **Hoje**, **Tim** e **Negócios** — ocupam a lateral ou o fundo do hero e antecipam os capítulos seguintes.
 - As placas são conteúdo de orientação, não métricas inventadas. Seus textos derivam de ações observáveis do produto.
-- A iluminação violeta e ameixa começa atrás das placas e deixa o centro de leitura mais escuro.
+- A iluminação azul elétrica da logo começa atrás das placas; o roxo aparece apenas como profundidade secundária, mantendo o centro de leitura mais escuro.
 
 ### 3. Produto na primeira rolagem
 
@@ -74,22 +74,23 @@ O redesign deve melhorar percepção de valor e clareza de conversão sem repeti
 - Preço continua sendo um único painel dividido internamente entre teste e assinatura.
 - FAQ continua sendo uma lista expansível dentro de um único volume.
 - `About` mantém comparação editorial, sem transformar cada linha em card.
-- O CTA final recebe a reflexão violeta mais intensa depois do hero.
+- O CTA final recebe a reflexão azul mais intensa depois do hero.
 - O footer fica aberto sobre o canvas e encerra o movimento visual.
 
 ## Sistema visual
 
 ### Paleta
 
-- Canvas obsidiana: `#09080d`.
-- Profundidade grafite: `#15131b`.
-- Violeta OtimizIA: `#8757f0` para ação, seleção e foco.
-- Violeta claro: `#a78bfa` para estados de hover e pequenos reflexos.
-- Ameixa: `#6f315f` como luz ambiente secundária, nunca como segundo CTA.
+- Canvas azul-noite: `#050916`.
+- Profundidade grafite azulada: `#091124`.
+- Azul da logo: `#4d71ff` como cor dominante da landing, incluindo luz, ação, seleção e foco.
+- Azul claro: `#91a9ff` para estados de hover, ênfase tipográfica e reflexos.
+- Roxo da logo: `#5d3aff` como apoio em aproximadamente 20% do peso cromático.
+- Violeta do produto: `#8757f0` permanece somente dentro do preview, preservando a interface autenticada real.
 - Texto principal: branco.
 - Texto secundário: branco com opacidade ajustada pelo contraste medido sobre cada fundo real.
 
-Não haverá texto em gradiente, arco-íris, ciano decorativo, bordas violetas em todos os volumes ou múltiplas auroras concorrentes.
+Não haverá texto em gradiente, arco-íris, ciano decorativo, bordas coloridas em todos os volumes ou múltiplas auroras concorrentes. A combinação azul e roxo deriva diretamente dos pixels da logo, não de um gradiente SaaS genérico.
 
 ### Tipografia
 
@@ -114,7 +115,7 @@ Um stage usa uma única borda iluminada, preenchimento grafite translúcido, sat
 
 ### Iluminação
 
-- Existem no máximo dois campos de luz simultâneos: violeta dominante e ameixa secundária.
+- Existem no máximo dois campos cromáticos simultâneos: azul da logo dominante e roxo da logo secundário, em proporção visual aproximada de 80/20.
 - A luz muda de posição entre os capítulos, mas o centro atrás de parágrafos permanece escuro.
 - Reflexos aparecem principalmente nas bordas inferior e lateral dos volumes, longe do início dos textos.
 - A composição não usa glow pulsante, spotlight seguindo o mouse ou gradiente independente por seção.
@@ -151,7 +152,7 @@ Um stage usa uma única borda iluminada, preenchimento grafite translúcido, sat
 - Placeholder e texto secundário não recebem exceção de contraste.
 - `prefers-reduced-transparency` troca os stages por grafite opaco, sem remover fronteiras ou hierarquia.
 - `prefers-contrast: more` reforça bordas e reduz interferência das luzes.
-- Foco visível usa o violeta canônico sem depender somente de cor.
+- Foco visível usa o azul da landing sem depender somente de cor; o preview mantém o violeta canônico do produto.
 - A ordem de leitura do DOM acompanha a narrativa visual; placas deslocadas não alteram a sequência semântica.
 - Elementos decorativos ficam com `aria-hidden`; placas com conteúdo real permanecem legíveis para tecnologia assistiva.
 

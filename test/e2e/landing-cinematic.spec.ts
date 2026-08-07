@@ -42,19 +42,19 @@ test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({ p
     }
 
     const root = document.querySelector<HTMLElement>('[data-landing-cinematic="true"]');
-    const violetLight = document.querySelector<HTMLElement>(".landing-cinematic-light--violet");
+    const primaryLight = document.querySelector<HTMLElement>(".landing-cinematic-light--blue");
     const plate = document.querySelector<HTMLElement>("[data-cinematic-plate]");
     const stages = Array.from(
       document.querySelectorAll<HTMLElement>("[data-landing-stage]"),
     );
 
-    if (!root || !violetLight || !plate || stages.length === 0) {
+    if (!root || !primaryLight || !plate || stages.length === 0) {
       throw new Error("Materiais cinematográficos não renderizados");
     }
 
     return {
       ambientLayer: getComputedStyle(root, "::before").backgroundImage,
-      lightCoverage: violetLight.getBoundingClientRect().width / window.innerWidth,
+      lightCoverage: primaryLight.getBoundingClientRect().width / window.innerWidth,
       plateAlpha: alphaOf(getComputedStyle(plate).backgroundColor),
       stageAlphas: stages.map((stage) => alphaOf(getComputedStyle(stage).backgroundColor)),
     };
@@ -64,4 +64,51 @@ test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({ p
   expect(material.lightCoverage).toBeGreaterThan(1.1);
   expect(material.plateAlpha).toBeLessThanOrEqual(0.5);
   expect(Math.max(...material.stageAlphas)).toBeLessThanOrEqual(0.6);
+});
+
+test("usa o azul da logo como luz dominante e o roxo como apoio", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  const palette = await page.evaluate(() => {
+    function colorsOf(value: string) {
+      return Array.from(value.matchAll(/rgba?\(([^)]+)\)/g), (match) => {
+        const channels = match[1].match(/[\d.]+/g)?.map(Number) ?? [];
+        return {
+          red: channels[0] ?? 0,
+          green: channels[1] ?? 0,
+          blue: channels[2] ?? 0,
+          alpha: channels[3] ?? 1,
+        };
+      });
+    }
+
+    const root = document.querySelector<HTMLElement>('[data-landing-cinematic="true"]');
+    const primary = document.querySelector<HTMLElement>(".landing-cinematic-light--blue");
+    const secondary = document.querySelector<HTMLElement>(".landing-cinematic-light--purple");
+
+    if (!root || !primary || !secondary) {
+      throw new Error("Luzes azul e roxa não renderizadas");
+    }
+
+    const ambient = colorsOf(getComputedStyle(root, "::before").backgroundImage);
+    const primaryColor = colorsOf(getComputedStyle(primary).backgroundImage)[0];
+    const secondaryColor = colorsOf(getComputedStyle(secondary).backgroundImage)[0];
+
+    return {
+      primaryColor,
+      secondaryColor,
+      blueWeight: ambient
+        .filter((color) => color.blue > color.red + 50 && color.green > color.red)
+        .reduce((total, color) => total + color.alpha, 0),
+      purpleWeight: ambient
+        .filter((color) => color.blue > color.green + 50 && color.red >= color.green)
+        .reduce((total, color) => total + color.alpha, 0),
+    };
+  });
+
+  expect(palette.primaryColor.blue).toBeGreaterThan(palette.primaryColor.green);
+  expect(palette.primaryColor.green).toBeGreaterThan(palette.primaryColor.red);
+  expect(palette.secondaryColor.blue).toBeGreaterThan(palette.secondaryColor.red);
+  expect(palette.secondaryColor.red).toBeGreaterThan(palette.secondaryColor.green);
+  expect(palette.blueWeight).toBeGreaterThan(palette.purpleWeight * 3);
 });

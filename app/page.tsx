@@ -84,8 +84,8 @@ export default async function LandingPage() {
 
   return (
     <div data-landing-cinematic="true" className="landing-page landing-cinematic-page dark relative isolate">
-      <div aria-hidden className="landing-cinematic-light landing-cinematic-light--violet" />
-      <div aria-hidden className="landing-cinematic-light landing-cinematic-light--plum" />
+      <div aria-hidden className="landing-cinematic-light landing-cinematic-light--blue" />
+      <div aria-hidden className="landing-cinematic-light landing-cinematic-light--purple" />
 
       <LandingNav />
       <MobileStickyCta />
