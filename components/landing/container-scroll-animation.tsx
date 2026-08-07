@@ -1,24 +1,10 @@
-"use client";
-
-import { type ReactNode, useRef, useSyncExternalStore } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-
-/** Falso no servidor e no primeiro quadro do cliente, verdadeiro depois da
- *  hidratação. `useSyncExternalStore` em vez de `useState` + `useEffect`
- *  porque é o caminho que o React oferece para valores que só existem no
- *  cliente — e não dispara render em cascata dentro de efeito. */
-const semInscricao = () => () => {};
-function useHidratado() {
-  return useSyncExternalStore(
-    semInscricao,
-    () => true,
-    () => false,
-  );
-}
+import { type ReactNode } from "react";
 
 /**
- * O card do painel nasce inclinado em 3D e "endireita" conforme a seção entra
- * na tela, na rolagem — não em loop, só uma vez.
+ * Mantém o título e a prova real do produto dentro da mesma seção, mas deixa o
+ * notebook fora de transforms. Texto fino dentro de screenshots perde nitidez
+ * quando o navegador rasteriza a imagem em uma matrix3d, mesmo com o PNG
+ * original servido sem compressão.
  *
  * Três correções nesta versão:
  *
@@ -31,12 +17,9 @@ function useHidratado() {
  *    vazia no print panorâmico e mantém a rolagem horizontal restrita ao
  *    viewport interno no celular.
  *
- * 3. Hidratação. `useReducedMotion` só existe no cliente: o servidor
- *    renderizava o transform e o cliente com movimento reduzido renderizava
- *    `none`, e o React acusava divergência (era o "1 Issue" do overlay do
- *    Next em toda visita com movimento reduzido). Agora o primeiro quadro é
- *    sempre o estado final, parado, e o vínculo com o scroll entra depois da
- *    montagem — o que também tira o salto de escala na entrada.
+ * 3. Nitidez. A profundidade vem da moldura, da base e da luz ambiente. O
+ *    conteúdo da tela fica em escala 1:1 no compositor e não recebe
+ *    `will-change: transform`.
  */
 export function ContainerScroll({
   titleComponent,
@@ -45,47 +28,16 @@ export function ContainerScroll({
   titleComponent: ReactNode;
   children: ReactNode;
 }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const reduceMotion = useReducedMotion();
-  const hidratado = useHidratado();
-
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "start start"],
-  });
-
-  const rotate = useTransform(scrollYProgress, [0, 1], [8, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [0.98, 1.02]);
-  const translateY = useTransform(scrollYProgress, [0, 1], [24, -8]);
-  const anima = hidratado && !reduceMotion;
-
   return (
-    <div ref={containerRef} className="lp-shell">
+    <div className="lp-shell">
       <div className="mx-auto max-w-[720px] text-center">{titleComponent}</div>
 
-      <motion.div
-        style={
-          anima
-            ? {
-                rotateX: rotate,
-                scale,
-                y: translateY,
-                transformPerspective: 1200,
-                // O pivô ficava no centro do card (padrão do CSS): a linha
-                // de cima e a de baixo se afastam em direções opostas da
-                // câmera conforme o ângulo muda, e a keystone da perspectiva
-                // desloca cada linha de um jeito diferente. Ancorar o pivô no
-                // topo faz o cabeçalho ficar parado e só o resto recuar.
-                transformOrigin: "top",
-                willChange: "transform",
-              }
-            : { rotateX: 0, scale: 1, y: 0 }
-        }
+      <div
         data-landing-stage="panel"
         className="landing-cinematic-stage landing-cinematic-panel-stage mx-auto mt-[clamp(32px,4vw,56px)] w-full max-w-5xl overflow-hidden min-[1536px]:max-w-6xl"
       >
         {children}
-      </motion.div>
+      </div>
     </div>
   );
 }

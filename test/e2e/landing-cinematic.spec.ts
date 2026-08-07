@@ -71,6 +71,45 @@ test("entrega o print original sem recompressão que borre o texto", async ({ pa
   expect(fidelity.naturalWidth / fidelity.renderedWidth).toBeGreaterThan(1.75);
 });
 
+test("mantém o print fora de transformações 3D que rasterizam o texto", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/#painel", { waitUntil: "networkidle" });
+
+  const stage = page.locator('[data-landing-stage="panel"]');
+  await expect(stage).toBeVisible();
+
+  const rendering = await stage.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      transform: style.transform,
+      willChange: style.willChange,
+    };
+  });
+
+  expect(rendering.transform).toBe("none");
+  expect(rendering.willChange).not.toContain("transform");
+});
+
+test("abre a tampa no scroll sem transformar o print nítido", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  const frame = page.locator('[data-laptop-frame="true"]');
+  const lid = page.locator('[data-laptop-opening-lid="true"]');
+  const stage = page.locator('[data-landing-stage="panel"]');
+
+  await expect(lid).toBeVisible();
+  expect(Number(await lid.evaluate((element) => getComputedStyle(element).opacity))).toBeGreaterThan(0.85);
+
+  await frame.scrollIntoViewIfNeeded();
+  await page.evaluate(() => window.scrollBy(0, Math.round(window.innerHeight * 0.45)));
+
+  await expect
+    .poll(async () => Number(await lid.evaluate((element) => getComputedStyle(element).opacity)))
+    .toBeLessThan(0.15);
+  expect(await stage.evaluate((element) => getComputedStyle(element).transform)).toBe("none");
+});
+
 test("enquadra o print em uma moldura reconhecível de notebook", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
 
