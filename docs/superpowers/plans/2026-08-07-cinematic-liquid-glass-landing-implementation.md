@@ -25,45 +25,44 @@
 ### Task 1: Lock the cinematic landing contract
 
 **Files:**
-- Create: `lib/landing-cinematic-contract.test.ts`
+- Create: `test/e2e/landing-cinematic.spec.ts`
 - Modify: `test/e2e/landing-no-js.spec.ts`
 - Modify: `test/e2e/landing-responsive.spec.ts`
 
 **Interfaces:**
-- Consumes: static source files from `app/page.tsx`, `app/globals.css`, and `components/landing`.
-- Produces: contract assertions for `data-landing-cinematic`, `data-cinematic-plate`, `data-landing-stage`, chapter order, reduced-preference fallbacks, mobile overflow, and updated hero copy.
+- Consumes: the rendered public route at `/`.
+- Produces: behavior assertions for `data-landing-cinematic`, `data-cinematic-plate`, `data-landing-stage`, chapter order, reduced-preference fallbacks, mobile overflow, and updated hero copy.
 
-- [ ] **Step 1: Write the failing Vitest contract**
+- [ ] **Step 1: Write the failing Playwright contract**
 
 ```ts
-import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { expect, test } from "@playwright/test";
 
-const page = readFileSync("app/page.tsx", "utf8");
-const css = readFileSync("app/globals.css", "utf8");
-const hero = readFileSync("components/landing/hero.tsx", "utf8");
+test("apresenta o corredor cinematográfico com o produto antes das profissões", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator('[data-landing-cinematic="true"]')).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Seu negócio não para/i })).toBeVisible();
 
-describe("landing cinematográfica", () => {
-  it("usa um canvas e stages isolados da área autenticada", () => {
-    expect(page).toContain('data-landing-cinematic="true"');
-    expect(page).toContain("landing-cinematic-page");
-    expect(css).toContain(".landing-cinematic-stage");
-    expect(css).toContain("@media (prefers-reduced-transparency: reduce)");
-    expect(page).not.toContain("bg-od-muted-surface");
-  });
+  const plates = page.locator("[data-cinematic-plate]");
+  await expect(plates).toHaveCount(3);
+  await expect(plates.nth(0)).toContainText("Hoje");
+  await expect(plates.nth(1)).toContainText("Tim");
+  await expect(plates.nth(2)).toContainText("Negócios");
 
-  it("apresenta Hoje, Tim e Negócios e prova o produto cedo", () => {
-    expect(hero).toContain('data-cinematic-plate="today"');
-    expect(hero).toContain('data-cinematic-plate="tim"');
-    expect(hero).toContain('data-cinematic-plate="business"');
-    expect(page.indexOf('id="painel"')).toBeLessThan(page.indexOf('id="recursos"'));
-  });
+  const chapterOrder = await page.locator("main section[id]").evaluateAll(
+    (sections) => sections.map((section) => section.id),
+  );
+  expect(chapterOrder.indexOf("painel")).toBeLessThan(chapterOrder.indexOf("recursos"));
+
+  const panelStage = page.locator('[data-landing-stage="panel"]');
+  await expect(panelStage).toBeVisible();
+  expect(await panelStage.evaluate((element) => getComputedStyle(element).backdropFilter)).not.toBe("none");
 });
 ```
 
 - [ ] **Step 2: Run the focused test and verify RED**
 
-Run: `npm.cmd test -- lib/landing-cinematic-contract.test.ts`
+Run: `npx.cmd --no-install playwright test test/e2e/landing-cinematic.spec.ts --project=desktop-chromium`
 
 Expected: FAIL because the cinematic data markers and classes do not exist yet and `#recursos` still precedes `#painel`.
 
@@ -87,7 +86,7 @@ Expected: FAIL on the new heading or cinematic root marker; existing interaction
 - [ ] **Step 5: Commit the RED contract**
 
 ```powershell
-git add -- lib/landing-cinematic-contract.test.ts test/e2e/landing-no-js.spec.ts test/e2e/landing-responsive.spec.ts
+git add -- test/e2e/landing-cinematic.spec.ts test/e2e/landing-no-js.spec.ts test/e2e/landing-responsive.spec.ts
 git commit -m "test(landing): define contrato cinematografico"
 ```
 
@@ -97,7 +96,7 @@ git commit -m "test(landing): define contrato cinematografico"
 - Create: `components/landing/cinematic-scroll-corridor.tsx`
 - Modify: `components/landing/hero.tsx`
 - Modify: `app/globals.css`
-- Test: `lib/landing-cinematic-contract.test.ts`
+- Test: `test/e2e/landing-cinematic.spec.ts`
 
 **Interfaces:**
 - Produces: `CinematicScrollCorridor({ children }: { children: ReactNode })`, which only exposes layout and scroll-progress context through CSS custom properties.
@@ -182,14 +181,14 @@ Also remove scroll transforms under `prefers-reduced-motion` and reinforce stage
 
 - [ ] **Step 5: Run the focused contract**
 
-Run: `npm.cmd test -- lib/landing-cinematic-contract.test.ts`
+Run: `npx.cmd --no-install playwright test test/e2e/landing-cinematic.spec.ts --project=desktop-chromium`
 
 Expected: plate and CSS assertions pass; page-order assertions remain RED until Task 3.
 
 - [ ] **Step 6: Commit the hero and material foundation**
 
 ```powershell
-git add -- components/landing/cinematic-scroll-corridor.tsx components/landing/hero.tsx app/globals.css lib/landing-cinematic-contract.test.ts
+git add -- components/landing/cinematic-scroll-corridor.tsx components/landing/hero.tsx app/globals.css test/e2e/landing-cinematic.spec.ts
 git commit -m "feat(landing): cria corredor liquid glass"
 ```
 
@@ -199,7 +198,7 @@ git commit -m "feat(landing): cria corredor liquid glass"
 - Modify: `app/page.tsx`
 - Modify: `components/landing/container-scroll-animation.tsx`
 - Modify: `components/landing/dashboard-preview.tsx`
-- Test: `lib/landing-cinematic-contract.test.ts`
+- Test: `test/e2e/landing-cinematic.spec.ts`
 
 **Interfaces:**
 - Consumes: `CinematicScrollCorridor` from Task 2.
@@ -235,14 +234,16 @@ Keep the dashboard’s own mobile layout. The outer stage must be `height: auto`
 
 - [ ] **Step 5: Run the contract and public-route unit suite**
 
-Run: `npm.cmd test -- lib/landing-cinematic-contract.test.ts lib/frontend-route-parity.test.ts`
+Run: `npx.cmd --no-install playwright test test/e2e/landing-cinematic.spec.ts --project=desktop-chromium`
+
+Run: `npm.cmd test -- lib/frontend-route-parity.test.ts`
 
 Expected: PASS.
 
 - [ ] **Step 6: Commit the page composition**
 
 ```powershell
-git add -- app/page.tsx components/landing/container-scroll-animation.tsx components/landing/dashboard-preview.tsx lib/landing-cinematic-contract.test.ts
+git add -- app/page.tsx components/landing/container-scroll-animation.tsx components/landing/dashboard-preview.tsx test/e2e/landing-cinematic.spec.ts
 git commit -m "feat(landing): antecipa prova real do produto"
 ```
 
@@ -255,7 +256,7 @@ git commit -m "feat(landing): antecipa prova real do produto"
 - Modify: `components/landing/FaqAccordion.tsx`
 - Modify: `components/landing/about.tsx`
 - Modify: `app/globals.css`
-- Test: `lib/landing-cinematic-contract.test.ts`
+- Test: `test/e2e/landing-cinematic.spec.ts`
 
 **Interfaces:**
 - Consumes: `.landing-cinematic-stage` and `.landing-cinematic-stage--quiet` from Task 2.
@@ -283,18 +284,18 @@ data-landing-stage="faq"
 data-landing-stage="about"
 ```
 
-Assert each exists once and no stage contains another stage in `landing-cinematic-contract.test.ts` by checking source structure and browser E2E in Task 6.
+Assert each exists once and no stage contains another stage in `landing-cinematic.spec.ts` against the rendered DOM.
 
 - [ ] **Step 5: Run focused tests**
 
-Run: `npm.cmd test -- lib/landing-cinematic-contract.test.ts`
+Run: `npx.cmd --no-install playwright test test/e2e/landing-cinematic.spec.ts --project=desktop-chromium`
 
 Expected: PASS.
 
 - [ ] **Step 6: Commit the chapter materials**
 
 ```powershell
-git add -- components/landing/feature-tabs.tsx components/landing/ai-composer.tsx components/landing/pricing.tsx components/landing/FaqAccordion.tsx components/landing/about.tsx app/globals.css lib/landing-cinematic-contract.test.ts
+git add -- components/landing/feature-tabs.tsx components/landing/ai-composer.tsx components/landing/pricing.tsx components/landing/FaqAccordion.tsx components/landing/about.tsx app/globals.css test/e2e/landing-cinematic.spec.ts
 git commit -m "feat(landing): unifica stages cinematograficos"
 ```
 
@@ -354,7 +355,7 @@ git commit -m "feat(landing): fecha navegacao e conversao imersiva"
 - Modify: `components/landing/pricing.tsx`
 - Modify: `components/landing/FaqAccordion.tsx`
 - Modify: `components/landing/about.tsx`
-- Test: `lib/landing-cinematic-contract.test.ts`
+- Test: `test/e2e/landing-cinematic.spec.ts`
 - Test: `test/e2e/landing-responsive.spec.ts`
 - Test: `test/e2e/landing-no-js.spec.ts`
 
@@ -430,6 +431,6 @@ Expected: no whitespace errors; only intentional landing files remain modified b
 - [ ] **Step 7: Commit verification fixes**
 
 ```powershell
-git add -- app/page.tsx app/globals.css components/landing lib/landing-cinematic-contract.test.ts test/e2e/landing-responsive.spec.ts test/e2e/landing-no-js.spec.ts test/e2e/landing-contrast.spec.ts
+git add -- app/page.tsx app/globals.css components/landing test/e2e/landing-cinematic.spec.ts test/e2e/landing-responsive.spec.ts test/e2e/landing-no-js.spec.ts test/e2e/landing-contrast.spec.ts
 git commit -m "fix(landing): valida experiencia cinematografica"
 ```
