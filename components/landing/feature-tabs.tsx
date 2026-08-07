@@ -204,7 +204,7 @@ function FeatureRow({ feature, index }: { feature: Feature; index: number }) {
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1], delay: Math.min(index, 5) * 0.045 }}
     >
-      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-xl bg-od-accent/10 text-od-accent-hover">
+      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-od-accent/12 text-od-accent-hover">
         <Icon className="size-4" strokeWidth={2} />
       </span>
       <span className="min-w-0">
@@ -226,7 +226,7 @@ export function FeatureTabs() {
       <div
         role="tablist"
         aria-label="Escolha a profissão"
-        className="mx-auto flex max-w-[620px] gap-1 rounded-lg border border-od-border bg-od-muted-surface p-1"
+        className="mx-auto flex max-w-[620px] gap-1 rounded-full border border-od-border bg-od-muted-surface p-1"
       >
         {VERTICALS.map((item) => {
           const selected = item.key === vertical.key;
@@ -238,8 +238,8 @@ export function FeatureTabs() {
               aria-label={item.tab}
               aria-selected={selected}
               onClick={() => setActiveKey(item.key)}
-              className={`flex min-h-11 min-w-0 flex-1 items-center justify-center rounded px-2 text-[13px] font-semibold transition-colors sm:px-3 ${
-                selected ? "bg-od-surface text-od-text" : "text-od-text-3 hover:text-od-text-2"
+              className={`flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-full px-2 text-[13px] font-semibold transition-colors sm:px-3 ${
+                selected ? "bg-od-accent text-white" : "text-od-text-3 hover:text-od-text-2"
               }`}
             >
               <span className="sm:hidden" aria-hidden>{item.mobileTab}</span>
@@ -249,41 +249,37 @@ export function FeatureTabs() {
         })}
       </div>
 
-      <p className="mx-auto mt-8 max-w-[560px] text-center text-od-subtitle text-od-text">{vertical.headline}</p>
+      <p className="lp-h3 mx-auto mt-7 max-w-[36ch] text-balance text-center text-od-text">
+        {vertical.headline}
+      </p>
 
-      {/* Grupos empilhados em faixa: o rótulo à esquerda nomeia a faixa e os
-          itens ocupam a largura em duas colunas. Antes eram quatro blocos de
-          alturas diferentes num grid de dois, com a base toda irregular. */}
-      {/* As linhas entre grupos só valem no desktop, onde reforçam a fileira
-          rótulo+conteúdo lado a lado. Empilhado no mobile, o rótulo em
-          maiúsculas de cada grupo já separa visualmente — repetir a régua a
-          cada bloco ficava cansativo, sempre a mesma linha se repetindo. */}
-      <div className="mt-10 md:divide-y md:divide-od-border md:border-y md:border-od-border">
+      {/* Sem régua entre os grupos. Eram cinco traços horizontais idênticos
+          empilhados, e a regra 4a diz que separação repetida no vidro vem do
+          material: o rótulo em maiúsculas, o espaço e a faixa do Tim já dizem
+          onde um grupo termina. */}
+      <div className="mt-[clamp(32px,4vw,52px)] space-y-[clamp(28px,3vw,40px)]">
         {/* O Tim é a peça central do produto, então não pode dividir peso com
-            "Honorários" numa lista de dez. Ganha faixa própria no topo, com
-            ícone maior, texto de corpo e ordens reais. Continua sendo faixa,
-            não card: o destaque vem de escala e do acento, não de moldura. */}
-        <div className="grid gap-x-8 gap-y-4 py-10 md:grid-cols-[160px_minmax(0,1fr)]">
+            "Honorários" numa lista de dez. Ganha `.od-band` — o plano próprio
+            que o sistema usa para destacar uma região sem virar card. */}
+        <div className="od-band grid gap-x-8 gap-y-5 p-5 sm:p-7 md:grid-cols-[150px_minmax(0,1fr)]">
           <p className="text-od-label text-od-accent-hover">Sócio-assistente</p>
           <div className="min-w-0">
             <div className="flex items-start gap-4">
-              <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-od-accent text-white">
+              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-od-accent text-white">
                 <Bot className="size-5" strokeWidth={2} />
               </span>
               <div className="min-w-0">
-                <p className="text-[19px] font-bold tracking-[-0.01em] text-od-text">
-                  Tim, o sócio-assistente
-                </p>
-                <p className="mt-2.5 max-w-[62ch] text-[14px] leading-relaxed text-od-text-2">
+                <p className="lp-h3 text-od-text">Tim, o sócio-assistente</p>
+                <p className="mt-2 max-w-[62ch] text-[14px] leading-relaxed text-od-text-2">
                   {vertical.tim.line}
                 </p>
               </div>
             </div>
-            <ul className="mt-6 flex flex-wrap gap-2.5 md:pl-15">
+            <ul className="mt-5 flex flex-wrap gap-2.5 md:pl-15">
               {vertical.tim.examples.map((example) => (
                 <li
                   key={example}
-                  className="rounded border border-od-border bg-od-muted-surface px-3 py-2 text-[13px] leading-relaxed text-od-text-2"
+                  className="rounded-full border border-od-border px-3.5 py-2 text-[13px] leading-relaxed text-od-text-2"
                 >
                   “{example}”
                 </li>
@@ -293,7 +289,7 @@ export function FeatureTabs() {
         </div>
 
         {vertical.groups.map((group) => (
-          <div key={group.label} className="grid gap-x-8 py-5 md:grid-cols-[160px_minmax(0,1fr)]">
+          <div key={group.label} className="grid gap-x-8 md:grid-cols-[150px_minmax(0,1fr)]">
             <p className="pt-3.5 text-od-label text-od-text-3">{group.label}</p>
             <div className="grid gap-x-8 sm:grid-cols-2 2xl:grid-cols-3">
               {group.features.map((feature, index) => (
@@ -303,7 +299,7 @@ export function FeatureTabs() {
           </div>
         ))}
 
-        <div className="grid gap-x-8 py-5 md:grid-cols-[160px_minmax(0,1fr)]">
+        <div className="grid gap-x-8 md:grid-cols-[150px_minmax(0,1fr)]">
           <div className="pt-3.5">
             <p className="text-od-label text-od-text-3">Em todas</p>
             <p className="mt-1.5 text-[12px] leading-relaxed text-od-text-3">

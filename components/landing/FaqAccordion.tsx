@@ -36,15 +36,18 @@ export function FaqAccordion({ items }: { items: FaqItem[] }) {
 
   return (
     <div
-      data-landing-glass-stage="true"
       data-landing-faq-stage="true"
-      className="faq-list landing-liquid-stage divide-y divide-white/[0.09] px-5 sm:px-7"
+      /* Vidro virou conteúdo, e as seis réguas viraram faixa alternada
+         (regra 4a): a pergunta continua delimitada, sem seis traços iguais
+         empilhados. O `overflow-hidden` é o que faz a faixa da primeira e da
+         última linha respeitarem o raio do painel. */
+      className="faq-list lp-panel lp-rows overflow-hidden"
     >
       {items.map((faq, index) => {
         const isOpen = !!openItems[index];
 
         return (
-          <div key={faq.q} className="group" data-open={isOpen ? "true" : undefined}>
+          <div key={faq.q} className="group px-5 sm:px-7" data-open={isOpen ? "true" : undefined}>
             <button
               type="button"
               className="flex min-h-14 w-full cursor-pointer items-center justify-between gap-4 py-5 text-left"

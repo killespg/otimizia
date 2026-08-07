@@ -1298,3 +1298,128 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
     transition-duration: .01ms !important;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   Landing: escala própria, ritmo e material de conteúdo.
+
+   O que existia aqui antes (`.landing-liquid-*`) veio da varredura que
+   aplicou o Liquid Glass na landing junto com o painel, e aplicou no lugar
+   errado: preço, dúvidas e "sobre nós" são CONTEÚDO, e o DESIGN.md reserva o
+   vidro a chrome, controles e overlays. O custo foi medido, não estimado —
+   o rótulo dos planos sobre o vidro dava 4,48:1, abaixo de AA, contra 6,63:1
+   do mesmo token sobre o canvas. Estas regras trazem a landing de volta ao
+   material de conteúdo do sistema e ficam isoladas no prefixo `lp-`, que
+   nenhuma tela autenticada usa.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Uma escala, três degraus. A página tinha cinco tamanhos para o mesmo posto:
+   h2 de 28, de 32 e de 60 px, e no celular um h1 de 24 px — o MENOR título da
+   página era o único h1 dela. Com clamp, o h1 continua maior que o h2 em
+   qualquer largura, que é o que a hierarquia precisa garantir. */
+.lp-h1 {
+  font-size: clamp(32px, 6.2vw, 60px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+  text-wrap: balance;
+}
+
+.lp-h2 {
+  font-size: clamp(26px, 3.4vw, 40px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.14;
+  text-wrap: balance;
+}
+
+.lp-h3 {
+  font-size: clamp(17px, 1.5vw, 20px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.lp-lead {
+  font-size: clamp(15px, 1.2vw, 18px);
+  line-height: 1.6;
+  color: var(--od-text-2);
+}
+
+/* Um ritmo só entre seções. Antes o respiro vinha somado de dois lugares — a
+   faixa com `py-24` e o componente de dentro com o seu próprio `py-10` — e
+   sobrava costura de 300 px em umas emendas e 96 px em outras. Aqui o respiro
+   é do bloco de fora, e só dele. */
+.lp-section {
+  padding-block: clamp(56px, 7vw, 104px);
+}
+
+.lp-section-tight {
+  padding-block: clamp(40px, 4.5vw, 68px);
+}
+
+/* Largura de leitura. A cadeia anterior abria até 1960 px em telas grandes:
+   uma linha de texto com 1900 px de largura não se lê, o olho perde o começo
+   da linha seguinte. 1360 é o teto. */
+.lp-shell {
+  width: 100%;
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-inline: 20px;
+}
+
+@media (min-width: 640px) {
+  .lp-shell { padding-inline: 32px; }
+}
+
+@media (min-width: 1536px) {
+  .lp-shell { max-width: 1360px; }
+}
+
+/* Material de conteúdo, igual ao do produto: sem `backdrop-filter`, sem
+   sombra ampla, borda discreta. É o `.panel` do sistema com o raio maior que
+   a linguagem de marca permite. */
+.lp-panel {
+  border: 1px solid var(--od-border);
+  border-radius: var(--radius-lg);
+  background: var(--od-surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+
+.lp-panel-quiet {
+  background: var(--od-muted-surface);
+}
+
+/* Regra 4a na landing. Diferença deliberada em relação ao `.od-rows`: lá a
+   alternância só vale de `sm` para cima porque no celular a linha ocupa a
+   largura toda e não há coluna distante para seguir. Aqui as duas listas que
+   usam isto — a comparação do "sobre nós" e as dúvidas — mantêm duas colunas
+   ou um chevron à direita também em 390 px, então o argumento vale em toda
+   largura. */
+.lp-rows > *:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.022);
+}
+
+/* A única luz decorativa da página.
+   O DESIGN.md proíbe gradiente decorativo no produto e dá liberdade de marca à
+   landing (regra 3), mas a página tinha SEIS sistemas de gradiente empilhados:
+   o glow da página, o glow do hero, um `Glow` pulsante por seção, os feixes
+   diagonais, o holofote do mouse e os gradientes dos volumes de vidro. Somados
+   é que davam o aspecto embaçado. Sobra um: a fonte de luz da marca, no topo,
+   de onde o resto da página se ilumina. Fixa, sem pulso, atrás de tudo. */
+.lp-aurora {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: -1;
+  height: clamp(560px, 72vw, 1020px);
+  pointer-events: none;
+  background:
+    radial-gradient(78% 58% at 50% -10%, color-mix(in oklab, var(--od-accent) 44%, transparent), transparent 72%);
+}
+
+@media (prefers-contrast: more) {
+  .lp-panel { border-color: rgba(255, 255, 255, 0.34); }
+  .lp-aurora { display: none; }
+}

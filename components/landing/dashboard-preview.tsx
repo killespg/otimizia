@@ -307,7 +307,9 @@ export function DashboardPreview() {
   }
 
   return (
-    <div className="landing-dashboard-preview relative flex h-full overflow-hidden rounded-xl border border-od-border bg-od-muted-surface">
+    // Sem borda, raio nem fundo próprios: a moldura é do ContainerScroll, e
+    // duas bordas concêntricas em volta da mesma coisa é card dentro de card.
+    <div className="landing-dashboard-preview relative flex h-full min-h-0 overflow-hidden">
       <div className="hidden w-[190px] shrink-0 flex-col gap-0.5 bg-od-sidebar px-3 py-4 md:flex">
         <div className="mb-3 flex items-center gap-2 px-2">
           <LogoMark size={20} className="shrink-0" />
