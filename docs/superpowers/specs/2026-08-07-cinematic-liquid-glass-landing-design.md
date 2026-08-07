@@ -50,7 +50,7 @@ O redesign deve melhorar percepção de valor e clareza de conversão sem repeti
 
 - `#painel` vem imediatamente depois do hero e parece emergir dele, com uma transição de profundidade em vez de uma nova faixa sólida.
 - Um print real do painel imobiliário substitui o mockup navegável e apresenta produto, dados e densidade visual autênticos.
-- A moldura externa é o maior volume de vidro da página; o dashboard interno não recebe blur adicional.
+- O print ocupa a tela de um notebook grafite construído na interface, com bezel fino, câmera discreta e base metálica; o hardware substitui o antigo volume de vidro externo para evitar molduras concorrentes.
 - Em mobile, o preview usa enquadramento adaptado, sem escala ilegível, corte de ações ou rolagem horizontal da página.
 
 ### 4. Corredor “Hoje → Tim → Negócios”

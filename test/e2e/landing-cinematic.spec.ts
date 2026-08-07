@@ -25,11 +25,6 @@ test("apresenta o corredor cinematográfico com o produto antes das profissões"
 
   const panelStage = page.locator('[data-landing-stage="panel"]');
   await expect(panelStage).toBeVisible();
-  expect(
-    await panelStage.evaluate(
-      (element) => getComputedStyle(element).backdropFilter,
-    ),
-  ).not.toBe("none");
 });
 
 test("mostra o print real do painel no lugar do mockup", async ({ page, isMobile }) => {
@@ -56,6 +51,37 @@ test("mostra o print real do painel no lugar do mockup", async ({ page, isMobile
   } else {
     expect(overflow.scrollWidth - overflow.clientWidth).toBeLessThanOrEqual(1);
   }
+});
+
+test("enquadra o print em uma moldura reconhecível de notebook", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  const frame = page.locator('[data-laptop-frame="true"]');
+  const screen = page.locator('[data-laptop-screen="true"]');
+  const camera = page.locator('[data-laptop-camera="true"]');
+  const base = page.locator('[data-laptop-base="true"]');
+
+  await expect(frame).toBeVisible();
+  await expect(camera).toBeVisible();
+  await expect(base).toBeVisible();
+  await expect(screen.locator('[data-dashboard-screenshot="true"]')).toBeVisible();
+
+  const [screenBox, cameraBox, baseBox] = await Promise.all([
+    screen.boundingBox(),
+    camera.boundingBox(),
+    base.boundingBox(),
+  ]);
+
+  expect(screenBox).not.toBeNull();
+  expect(cameraBox).not.toBeNull();
+  expect(baseBox).not.toBeNull();
+
+  if (!screenBox || !cameraBox || !baseBox) return;
+
+  expect(baseBox.width).toBeGreaterThan(screenBox.width);
+  expect(baseBox.height).toBeGreaterThanOrEqual(10);
+  expect(baseBox.y).toBeGreaterThanOrEqual(screenBox.y + screenBox.height - 2);
+  expect(Math.abs(cameraBox.x + cameraBox.width / 2 - (screenBox.x + screenBox.width / 2))).toBeLessThan(2);
 });
 
 test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({ page }) => {

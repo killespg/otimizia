@@ -1656,6 +1656,80 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
 
 .landing-cinematic-panel-stage {
   transform-style: preserve-3d;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+.landing-cinematic-panel-stage::after {
+  display: none;
+}
+
+.landing-laptop-frame {
+  position: relative;
+  width: calc(100% - clamp(20px, 4vw, 48px));
+  margin-inline: auto;
+  filter: drop-shadow(0 22px 28px rgba(1, 5, 15, 0.38));
+}
+
+.landing-laptop-screen {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px 14px 7px 7px;
+  padding: clamp(13px, 1.45vw, 18px) clamp(5px, 0.7vw, 8px) clamp(5px, 0.7vw, 8px);
+  background: linear-gradient(180deg, #2c3443 0%, #0b1019 22%, #05080e 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 4px 0 #02050a;
+}
+
+.landing-laptop-camera {
+  position: absolute;
+  top: clamp(4px, 0.45vw, 6px);
+  left: 50%;
+  width: clamp(4px, 0.45vw, 6px);
+  height: clamp(4px, 0.45vw, 6px);
+  border-radius: 999px;
+  background: #0b214a;
+  box-shadow:
+    0 0 0 1px rgba(145, 169, 255, 0.2),
+    inset 0 0 2px rgba(145, 169, 255, 0.5);
+  transform: translateX(-50%);
+}
+
+.landing-laptop-display {
+  border-radius: 4px;
+  outline: 1px solid rgba(145, 169, 255, 0.12);
+  outline-offset: -1px;
+}
+
+.landing-laptop-base {
+  position: relative;
+  display: block;
+  width: calc(100% + clamp(14px, 3vw, 36px));
+  height: clamp(12px, 1.5vw, 19px);
+  margin-top: -1px;
+  margin-inline: calc(clamp(14px, 3vw, 36px) / -2);
+  border-radius: 0 0 9px 9px;
+  background: linear-gradient(180deg, #657083 0%, #313949 24%, #111722 72%, #090d14 100%);
+  clip-path: polygon(0 0, 100% 0, 97.2% 100%, 2.8% 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+.landing-laptop-lip {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: clamp(54px, 12%, 132px);
+  height: clamp(3px, 0.38vw, 5px);
+  border-radius: 0 0 7px 7px;
+  background: rgba(5, 8, 14, 0.72);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.18);
+  transform: translateX(-50%);
 }
 
 .landing-cinematic-feature-stage {
