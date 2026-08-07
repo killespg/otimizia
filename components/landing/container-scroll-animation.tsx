@@ -22,9 +22,11 @@ import { type ReactNode } from "react";
  *    `will-change: transform`, evitando rasterização permanente do texto.
  */
 export function ContainerScroll({
+  id,
   titleComponent,
   children,
 }: {
+  id?: string;
   titleComponent: ReactNode;
   children: ReactNode;
 }) {
@@ -38,8 +40,9 @@ export function ContainerScroll({
       </div>
 
       <div
+        id={id}
         data-landing-stage="panel"
-        className="landing-cinematic-stage landing-cinematic-panel-stage mx-auto mt-[clamp(32px,4vw,56px)] w-full max-w-5xl overflow-hidden min-[1536px]:max-w-6xl"
+        className="landing-cinematic-stage landing-cinematic-panel-stage mx-auto mt-[clamp(32px,4vw,56px)] w-full max-w-5xl scroll-mt-0 overflow-hidden min-[1536px]:max-w-6xl"
       >
         {children}
       </div>

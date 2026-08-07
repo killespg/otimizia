@@ -101,15 +101,33 @@ test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/#painel", { waitUntil: "networkidle" });
 
   const frame = page.locator('[data-laptop-frame="true"]');
   const screen = page.locator('[data-laptop-opening-screen="true"]');
   const cover = page.locator('[data-laptop-cover="true"]');
   const hinge = page.locator('[data-laptop-hinge="true"]');
   const base = page.locator('[data-laptop-base="true"]');
+  const hardware = page.locator('[data-laptop-hardware="true"]');
   const heading = page.locator('[data-landing-panel-heading="true"]');
   const stage = page.locator('[data-landing-stage="panel"]');
+  const viewportHeight = await page.evaluate(() => window.innerHeight);
+
+  await expect
+    .poll(async () =>
+      frame.evaluate((element) =>
+        Math.abs(element.getBoundingClientRect().top),
+      ),
+    )
+    .toBeLessThanOrEqual(1);
+  await expect
+    .poll(async () =>
+      base.evaluate((element) => element.getBoundingClientRect().top),
+    )
+    .toBeLessThan(viewportHeight * 0.84);
+  expect(
+    await hardware.evaluate((element) => getComputedStyle(element).transform),
+  ).toBe("none");
 
   await page.evaluate(() => {
     const notebook = document.querySelector<HTMLElement>(
@@ -163,7 +181,6 @@ test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
     ),
   ).toBeGreaterThan(0.85);
   expect(closedBaseTop).toBeGreaterThan(0);
-  const viewportHeight = await page.evaluate(() => window.innerHeight);
   expect(closedBaseTop).toBeLessThan(viewportHeight * 0.84);
   expect(closedHeadingBox).not.toBeNull();
   expect(closedHeadingBox!.y).toBeGreaterThan(80);

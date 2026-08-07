@@ -52,6 +52,7 @@ O redesign deve melhorar percepção de valor e clareza de conversão sem repeti
 - Um print real do painel imobiliário substitui o mockup navegável e apresenta produto, dados e densidade visual autênticos.
 - O print ocupa a tela de um notebook grafite construído na interface, com bezel fino, câmera discreta e base metálica; o hardware substitui o antigo volume de vidro externo para evitar molduras concorrentes.
 - Antes de `#painel` entrar na viewport, o notebook parece fisicamente fechado: a base permanece parada e a tampa grafite, marcada pela logo OtimizIA, repousa sobre a dobradiça.
+- A âncora `#painel` aponta para o palco do notebook, não para o início da seção; assim, título e estado fechado já entram enquadrados, sem deslocar o hardware para compensar o espaço reservado pela tampa.
 - Conforme o scroll desce, a mesma tampa gira da posição quase horizontal até a vertical, com perspectiva longa e limitada para comunicar profundidade sem ampliar o plano sobre a página. Durante o giro, o exterior grafite desaparece e revela o print real por dentro.
 - O título permanece visível no espaço superior durante o estado fechado, e o trilho reserva apenas a altura natural do hardware mais o curso da animação; não há um viewport vazio acima do notebook.
 - A largura cresce discretamente durante a abertura, sem ultrapassar a moldura. Ao terminar, toda transformação é removida para preservar a nitidez do texto do produto.

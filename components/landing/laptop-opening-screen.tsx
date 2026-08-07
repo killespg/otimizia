@@ -61,7 +61,7 @@ export function LaptopOpeningScreen({
       />
 
       <div className="landing-laptop-sticky-scene">
-        <div className="landing-laptop-hardware">
+        <div data-laptop-hardware="true" className="landing-laptop-hardware">
           <div className="landing-laptop-screen-track">
             {animateOpening ? (
               <motion.div

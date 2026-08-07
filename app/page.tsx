@@ -94,11 +94,11 @@ export default async function LandingPage() {
         <Hero />
 
         <section
-          id="painel"
           data-landing-chapter="today"
-          className="lp-section landing-cinematic-section scroll-mt-[calc(5rem+env(safe-area-inset-top))]"
+          className="lp-section landing-cinematic-section"
         >
           <ContainerScroll
+            id="painel"
             titleComponent={
               <>
                 <p className="landing-cinematic-kicker mb-5">Hoje</p>
