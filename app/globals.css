@@ -1431,29 +1431,43 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
   isolation: isolate;
   overflow: clip;
   color: var(--od-text);
-  background: linear-gradient(180deg, #08070b 0%, #0d0b12 46%, #09080d 100%);
+  background: linear-gradient(180deg, #0a0710 0%, #120b1a 46%, #0b0711 100%);
+}
+
+.landing-cinematic-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(54% 17% at 0% 24%, rgba(111, 49, 95, 0.42), transparent 72%),
+    radial-gradient(48% 18% at 100% 50%, rgba(135, 87, 240, 0.38), transparent 73%),
+    radial-gradient(58% 18% at 4% 76%, rgba(111, 49, 95, 0.36), transparent 74%),
+    radial-gradient(48% 16% at 94% 96%, rgba(135, 87, 240, 0.32), transparent 72%);
+  filter: saturate(128%);
 }
 
 .landing-cinematic-light {
   position: absolute;
   z-index: 0;
-  width: min(84vw, 1120px);
+  width: min(132vw, 1780px);
   aspect-ratio: 1;
   border-radius: 999px;
   pointer-events: none;
-  filter: blur(42px);
+  filter: blur(32px) saturate(138%) brightness(1.14);
 }
 
 .landing-cinematic-light--violet {
-  top: -420px;
-  right: -360px;
-  background: radial-gradient(circle, rgba(135, 87, 240, 0.36) 0%, rgba(135, 87, 240, 0.12) 38%, transparent 70%);
+  top: -610px;
+  right: -480px;
+  background: radial-gradient(circle, rgba(135, 87, 240, 0.64) 0%, rgba(135, 87, 240, 0.28) 38%, transparent 70%);
 }
 
 .landing-cinematic-light--plum {
-  top: 38%;
-  left: -520px;
-  background: radial-gradient(circle, rgba(111, 49, 95, 0.34) 0%, rgba(111, 49, 95, 0.1) 42%, transparent 72%);
+  top: 34%;
+  left: -690px;
+  background: radial-gradient(circle, rgba(111, 49, 95, 0.56) 0%, rgba(111, 49, 95, 0.22) 42%, transparent 72%);
 }
 
 .landing-cinematic-section {
@@ -1477,7 +1491,7 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
 .landing-cinematic-page .lp-h1 {
   font-size: clamp(42px, 6vw, 76px);
   font-weight: 800;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.04em;
   line-height: 0.98;
 }
 
@@ -1528,8 +1542,8 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
   border-top-color: rgba(255, 255, 255, 0.24);
   border-radius: 16px;
   background:
-    linear-gradient(140deg, rgba(255, 255, 255, 0.09), transparent 40%),
-    rgba(22, 19, 30, 0.7);
+    linear-gradient(140deg, rgba(255, 255, 255, 0.14), transparent 42%),
+    rgba(22, 19, 30, 0.42);
   padding: clamp(17px, 2vw, 24px);
   -webkit-backdrop-filter: blur(20px) saturate(145%);
   backdrop-filter: blur(20px) saturate(145%);
@@ -1557,8 +1571,8 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
   right: 0;
   border-color: rgba(167, 139, 250, 0.28);
   background:
-    linear-gradient(138deg, rgba(167, 139, 250, 0.16), transparent 46%),
-    rgba(24, 19, 34, 0.76);
+    linear-gradient(138deg, rgba(167, 139, 250, 0.22), transparent 48%),
+    rgba(24, 19, 34, 0.46);
   transform: rotate(2.4deg) translateZ(42px);
 }
 
@@ -1609,7 +1623,7 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
   border-top-color: rgba(255, 255, 255, 0.22);
   border-left-color: rgba(255, 255, 255, 0.17);
   border-radius: 16px;
-  background: rgba(20, 17, 27, 0.74);
+  background: rgba(20, 17, 27, 0.5);
   -webkit-backdrop-filter: blur(22px) saturate(145%);
   backdrop-filter: blur(22px) saturate(145%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -1623,14 +1637,14 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
   border-radius: inherit;
   background:
     var(--od-glass-grain),
-    linear-gradient(148deg, rgba(255, 255, 255, 0.075), transparent 34%),
-    radial-gradient(70% 28% at 88% 100%, rgba(135, 87, 240, 0.11), transparent 74%);
+    linear-gradient(148deg, rgba(255, 255, 255, 0.11), transparent 36%),
+    radial-gradient(70% 30% at 88% 100%, rgba(135, 87, 240, 0.2), transparent 74%);
   background-blend-mode: overlay, normal, normal;
   pointer-events: none;
 }
 
 .landing-cinematic-stage--quiet {
-  background: rgba(18, 16, 24, 0.86);
+  background: rgba(18, 16, 24, 0.58);
   -webkit-backdrop-filter: blur(16px) saturate(135%);
   backdrop-filter: blur(16px) saturate(135%);
 }
@@ -1646,15 +1660,15 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
 .landing-cinematic-segmented {
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 999px;
-  background: rgba(5, 4, 8, 0.4);
+  background: rgba(5, 4, 8, 0.28);
 }
 
 .landing-cinematic-final-cta {
   overflow: hidden;
   padding: clamp(44px, 7vw, 88px) clamp(20px, 5vw, 64px);
   background:
-    radial-gradient(72% 120% at 50% 118%, rgba(135, 87, 240, 0.24), transparent 68%),
-    rgba(20, 17, 27, 0.78);
+    radial-gradient(72% 120% at 50% 118%, rgba(135, 87, 240, 0.38), transparent 68%),
+    rgba(20, 17, 27, 0.52);
 }
 
 .landing-cinematic-final-cta .landing-cinematic-kicker {
@@ -1668,7 +1682,7 @@ header.landing-cinematic-nav {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-top-color: rgba(255, 255, 255, 0.22);
   border-radius: 16px;
-  background: rgba(15, 13, 20, 0.68);
+  background: rgba(15, 13, 20, 0.48);
   -webkit-backdrop-filter: blur(20px) saturate(145%);
   backdrop-filter: blur(20px) saturate(145%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -1677,7 +1691,7 @@ header.landing-cinematic-nav {
 .landing-cinematic-mobile-cta {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 16px;
-  background: rgba(15, 13, 20, 0.8);
+  background: rgba(15, 13, 20, 0.56);
   -webkit-backdrop-filter: blur(20px) saturate(145%);
   backdrop-filter: blur(20px) saturate(145%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -1685,7 +1699,7 @@ header.landing-cinematic-nav {
 
 .landing-cinematic-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(5, 4, 8, 0.26);
+  background: rgba(5, 4, 8, 0.16);
 }
 
 @media (min-width: 900px) {
@@ -1711,16 +1725,16 @@ header.landing-cinematic-nav {
 @media (max-width: 639px) {
   .landing-cinematic-light {
     width: 150vw;
-    filter: blur(32px);
+    filter: blur(26px) saturate(138%) brightness(1.14);
   }
 
   .landing-cinematic-light--violet {
-    top: -280px;
-    right: -360px;
+    top: -350px;
+    right: -420px;
   }
 
   .landing-cinematic-light--plum {
-    left: -420px;
+    left: -470px;
   }
 
   .landing-cinematic-page .lp-h1 {
