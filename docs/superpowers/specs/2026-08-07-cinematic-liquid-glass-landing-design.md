@@ -51,7 +51,10 @@ O redesign deve melhorar percepção de valor e clareza de conversão sem repeti
 - `#painel` vem imediatamente depois do hero e parece emergir dele, com uma transição de profundidade em vez de uma nova faixa sólida.
 - Um print real do painel imobiliário substitui o mockup navegável e apresenta produto, dados e densidade visual autênticos.
 - O print ocupa a tela de um notebook grafite construído na interface, com bezel fino, câmera discreta e base metálica; o hardware substitui o antigo volume de vidro externo para evitar molduras concorrentes.
-- A própria tela do notebook se eleva verticalmente a partir da dobradiça e cresce discretamente dos 94% até a largura real, criando profundidade sem perspectiva 3D ou placa absoluta sobre a página; ao terminar, a transformação é removida para preservar a nitidez do texto do produto.
+- Antes de `#painel` entrar na viewport, o notebook parece fisicamente fechado: a base permanece parada e a tampa grafite, marcada pela logo OtimizIA, repousa sobre a dobradiça.
+- Conforme o scroll desce, a mesma tampa gira da posição quase horizontal até a vertical, com perspectiva longa e limitada para comunicar profundidade sem ampliar o plano sobre a página. Durante o giro, o exterior grafite desaparece e revela o print real por dentro.
+- A largura cresce discretamente durante a abertura, sem ultrapassar a moldura. Ao terminar, toda transformação é removida para preservar a nitidez do texto do produto.
+- Com movimento reduzido ou sem JavaScript, o notebook aparece aberto e estático.
 - Em mobile, o preview usa enquadramento adaptado, sem escala ilegível, corte de ações ou rolagem horizontal da página.
 
 ### 4. Corredor “Hoje → Tim → Negócios”
