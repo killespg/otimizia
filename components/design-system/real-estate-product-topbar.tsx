@@ -10,9 +10,9 @@ import {
   type OperationSummary,
 } from "@/components/real-estate/operation-summary-button";
 import {
-  QuickSettingsButton,
+  AccountSettingsButton,
   type NotificationPreferences,
-} from "@/components/real-estate/quick-settings-button";
+} from "@/components/design-system/account-settings-button";
 
 export function RealEstateProductTopbar({
   displayName,
@@ -60,7 +60,7 @@ export function RealEstateProductTopbar({
         </Link>
         <Link href="/painel/imoveis" aria-label="Abrir carteira" className="hidden size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text sm:grid"><Building2 size={16} /></Link>
         <OperationSummaryButton {...operationSummary} />
-        <QuickSettingsButton
+        <AccountSettingsButton
           displayName={displayName}
           avatarUrl={avatarUrl}
           notificationPreferences={notificationPreferences}

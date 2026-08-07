@@ -407,7 +407,7 @@ describe("frontend route parity", () => {
     // com identidade, status e a chamada do Tim.
     expect(dashboardHeader).not.toContain("data-dashboard-primary-actions");
     expect(realEstateTopbar).toContain("OperationSummaryButton");
-    expect(realEstateTopbar).toContain("QuickSettingsButton");
+    expect(realEstateTopbar).toContain("AccountSettingsButton");
     // A variação tingida é reservada à ação primária, e a ação primária do
     // cabeçalho subiu para a topbar. O que restou aqui é a chamada do Tim, em
     // vidro comum.

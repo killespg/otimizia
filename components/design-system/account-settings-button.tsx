@@ -81,8 +81,14 @@ function NotificationToggle({
  * Identidade e configurações rápidas. Fica na topbar porque conta, avisos e
  * saída são caminhos de qualquer tela — o cabeçalho do painel só existe na
  * visão geral.
+ *
+ * Nasceu dentro de `components/real-estate/` e ficou lá por engano: nada aqui é
+ * imobiliário. Nome, avisos por e-mail, Configurações, Equipe e Sair valem em
+ * qualquer vertical, e nas outras três a topbar tinha só um link seco para
+ * /painel/configuracoes. Mudou de pasta e de nome em 2026-08-07, quando passou
+ * a ser usado pelas quatro.
  */
-export function QuickSettingsButton({
+export function AccountSettingsButton({
   displayName,
   avatarUrl,
   notificationPreferences,

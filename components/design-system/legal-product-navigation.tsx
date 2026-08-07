@@ -23,6 +23,11 @@ import { TwoLevelNav, type NavItem } from "@/components/design-system/product-na
 import { TimIcon } from "@/components/design-system/tim-icon";
 
 type Props = {
+  // O jurídico era a única vertical sem esses dois: sem eles o
+  // `WorkspaceSwitcher` não renderiza, e quem atua em mais de uma área ficava
+  // sem caminho para sair do painel do escritório. Corrigido em 2026-08-07.
+  workspaceKey?: string;
+  workspaceOptions?: Array<{ value: string; label: string }>;
   displayName: string;
   avatarUrl: string | null;
   organizationName: string;
@@ -30,7 +35,7 @@ type Props = {
   counts: { cases: number; deadlines: number; documents: number; receivables: number };
 };
 
-export function LegalProductNavigation({ displayName, avatarUrl, organizationName, canViewFinance, counts }: Props) {
+export function LegalProductNavigation({ workspaceKey, workspaceOptions, displayName, avatarUrl, organizationName, canViewFinance, counts }: Props) {
   const overview: NavItem[] = [
     { href: "/painel/juridico", label: "Visão geral", icon: CircleGauge, exact: true },
     { href: "/painel/assistente", label: "Tim", icon: TimIcon },
@@ -79,6 +84,8 @@ export function LegalProductNavigation({ displayName, avatarUrl, organizationNam
       logoHref="/painel/juridico"
       subtitle="Escritório de advocacia"
       organizationName={organizationName}
+      workspaceKey={workspaceKey}
+      workspaceOptions={workspaceOptions}
       displayName={displayName}
       avatarUrl={avatarUrl}
       onLogout={logout}
@@ -87,6 +94,10 @@ export function LegalProductNavigation({ displayName, avatarUrl, organizationNam
       mobileTabs={mobileTabs}
       mobileTimHref={overview[1].href}
       mobileGroups={mobileGroups}
+      mobileQuickActions={[
+        { href: "/painel/tarefas#new-task", label: "Novo retorno", icon: ListTodo },
+        { href: "/painel/contatos#new-contact", label: "Novo cliente", icon: Users },
+      ]}
       mobileAriaLabel="Navegação jurídica no celular"
     />
   );

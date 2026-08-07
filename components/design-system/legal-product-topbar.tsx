@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { UserAvatar } from "@/components/design-system/user-avatar";
+import {
+  AccountSettingsButton,
+  type NotificationPreferences,
+} from "@/components/design-system/account-settings-button";
 import { useRouter } from "next/navigation";
 import { Bell, Maximize2, MessageSquare, Search } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { LogoWordmark } from "@/components/design-system/logo";
 
-export function LegalProductTopbar({ displayName, avatarUrl }: { displayName: string; avatarUrl: string | null }) {
+export function LegalProductTopbar({ displayName, avatarUrl, reminderCount, notificationPreferences }: { displayName: string; avatarUrl: string | null; reminderCount: number; notificationPreferences: NotificationPreferences }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
@@ -32,10 +35,16 @@ export function LegalProductTopbar({ displayName, avatarUrl }: { displayName: st
       <div data-liquid-glass-actions className="liquid-glass-control ml-auto flex items-center rounded-full p-1">
         <Link href="/painel/assistente" aria-label="Abrir mensagens" className="grid size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text"><MessageSquare size={16}/></Link>
         <button type="button" onClick={fullscreen} aria-label="Tela cheia" className="hidden size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text sm:grid"><Maximize2 size={15}/></button>
-        <Link href="/painel/tarefas" aria-label="Ver alertas" className="relative grid size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text"><Bell size={16}/><span className="absolute right-2.5 top-2.5 size-1.5 rounded-full bg-[#fb7767]"/></Link>
-        <Link href="/painel/configuracoes" aria-label="Abrir conta">
-          <UserAvatar name={displayName} photoUrl={avatarUrl} className="size-11 bg-white/[0.07] text-xs font-bold text-od-text-2" />
+        {/* Bolinha fixa trocada pelo contador real de prazos e lembretes vencidos. */}
+        <Link href="/painel/tarefas" aria-label="Ver alertas" className="relative grid size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text">
+          <Bell size={16} />
+          {reminderCount > 0 ? <span className="absolute right-1.5 top-1.5 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#fb7767] px-1 text-xs font-bold text-white">{Math.min(reminderCount, 99)}</span> : null}
         </Link>
+        <AccountSettingsButton
+          displayName={displayName}
+          avatarUrl={avatarUrl}
+          notificationPreferences={notificationPreferences}
+        />
       </div>
     </header>
   );

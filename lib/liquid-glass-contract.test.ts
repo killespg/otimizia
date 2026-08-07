@@ -101,9 +101,36 @@ describe("Liquid Glass do shell de produto", () => {
 
   it("mantém a topbar transparente e materializa apenas busca e ações", () => {
     const topbars = [
-      createElement(ProductTopbar, { displayName: "Mariana Costa", avatarUrl: null }),
-      createElement(SellerProductTopbar, { displayName: "Mariana Costa", avatarUrl: null, reminderCount: 2 }),
-      createElement(LegalProductTopbar, { displayName: "Mariana Costa", avatarUrl: null }),
+      createElement(ProductTopbar, {
+        displayName: "Mariana Costa",
+        avatarUrl: null,
+        reminderCount: 3,
+        notificationPreferences: {
+          dailyPush: true,
+          dailySummaryEmail: true,
+          stalledDealEmail: false,
+        },
+      }),
+      createElement(SellerProductTopbar, {
+        displayName: "Mariana Costa",
+        avatarUrl: null,
+        reminderCount: 2,
+        notificationPreferences: {
+          dailyPush: true,
+          dailySummaryEmail: true,
+          stalledDealEmail: false,
+        },
+      }),
+      createElement(LegalProductTopbar, {
+        displayName: "Mariana Costa",
+        avatarUrl: null,
+        reminderCount: 0,
+        notificationPreferences: {
+          dailyPush: true,
+          dailySummaryEmail: true,
+          stalledDealEmail: false,
+        },
+      }),
       createElement(RealEstateProductTopbar, {
         displayName: "Mariana Costa",
         avatarUrl: null,

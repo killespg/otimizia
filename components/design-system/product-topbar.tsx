@@ -1,16 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { UserAvatar } from "@/components/design-system/user-avatar";
+import {
+  AccountSettingsButton,
+  type NotificationPreferences,
+} from "@/components/design-system/account-settings-button";
 import { useRouter } from "next/navigation";
-import { Bell, Search } from "lucide-react";
+import { Bell, Maximize2, Search } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { LogoWordmark } from "@/components/design-system/logo";
 import { TimIcon } from "@/components/design-system/tim-icon";
 
-export function ProductTopbar({ displayName, avatarUrl }: { displayName: string; avatarUrl: string | null }) {
+export function ProductTopbar({ displayName, avatarUrl, reminderCount, notificationPreferences }: { displayName: string; avatarUrl: string | null; reminderCount: number; notificationPreferences: NotificationPreferences }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
+
+  async function fullscreen() {
+    if (!document.fullscreenElement) await document.documentElement.requestFullscreen?.();
+    else await document.exitFullscreen?.();
+  }
 
   function search(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,10 +35,19 @@ export function ProductTopbar({ displayName, avatarUrl }: { displayName: string;
       </form>
       <div data-liquid-glass-actions className="liquid-glass-control flex shrink-0 items-center rounded-full p-1">
         <Link href="/painel/assistente" aria-label="Abrir conversa com o Tim" className="grid size-11 place-items-center rounded-md text-od-text-3 hover:bg-white/[0.045] hover:text-od-text"><TimIcon size={17} /></Link>
-        <Link href="/painel/tarefas" aria-label="Ver lembretes" className="relative grid size-11 place-items-center rounded-md text-od-text-3 hover:bg-white/[0.045] hover:text-od-text"><Bell size={17} /><span className="absolute right-2.5 top-2.5 size-1.5 rounded-full bg-od-accent" /></Link>
-        <Link href="/painel/configuracoes" aria-label="Abrir sua conta">
-          <UserAvatar name={displayName} photoUrl={avatarUrl} className="size-11 bg-white/[0.07] text-xs font-semibold text-od-text-2" />
+        <button type="button" onClick={fullscreen} aria-label="Tela cheia" className="hidden size-11 place-items-center rounded-md text-od-text-3 hover:bg-white/[0.045] hover:text-od-text sm:grid"><Maximize2 size={16} /></button>
+        {/* A bolinha aqui era fixa: aparecia sempre, com ou sem lembrete
+            atrasado, então não informava nada. Trocada pelo contador real, o
+            mesmo que a topbar do vendedor já usava. */}
+        <Link href="/painel/tarefas" aria-label="Ver lembretes" className="relative grid size-11 place-items-center rounded-md text-od-text-3 hover:bg-white/[0.045] hover:text-od-text">
+          <Bell size={16} />
+          {reminderCount > 0 ? <span className="absolute right-1.5 top-1.5 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#fb7767] px-1 text-xs font-bold text-white">{Math.min(reminderCount, 99)}</span> : null}
         </Link>
+        <AccountSettingsButton
+          displayName={displayName}
+          avatarUrl={avatarUrl}
+          notificationPreferences={notificationPreferences}
+        />
       </div>
     </header>
   );

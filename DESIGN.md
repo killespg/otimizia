@@ -139,6 +139,27 @@ Movimento respeita `prefers-reduced-motion`.
 Textos e ícones nunca entram nas camadas de distorção. Qualquer mudança de
 opacidade deve reverificar contraste WCAG AA e os alvos mínimos de 44 px.
 
+## Paridade entre as verticais
+
+O shell é o mesmo nas quatro áreas; o que muda é o domínio. Uma peça que não
+fala de imóvel, processo ou produto pertence a `components/design-system` e
+vale para todas. Auditoria de 2026-08-07 encontrou quatro coisas que tinham
+ficado só onde nasceram:
+
+- `AccountSettingsButton` (era `QuickSettingsButton`, em
+  `components/real-estate/`): identidade, avisos, Configurações, Equipe e Sair.
+  As outras três topbars tinham só um link seco para `/painel/configuracoes`.
+- Sino da topbar: genérico e jurídico desenhavam uma bolinha fixa, que aparecia
+  com ou sem lembrete atrasado — indicador que não informa nada é pior que
+  nenhum. Passaram a usar o contador real, como vendedor e imobiliário.
+- Tela cheia: faltava só no genérico.
+- `WorkspaceSwitcher`: o jurídico era a única vertical que não recebia
+  `workspaceKey`/`workspaceOptions`, então quem atua em mais de uma área não
+  tinha caminho para sair do painel do escritório.
+
+`OperationSummaryButton` continua no imobiliário de propósito: visitas,
+propostas e comissões são contagens daquele domínio, não do shell.
+
 ## Identidade de quem está usando
 
 `UserAvatar` (`components/design-system/user-avatar.tsx`) é o único desenho da

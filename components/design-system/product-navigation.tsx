@@ -17,6 +17,8 @@ import {
   SearchCheck,
   Settings,
   Users,
+  BellRing,
+  KanbanSquare,
 } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { TwoLevelNav, type NavGroup, type NavItem } from "@/components/design-system/product-nav-groups";
@@ -106,6 +108,10 @@ export function ProductNavigation(props: Props) {
       mobileTabs={mobileTabs}
       mobileTimHref={timHref}
       mobileGroups={mobileGroups}
+      mobileQuickActions={[
+        { href: "/painel/funil#new-deal", label: "Novo negócio", icon: KanbanSquare },
+        { href: "/painel/tarefas#new-task", label: "Novo lembrete", icon: BellRing },
+      ]}
       mobileAriaLabel="Navegação principal no celular"
     />
   );

@@ -127,14 +127,25 @@ export default async function PainelLayout({
         ])
       : Promise.resolve(null),
   ]);
-  // Alimenta os atalhos de aviso das configurações rápidas, também na topbar.
-  const { data: notificationRow } = canViewRealEstateWorkspace
-    ? await supabase
-        .from("notification_preferences")
-        .select("daily_push, daily_summary_email, stalled_deal_email")
-        .eq("user_id", user.id)
-        .maybeSingle()
-    : { data: null };
+  // Alimentam a topbar de qualquer vertical: o painel de conta abre os atalhos
+  // de aviso, e o sino mostra o contador. Eram consultados só no imobiliário,
+  // porque as duas coisas nasceram lá — mas nada aqui é do domínio de imóveis,
+  // e o sino das outras verticais desenhava uma bolinha fixa no lugar.
+  const [{ data: notificationRow }, overdueReminders] = await Promise.all([
+    supabase
+      .from("notification_preferences")
+      .select("daily_push, daily_summary_email, stalled_deal_email")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("tasks")
+      .select("id", { count: "exact", head: true })
+      .eq("org_id", orgId)
+      .eq("workspace_key", workspaceKey)
+      .eq("done", false)
+      .lt("due_at", new Date().toISOString()),
+  ]);
+  const overdueReminderCount = overdueReminders.count ?? 0;
   const notificationPreferences = {
     dailyPush: notificationRow?.daily_push ?? true,
     dailySummaryEmail: notificationRow?.daily_summary_email ?? true,
@@ -192,6 +203,8 @@ export default async function PainelLayout({
         <DashboardNavigationFeedback />
         {canViewLegalWorkspace ? (
           <LegalProductNavigation
+            workspaceKey={workspaceKey}
+            workspaceOptions={workspaceOptions}
             displayName={displayName}
             avatarUrl={avatarUrl}
             organizationName={org?.name || "Seu escritório"}
@@ -264,9 +277,19 @@ export default async function PainelLayout({
             </>
           ) : null}
           {canViewLegalWorkspace ? (
-            <LegalProductTopbar displayName={displayName} avatarUrl={avatarUrl} />
+            <LegalProductTopbar
+              displayName={displayName}
+              avatarUrl={avatarUrl}
+              reminderCount={overdueReminderCount}
+              notificationPreferences={notificationPreferences}
+            />
           ) : isAutonomousSeller ? (
-            <SellerProductTopbar displayName={displayName} avatarUrl={avatarUrl} reminderCount={sellerCounts.reminders} />
+            <SellerProductTopbar
+              displayName={displayName}
+              avatarUrl={avatarUrl}
+              reminderCount={overdueReminderCount}
+              notificationPreferences={notificationPreferences}
+            />
           ) : canViewRealEstateWorkspace ? (
             <RealEstateProductTopbar
               displayName={displayName}
@@ -276,7 +299,12 @@ export default async function PainelLayout({
               notificationPreferences={notificationPreferences}
             />
           ) : (
-            <ProductTopbar displayName={displayName} avatarUrl={avatarUrl} />
+            <ProductTopbar
+              displayName={displayName}
+              avatarUrl={avatarUrl}
+              reminderCount={overdueReminderCount}
+              notificationPreferences={notificationPreferences}
+            />
           )}
           {access.status === "trialing" && access.trialDaysLeft !== null ? (
             <TrialBanner trialDaysLeft={access.trialDaysLeft} />
