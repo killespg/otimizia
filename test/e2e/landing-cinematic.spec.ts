@@ -90,23 +90,35 @@ test("mantém o print fora de transformações 3D que rasterizam o texto", async
   expect(rendering.willChange).not.toContain("transform");
 });
 
-test("abre a tampa no scroll sem transformar o print nítido", async ({ page }) => {
+test("ergue a tela pela dobradiça sem criar uma placa sobre a página", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/", { waitUntil: "networkidle" });
 
   const frame = page.locator('[data-laptop-frame="true"]');
-  const lid = page.locator('[data-laptop-opening-lid="true"]');
+  const screen = page.locator('[data-laptop-opening-screen="true"]');
   const stage = page.locator('[data-landing-stage="panel"]');
 
-  await expect(lid).toBeVisible();
-  expect(Number(await lid.evaluate((element) => getComputedStyle(element).opacity))).toBeGreaterThan(0.85);
+  await expect(page.locator('[data-laptop-opening-lid="true"]')).toHaveCount(0);
+  await expect(screen).toBeVisible();
+
+  const closed = await screen.evaluate((element) => ({
+    layoutHeight: element.clientHeight,
+    layoutWidth: element.clientWidth,
+    renderedHeight: element.getBoundingClientRect().height,
+    renderedWidth: element.getBoundingClientRect().width,
+    transform: getComputedStyle(element).transform,
+  }));
+  expect(closed.transform).not.toBe("none");
+  expect(closed.renderedHeight).toBeLessThan(closed.layoutHeight * 0.65);
+  expect(closed.renderedWidth).toBeGreaterThan(closed.layoutWidth * 0.9);
+  expect(closed.renderedWidth).toBeLessThan(closed.layoutWidth * 0.98);
 
   await frame.scrollIntoViewIfNeeded();
   await page.evaluate(() => window.scrollBy(0, Math.round(window.innerHeight * 0.45)));
 
   await expect
-    .poll(async () => Number(await lid.evaluate((element) => getComputedStyle(element).opacity)))
-    .toBeLessThan(0.15);
+    .poll(async () => screen.evaluate((element) => getComputedStyle(element).transform))
+    .toBe("none");
   expect(await stage.evaluate((element) => getComputedStyle(element).transform)).toBe("none");
 });
 

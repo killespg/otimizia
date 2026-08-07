@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { LaptopOpeningLid } from "@/components/landing/laptop-opening-lid";
+import { LaptopOpeningScreen } from "@/components/landing/laptop-opening-screen";
 
 const ALT_TEXT =
   "Painel imobiliário da OtimizIA com carteira, visitas, vitrines e comissões";
@@ -7,9 +7,7 @@ const ALT_TEXT =
 export function DashboardScreenshot() {
   return (
     <figure data-laptop-frame="true" className="landing-laptop-frame">
-      <LaptopOpeningLid />
-
-      <div data-laptop-screen="true" className="landing-laptop-screen">
+      <LaptopOpeningScreen>
         <span
           data-laptop-camera="true"
           aria-hidden="true"
@@ -37,7 +35,7 @@ export function DashboardScreenshot() {
         >
           Arraste para explorar
         </span>
-      </div>
+      </LaptopOpeningScreen>
 
       <span data-laptop-base="true" aria-hidden="true" className="landing-laptop-base">
         <span className="landing-laptop-lip" />

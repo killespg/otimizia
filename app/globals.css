@@ -1675,44 +1675,10 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
   filter: drop-shadow(0 22px 28px rgba(1, 5, 15, 0.38));
 }
 
-.landing-laptop-opening-track {
-  position: absolute;
-  inset: 0 0 clamp(12px, 1.5vw, 19px);
-  z-index: 4;
-  perspective: 1200px;
-  pointer-events: none;
-}
-
-.landing-laptop-opening-lid {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
+.landing-laptop-screen-track {
+  position: relative;
   overflow: hidden;
   border-radius: 14px 14px 7px 7px;
-  background:
-    radial-gradient(circle at 50% 44%, rgb(var(--landing-logo-blue) / 0.15), transparent 26%),
-    linear-gradient(145deg, #303a4b 0%, #151c29 44%, #080c14 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.09),
-    0 4px 0 #02050a;
-  backface-visibility: hidden;
-  will-change: transform, opacity;
-}
-
-.landing-laptop-opening-lid::after {
-  content: "";
-  position: absolute;
-  inset: auto 7% 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(145, 169, 255, 0.48), transparent);
-}
-
-.landing-laptop-opening-mark {
-  width: clamp(36px, 5vw, 56px);
-  height: auto;
-  filter: drop-shadow(0 0 12px rgb(var(--landing-logo-blue) / 0.32));
 }
 
 .landing-laptop-screen {
@@ -1725,6 +1691,7 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
     inset 0 1px 0 rgba(255, 255, 255, 0.24),
     inset 0 0 0 1px rgba(255, 255, 255, 0.08),
     0 4px 0 #02050a;
+  backface-visibility: hidden;
 }
 
 .landing-laptop-camera {
@@ -1770,12 +1737,6 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
   background: rgba(5, 8, 14, 0.72);
   box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.18);
   transform: translateX(-50%);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .landing-laptop-opening-track {
-    display: none;
-  }
 }
 
 .landing-cinematic-feature-stage {
