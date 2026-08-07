@@ -6,7 +6,8 @@ test("mantém a landing sem overflow e com controles tocáveis no celular", asyn
   test.skip(!testInfo.project.name.startsWith("mobile"));
 
   await page.goto("/", { waitUntil: "networkidle" });
-  await expect(page.getByRole("heading", { name: /A IA atende seu WhatsApp/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Seu negócio não para/i })).toBeVisible();
+  await expect(page.locator('[data-landing-cinematic="true"]')).toBeVisible();
 
   const hasOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
