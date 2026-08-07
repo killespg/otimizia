@@ -220,13 +220,13 @@ export function FeatureTabs() {
   const vertical = VERTICALS.find((item) => item.key === activeKey) ?? VERTICALS[2];
 
   return (
-    <div>
+    <div data-landing-stage="professions" className="landing-cinematic-stage landing-cinematic-feature-stage">
       {/* Controle segmentado: a versão anterior usava texto solto com um fio de
           2px embaixo, que não lia como algo clicável. */}
       <div
         role="tablist"
         aria-label="Escolha a profissão"
-        className="mx-auto flex max-w-[620px] gap-1 rounded-full border border-od-border bg-od-muted-surface p-1"
+        className="landing-cinematic-segmented mx-auto flex max-w-[620px] gap-1 p-1"
       >
         {VERTICALS.map((item) => {
           const selected = item.key === vertical.key;

@@ -41,12 +41,13 @@ export function About() {
   return (
     <div
       data-landing-about-stage="true"
+      data-landing-stage="about"
       /* Era `.landing-liquid-stage`, uma chapa de vidro leitosa de 1.200 px de
          altura. Vidro é a camada funcional que flutua sobre o conteúdo, e isto
          é conteúdo: o argumento da empresa. Sem moldura nenhuma agora — o
          respiro da seção e a faixa alternada da comparação já dão a fronteira,
          que é o mesmo caminho do `.settings-hub` (regra 4b). */
-      className="mx-auto max-w-[900px]"
+      className="landing-cinematic-stage landing-cinematic-stage--quiet mx-auto max-w-[900px] px-[clamp(20px,4vw,56px)] py-[clamp(32px,5vw,64px)]"
     >
       {/* A primeira versão era "ninguém perde cliente por falta de esforço",
           que serve para qualquer empresa de qualquer setor. Esta fala de uma

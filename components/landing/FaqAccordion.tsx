@@ -37,11 +37,12 @@ export function FaqAccordion({ items }: { items: FaqItem[] }) {
   return (
     <div
       data-landing-faq-stage="true"
+      data-landing-stage="faq"
       /* Vidro virou conteúdo, e as seis réguas viraram faixa alternada
          (regra 4a): a pergunta continua delimitada, sem seis traços iguais
          empilhados. O `overflow-hidden` é o que faz a faixa da primeira e da
          última linha respeitarem o raio do painel. */
-      className="faq-list lp-panel lp-rows overflow-hidden"
+      className="faq-list lp-rows landing-cinematic-stage landing-cinematic-stage--quiet overflow-hidden"
     >
       {items.map((faq, index) => {
         const isOpen = !!openItems[index];

@@ -63,14 +63,14 @@ export function MobileStickyCta() {
   return (
     <div
       aria-hidden={!visible}
-      className={`glass-soft fixed inset-x-3 bottom-3 z-[var(--z-sticky)] px-3 pb-[max(10px,env(safe-area-inset-bottom))] pt-3 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none lg:hidden ${
+      className={`landing-cinematic-mobile-cta fixed inset-x-3 bottom-3 z-[var(--z-sticky)] px-3 pb-[max(10px,env(safe-area-inset-bottom))] pt-3 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none lg:hidden ${
         visible ? "translate-y-0" : "translate-y-full"
       }`}
     >
       <a
         href="/signup"
         tabIndex={visible ? 0 : -1}
-        className="liquid-glass-control liquid-glass-control--tinted flex min-h-12 w-full items-center justify-center gap-2 rounded-full text-[15px] font-semibold text-white"
+        className="btn flex min-h-12 w-full items-center justify-center gap-2 text-[15px]"
       >
         Começar grátis
         <ArrowRight className="size-4" strokeWidth={2} />

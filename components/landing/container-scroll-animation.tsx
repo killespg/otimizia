@@ -55,9 +55,9 @@ export function ContainerScroll({
     offset: ["start end", "start start"],
   });
 
-  const rotate = useTransform(scrollYProgress, [0, 1], [20, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [0.94, 1]);
-  const translateY = useTransform(scrollYProgress, [0, 1], [0, -80]);
+  const rotate = useTransform(scrollYProgress, [0, 1], [8, 0]);
+  const scale = useTransform(scrollYProgress, [0, 1], [0.98, 1.02]);
+  const translateY = useTransform(scrollYProgress, [0, 1], [24, -8]);
   const anima = hidratado && !reduceMotion;
 
   return (
@@ -82,7 +82,8 @@ export function ContainerScroll({
               }
             : { rotateX: 0, scale: 1, y: 0 }
         }
-        className="lp-panel lp-panel-quiet mx-auto mt-[clamp(32px,4vw,56px)] w-full max-w-5xl overflow-hidden sm:h-[42rem] md:h-[46rem] min-[1536px]:max-w-6xl"
+        data-landing-stage="panel"
+        className="landing-cinematic-stage landing-cinematic-panel-stage mx-auto mt-[clamp(32px,4vw,56px)] w-full max-w-5xl overflow-hidden sm:h-[42rem] md:h-[46rem] min-[1536px]:max-w-6xl"
       >
         {children}
       </motion.div>

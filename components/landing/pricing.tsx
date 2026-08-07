@@ -29,7 +29,8 @@ export function Pricing() {
   return (
     <div
       data-landing-pricing-stage="true"
-      className="lp-panel mx-auto grid max-w-[900px] divide-y divide-od-border px-6 md:grid-cols-2 md:divide-x md:divide-y-0 md:px-0"
+      data-landing-stage="pricing"
+      className="landing-cinematic-stage mx-auto grid max-w-[900px] divide-y divide-od-border px-6 md:grid-cols-2 md:divide-x md:divide-y-0 md:px-0"
     >
       <div className="py-8 md:px-9">
         <p className="text-od-label text-od-text-3">Para começar</p>

@@ -16,7 +16,7 @@ import { Paperclip, Send, Sparkles } from "lucide-react";
  */
 export function AiComposer() {
   return (
-    <div className="lp-panel lp-panel-quiet mx-auto max-w-[560px] overflow-hidden">
+    <div data-landing-stage="tim" className="landing-cinematic-stage landing-cinematic-stage--quiet mx-auto max-w-[560px] overflow-hidden">
       <div className="space-y-3 px-4 pt-5 sm:px-5">
         <p className="ml-auto w-fit max-w-[85%] rounded-lg bg-od-accent px-3.5 py-2 text-[13px] text-white">
           Cadastra a Carla e abre uma negociação
