@@ -19,6 +19,10 @@ export default defineConfig({
     // Testes de integração precisam de Supabase local rodando (npm run
     // test:integration) — não entram no `npm test` padrão, que roda sem
     // Docker (inclusive em CI, que hoje não sobe Supabase local).
-    exclude: ["node_modules", ".next", "android", "test/integration/**"],
+    // `.claude/worktrees` guarda cópias inteiras do repositório quando um
+    // agente roda isolado. Sem excluir, o glob `**/*.test.ts` roda a suíte
+    // duas vezes — e a cópia pode estar num commit antigo, o que faz o `npm
+    // test` da árvore principal falhar por um motivo que não existe nela.
+    exclude: ["node_modules", ".next", "android", "test/integration/**", ".claude/**"],
   },
 });
