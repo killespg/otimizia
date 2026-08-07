@@ -27,13 +27,13 @@ export function LaptopOpeningScreen({
   children: ReactNode;
   caption: string;
 }) {
-  const trackRef = useRef<HTMLElement>(null);
+  const progressRef = useRef<HTMLSpanElement>(null);
   const hydrated = useHydrated();
   const reduceMotion = useReducedMotion();
   const [fullyOpen, setFullyOpen] = useState(false);
   const { scrollYProgress } = useScroll({
-    target: trackRef,
-    offset: ["start start", "end 88%"],
+    target: progressRef,
+    offset: ["start start", "end start"],
   });
   const rotateX = useTransform(scrollYProgress, [0, 0.45, 1], [-86, -54, 0]);
   const scaleX = useTransform(scrollYProgress, [0, 0.55, 1], [0.88, 0.95, 1]);
@@ -53,11 +53,13 @@ export function LaptopOpeningScreen({
   const animateOpening = hydrated && !reduceMotion && !fullyOpen;
 
   return (
-    <figure
-      ref={trackRef}
-      data-laptop-frame="true"
-      className="landing-laptop-frame"
-    >
+    <figure data-laptop-frame="true" className="landing-laptop-frame">
+      <span
+        ref={progressRef}
+        aria-hidden="true"
+        className="landing-laptop-scroll-progress"
+      />
+
       <div className="landing-laptop-sticky-scene">
         <div className="landing-laptop-hardware">
           <div className="landing-laptop-screen-track">
@@ -104,6 +106,8 @@ export function LaptopOpeningScreen({
           </span>
         </div>
       </div>
+
+      <span aria-hidden="true" className="landing-laptop-scroll-tail" />
 
       <figcaption className="sr-only">{caption}</figcaption>
     </figure>

@@ -108,6 +108,7 @@ test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
   const cover = page.locator('[data-laptop-cover="true"]');
   const hinge = page.locator('[data-laptop-hinge="true"]');
   const base = page.locator('[data-laptop-base="true"]');
+  const heading = page.locator('[data-landing-panel-heading="true"]');
   const stage = page.locator('[data-landing-stage="panel"]');
 
   await page.evaluate(() => {
@@ -131,10 +132,12 @@ test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
   await expect(screen).toBeVisible();
   await expect(cover).toBeVisible();
   await expect(hinge).toBeVisible();
+  await expect(heading).toBeVisible();
 
   const closed = await screen.evaluate((element) => ({
     layoutHeight: element.clientHeight,
     layoutWidth: element.clientWidth,
+    screenTop: element.getBoundingClientRect().top,
     renderedHeight: element.getBoundingClientRect().height,
     renderedWidth: element.getBoundingClientRect().width,
     transform: getComputedStyle(element).transform,
@@ -146,6 +149,7 @@ test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
   const closedBaseTop = await base.evaluate(
     (element) => element.getBoundingClientRect().top,
   );
+  const closedHeadingBox = await heading.boundingBox();
 
   expect(closed.transform).not.toBe("none");
   expect(closed.transform).toContain("matrix3d");
@@ -159,8 +163,12 @@ test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
     ),
   ).toBeGreaterThan(0.85);
   expect(closedBaseTop).toBeGreaterThan(0);
-  expect(closedBaseTop).toBeLessThan(
-    await page.evaluate(() => window.innerHeight),
+  const viewportHeight = await page.evaluate(() => window.innerHeight);
+  expect(closedBaseTop).toBeLessThan(viewportHeight * 0.84);
+  expect(closedHeadingBox).not.toBeNull();
+  expect(closedHeadingBox!.y).toBeGreaterThan(80);
+  expect(closed.screenTop - (closedHeadingBox!.y + closedHeadingBox!.height)).toBeLessThan(
+    viewportHeight * 0.45,
   );
 
   await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.22));

@@ -1655,6 +1655,7 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
 }
 
 .landing-cinematic-panel-stage {
+  z-index: 1;
   transform-style: preserve-3d;
   overflow: visible;
   border: 0;
@@ -1668,21 +1669,39 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
   display: none;
 }
 
+.landing-panel-heading {
+  position: sticky;
+  top: clamp(92px, 12vh, 118px);
+  z-index: 0;
+}
+
 .landing-laptop-frame {
   position: relative;
   width: calc(100% - clamp(20px, 4vw, 48px));
-  height: 133vh;
-  height: 133svh;
   margin-inline: auto;
+}
+
+.landing-laptop-scroll-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 45vh;
+  height: 45svh;
+  pointer-events: none;
 }
 
 .landing-laptop-sticky-scene {
   position: sticky;
   top: 0;
-  display: flex;
-  height: 88vh;
-  height: 88svh;
-  align-items: flex-end;
+  padding-top: clamp(92px, 12vh, 112px);
+}
+
+.landing-laptop-scroll-tail {
+  display: block;
+  height: 45vh;
+  height: 45svh;
+  pointer-events: none;
 }
 
 .landing-laptop-hardware {

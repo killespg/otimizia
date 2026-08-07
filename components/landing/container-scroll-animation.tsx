@@ -30,7 +30,12 @@ export function ContainerScroll({
 }) {
   return (
     <div className="lp-shell">
-      <div className="mx-auto max-w-[720px] text-center">{titleComponent}</div>
+      <div
+        data-landing-panel-heading="true"
+        className="landing-panel-heading mx-auto max-w-[720px] text-center"
+      >
+        {titleComponent}
+      </div>
 
       <div
         data-landing-stage="panel"

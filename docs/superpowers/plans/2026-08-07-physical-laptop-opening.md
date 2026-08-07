@@ -4,7 +4,7 @@
 
 **Goal:** Fazer o notebook começar fisicamente fechado e abrir pela dobradiça conforme o scroll revela a seção `#painel`.
 
-**Architecture:** `LaptopOpeningScreen` continua sendo o único controlador de movimento. A figura cria um trilho de scroll com uma viewport sticky que mantém a base visível e parada; dentro dela, um trilho estático fornece perspectiva longa para a tampa animada, o print e a face externa grafite. A tampa volta a um `div` sem transformação quando chega ao estado aberto.
+**Architecture:** `LaptopOpeningScreen` continua sendo o único controlador de movimento. A figura cria uma cena sticky com a altura natural do hardware e uma cauda de `45svh` que mede o curso do scroll; dentro dela, um trilho estático fornece perspectiva longa para a tampa animada, o print e a face externa grafite. O título da seção também fica sticky no espaço superior, e a tampa volta a um `div` sem transformação quando chega ao estado aberto.
 
 **Tech Stack:** React 19, Next.js, Framer Motion, CSS, Playwright.
 
@@ -12,6 +12,7 @@
 
 - A base do notebook deve permanecer parada durante todo o movimento.
 - O estado fechado deve estar visível dentro da viewport quando o progresso da animação é zero.
+- O título da seção deve permanecer visível acima da tampa fechada, sem um viewport vazio entre navegação e notebook.
 - A tampa começa quase horizontal e termina vertical, acompanhando o progresso do scroll.
 - A perspectiva não pode ampliar o plano além de 105% da largura da moldura.
 - O exterior grafite com a logo OtimizIA deve aparecer no estado fechado e revelar o print durante a abertura.
@@ -78,7 +79,7 @@ const coverOpacity = useTransform(
 );
 ```
 
-Aplicar `rotateX` e `scaleX` na mesma tampa com `transformOrigin: "bottom center"`. A perspectiva deve existir somente no trilho pai. O elemento `data-laptop-frame` deve medir `133svh` e conter uma cena sticky de `88svh`, alinhada pela base, para oferecer `45svh` de curso sem mover a dobradiça. Renderizar a face externa dentro da tampa, nunca como plano absoluto separado do notebook. `LaptopOpeningScreen` também passa a possuir a base e a dobradiça para manter todo o hardware dentro da mesma cena sticky.
+Aplicar `rotateX` e `scaleX` na mesma tampa com `transformOrigin: "bottom center"`. A perspectiva deve existir somente no trilho pai. O elemento `data-laptop-frame` deve conter uma cena sticky com `padding-top` entre `92px` e `112px`, seguida por uma cauda real de `45svh`; um marcador absoluto de mesma altura mede o progresso sem depender da altura do hardware. Renderizar a face externa dentro da tampa, nunca como plano absoluto separado do notebook. `LaptopOpeningScreen` também passa a possuir a base e a dobradiça para manter todo o hardware dentro da mesma cena sticky.
 
 - [x] **Step 4: Rodar o teste focado até ficar verde**
 
