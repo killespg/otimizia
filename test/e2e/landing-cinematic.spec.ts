@@ -32,6 +32,32 @@ test("apresenta o corredor cinematográfico com o produto antes das profissões"
   ).not.toBe("none");
 });
 
+test("mostra o print real do painel no lugar do mockup", async ({ page, isMobile }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  const screenshot = page.locator('[data-dashboard-screenshot="true"]');
+  const viewport = page.locator('[data-dashboard-screenshot-viewport="true"]');
+
+  await expect(screenshot).toBeVisible();
+  await expect(screenshot).toHaveAttribute("src", /painel-imobiliario-mariana/);
+  await expect(screenshot).toHaveAttribute(
+    "alt",
+    "Painel imobiliário da OtimizIA com carteira, visitas, vitrines e comissões",
+  );
+  await expect(page.locator(".landing-dashboard-preview")).toHaveCount(0);
+
+  const overflow = await viewport.evaluate((element) => ({
+    clientWidth: element.clientWidth,
+    scrollWidth: element.scrollWidth,
+  }));
+
+  if (isMobile) {
+    expect(overflow.scrollWidth).toBeGreaterThan(overflow.clientWidth * 1.5);
+  } else {
+    expect(overflow.scrollWidth - overflow.clientWidth).toBeLessThanOrEqual(1);
+  }
+});
+
 test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
 

@@ -49,7 +49,7 @@ O redesign deve melhorar percepção de valor e clareza de conversão sem repeti
 ### 3. Produto na primeira rolagem
 
 - `#painel` vem imediatamente depois do hero e parece emergir dele, com uma transição de profundidade em vez de uma nova faixa sólida.
-- `DashboardPreview` continua navegável e fiel às três profissões demonstradas.
+- Um print real do painel imobiliário substitui o mockup navegável e apresenta produto, dados e densidade visual autênticos.
 - A moldura externa é o maior volume de vidro da página; o dashboard interno não recebe blur adicional.
 - Em mobile, o preview usa enquadramento adaptado, sem escala ilegível, corte de ações ou rolagem horizontal da página.
 
@@ -161,7 +161,7 @@ Um stage usa uma única borda iluminada, preenchimento grafite translúcido, sat
 - `app/page.tsx` controla ordem, âncoras e composição dos capítulos.
 - `components/landing/hero.tsx` recebe a nova composição editorial e as placas iniciais.
 - `components/landing/cinematic-scroll-corridor.tsx` coordena somente progresso de rolagem e transforms das placas; copy, dados e navegação continuam nos componentes semânticos da página.
-- `DashboardPreview`, `FeatureTabs`, `AiComposer`, `Pricing`, `FaqAccordion` e `About` preservam suas responsabilidades e recebem apenas a nova moldura visual necessária.
+- `DashboardScreenshot`, `FeatureTabs`, `AiComposer`, `Pricing`, `FaqAccordion` e `About` preservam suas responsabilidades e recebem apenas a nova moldura visual necessária.
 - `app/globals.css` recebe classes exclusivamente prefixadas por `landing-cinematic-` e ajustes dos tokens `lp-*` já exclusivos da landing.
 - O bloco antigo `.landing-liquid-*` só permanece se ainda houver uso comprovado; seletores mortos são removidos antes da nova camada para não manter duas implementações concorrentes.
 - Componentes apagados no refactor de 2026-08-07 não serão restaurados apenas para recuperar efeitos antigos; novas abstrações precisam corresponder à narrativa aprovada.
@@ -188,7 +188,7 @@ Antes da entrega:
 
 - A landing lê como um único corredor imersivo e não como faixas alternadas.
 - “Hoje → Tim → Negócios” é compreensível no hero e reaparece na progressão da página.
-- O painel real surge na primeira rolagem e permanece navegável.
+- O print real do painel surge na primeira rolagem, inteiro no desktop e explorável horizontalmente dentro da moldura no celular.
 - A direção visual combina movimento cinematográfico com tipografia editorial firme.
 - Não há vidro aninhado, texto em gradiente, card por recurso ou auroras concorrentes.
 - Copy e alegações comerciais são verdadeiras para o produto atual.

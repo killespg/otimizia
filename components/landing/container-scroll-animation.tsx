@@ -27,10 +27,9 @@ function useHidratado() {
  *    e fundo, e a borda do próprio preview. Três bordas concêntricas é card
  *    dentro de card (regra 4). Ficou uma.
  *
- * 2. Altura. O card era `h-[38rem]` fixo já em 390 px, e o painel de dentro —
- *    que TEM layout de celular próprio — era cortado no meio: a captura
- *    mostrava "2 captações no período" partido ao meio da frase. Abaixo de
- *    `sm` a altura passa a ser do conteúdo.
+ * 2. Altura. A moldura acompanha a proporção do conteúdo. Isso evita área
+ *    vazia no print panorâmico e mantém a rolagem horizontal restrita ao
+ *    viewport interno no celular.
  *
  * 3. Hidratação. `useReducedMotion` só existe no cliente: o servidor
  *    renderizava o transform e o cliente com movimento reduzido renderizava
@@ -83,7 +82,7 @@ export function ContainerScroll({
             : { rotateX: 0, scale: 1, y: 0 }
         }
         data-landing-stage="panel"
-        className="landing-cinematic-stage landing-cinematic-panel-stage mx-auto mt-[clamp(32px,4vw,56px)] w-full max-w-5xl overflow-hidden sm:h-[42rem] md:h-[46rem] min-[1536px]:max-w-6xl"
+        className="landing-cinematic-stage landing-cinematic-panel-stage mx-auto mt-[clamp(32px,4vw,56px)] w-full max-w-5xl overflow-hidden min-[1536px]:max-w-6xl"
       >
         {children}
       </motion.div>

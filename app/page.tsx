@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { LandingNav } from "@/components/landing/landing-nav";
 import { Hero } from "@/components/landing/hero";
 import { FeatureTabs } from "@/components/landing/feature-tabs";
-import { DashboardPreview } from "@/components/landing/dashboard-preview";
+import { DashboardScreenshot } from "@/components/landing/dashboard-screenshot";
 import { Pricing } from "@/components/landing/pricing";
 import { FaqAccordion } from "@/components/landing/FaqAccordion";
 import { CookiePreferencesLink } from "@/components/site/CookieConsent";
@@ -112,7 +112,7 @@ export default async function LandingPage() {
               </>
             }
           >
-            <DashboardPreview />
+            <DashboardScreenshot />
           </ContainerScroll>
         </section>
 
