@@ -17,9 +17,9 @@ import { type ReactNode } from "react";
  *    vazia no print panorâmico e mantém a rolagem horizontal restrita ao
  *    viewport interno no celular.
  *
- * 3. Nitidez. A profundidade vem da moldura, da base e da luz ambiente. O
- *    conteúdo da tela fica em escala 1:1 no compositor e não recebe
- *    `will-change: transform`.
+ * 3. Nitidez. A tampa recebe transformação apenas enquanto acompanha o scroll.
+ *    Ao terminar de abrir, o painel volta a escala 1:1 e perde
+ *    `will-change: transform`, evitando rasterização permanente do texto.
  */
 export function ContainerScroll({
   titleComponent,

@@ -27,7 +27,10 @@ test("apresenta o corredor cinematográfico com o produto antes das profissões"
   await expect(panelStage).toBeVisible();
 });
 
-test("mostra o print real do painel no lugar do mockup", async ({ page, isMobile }) => {
+test("mostra o print real do painel no lugar do mockup", async ({
+  page,
+  isMobile,
+}) => {
   await page.goto("/", { waitUntil: "networkidle" });
 
   const screenshot = page.locator('[data-dashboard-screenshot="true"]');
@@ -53,7 +56,9 @@ test("mostra o print real do painel no lugar do mockup", async ({ page, isMobile
   }
 });
 
-test("entrega o print original sem recompressão que borre o texto", async ({ page }) => {
+test("entrega o print original sem recompressão que borre o texto", async ({
+  page,
+}) => {
   await page.goto("/", { waitUntil: "networkidle" });
 
   const fidelity = await page
@@ -71,7 +76,9 @@ test("entrega o print original sem recompressão que borre o texto", async ({ pa
   expect(fidelity.naturalWidth / fidelity.renderedWidth).toBeGreaterThan(1.75);
 });
 
-test("mantém o print fora de transformações 3D que rasterizam o texto", async ({ page }) => {
+test("mantém o print fora de transformações 3D que rasterizam o texto", async ({
+  page,
+}) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/#painel", { waitUntil: "networkidle" });
 
@@ -90,16 +97,40 @@ test("mantém o print fora de transformações 3D que rasterizam o texto", async
   expect(rendering.willChange).not.toContain("transform");
 });
 
-test("ergue a tela pela dobradiça sem criar uma placa sobre a página", async ({ page }) => {
+test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
+  page,
+}) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/", { waitUntil: "networkidle" });
 
   const frame = page.locator('[data-laptop-frame="true"]');
   const screen = page.locator('[data-laptop-opening-screen="true"]');
+  const cover = page.locator('[data-laptop-cover="true"]');
+  const hinge = page.locator('[data-laptop-hinge="true"]');
+  const base = page.locator('[data-laptop-base="true"]');
   const stage = page.locator('[data-landing-stage="panel"]');
+
+  await page.evaluate(() => {
+    const notebook = document.querySelector<HTMLElement>(
+      '[data-laptop-frame="true"]',
+    );
+    if (!notebook) return;
+
+    window.scrollTo(0, notebook.getBoundingClientRect().top + window.scrollY);
+  });
+
+  await expect
+    .poll(async () =>
+      frame.evaluate((element) =>
+        Math.abs(element.getBoundingClientRect().top),
+      ),
+    )
+    .toBeLessThanOrEqual(1);
 
   await expect(page.locator('[data-laptop-opening-lid="true"]')).toHaveCount(0);
   await expect(screen).toBeVisible();
+  await expect(cover).toBeVisible();
+  await expect(hinge).toBeVisible();
 
   const closed = await screen.evaluate((element) => ({
     layoutHeight: element.clientHeight,
@@ -108,21 +139,98 @@ test("ergue a tela pela dobradiça sem criar uma placa sobre a página", async (
     renderedWidth: element.getBoundingClientRect().width,
     transform: getComputedStyle(element).transform,
   }));
-  expect(closed.transform).not.toBe("none");
-  expect(closed.renderedHeight).toBeLessThan(closed.layoutHeight * 0.65);
-  expect(closed.renderedWidth).toBeGreaterThan(closed.layoutWidth * 0.9);
-  expect(closed.renderedWidth).toBeLessThan(closed.layoutWidth * 0.98);
+  const closedBaseGap = await Promise.all([
+    screen.evaluate((element) => element.getBoundingClientRect().bottom),
+    base.evaluate((element) => element.getBoundingClientRect().top),
+  ]).then(([screenBottom, baseTop]) => Math.abs(screenBottom - baseTop));
+  const closedBaseTop = await base.evaluate(
+    (element) => element.getBoundingClientRect().top,
+  );
 
-  await frame.scrollIntoViewIfNeeded();
-  await page.evaluate(() => window.scrollBy(0, Math.round(window.innerHeight * 0.45)));
+  expect(closed.transform).not.toBe("none");
+  expect(closed.transform).toContain("matrix3d");
+  expect(closed.renderedHeight).toBeLessThan(closed.layoutHeight * 0.2);
+  expect(closed.renderedWidth).toBeGreaterThan(closed.layoutWidth * 0.85);
+  expect(closed.renderedWidth).toBeLessThanOrEqual(closed.layoutWidth * 1.05);
+  expect(closedBaseGap).toBeLessThanOrEqual(4);
+  expect(
+    Number(
+      await cover.evaluate((element) => getComputedStyle(element).opacity),
+    ),
+  ).toBeGreaterThan(0.85);
+  expect(closedBaseTop).toBeGreaterThan(0);
+  expect(closedBaseTop).toBeLessThan(
+    await page.evaluate(() => window.innerHeight),
+  );
+
+  await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.22));
 
   await expect
-    .poll(async () => screen.evaluate((element) => getComputedStyle(element).transform))
+    .poll(async () =>
+      screen.evaluate((element) => element.getBoundingClientRect().height),
+    )
+    .toBeGreaterThan(closed.renderedHeight * 3);
+
+  const midway = await screen.evaluate((element) => ({
+    renderedHeight: element.getBoundingClientRect().height,
+    renderedWidth: element.getBoundingClientRect().width,
+  }));
+  const midwayBaseGap = await Promise.all([
+    screen.evaluate((element) => element.getBoundingClientRect().bottom),
+    base.evaluate((element) => element.getBoundingClientRect().top),
+  ]).then(([screenBottom, baseTop]) => Math.abs(screenBottom - baseTop));
+  const midwayBaseTop = await base.evaluate(
+    (element) => element.getBoundingClientRect().top,
+  );
+
+  expect(midway.renderedHeight).toBeGreaterThan(closed.renderedHeight * 3);
+  expect(midway.renderedWidth).toBeGreaterThan(closed.renderedWidth);
+  expect(midway.renderedWidth).toBeLessThanOrEqual(closed.layoutWidth * 1.05);
+  expect(midwayBaseGap).toBeLessThanOrEqual(4);
+  expect(Math.abs(midwayBaseTop - closedBaseTop)).toBeLessThanOrEqual(2);
+  expect(
+    Number(
+      await cover.evaluate((element) => getComputedStyle(element).opacity),
+    ),
+  ).toBeLessThan(0.5);
+
+  await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.26));
+
+  await expect
+    .poll(async () =>
+      screen.evaluate((element) => getComputedStyle(element).transform),
+    )
     .toBe("none");
-  expect(await stage.evaluate((element) => getComputedStyle(element).transform)).toBe("none");
+  await expect(cover).toHaveCount(0);
+  expect(
+    await stage.evaluate((element) => getComputedStyle(element).transform),
+  ).toBe("none");
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth),
+  ).toBeLessThanOrEqual(await page.evaluate(() => window.innerWidth));
 });
 
-test("enquadra o print em uma moldura reconhecível de notebook", async ({ page }) => {
+test("mantém o notebook aberto quando o movimento é reduzido", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  const screen = page.locator('[data-laptop-opening-screen="true"]');
+
+  await expect(screen).toBeVisible();
+  await expect(page.locator('[data-laptop-cover="true"]')).toHaveCount(0);
+  expect(
+    await screen.evaluate((element) => getComputedStyle(element).transform),
+  ).toBe("none");
+  expect(
+    await screen.evaluate((element) => getComputedStyle(element).willChange),
+  ).toBe("auto");
+});
+
+test("enquadra o print em uma moldura reconhecível de notebook", async ({
+  page,
+}) => {
   await page.goto("/", { waitUntil: "networkidle" });
 
   const frame = page.locator('[data-laptop-frame="true"]');
@@ -133,7 +241,9 @@ test("enquadra o print em uma moldura reconhecível de notebook", async ({ page 
   await expect(frame).toBeVisible();
   await expect(camera).toBeVisible();
   await expect(base).toBeVisible();
-  await expect(screen.locator('[data-dashboard-screenshot="true"]')).toBeVisible();
+  await expect(
+    screen.locator('[data-dashboard-screenshot="true"]'),
+  ).toBeVisible();
 
   const [screenBox, cameraBox, baseBox] = await Promise.all([
     screen.boundingBox(),
@@ -150,10 +260,16 @@ test("enquadra o print em uma moldura reconhecível de notebook", async ({ page 
   expect(baseBox.width).toBeGreaterThan(screenBox.width);
   expect(baseBox.height).toBeGreaterThanOrEqual(10);
   expect(baseBox.y).toBeGreaterThanOrEqual(screenBox.y + screenBox.height - 2);
-  expect(Math.abs(cameraBox.x + cameraBox.width / 2 - (screenBox.x + screenBox.width / 2))).toBeLessThan(2);
+  expect(
+    Math.abs(
+      cameraBox.x + cameraBox.width / 2 - (screenBox.x + screenBox.width / 2),
+    ),
+  ).toBeLessThan(2);
 });
 
-test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({ page }) => {
+test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({
+  page,
+}) => {
   await page.goto("/", { waitUntil: "networkidle" });
 
   const material = await page.evaluate(() => {
@@ -162,8 +278,12 @@ test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({ p
       return channels.length === 4 ? channels[3] : 1;
     }
 
-    const root = document.querySelector<HTMLElement>('[data-landing-cinematic="true"]');
-    const primaryLight = document.querySelector<HTMLElement>(".landing-cinematic-light--blue");
+    const root = document.querySelector<HTMLElement>(
+      '[data-landing-cinematic="true"]',
+    );
+    const primaryLight = document.querySelector<HTMLElement>(
+      ".landing-cinematic-light--blue",
+    );
     const plate = document.querySelector<HTMLElement>("[data-cinematic-plate]");
     const stages = Array.from(
       document.querySelectorAll<HTMLElement>("[data-landing-stage]"),
@@ -175,9 +295,12 @@ test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({ p
 
     return {
       ambientLayer: getComputedStyle(root, "::before").backgroundImage,
-      lightCoverage: primaryLight.getBoundingClientRect().width / window.innerWidth,
+      lightCoverage:
+        primaryLight.getBoundingClientRect().width / window.innerWidth,
       plateAlpha: alphaOf(getComputedStyle(plate).backgroundColor),
-      stageAlphas: stages.map((stage) => alphaOf(getComputedStyle(stage).backgroundColor)),
+      stageAlphas: stages.map((stage) =>
+        alphaOf(getComputedStyle(stage).backgroundColor),
+      ),
     };
   });
 
@@ -187,7 +310,9 @@ test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({ p
   expect(Math.max(...material.stageAlphas)).toBeLessThanOrEqual(0.6);
 });
 
-test("usa o azul da logo como luz dominante e o roxo como apoio", async ({ page }) => {
+test("usa o azul da logo como luz dominante e o roxo como apoio", async ({
+  page,
+}) => {
   await page.goto("/", { waitUntil: "networkidle" });
 
   const palette = await page.evaluate(() => {
@@ -203,33 +328,51 @@ test("usa o azul da logo como luz dominante e o roxo como apoio", async ({ page 
       });
     }
 
-    const root = document.querySelector<HTMLElement>('[data-landing-cinematic="true"]');
-    const primary = document.querySelector<HTMLElement>(".landing-cinematic-light--blue");
-    const secondary = document.querySelector<HTMLElement>(".landing-cinematic-light--purple");
+    const root = document.querySelector<HTMLElement>(
+      '[data-landing-cinematic="true"]',
+    );
+    const primary = document.querySelector<HTMLElement>(
+      ".landing-cinematic-light--blue",
+    );
+    const secondary = document.querySelector<HTMLElement>(
+      ".landing-cinematic-light--purple",
+    );
 
     if (!root || !primary || !secondary) {
       throw new Error("Luzes azul e roxa não renderizadas");
     }
 
-    const ambient = colorsOf(getComputedStyle(root, "::before").backgroundImage);
+    const ambient = colorsOf(
+      getComputedStyle(root, "::before").backgroundImage,
+    );
     const primaryColor = colorsOf(getComputedStyle(primary).backgroundImage)[0];
-    const secondaryColor = colorsOf(getComputedStyle(secondary).backgroundImage)[0];
+    const secondaryColor = colorsOf(
+      getComputedStyle(secondary).backgroundImage,
+    )[0];
 
     return {
       primaryColor,
       secondaryColor,
       blueWeight: ambient
-        .filter((color) => color.blue > color.red + 50 && color.green > color.red)
+        .filter(
+          (color) => color.blue > color.red + 50 && color.green > color.red,
+        )
         .reduce((total, color) => total + color.alpha, 0),
       purpleWeight: ambient
-        .filter((color) => color.blue > color.green + 50 && color.red >= color.green)
+        .filter(
+          (color) => color.blue > color.green + 50 && color.red >= color.green,
+        )
         .reduce((total, color) => total + color.alpha, 0),
     };
   });
 
   expect(palette.primaryColor.blue).toBeGreaterThan(palette.primaryColor.green);
   expect(palette.primaryColor.green).toBeGreaterThan(palette.primaryColor.red);
-  expect(palette.secondaryColor.blue).toBeGreaterThan(palette.secondaryColor.red);
-  expect(palette.secondaryColor.red).toBeGreaterThan(palette.secondaryColor.green);
+  expect(palette.secondaryColor.blue).toBeGreaterThan(
+    palette.secondaryColor.red,
+  );
+  expect(palette.secondaryColor.red).toBeGreaterThan(
+    palette.secondaryColor.green,
+  );
   expect(palette.blueWeight).toBeGreaterThan(palette.purpleWeight * 3);
 });

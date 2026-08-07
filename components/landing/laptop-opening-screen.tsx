@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  type ReactNode,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { type ReactNode, useRef, useState, useSyncExternalStore } from "react";
 import {
   motion,
   useMotionValueEvent,
@@ -13,6 +8,7 @@ import {
   useScroll,
   useTransform,
 } from "framer-motion";
+import { LogoMark } from "@/components/design-system/logo";
 
 const subscribe = () => () => {};
 
@@ -24,17 +20,28 @@ function useHydrated() {
   );
 }
 
-export function LaptopOpeningScreen({ children }: { children: ReactNode }) {
-  const trackRef = useRef<HTMLDivElement>(null);
+export function LaptopOpeningScreen({
+  children,
+  caption,
+}: {
+  children: ReactNode;
+  caption: string;
+}) {
+  const trackRef = useRef<HTMLElement>(null);
   const hydrated = useHydrated();
   const reduceMotion = useReducedMotion();
   const [fullyOpen, setFullyOpen] = useState(false);
   const { scrollYProgress } = useScroll({
     target: trackRef,
-    offset: ["start 94%", "center 52%"],
+    offset: ["start start", "end 88%"],
   });
-  const scaleY = useTransform(scrollYProgress, [0, 0.55, 1], [0.08, 0.48, 1]);
-  const scaleX = useTransform(scrollYProgress, [0, 0.55, 1], [0.94, 0.98, 1]);
+  const rotateX = useTransform(scrollYProgress, [0, 0.45, 1], [-86, -54, 0]);
+  const scaleX = useTransform(scrollYProgress, [0, 0.55, 1], [0.88, 0.95, 1]);
+  const coverOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.12, 0.34],
+    [1, 0.72, 0],
+  );
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     const nextFullyOpen = latest >= 0.97;
@@ -46,30 +53,59 @@ export function LaptopOpeningScreen({ children }: { children: ReactNode }) {
   const animateOpening = hydrated && !reduceMotion && !fullyOpen;
 
   return (
-    <div ref={trackRef} className="landing-laptop-screen-track">
-      {animateOpening ? (
-        <motion.div
-          data-laptop-screen="true"
-          data-laptop-opening-screen="true"
-          className="landing-laptop-screen"
-          style={{
-            scaleX,
-            scaleY,
-            transformOrigin: "bottom center",
-            willChange: "transform",
-          }}
-        >
-          {children}
-        </motion.div>
-      ) : (
-        <div
-          data-laptop-screen="true"
-          data-laptop-opening-screen="true"
-          className="landing-laptop-screen"
-        >
-          {children}
+    <figure
+      ref={trackRef}
+      data-laptop-frame="true"
+      className="landing-laptop-frame"
+    >
+      <div className="landing-laptop-sticky-scene">
+        <div className="landing-laptop-hardware">
+          <div className="landing-laptop-screen-track">
+            {animateOpening ? (
+              <motion.div
+                data-laptop-screen="true"
+                data-laptop-opening-screen="true"
+                className="landing-laptop-screen"
+                style={{
+                  rotateX,
+                  scaleX,
+                  transformOrigin: "bottom center",
+                  willChange: "transform",
+                }}
+              >
+                {children}
+                <motion.span
+                  data-laptop-cover="true"
+                  aria-hidden="true"
+                  className="landing-laptop-cover"
+                  style={{ opacity: coverOpacity }}
+                >
+                  <LogoMark size={56} className="landing-laptop-cover-mark" />
+                </motion.span>
+              </motion.div>
+            ) : (
+              <div
+                data-laptop-screen="true"
+                data-laptop-opening-screen="true"
+                className="landing-laptop-screen"
+              >
+                {children}
+              </div>
+            )}
+          </div>
+
+          <span
+            data-laptop-base="true"
+            aria-hidden="true"
+            className="landing-laptop-base"
+          >
+            <span data-laptop-hinge="true" className="landing-laptop-hinge" />
+            <span className="landing-laptop-lip" />
+          </span>
         </div>
-      )}
-    </div>
+      </div>
+
+      <figcaption className="sr-only">{caption}</figcaption>
+    </figure>
   );
 }

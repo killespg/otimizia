@@ -4,13 +4,14 @@
 
 **Goal:** Fazer o notebook começar fisicamente fechado e abrir pela dobradiça conforme o scroll revela a seção `#painel`.
 
-**Architecture:** `LaptopOpeningScreen` continua sendo o único controlador de movimento. Um trilho estático fornece perspectiva longa; a tampa animada contém o print e uma face externa grafite que desaparece durante a abertura. A base e a dobradiça permanecem estáticas, e a tampa volta a um `div` sem transformação quando chega ao estado aberto.
+**Architecture:** `LaptopOpeningScreen` continua sendo o único controlador de movimento. A figura cria um trilho de scroll com uma viewport sticky que mantém a base visível e parada; dentro dela, um trilho estático fornece perspectiva longa para a tampa animada, o print e a face externa grafite. A tampa volta a um `div` sem transformação quando chega ao estado aberto.
 
 **Tech Stack:** React 19, Next.js, Framer Motion, CSS, Playwright.
 
 ## Global Constraints
 
 - A base do notebook deve permanecer parada durante todo o movimento.
+- O estado fechado deve estar visível dentro da viewport quando o progresso da animação é zero.
 - A tampa começa quase horizontal e termina vertical, acompanhando o progresso do scroll.
 - A perspectiva não pode ampliar o plano além de 105% da largura da moldura.
 - O exterior grafite com a logo OtimizIA deve aparecer no estado fechado e revelar o print durante a abertura.
@@ -23,16 +24,18 @@
 ### Task 1: Tampa física guiada pelo scroll
 
 **Files:**
+
 - Modify: `test/e2e/landing-cinematic.spec.ts`
 - Modify: `components/landing/laptop-opening-screen.tsx`
 - Modify: `components/landing/dashboard-screenshot.tsx`
 - Modify: `app/globals.css`
 
 **Interfaces:**
-- Consumes: `LaptopOpeningScreen({ children }: { children: ReactNode })` e o `Image` existente do painel.
+
+- Consumes: `LaptopOpeningScreen({ children, caption }: { children: ReactNode; caption: string })` e o `Image` existente do painel.
 - Produces: seletores `data-laptop-opening-screen`, `data-laptop-cover`, `data-laptop-hinge` e os estados fechado, intermediário e aberto vinculados ao scroll.
 
-- [ ] **Step 1: Escrever o teste E2E que exige uma tampa realmente fechada**
+- [x] **Step 1: Escrever o teste E2E que exige uma tampa realmente fechada**
 
 ```ts
 const cover = page.locator('[data-laptop-cover="true"]');
@@ -55,35 +58,39 @@ expect(closed.renderedHeight).toBeLessThan(closed.layoutHeight * 0.2);
 expect(closed.renderedWidth).toBeLessThanOrEqual(closed.layoutWidth * 1.05);
 ```
 
-- [ ] **Step 2: Rodar o teste e confirmar a falha correta**
+- [x] **Step 2: Rodar o teste e confirmar a falha correta**
 
 Run: `$env:E2E_BASE_URL='http://localhost:3000'; npx.cmd playwright test test/e2e/landing-cinematic.spec.ts --grep "abre o notebook fisicamente"`
 
 Expected: FAIL porque a animação atual usa matriz 2D e não possui `data-laptop-cover` nem `data-laptop-hinge`.
 
-- [ ] **Step 3: Implementar a tampa, a face externa e a dobradiça**
+- [x] **Step 3: Implementar a tampa, a face externa e a dobradiça**
 
 Em `LaptopOpeningScreen`, mapear o progresso para:
 
 ```ts
 const rotateX = useTransform(scrollYProgress, [0, 0.45, 1], [-86, -54, 0]);
 const scaleX = useTransform(scrollYProgress, [0, 0.55, 1], [0.88, 0.95, 1]);
-const coverOpacity = useTransform(scrollYProgress, [0, 0.12, 0.34], [1, 0.72, 0]);
+const coverOpacity = useTransform(
+  scrollYProgress,
+  [0, 0.12, 0.34],
+  [1, 0.72, 0],
+);
 ```
 
-Aplicar `rotateX` e `scaleX` na mesma tampa com `transformOrigin: "bottom center"`. A perspectiva deve existir somente no trilho pai. Renderizar a face externa dentro da tampa, nunca como plano absoluto separado do notebook. Em `DashboardScreenshot`, adicionar a dobradiça dentro da base.
+Aplicar `rotateX` e `scaleX` na mesma tampa com `transformOrigin: "bottom center"`. A perspectiva deve existir somente no trilho pai. O elemento `data-laptop-frame` deve medir `133svh` e conter uma cena sticky de `88svh`, alinhada pela base, para oferecer `45svh` de curso sem mover a dobradiça. Renderizar a face externa dentro da tampa, nunca como plano absoluto separado do notebook. `LaptopOpeningScreen` também passa a possuir a base e a dobradiça para manter todo o hardware dentro da mesma cena sticky.
 
-- [ ] **Step 4: Rodar o teste focado até ficar verde**
+- [x] **Step 4: Rodar o teste focado até ficar verde**
 
 Run: `$env:E2E_BASE_URL='http://localhost:3000'; npx.cmd playwright test test/e2e/landing-cinematic.spec.ts --grep "abre o notebook fisicamente"`
 
 Expected: PASS em `desktop-chromium` e `mobile-chromium`.
 
-- [ ] **Step 5: Validar a sequência visual e limitar a perspectiva**
+- [x] **Step 5: Validar a sequência visual e limitar a perspectiva**
 
 No navegador local, capturar os estados fechado, intermediário e aberto. Confirmar que a base não se move, a tampa não atravessa o título, a largura renderizada fica em até 105% do layout e o estado aberto termina com `transform: none` e `will-change: auto`.
 
-- [ ] **Step 6: Rodar a regressão completa da landing**
+- [x] **Step 6: Rodar a regressão completa da landing**
 
 Run: `$env:E2E_BASE_URL='http://localhost:3000'; npx.cmd playwright test test/e2e/landing-cinematic.spec.ts`
 
@@ -93,7 +100,7 @@ Run: `npx.cmd eslint components/landing/dashboard-screenshot.tsx components/land
 
 Expected: todos os comandos encerram com código 0.
 
-- [ ] **Step 7: Commit da implementação**
+- [x] **Step 7: Commit da implementação**
 
 ```powershell
 git add -- app/globals.css components/landing/dashboard-screenshot.tsx components/landing/laptop-opening-screen.tsx test/e2e/landing-cinematic.spec.ts
