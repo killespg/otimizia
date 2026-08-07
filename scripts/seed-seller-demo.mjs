@@ -150,6 +150,9 @@ for (const table of [
 ]) {
   await must(supabase.from(table).delete().eq("org_id", orgId), `limpar ${table}`);
 }
+await must(supabase.from("whatsapp_messages").delete().eq("org_id", orgId), "limpar whatsapp_messages");
+await must(supabase.from("whatsapp_conversations").delete().eq("org_id", orgId), "limpar whatsapp_conversations");
+
 for (const table of ["interactions", "tasks", "deals", "contacts"]) {
   await must(supabase.from(table).delete().eq("org_id", orgId).eq("workspace_key", WORKSPACE), `limpar ${table}`);
 }
@@ -511,6 +514,116 @@ await insert("seller_customer_profiles", contacts.slice(0, 8).map((contact, i) =
   reorder_interval_days: [null, 90, 120, null, 180, 60, null, 150][i],
 })), "inserir preferências de cliente");
 
+// --- WhatsApp -------------------------------------------------------------
+// A instância entra como `conectado` porque a tela do WhatsApp só monta a caixa
+// de entrada nesse estado — sem isso a demo pararia no painel de conectar. Não
+// existe instância real da Evolution API por trás: a lista, as conversas e o
+// histórico são de verdade no banco, mas responder pela tela vai falhar
+// enquanto `EVOLUTION_API_URL` não estiver configurada no servidor.
+await must(supabase.from("whatsapp_instances").upsert({
+  org_id: orgId,
+  instance_name: `demo-vendedor-${orgId.slice(0, 8)}`,
+  status: "conectado",
+  phone_number: "+55 19 99812-4477",
+}, { onConflict: "org_id" }), "conectar instância do WhatsApp");
+
+// [índice do cliente, IA ligada, minutos desde a última mensagem, roteiro]
+// Cada roteiro é [quem, texto]: "c" cliente, "ia" resposta automática do Tim,
+// "eu" o próprio vendedor. Misturar os três é o que mostra a divisão de
+// trabalho que a tela promete.
+const conversaSeeds = [
+  [0, true, 8, [
+    ["c", "Oi Rafael! A air fryer de 5L ainda tá 499?"],
+    ["ia", "Oi Adriana! Tá sim, R$ 499,00 na preta e na branca. Quer que eu já separe uma?"],
+    ["c", "Quero a preta. Consegue entregar essa semana?"],
+    ["ia", "Consigo! A entrega própria sai terça de manhã. Confirmo o endereço da última compra?"],
+    ["c", "Isso, mesmo endereço 🙂"],
+  ]],
+  [7, true, 42, [
+    ["c", "Bom dia. Preciso de 20 liquidificadores pra loja."],
+    ["ia", "Bom dia, Henrique! Tenho 41 em estoque, 22 em 127V e 19 em 220V. Como divide?"],
+    ["c", "12 de 127 e 8 de 220."],
+    ["eu", "Fechado. Com o desconto de revenda fica R$ 3.624,00, prazo de 30 dias como sempre."],
+    ["c", "Perfeito, pode faturar."],
+  ]],
+  [4, true, 95, [
+    ["c", "Oi! Vi o aspirador vertical no seu perfil. Serve pra pelo de cachorro?"],
+    ["ia", "Serve sim, Elaine! O bocal turbo dele é justamente pra pelo. Tenho 8 em estoque."],
+    ["c", "E o robô, faz o mesmo?"],
+    ["ia", "Faz, mas o vertical puxa mais em tapete. Quer que eu mande o comparativo dos dois?"],
+    ["c", "Manda por favor"],
+  ]],
+  [14, false, 180, [
+    ["c", "Rafael, a panela de pressão que comprei tá apitando diferente"],
+    ["eu", "Otávia, me manda um vídeo rapidinho? Se for a válvula eu troco na hora."],
+    ["c", "Mandei no seu direct"],
+    ["eu", "Vi. É a válvula mesmo. Já separei uma nova, chega terça junto com a entrega da região."],
+  ]],
+  [10, true, 320, [
+    ["c", "Chegou a coleção nova de mantas?"],
+    ["ia", "Chegou, Karen! Manta casal em cinza, bege e azul, R$ 189,00 cada. Levo pra loja?"],
+    ["c", "Quantas de cada cor você tem?"],
+    ["ia", "18 cinza, 15 bege e 12 azul."],
+  ]],
+  [18, true, 1440, [
+    ["c", "Oi Rafael, começando a pensar nos presentes corporativos de fim de ano"],
+    ["ia", "Boa, Sabrina! A linha de presentes abre em novembro. Quer que eu te avise quando sair?"],
+    ["c", "Quero, e me manda a lista do ano passado pra eu ter uma base"],
+    ["eu", "Mando hoje à noite."],
+  ]],
+  [24, true, 2880, [
+    ["c", "Bom dia! O robô aspirador tem garantia de quanto tempo?"],
+    ["ia", "Bom dia, Yara! Dois anos de garantia. É o maior prazo do catálogo."],
+    ["c", "Vou pensar e te falo"],
+  ]],
+  [3, false, 4320, [
+    ["c", "Rafael, dá pra antecipar a entrega de terça pra segunda?"],
+    ["eu", "Diego, essa semana não dá — a rota de segunda já tá fechada. Terça cedo eu passo primeiro na sua loja."],
+    ["c", "Fechado, valeu"],
+  ]],
+];
+
+const conversasPayload = conversaSeeds.map(([indice, ia, minutos]) => {
+  const contato = contacts[indice];
+  return {
+    org_id: orgId,
+    contact_id: contato.id,
+    phone_number: contato.phone.replace(/\D/g, ""),
+    contact_name: contato.name,
+    ia_active: ia,
+    last_message_at: new Date(HOJE.getTime() - minutos * 60000).toISOString(),
+    created_at: new Date(HOJE.getTime() - (minutos + 60 * 24 * 3) * 60000).toISOString(),
+  };
+});
+const conversas = await insert("whatsapp_conversations", conversasPayload, "inserir conversas do WhatsApp");
+
+const mensagensPayload = [];
+conversaSeeds.forEach(([, , minutos, roteiro], i) => {
+  const fim = HOJE.getTime() - minutos * 60000;
+  // Espaça as mensagens para trás a partir da última: a conversa tem que ler
+  // como uma troca ao longo de alguns minutos, não como um bloco só.
+  roteiro.forEach(([quem, texto], n) => {
+    const passo = (roteiro.length - 1 - n) * 4 * 60000;
+    const entrada = quem === "c";
+    mensagensPayload.push({
+      conversation_id: conversas[i].id,
+      org_id: orgId,
+      direction: entrada ? "inbound" : "outbound",
+      message_type: "text",
+      content: texto,
+      sent_by: entrada ? "contact" : quem === "ia" ? "ai" : "human",
+      // Só a última mensagem de quem escreveu por último fica não lida, e
+      // apenas nas conversas mais recentes: caixa de entrada com tudo lido não
+      // mostra o contador, e com tudo não lido vira alarme falso.
+      read_at: entrada && n === roteiro.length - 1 && i < 3
+        ? null
+        : new Date(fim - passo + 60000).toISOString(),
+      created_at: new Date(fim - passo).toISOString(),
+    });
+  });
+});
+await insert("whatsapp_messages", mensagensPayload, "inserir mensagens do WhatsApp");
+
 console.log(JSON.stringify({
   login: AUTH_EMAIL,
   senha: "definida por SELLER_DEMO_AUTH_PASSWORD",
@@ -528,6 +641,8 @@ console.log(JSON.stringify({
   itens: items.length,
   garantias: warranties.length,
   chamados: claimsPayload.length,
+  conversas_whatsapp: conversas.length,
+  mensagens_whatsapp: mensagensPayload.length,
 }, null, 2));
 
 async function insert(table, rows, label) {
