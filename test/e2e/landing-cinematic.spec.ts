@@ -53,6 +53,24 @@ test("mostra o print real do painel no lugar do mockup", async ({ page, isMobile
   }
 });
 
+test("entrega o print original sem recompressão que borre o texto", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  const fidelity = await page
+    .locator('[data-dashboard-screenshot="true"]')
+    .evaluate((element) => {
+      const image = element as HTMLImageElement;
+      return {
+        currentSrc: image.currentSrc,
+        naturalWidth: image.naturalWidth,
+        renderedWidth: image.getBoundingClientRect().width,
+      };
+    });
+
+  expect(fidelity.currentSrc).not.toContain("/_next/image");
+  expect(fidelity.naturalWidth / fidelity.renderedWidth).toBeGreaterThan(1.75);
+});
+
 test("enquadra o print em uma moldura reconhecível de notebook", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
 

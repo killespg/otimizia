@@ -23,8 +23,7 @@ export function DashboardScreenshot() {
             width={1894}
             height={886}
             alt={ALT_TEXT}
-            quality={95}
-            sizes="(min-width: 1536px) 1080px, (min-width: 1024px) 960px, (min-width: 640px) 92vw, 780px"
+            unoptimized
             className="block h-auto w-[780px] max-w-none sm:w-full"
           />
         </div>
