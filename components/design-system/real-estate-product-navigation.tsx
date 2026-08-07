@@ -24,11 +24,12 @@ type Props = {
   workspaceKey: string;
   workspaceOptions: Array<{ value: string; label: string }>;
   displayName: string;
+  avatarUrl: string | null;
   organizationName: string;
   counts: RealEstateCounts;
 };
 
-export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, displayName, organizationName, counts }: Props) {
+export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, displayName, avatarUrl, organizationName, counts }: Props) {
   // Nomeado em vez de posicional: mobileTabs e barHrefs referenciavam este item
   // por indice (commercial[2]), entao move-lo de grupo trocaria silenciosamente
   // a aba do celular por outra.
@@ -96,6 +97,7 @@ export function RealEstateProductNavigation({ workspaceKey, workspaceOptions, di
       subtitle="Corretor de imóveis"
       organizationName={organizationName}
       displayName={displayName}
+      avatarUrl={avatarUrl}
       workspaceOptions={workspaceOptions}
       workspaceKey={workspaceKey}
       onLogout={logout}

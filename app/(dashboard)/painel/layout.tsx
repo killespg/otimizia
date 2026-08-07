@@ -14,6 +14,7 @@ import { DashboardNavigationFeedback } from "@/components/design-system/dashboar
 import { AssistantChatProvider } from "@/lib/ai/AssistantChatProvider";
 import { getDashboardPreferences } from "@/lib/workspace/dashboard-preferences";
 import { canViewFinance, canViewLegal } from "@/lib/law/law-office";
+import { avatarPublicUrl } from "@/lib/account/avatar";
 import { getActiveOrgId } from "@/lib/workspace/org";
 import { getUserPlanAccess } from "@/lib/billing/plan-access";
 import { getProfessionPreset } from "@/lib/people/professions";
@@ -22,17 +23,6 @@ import { createClient } from "@/lib/supabase/server";
 import { getWorkspaceLabels, parseWorkspacePreferences } from "@/lib/workspace/workspace-preferences";
 import { getWorkspaceKey, getWorkspaceOptions } from "@/lib/workspace/workspaces";
 import { TrialBanner } from "./TrialBanner";
-
-function getInitials(name: string) {
-  return (
-    name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join("") || "OT"
-  );
-}
 
 export default async function PainelLayout({
   children,
@@ -48,13 +38,14 @@ export default async function PainelLayout({
   const [{ data: profile }, orgId] = await Promise.all([
     supabase
       .from("profiles")
-      .select("profession_type, profession_types, is_admin, dashboard_preferences")
+      .select("profession_type, profession_types, is_admin, dashboard_preferences, avatar_path")
       .eq("id", user.id)
       .maybeSingle(),
     getActiveOrgId(supabase, user.id),
   ]);
 
   const isAdmin = profile?.is_admin ?? false;
+  const avatarUrl = avatarPublicUrl(profile?.avatar_path as string | null | undefined);
   const workspaceKey = getWorkspaceKey(
     profile?.profession_type,
     user.user_metadata?.profession_type,
@@ -202,6 +193,7 @@ export default async function PainelLayout({
         {canViewLegalWorkspace ? (
           <LegalProductNavigation
             displayName={displayName}
+            avatarUrl={avatarUrl}
             organizationName={org?.name || "Seu escritório"}
             canViewFinance={lawOfficeAccess.canViewFinance}
             counts={counts}
@@ -211,6 +203,7 @@ export default async function PainelLayout({
             workspaceKey={workspaceKey}
             workspaceOptions={workspaceOptions}
             displayName={displayName}
+            avatarUrl={avatarUrl}
             organizationName={org?.name || "Seu negócio"}
             counts={sellerCounts}
             enabledModules={(sellerOperationPreferences?.enabled_modules ?? ["catalog", "orders"]) as import("@/lib/supabase/types").SellerModule[]}
@@ -220,6 +213,7 @@ export default async function PainelLayout({
             workspaceKey={workspaceKey}
             workspaceOptions={workspaceOptions}
             displayName={displayName}
+            avatarUrl={avatarUrl}
             organizationName={org?.name || "Sua imobiliária"}
             counts={realEstateCounts}
           />
@@ -229,6 +223,7 @@ export default async function PainelLayout({
             workspaceOptions={workspaceOptions}
             workspaceLabel={preset.signupLabel}
             displayName={displayName}
+            avatarUrl={avatarUrl}
             isAdmin={isAdmin}
             lawOfficeAccess={lawOfficeAccess}
             realEstateAccess={realEstateAccess}
@@ -269,18 +264,19 @@ export default async function PainelLayout({
             </>
           ) : null}
           {canViewLegalWorkspace ? (
-            <LegalProductTopbar initials={getInitials(displayName)} />
+            <LegalProductTopbar displayName={displayName} avatarUrl={avatarUrl} />
           ) : isAutonomousSeller ? (
-            <SellerProductTopbar initials={getInitials(displayName)} reminderCount={sellerCounts.reminders} />
+            <SellerProductTopbar displayName={displayName} avatarUrl={avatarUrl} reminderCount={sellerCounts.reminders} />
           ) : canViewRealEstateWorkspace ? (
             <RealEstateProductTopbar
               displayName={displayName}
+              avatarUrl={avatarUrl}
               visitCount={realEstateCounts.visits}
               operationSummary={operationSummary}
               notificationPreferences={notificationPreferences}
             />
           ) : (
-            <ProductTopbar initials={getInitials(displayName)} />
+            <ProductTopbar displayName={displayName} avatarUrl={avatarUrl} />
           )}
           {access.status === "trialing" && access.trialDaysLeft !== null ? (
             <TrialBanner trialDaysLeft={access.trialDaysLeft} />

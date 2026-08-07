@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { UserAvatar } from "@/components/design-system/user-avatar";
 import { usePathname } from "next/navigation";
 import {
   useEffect,
@@ -57,10 +58,6 @@ const KEYBOARD_RESIZE_STEP = 16;
 
 function clampNavigationWidth(width: number) {
   return Math.min(MAX_NAVIGATION_WIDTH, Math.max(MIN_NAVIGATION_WIDTH, width));
-}
-
-function initials(name: string) {
-  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "OT";
 }
 
 function DetailItem({
@@ -127,6 +124,7 @@ type Props = {
   subtitle: string;
   organizationName: string;
   displayName: string;
+  avatarUrl?: string | null;
   workspaceOptions?: Array<{ value: string; label: string }>;
   workspaceKey?: string;
   onLogout: (formData: FormData) => void;
@@ -153,6 +151,7 @@ export function TwoLevelNav({
   subtitle,
   organizationName,
   displayName,
+  avatarUrl = null,
   workspaceOptions = [],
   workspaceKey,
   onLogout,
@@ -330,7 +329,7 @@ export function TwoLevelNav({
               </PendingButton>
             </form>
             <div className="mt-1 flex min-h-11 items-center gap-2.5 px-2.5">
-              <span title={displayName} className="grid size-8 shrink-0 place-items-center rounded-full bg-white/[0.07] text-[11px] font-semibold text-od-text-2">{initials(displayName)}</span>
+              <span title={displayName} className="contents"><UserAvatar name={displayName} photoUrl={avatarUrl} className="size-8 bg-white/[0.07] text-[11px] font-semibold text-od-text-2" /></span>
               <span className="min-w-0 truncate text-xs text-od-text-3">{displayName}</span>
             </div>
           </div>

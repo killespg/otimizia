@@ -26,12 +26,13 @@ type Props = {
   workspaceKey: string;
   workspaceOptions: Array<{ value: string; label: string }>;
   displayName: string;
+  avatarUrl: string | null;
   organizationName: string;
   counts: SellerCounts;
   enabledModules: SellerModule[];
 };
 
-export function SellerProductNavigation({ workspaceKey, workspaceOptions, displayName, organizationName, counts, enabledModules }: Props) {
+export function SellerProductNavigation({ workspaceKey, workspaceOptions, displayName, avatarUrl, organizationName, counts, enabledModules }: Props) {
   const overview: NavItem[] = [
     { href: "/painel", label: "Visão geral", icon: CircleGauge, exact: true },
     { href: "/painel/assistente", label: "Tim", icon: TimIcon },
@@ -89,6 +90,7 @@ export function SellerProductNavigation({ workspaceKey, workspaceOptions, displa
       subtitle="Vendedor autônomo"
       organizationName={organizationName}
       displayName={displayName}
+      avatarUrl={avatarUrl}
       workspaceOptions={workspaceOptions}
       workspaceKey={workspaceKey}
       onLogout={logout}

@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { UserAvatar } from "@/components/design-system/user-avatar";
 import { useRouter } from "next/navigation";
 import { Bell, Maximize2, Search } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { LogoWordmark } from "@/components/design-system/logo";
 import { TimIcon } from "@/components/design-system/tim-icon";
 
-export function SellerProductTopbar({ initials, reminderCount }: { initials: string; reminderCount: number }) {
+export function SellerProductTopbar({ displayName, avatarUrl, reminderCount }: { displayName: string; avatarUrl: string | null; reminderCount: number }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
@@ -36,7 +37,9 @@ export function SellerProductTopbar({ initials, reminderCount }: { initials: str
           <Bell size={16} />
           {reminderCount > 0 ? <span className="absolute right-1.5 top-1.5 grid min-h-4 min-w-4 place-items-center rounded-full bg-[#fb7767] px-1 text-xs font-bold text-white">{Math.min(reminderCount, 99)}</span> : null}
         </Link>
-        <Link href="/painel/configuracoes" aria-label="Abrir conta" className="grid size-11 place-items-center rounded-full bg-white/[0.07] text-xs font-bold text-od-text-2">{initials}</Link>
+        <Link href="/painel/configuracoes" aria-label="Abrir conta">
+          <UserAvatar name={displayName} photoUrl={avatarUrl} className="size-11 bg-white/[0.07] text-xs font-bold text-od-text-2" />
+        </Link>
       </div>
     </header>
   );

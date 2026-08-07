@@ -24,12 +24,13 @@ import { TimIcon } from "@/components/design-system/tim-icon";
 
 type Props = {
   displayName: string;
+  avatarUrl: string | null;
   organizationName: string;
   canViewFinance: boolean;
   counts: { cases: number; deadlines: number; documents: number; receivables: number };
 };
 
-export function LegalProductNavigation({ displayName, organizationName, canViewFinance, counts }: Props) {
+export function LegalProductNavigation({ displayName, avatarUrl, organizationName, canViewFinance, counts }: Props) {
   const overview: NavItem[] = [
     { href: "/painel/juridico", label: "Visão geral", icon: CircleGauge, exact: true },
     { href: "/painel/assistente", label: "Tim", icon: TimIcon },
@@ -79,6 +80,7 @@ export function LegalProductNavigation({ displayName, organizationName, canViewF
       subtitle="Escritório de advocacia"
       organizationName={organizationName}
       displayName={displayName}
+      avatarUrl={avatarUrl}
       onLogout={logout}
       railAriaLabel="Navegação do escritório"
       detailAriaLabel="Detalhes da navegação do escritório"

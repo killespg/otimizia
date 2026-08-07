@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Stripe from "stripe";
@@ -8,6 +9,12 @@ import {
   type OrganizationMembership,
 } from "@/lib/account/account-deletion";
 import { MIN_PASSWORD_LENGTH } from "@/lib/account/auth-constants";
+import {
+  AVATAR_MAX_BYTES,
+  AVATAR_MIME_TYPES,
+  PROFILE_PHOTOS_BUCKET,
+} from "@/lib/account/avatar";
+import { imageExtension } from "@/lib/crm/form-values";
 import { logError } from "@/lib/utils/logger";
 import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { getStripe } from "@/lib/billing/stripe";
@@ -37,6 +44,103 @@ export async function updateName(formData: FormData) {
 
   revalidatePath("/", "layout");
   revalidatePath("/painel/configuracoes");
+}
+
+/**
+ * Troca a foto de perfil.
+ *
+ * O arquivo antigo é apagado depois que o novo já está gravado e o perfil já
+ * aponta para ele: se a remoção falhar, o pior caso é um arquivo órfão de 4 MB,
+ * e não um avatar quebrado em todas as telas. A ordem inversa deixaria a
+ * pessoa sem foto se o upload falhasse no meio.
+ */
+export async function updateAvatar(formData: FormData) {
+  const { supabase, user } = await requireUser();
+  const file = formData.get("avatar");
+
+  if (!(file instanceof File) || file.size === 0) {
+    throw new Error("Escolha uma imagem.");
+  }
+  if (!(AVATAR_MIME_TYPES as readonly string[]).includes(file.type)) {
+    throw new Error("A foto precisa ser JPG, PNG ou WebP.");
+  }
+  if (file.size > AVATAR_MAX_BYTES) {
+    throw new Error("A foto pode ter no máximo 4 MB.");
+  }
+
+  const { data: current } = await supabase
+    .from("profiles")
+    .select("avatar_path")
+    .eq("id", user.id)
+    .maybeSingle();
+  const previousPath = typeof current?.avatar_path === "string" ? current.avatar_path : null;
+
+  // Nome novo a cada troca: o caminho antigo pode estar em cache de navegador
+  // e de CDN, e reaproveitá-lo faria a foto velha continuar aparecendo.
+  const path = `${user.id}/${randomUUID()}.${imageExtension(file.type, file.name)}`;
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const { error: uploadError } = await supabase.storage
+    .from(PROFILE_PHOTOS_BUCKET)
+    .upload(path, bytes, { contentType: file.type, upsert: false });
+  ensureOk(uploadError, "Não deu para enviar a foto.");
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ avatar_path: path })
+    .eq("id", user.id);
+  if (error) {
+    await supabase.storage.from(PROFILE_PHOTOS_BUCKET).remove([path]);
+    ensureOk(error, "Não deu para salvar a foto no seu perfil.");
+  }
+
+  if (previousPath && previousPath !== path) {
+    await removeStoredAvatar(supabase, previousPath, user.id);
+  }
+
+  revalidatePath("/", "layout");
+  revalidatePath("/painel/configuracoes");
+}
+
+export async function removeAvatar() {
+  const { supabase, user } = await requireUser();
+
+  const { data: current } = await supabase
+    .from("profiles")
+    .select("avatar_path")
+    .eq("id", user.id)
+    .maybeSingle();
+  const path = typeof current?.avatar_path === "string" ? current.avatar_path : null;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ avatar_path: null })
+    .eq("id", user.id);
+  ensureOk(error, "Não deu para remover a foto.");
+
+  if (path) {
+    await removeStoredAvatar(supabase, path, user.id);
+  }
+
+  revalidatePath("/", "layout");
+  revalidatePath("/painel/configuracoes");
+}
+
+/**
+ * Apaga o arquivo e registra se não conseguir.
+ *
+ * A falha não interrompe a ação — a pessoa já viu a foto trocar ou sumir, e
+ * derrubar isso por causa da faxina seria pior. Mas engolir o erro em silêncio
+ * escondeu um bug real: sem policy de SELECT no bucket, o Storage não achava a
+ * linha e devolvia sucesso sem apagar nada, deixando arquivo órfão a cada
+ * troca. Agora aparece no log.
+ */
+async function removeStoredAvatar(
+  supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
+  path: string,
+  userId: string,
+) {
+  const { error } = await supabase.storage.from(PROFILE_PHOTOS_BUCKET).remove([path]);
+  if (error) logError("settings.avatar.remove-file", error, { userId });
 }
 
 export async function updateEmail(formData: FormData) {
@@ -218,6 +322,22 @@ export async function deleteAccount(formData: FormData) {
         );
       }
     }
+  }
+
+  // Apagar o usuário derruba o perfil em cascata, mas não toca no Storage: a
+  // foto de perfil sobreviveria à exclusão da conta, num bucket público. Some
+  // a pasta inteira, e não só o `avatar_path` atual, para levar junto qualquer
+  // arquivo que tenha ficado órfão em trocas anteriores. É best-effort de
+  // propósito: falha aqui não pode impedir a exclusão que a pessoa pediu.
+  try {
+    const { data: files } = await admin.storage.from(PROFILE_PHOTOS_BUCKET).list(user.id);
+    if (files && files.length > 0) {
+      await admin.storage
+        .from(PROFILE_PHOTOS_BUCKET)
+        .remove(files.map((file) => `${user.id}/${file.name}`));
+    }
+  } catch (err) {
+    logError("settings.delete-account.avatar-cleanup", err, { userId: user.id });
   }
 
   const { error } = await admin.auth.admin.deleteUser(user.id);

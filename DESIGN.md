@@ -139,6 +139,24 @@ Movimento respeita `prefers-reduced-motion`.
 Textos e ícones nunca entram nas camadas de distorção. Qualquer mudança de
 opacidade deve reverificar contraste WCAG AA e os alvos mínimos de 44 px.
 
+## Identidade de quem está usando
+
+`UserAvatar` (`components/design-system/user-avatar.tsx`) é o único desenho da
+identidade do usuário no produto. Com foto, a imagem preenche o círculo; sem
+foto, continua a pastilha de iniciais. Está nos seis lugares que antes
+reimplementavam iniciais à mão — topbar do escritório, do vendedor, do jurídico
+e do imobiliário, rodapé da navegação, configurações rápidas e cabeçalho da
+visão geral —, com regras que divergiam entre si (uns pegavam as duas primeiras
+palavras, outros a primeira e a última). A regra agora é uma: primeira e última.
+Quem chama define tamanho, fundo e tipografia pelo `className`; o componente só
+garante o círculo e o recorte.
+
+A foto vive no bucket público `profile-photos`, uma pasta por usuário, e o
+perfil guarda o caminho (`avatar_path`), não a URL — só o caminho permite apagar
+o arquivo antigo na troca. `<img>` em vez de `next/image`: o avatar aparece no
+layout de toda tela em seis tamanhos, e não há o que otimizar num quadrado de
+32 a 48 px.
+
 ## Preferências que saíram
 
 Estilo do painel (`glow`/`clean`/`compact`/`executive`) e cor de destaque

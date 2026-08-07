@@ -10,6 +10,7 @@ describe("Layout horizontal do dashboard imobiliário", () => {
       createElement(RealEstateDashboard, {
         now: new Date("2026-08-04T12:00:00.000Z"),
         displayName: "Mariana Costa",
+        avatarUrl: null,
         from: "2026-08-01",
         to: "2026-08-31",
         brokerFilter: "",
@@ -142,6 +143,7 @@ describe("Layout horizontal do dashboard imobiliário", () => {
       createElement(RealEstateDashboard, {
         now: new Date("2026-08-04T12:00:00.000Z"),
         displayName: "Mariana Costa",
+        avatarUrl: null,
         from: "2026-08-01",
         to: "2026-08-31",
         brokerFilter: "",

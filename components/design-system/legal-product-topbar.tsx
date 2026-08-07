@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { UserAvatar } from "@/components/design-system/user-avatar";
 import { useRouter } from "next/navigation";
 import { Bell, Maximize2, MessageSquare, Search } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { LogoWordmark } from "@/components/design-system/logo";
 
-export function LegalProductTopbar({ initials }: { initials: string }) {
+export function LegalProductTopbar({ displayName, avatarUrl }: { displayName: string; avatarUrl: string | null }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
@@ -32,7 +33,9 @@ export function LegalProductTopbar({ initials }: { initials: string }) {
         <Link href="/painel/assistente" aria-label="Abrir mensagens" className="grid size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text"><MessageSquare size={16}/></Link>
         <button type="button" onClick={fullscreen} aria-label="Tela cheia" className="hidden size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text sm:grid"><Maximize2 size={15}/></button>
         <Link href="/painel/tarefas" aria-label="Ver alertas" className="relative grid size-11 place-items-center rounded-lg text-od-text-3 hover:bg-white/[0.045] hover:text-od-text"><Bell size={16}/><span className="absolute right-2.5 top-2.5 size-1.5 rounded-full bg-[#fb7767]"/></Link>
-        <Link href="/painel/configuracoes" aria-label="Abrir conta" className="grid size-11 place-items-center rounded-full bg-white/[0.07] text-xs font-bold text-od-text-2">{initials}</Link>
+        <Link href="/painel/configuracoes" aria-label="Abrir conta">
+          <UserAvatar name={displayName} photoUrl={avatarUrl} className="size-11 bg-white/[0.07] text-xs font-bold text-od-text-2" />
+        </Link>
       </div>
     </header>
   );

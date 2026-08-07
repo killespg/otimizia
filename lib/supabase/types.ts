@@ -21,6 +21,8 @@ export type Profile = {
   profession_types: string[];
   is_admin: boolean;
   cpf: string | null;
+  /** Caminho no bucket `profile-photos`. A URL pública sai de `avatarPublicUrl`. */
+  avatar_path: string | null;
   terms_accepted_at: string | null;
   welcome_email_sent_at: string | null;
   active_org_id: string | null;

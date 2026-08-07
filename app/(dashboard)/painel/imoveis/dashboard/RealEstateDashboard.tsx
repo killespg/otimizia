@@ -33,6 +33,7 @@ type DashboardOrganization = {
 type Props = {
   now: Date;
   displayName: string;
+  avatarUrl: string | null;
   from: string;
   to: string;
   brokerFilter: string;
@@ -64,6 +65,7 @@ type DashboardPanelVariant = "panel" | "tray";
 export function RealEstateDashboard({
   now,
   displayName,
+  avatarUrl,
   from,
   to,
   brokerFilter,
@@ -128,6 +130,7 @@ export function RealEstateDashboard({
     <div data-liquid-stage="real-estate" className="dashboard-board relative isolate mx-auto w-full max-w-[1640px] space-y-8">
       <RealEstateDashboardHeader
         displayName={displayName}
+        avatarUrl={avatarUrl}
         activePropertyCount={activePropertyCount}
         greeting={dashboardGreeting}
       />

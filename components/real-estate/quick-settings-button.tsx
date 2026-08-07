@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { AnchoredPanel } from "@/components/ui/AnchoredPanel";
+import { UserAvatar } from "@/components/design-system/user-avatar";
 import { LogOut, Settings, Users } from "lucide-react";
 import { PendingButton } from "@/components/ui/PendingButton";
 import { logout } from "@/app/(auth)/actions";
@@ -76,11 +77,6 @@ function NotificationToggle({
   );
 }
 
-function initialsOf(displayName: string) {
-  const parts = displayName.trim().split(/\s+/).filter(Boolean);
-  return `${parts[0]?.[0] ?? "C"}${parts.length > 1 ? parts.at(-1)?.[0] ?? "" : ""}`.toUpperCase();
-}
-
 /**
  * Identidade e configurações rápidas. Fica na topbar porque conta, avisos e
  * saída são caminhos de qualquer tela — o cabeçalho do painel só existe na
@@ -88,16 +84,16 @@ function initialsOf(displayName: string) {
  */
 export function QuickSettingsButton({
   displayName,
+  avatarUrl,
   notificationPreferences,
 }: {
   displayName: string;
+  avatarUrl: string | null;
   notificationPreferences: NotificationPreferences;
 }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const reduceMotion = useReducedMotion();
-  const initials = initialsOf(displayName);
-
 
   return (
     <>
@@ -110,9 +106,13 @@ export function QuickSettingsButton({
         aria-controls="quick-settings"
         aria-haspopup="dialog"
         onClick={() => setOpen((value) => !value)}
-        className="grid size-11 place-items-center rounded-full bg-white/[0.07] text-xs font-bold text-od-text-2 transition-colors hover:bg-white/[0.12] hover:text-od-text"
+        className="rounded-full transition-colors hover:brightness-110"
       >
-        {initials}
+        <UserAvatar
+          name={displayName}
+          photoUrl={avatarUrl}
+          className="size-11 bg-white/[0.07] text-xs font-bold text-od-text-2"
+        />
       </button>
 
       <AnimatePresence initial={false}>
@@ -131,12 +131,11 @@ export function QuickSettingsButton({
             transition={reduceMotion ? { duration: 0 } : { duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="flex items-center gap-3 px-3 pb-2 pt-2">
-              <span
-                aria-hidden="true"
-                className="grid size-9 shrink-0 place-items-center rounded-full bg-violet-500/75 text-[11px] font-bold text-white"
-              >
-                {initials}
-              </span>
+              <UserAvatar
+                name={displayName}
+                photoUrl={avatarUrl}
+                className="size-9 bg-violet-500/75 text-[11px] font-bold text-white"
+              />
               <div className="min-w-0">
                 <p className="truncate text-xs font-semibold text-od-text">{displayName}</p>
                 <p className="mt-0.5 text-[11px] text-od-text-3">Conta e avisos</p>

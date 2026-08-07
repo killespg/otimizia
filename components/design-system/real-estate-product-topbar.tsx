@@ -16,11 +16,13 @@ import {
 
 export function RealEstateProductTopbar({
   displayName,
+  avatarUrl,
   visitCount,
   operationSummary,
   notificationPreferences,
 }: {
   displayName: string;
+  avatarUrl: string | null;
   visitCount: number;
   operationSummary: OperationSummary;
   notificationPreferences: NotificationPreferences;
@@ -60,6 +62,7 @@ export function RealEstateProductTopbar({
         <OperationSummaryButton {...operationSummary} />
         <QuickSettingsButton
           displayName={displayName}
+          avatarUrl={avatarUrl}
           notificationPreferences={notificationPreferences}
         />
       </div>

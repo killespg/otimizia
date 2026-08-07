@@ -4,6 +4,7 @@ import { BrandName } from "@/components/design-system/BrandName";
 import { DashboardPreferencesForm } from "@/components/dashboard/DashboardPreferencesForm";
 import { InstallAppPrompt } from "@/components/site/InstallAppPrompt";
 import { PendingButton } from "@/components/ui/PendingButton";
+import { avatarPublicUrl } from "@/lib/account/avatar";
 import { formatCPF } from "@/lib/utils/cpf";
 import { getDashboardPreferences } from "@/lib/workspace/dashboard-preferences";
 import { formatDate } from "@/lib/utils/format";
@@ -20,6 +21,7 @@ import { updateDashboardPreferences } from "../_dashboard/actions";
 import { IconAlert, IconCheck } from "../icons";
 import { DeleteAccountForm } from "./DeleteAccountForm";
 import { DataExportButton } from "./DataExportButton";
+import { AvatarField } from "./AvatarField";
 import { CalendarFeedField } from "./CalendarFeedField";
 import { PushNotificationToggle } from "./PushNotificationToggle";
 import { updateNotificationPreferences } from "./notifications-actions";
@@ -75,6 +77,7 @@ export default async function SettingsPage(
   );
   const displayName =
     typeof user.user_metadata?.name === "string" ? user.user_metadata.name : "";
+  const avatarUrl = avatarPublicUrl(profile?.avatar_path);
   const access = getPlanAccess(org);
   const isSeller = workspaceKey === "autonomous_seller";
   const isRealEstate = workspaceKey === "real_estate_broker";
@@ -238,6 +241,8 @@ export default async function SettingsPage(
           dois deles pediam "Senha atual" para coisas diferentes. Cada um ganha
           seu próprio plano: a fronteira aparece pelo material, não por régua. */}
       <SectionCard title="Conta" description="Dados de login e identificação.">
+        <AvatarField displayName={displayName} photoUrl={avatarUrl} />
+
         <form action={updateName} className="od-band space-y-3 p-3">
           <Field name="name" label="Nome" defaultValue={displayName} required maxLength={120} />
           <PendingButton className="btn-soft" pendingLabel="Salvando">

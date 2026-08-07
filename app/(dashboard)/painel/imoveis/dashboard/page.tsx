@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { avatarPublicUrl } from "@/lib/account/avatar";
 import { canManageRealEstate, canViewRealEstate, isRealEstateV2Enabled } from "@/lib/real-estate/real-estate";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
@@ -34,7 +35,7 @@ export default async function RealEstateDashboardPage({
   const [{ data: profile }, orgId] = await Promise.all([
     supabase
       .from("profiles")
-      .select("profession_type, is_admin, dashboard_preferences")
+      .select("profession_type, is_admin, dashboard_preferences, avatar_path")
       .eq("id", user!.id)
       .maybeSingle(),
     getActiveOrgId(supabase, user!.id),
@@ -147,6 +148,7 @@ export default async function RealEstateDashboardPage({
     <RealEstateDashboard
       now={now}
       displayName={displayName}
+      avatarUrl={avatarPublicUrl(profile?.avatar_path as string | null | undefined)}
       from={from}
       to={to}
       brokerFilter={brokerFilter}

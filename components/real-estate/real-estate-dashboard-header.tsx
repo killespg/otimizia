@@ -2,19 +2,17 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { MobileDashboardGreeting } from "@/lib/real-estate/mobile-dashboard-greeting";
 import { TimIcon } from "@/components/design-system/tim-icon";
+import { UserAvatar } from "@/components/design-system/user-avatar";
 
 export type RealEstateDashboardHeaderProps = {
   displayName: string;
+  avatarUrl: string | null;
   activePropertyCount: number;
   greeting: Pick<MobileDashboardGreeting, "salutation" | "message">;
 };
 
-function displayIdentity(displayName: string) {
-  const nameParts = displayName.trim().split(/\s+/).filter(Boolean);
-  const firstName = nameParts[0] || "Corretor";
-  const initials = `${nameParts[0]?.[0] ?? "C"}${nameParts.length > 1 ? nameParts.at(-1)?.[0] ?? "" : ""}`.toUpperCase();
-
-  return { firstName, initials };
+function firstNameOf(displayName: string) {
+  return displayName.trim().split(/\s+/).filter(Boolean)[0] || "Corretor";
 }
 
 /**
@@ -28,20 +26,21 @@ function displayIdentity(displayName: string) {
  */
 export function RealEstateDashboardHeader({
   displayName,
+  avatarUrl,
   activePropertyCount,
   greeting,
 }: RealEstateDashboardHeaderProps) {
-  const { firstName, initials } = displayIdentity(displayName);
+  const firstName = firstNameOf(displayName);
 
   return (
     <section data-dashboard-profile-header="true" className="relative space-y-3 md:space-y-4">
       <div className="flex min-h-11 w-full items-center gap-3 md:gap-4">
-        <span
-          aria-hidden="true"
-          className="grid size-10 shrink-0 place-items-center rounded-full border border-white/[0.14] bg-violet-500/75 text-xs font-bold tracking-[-0.02em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_8px_24px_-16px_rgba(139,92,246,0.85)] md:size-12 md:text-sm"
-        >
-          {initials}
-        </span>
+        <UserAvatar
+          name={displayName}
+          photoUrl={avatarUrl}
+          fallback="C"
+          className="size-10 border border-white/[0.14] bg-violet-500/75 text-xs font-bold tracking-[-0.02em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_8px_24px_-16px_rgba(139,92,246,0.85)] md:size-12 md:text-sm"
+        />
         <div className="min-w-0">
           <p
             data-dashboard-greeting="true"

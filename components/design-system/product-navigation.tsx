@@ -27,6 +27,7 @@ type Props = {
   workspaceOptions: Array<{ value: string; label: string }>;
   workspaceLabel: string;
   displayName: string;
+  avatarUrl: string | null;
   isAdmin: boolean;
   lawOfficeAccess: { enabled: boolean; canViewLegal: boolean; canViewFinance: boolean };
   realEstateAccess: { enabled: boolean; canManage: boolean };
@@ -96,6 +97,7 @@ export function ProductNavigation(props: Props) {
       subtitle=""
       organizationName={props.workspaceLabel}
       displayName={props.displayName}
+      avatarUrl={props.avatarUrl}
       workspaceOptions={props.workspaceOptions}
       workspaceKey={props.workspaceKey}
       onLogout={logout}

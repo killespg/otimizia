@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { UserAvatar } from "@/components/design-system/user-avatar";
 import { useRouter } from "next/navigation";
 import { Bell, Search } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { LogoWordmark } from "@/components/design-system/logo";
 import { TimIcon } from "@/components/design-system/tim-icon";
 
-export function ProductTopbar({ initials }: { initials: string }) {
+export function ProductTopbar({ displayName, avatarUrl }: { displayName: string; avatarUrl: string | null }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
@@ -27,7 +28,9 @@ export function ProductTopbar({ initials }: { initials: string }) {
       <div data-liquid-glass-actions className="liquid-glass-control flex shrink-0 items-center rounded-full p-1">
         <Link href="/painel/assistente" aria-label="Abrir conversa com o Tim" className="grid size-11 place-items-center rounded-md text-od-text-3 hover:bg-white/[0.045] hover:text-od-text"><TimIcon size={17} /></Link>
         <Link href="/painel/tarefas" aria-label="Ver lembretes" className="relative grid size-11 place-items-center rounded-md text-od-text-3 hover:bg-white/[0.045] hover:text-od-text"><Bell size={17} /><span className="absolute right-2.5 top-2.5 size-1.5 rounded-full bg-od-accent" /></Link>
-        <Link href="/painel/configuracoes" aria-label="Abrir sua conta" className="grid size-11 place-items-center rounded-full bg-white/[0.07] text-xs font-semibold text-od-text-2">{initials}</Link>
+        <Link href="/painel/configuracoes" aria-label="Abrir sua conta">
+          <UserAvatar name={displayName} photoUrl={avatarUrl} className="size-11 bg-white/[0.07] text-xs font-semibold text-od-text-2" />
+        </Link>
       </div>
     </header>
   );
