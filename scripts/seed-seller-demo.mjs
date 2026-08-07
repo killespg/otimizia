@@ -7,6 +7,12 @@
  * de produto: catálogo com variações, estoque, pedidos, garantias e chamados de
  * pós-venda. O objetivo é que nenhuma tela do vendedor abra vazia.
  */
+import { randomUUID } from "node:crypto";
+import { deflateSync } from "node:zlib";
+
+// Declarado aqui, e não junto de `crc32`: o corpo do script roda antes das
+// linhas do fim do arquivo, e um `let` lá embaixo cairia na zona morta temporal.
+let tabelaCrc;
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
@@ -35,8 +41,15 @@ if (!url || !key) throw new Error("Faltam URL e chave pública do Supabase em .e
 
 const supabase = createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
 
-if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  const admin = createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
+// `whatsapp_attachments` e o bucket de anexos são de escrita exclusiva da
+// service role por decisão da 0076: no produto quem grava ali é o webhook, não
+// o navegador. O seed respeita isso em vez de reabrir a permissão — com a
+// ressalva de que sem a chave de serviço a conversa fica só com texto.
+const admin = process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { autoRefreshToken: false, persistSession: false } })
+  : null;
+
+if (admin) {
   const metadata = { name: PERSON, profession_type: WORKSPACE, profession_types: [WORKSPACE], terms_accepted: "true", trial_notice_accepted: "true" };
 
   // Tenta criar primeiro e só procura a conta existente se o e-mail já estiver
@@ -150,6 +163,7 @@ for (const table of [
 ]) {
   await must(supabase.from(table).delete().eq("org_id", orgId), `limpar ${table}`);
 }
+if (admin) await must(admin.from("whatsapp_attachments").delete().eq("org_id", orgId), "limpar whatsapp_attachments");
 await must(supabase.from("whatsapp_messages").delete().eq("org_id", orgId), "limpar whatsapp_messages");
 await must(supabase.from("whatsapp_conversations").delete().eq("org_id", orgId), "limpar whatsapp_conversations");
 
@@ -555,8 +569,8 @@ const conversaSeeds = [
   ]],
   [14, false, 180, [
     ["c", "Rafael, a panela de pressão que comprei tá apitando diferente"],
-    ["eu", "Otávia, me manda um vídeo rapidinho? Se for a válvula eu troco na hora."],
-    ["c", "Mandei no seu direct"],
+    ["eu", "Otávia, me manda uma foto da válvula? Se for ela eu troco na hora."],
+    ["img", "É essa peça de cima que tá chiando"],
     ["eu", "Vi. É a válvula mesmo. Já separei uma nova, chega terça junto com a entrega da região."],
   ]],
   [10, true, 320, [
@@ -597,6 +611,13 @@ const conversasPayload = conversaSeeds.map(([indice, ia, minutos]) => {
 });
 const conversas = await insert("whatsapp_conversations", conversasPayload, "inserir conversas do WhatsApp");
 
+// Uma foto de verdade no meio da conversa: é o caminho completo do anexo
+// recebido — arquivo no bucket privado, linha em `whatsapp_attachments` e a
+// mensagem apontando para `/api/whatsapp/media/<id>`, que confere a
+// organização antes de servir o byte. Sem isso a demo mostraria só texto e o
+// caminho de mídia ficaria por testar.
+const anexosPayload = [];
+
 const mensagensPayload = [];
 conversaSeeds.forEach(([, , minutos, roteiro], i) => {
   const fim = HOJE.getTime() - minutos * 60000;
@@ -604,12 +625,18 @@ conversaSeeds.forEach(([, , minutos, roteiro], i) => {
   // como uma troca ao longo de alguns minutos, não como um bloco só.
   roteiro.forEach(([quem, texto], n) => {
     const passo = (roteiro.length - 1 - n) * 4 * 60000;
-    const entrada = quem === "c";
+    const entrada = quem === "c" || quem === "img";
+    const messageId = randomUUID();
+    if (quem === "img") {
+      anexosPayload.push({ messageId, orgId });
+    }
     mensagensPayload.push({
+      id: messageId,
       conversation_id: conversas[i].id,
       org_id: orgId,
       direction: entrada ? "inbound" : "outbound",
-      message_type: "text",
+      message_type: quem === "img" ? "image" : "text",
+      media_url: quem === "img" ? `/api/whatsapp/media/${messageId}` : null,
       content: texto,
       sent_by: entrada ? "contact" : quem === "ia" ? "ai" : "human",
       // Só a última mensagem de quem escreveu por último fica não lida, e
@@ -623,6 +650,25 @@ conversaSeeds.forEach(([, , minutos, roteiro], i) => {
   });
 });
 await insert("whatsapp_messages", mensagensPayload, "inserir mensagens do WhatsApp");
+
+for (const anexo of anexosPayload) {
+  if (!admin) {
+    console.warn("Sem SUPABASE_SERVICE_ROLE_KEY: a conversa fica sem a foto recebida.");
+    break;
+  }
+  const caminho = `${anexo.orgId}/${anexo.messageId}/${randomUUID()}.png`;
+  const { error: envioError } = await admin.storage
+    .from("whatsapp-attachments")
+    .upload(caminho, fotoValvula(), { contentType: "image/png", upsert: false });
+  if (envioError) throw new Error(`enviar anexo do WhatsApp: ${envioError.message}`);
+  await must(admin.from("whatsapp_attachments").insert({
+    message_id: anexo.messageId,
+    org_id: anexo.orgId,
+    storage_path: caminho,
+    media_type: "image/png",
+    expires_at: new Date(HOJE.getTime() + 30 * 86400000).toISOString(),
+  }), "inserir anexo do WhatsApp");
+}
 
 console.log(JSON.stringify({
   login: AUTH_EMAIL,
@@ -644,6 +690,72 @@ console.log(JSON.stringify({
   conversas_whatsapp: conversas.length,
   mensagens_whatsapp: mensagensPayload.length,
 }, null, 2));
+
+/**
+ * PNG desenhado na mão, sem dependência de imagem externa.
+ *
+ * Um retângulo escuro com um círculo claro no meio já basta: o que precisa ser
+ * verdadeiro é o arquivo existir no bucket, ter o mimetype declarado e voltar
+ * pela rota autenticada. Escrever o PNG byte a byte evita baixar foto de
+ * terceiro para dentro de uma conta de demonstração.
+ */
+function fotoValvula() {
+  const largura = 480;
+  const altura = 360;
+  const linhas = [];
+  for (let y = 0; y < altura; y++) {
+    const linha = Buffer.alloc(1 + largura * 3);
+    for (let x = 0; x < largura; x++) {
+      const dx = x - largura / 2;
+      const dy = y - altura / 2;
+      const dentro = Math.sqrt(dx * dx + dy * dy) < 78;
+      const anel = Math.abs(Math.sqrt(dx * dx + dy * dy) - 110) < 6;
+      const base = 26 + Math.round((y / altura) * 22);
+      const i = 1 + x * 3;
+      linha[i] = dentro ? 196 : anel ? 96 : base + 8;
+      linha[i + 1] = dentro ? 200 : anel ? 100 : base + 10;
+      linha[i + 2] = dentro ? 208 : anel ? 108 : base + 18;
+    }
+    linhas.push(linha);
+  }
+  return png(largura, altura, Buffer.concat(linhas));
+}
+
+function png(largura, altura, rawComFiltro) {
+  const bloco = (tipo, dados) => {
+    const cabecalho = Buffer.alloc(8);
+    cabecalho.writeUInt32BE(dados.length, 0);
+    cabecalho.write(tipo, 4, "ascii");
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(crc32(Buffer.concat([Buffer.from(tipo, "ascii"), dados])) >>> 0, 0);
+    return Buffer.concat([cabecalho, dados, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(largura, 0);
+  ihdr.writeUInt32BE(altura, 4);
+  ihdr[8] = 8;   // 8 bits por canal
+  ihdr[9] = 2;   // RGB
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    bloco("IHDR", ihdr),
+    bloco("IDAT", deflateSync(rawComFiltro)),
+    bloco("IEND", Buffer.alloc(0)),
+  ]);
+}
+
+function crc32(buffer) {
+  if (!tabelaCrc) {
+    tabelaCrc = new Int32Array(256);
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+      tabelaCrc[n] = c;
+    }
+  }
+  let c = 0xffffffff;
+  for (const byte of buffer) c = tabelaCrc[(c ^ byte) & 0xff] ^ (c >>> 8);
+  return c ^ 0xffffffff;
+}
 
 async function insert(table, rows, label) {
   if (rows.length === 0) return [];
