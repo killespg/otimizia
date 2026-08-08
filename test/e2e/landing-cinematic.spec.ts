@@ -156,8 +156,14 @@ test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
     layoutHeight: element.clientHeight,
     layoutWidth: element.clientWidth,
     screenTop: element.getBoundingClientRect().top,
+    screenBottom: element.getBoundingClientRect().bottom,
     renderedHeight: element.getBoundingClientRect().height,
     renderedWidth: element.getBoundingClientRect().width,
+    transform: getComputedStyle(element).transform,
+  }));
+  const closedCover = await cover.evaluate((element) => ({
+    layoutHeight: element.clientHeight,
+    renderedHeight: element.getBoundingClientRect().height,
     transform: getComputedStyle(element).transform,
   }));
   const closedBaseGap = await Promise.all([
@@ -169,11 +175,15 @@ test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
   );
   const closedHeadingBox = await heading.boundingBox();
 
-  expect(closed.transform).not.toBe("none");
-  expect(closed.transform).toContain("matrix3d");
-  expect(closed.renderedHeight).toBeLessThan(closed.layoutHeight * 0.2);
-  expect(closed.renderedWidth).toBeGreaterThan(closed.layoutWidth * 0.85);
-  expect(closed.renderedWidth).toBeLessThanOrEqual(closed.layoutWidth * 1.05);
+  expect(closed.transform).toBe("none");
+  expect(
+    Math.abs(closed.renderedHeight - closed.layoutHeight),
+  ).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs(closed.renderedWidth - closed.layoutWidth),
+  ).toBeLessThanOrEqual(1);
+  expect(closedCover.transform).toContain("matrix3d");
+  expect(closedCover.renderedHeight).toBeLessThan(closedCover.layoutHeight * 0.2);
   expect(closedBaseGap).toBeLessThanOrEqual(4);
   expect(
     Number(
@@ -192,13 +202,16 @@ test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
 
   await expect
     .poll(async () =>
-      screen.evaluate((element) => element.getBoundingClientRect().height),
+      cover.evaluate((element) => element.getBoundingClientRect().height),
     )
-    .toBeGreaterThan(closed.renderedHeight * 3);
+    .toBeGreaterThan(closedCover.renderedHeight * 3);
 
   const midway = await screen.evaluate((element) => ({
+    screenTop: element.getBoundingClientRect().top,
+    screenBottom: element.getBoundingClientRect().bottom,
     renderedHeight: element.getBoundingClientRect().height,
     renderedWidth: element.getBoundingClientRect().width,
+    transform: getComputedStyle(element).transform,
   }));
   const midwayBaseGap = await Promise.all([
     screen.evaluate((element) => element.getBoundingClientRect().bottom),
@@ -208,16 +221,24 @@ test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
     (element) => element.getBoundingClientRect().top,
   );
 
-  expect(midway.renderedHeight).toBeGreaterThan(closed.renderedHeight * 3);
-  expect(midway.renderedWidth).toBeGreaterThan(closed.renderedWidth);
-  expect(midway.renderedWidth).toBeLessThanOrEqual(closed.layoutWidth * 1.05);
+  expect(midway.transform).toBe("none");
+  expect(Math.abs(midway.screenTop - closed.screenTop)).toBeLessThanOrEqual(2);
+  expect(
+    Math.abs(midway.screenBottom - closed.screenBottom),
+  ).toBeLessThanOrEqual(2);
+  expect(
+    Math.abs(midway.renderedHeight - closed.renderedHeight),
+  ).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs(midway.renderedWidth - closed.renderedWidth),
+  ).toBeLessThanOrEqual(1);
   expect(midwayBaseGap).toBeLessThanOrEqual(4);
   expect(Math.abs(midwayBaseTop - closedBaseTop)).toBeLessThanOrEqual(2);
   expect(
     Number(
       await cover.evaluate((element) => getComputedStyle(element).opacity),
     ),
-  ).toBeLessThan(0.5);
+  ).toBeGreaterThan(0.85);
 
   await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.26));
 
@@ -227,9 +248,25 @@ test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
     )
     .toBe("none");
   await expect(cover).toHaveCount(0);
+  const open = await screen.evaluate((element) => ({
+    screenTop: element.getBoundingClientRect().top,
+    screenBottom: element.getBoundingClientRect().bottom,
+    renderedHeight: element.getBoundingClientRect().height,
+    renderedWidth: element.getBoundingClientRect().width,
+  }));
   const openBaseTop = await base.evaluate(
     (element) => element.getBoundingClientRect().top,
   );
+  expect(Math.abs(open.screenTop - closed.screenTop)).toBeLessThanOrEqual(2);
+  expect(
+    Math.abs(open.screenBottom - closed.screenBottom),
+  ).toBeLessThanOrEqual(2);
+  expect(
+    Math.abs(open.renderedHeight - closed.renderedHeight),
+  ).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs(open.renderedWidth - closed.renderedWidth),
+  ).toBeLessThanOrEqual(1);
   expect(Math.abs(openBaseTop - closedBaseTop)).toBeLessThanOrEqual(2);
 
   await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.08));
@@ -245,7 +282,7 @@ test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
   ).toBeLessThanOrEqual(await page.evaluate(() => window.innerWidth));
 });
 
-test("mantém a dobradiça fixa quando a abertura começa em viewport compacta", async ({
+test("mantém o painel e a dobradiça fixos em viewport compacta", async ({
   page,
 }, testInfo) => {
   test.skip(
@@ -257,7 +294,9 @@ test("mantém a dobradiça fixa quando a abertura começa em viewport compacta",
   await page.goto("/", { waitUntil: "networkidle" });
 
   const frame = page.locator('[data-laptop-frame="true"]');
+  const hardware = page.locator('[data-laptop-hardware="true"]');
   const screen = page.locator('[data-laptop-opening-screen="true"]');
+  const cover = page.locator('[data-laptop-cover="true"]');
   const base = page.locator('[data-laptop-base="true"]');
   const frameDocumentTop = await frame.evaluate(
     (element) => element.getBoundingClientRect().top + window.scrollY,
@@ -272,28 +311,74 @@ test("mantém a dobradiça fixa quando a abertura começa em viewport compacta",
       frame.evaluate((element) => element.getBoundingClientRect().top),
     )
     .toBeGreaterThan(158);
+  expect(
+    Number(
+      await hardware.evaluate((element) => getComputedStyle(element).opacity),
+    ),
+  ).toBeLessThan(0.05);
+
+  await page.evaluate(() => window.scrollBy(0, 160));
+  await expect
+    .poll(async () =>
+      frame.evaluate((element) =>
+        Math.abs(element.getBoundingClientRect().top),
+      ),
+    )
+    .toBeLessThanOrEqual(1);
+  await expect
+    .poll(async () =>
+      hardware.evaluate((element) => Number(getComputedStyle(element).opacity)),
+    )
+    .toBeGreaterThan(0.95);
 
   const closed = await screen.evaluate((element) => ({
     layoutHeight: element.clientHeight,
+    layoutWidth: element.clientWidth,
+    top: element.getBoundingClientRect().top,
+    bottom: element.getBoundingClientRect().bottom,
     renderedHeight: element.getBoundingClientRect().height,
+    renderedWidth: element.getBoundingClientRect().width,
   }));
+  const closedCoverHeight = await cover.evaluate(
+    (element) => element.getBoundingClientRect().height,
+  );
   const closedBaseTop = await base.evaluate(
     (element) => element.getBoundingClientRect().top,
   );
 
-  expect(closed.renderedHeight).toBeLessThan(closed.layoutHeight * 0.2);
+  expect(
+    Math.abs(closed.renderedHeight - closed.layoutHeight),
+  ).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs(closed.renderedWidth - closed.layoutWidth),
+  ).toBeLessThanOrEqual(1);
+  expect(closedCoverHeight).toBeLessThan(closed.layoutHeight * 0.2);
   expect(closedBaseTop).toBeLessThan(800);
 
-  await page.evaluate(() => window.scrollBy(0, 160 + window.innerHeight * 0.22));
+  await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.22));
   await expect
     .poll(async () =>
-      screen.evaluate((element) => element.getBoundingClientRect().height),
+      cover.evaluate((element) => element.getBoundingClientRect().height),
     )
-    .toBeGreaterThan(closed.renderedHeight * 3);
+    .toBeGreaterThan(closedCoverHeight * 3);
 
+  const opening = await screen.evaluate((element) => ({
+    top: element.getBoundingClientRect().top,
+    bottom: element.getBoundingClientRect().bottom,
+    renderedHeight: element.getBoundingClientRect().height,
+    renderedWidth: element.getBoundingClientRect().width,
+  }));
   const openingBaseTop = await base.evaluate(
     (element) => element.getBoundingClientRect().top,
   );
+  expect(Math.abs(opening.top - closed.top)).toBeLessThanOrEqual(2);
+  expect(Math.abs(opening.bottom - closed.bottom)).toBeLessThanOrEqual(2);
+  expect(
+    Math.abs(opening.renderedHeight - closed.renderedHeight),
+  ).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs(opening.renderedWidth - closed.renderedWidth),
+  ).toBeLessThanOrEqual(1);
   expect(Math.abs(openingBaseTop - closedBaseTop)).toBeLessThanOrEqual(2);
 });
 
