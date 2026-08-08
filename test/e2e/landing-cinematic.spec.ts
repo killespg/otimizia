@@ -97,346 +97,90 @@ test("mantém o print fora de transformações 3D que rasterizam o texto", async
   expect(rendering.willChange).not.toContain("transform");
 });
 
-test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
+test("substitui o notebook pela moldura Prisma Glass estática", async ({
   page,
 }) => {
-  await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/#painel", { waitUntil: "networkidle" });
 
-  const frame = page.locator('[data-laptop-frame="true"]');
-  const screen = page.locator('[data-laptop-opening-screen="true"]');
-  const cover = page.locator('[data-laptop-cover="true"]');
-  const hinge = page.locator('[data-laptop-hinge="true"]');
-  const base = page.locator('[data-laptop-base="true"]');
-  const hardware = page.locator('[data-laptop-hardware="true"]');
-  const heading = page.locator('[data-landing-panel-heading="true"]');
-  const stage = page.locator('[data-landing-stage="panel"]');
-  const viewportHeight = await page.evaluate(() => window.innerHeight);
+  const frame = page.locator('[data-prisma-panel-frame="true"]');
+  const screenshot = frame.locator('[data-dashboard-screenshot="true"]');
 
-  await expect
-    .poll(async () =>
-      frame.evaluate((element) =>
-        Math.abs(element.getBoundingClientRect().top),
-      ),
-    )
-    .toBeLessThanOrEqual(1);
-  await expect
-    .poll(async () =>
-      base.evaluate((element) => element.getBoundingClientRect().top),
-    )
-    .toBeLessThan(viewportHeight * 0.84);
-  expect(
-    await hardware.evaluate((element) => getComputedStyle(element).transform),
-  ).toBe("none");
+  await expect(frame).toBeVisible();
+  await expect(screenshot).toBeVisible();
+  await expect(page.locator('[data-laptop-frame="true"]')).toHaveCount(0);
+  await expect(page.locator('[data-laptop-hardware="true"]')).toHaveCount(0);
+  await expect(page.locator('[data-laptop-cover="true"]')).toHaveCount(0);
+  await expect(page.locator('[data-laptop-base="true"]')).toHaveCount(0);
+  await expect(page.locator('[data-laptop-hinge="true"]')).toHaveCount(0);
 
-  await page.evaluate(() => {
-    const notebook = document.querySelector<HTMLElement>(
-      '[data-laptop-frame="true"]',
-    );
-    if (!notebook) return;
-
-    window.scrollTo(0, notebook.getBoundingClientRect().top + window.scrollY);
-  });
-
-  await expect
-    .poll(async () =>
-      frame.evaluate((element) =>
-        Math.abs(element.getBoundingClientRect().top),
-      ),
-    )
-    .toBeLessThanOrEqual(1);
-
-  await expect(page.locator('[data-laptop-opening-lid="true"]')).toHaveCount(0);
-  await expect(screen).toBeVisible();
-  await expect(cover).toBeVisible();
-  await expect(hinge).toBeVisible();
-  await expect(heading).toBeVisible();
-
-  const closed = await screen.evaluate((element) => ({
-    layoutHeight: element.clientHeight,
-    layoutWidth: element.clientWidth,
-    screenTop: element.getBoundingClientRect().top,
-    screenBottom: element.getBoundingClientRect().bottom,
-    renderedHeight: element.getBoundingClientRect().height,
-    renderedWidth: element.getBoundingClientRect().width,
-    transform: getComputedStyle(element).transform,
-  }));
-  const closedCover = await cover.evaluate((element) => ({
-    layoutHeight: element.clientHeight,
-    renderedHeight: element.getBoundingClientRect().height,
-    transform: getComputedStyle(element).transform,
-  }));
-  const closedBaseGap = await Promise.all([
-    screen.evaluate((element) => element.getBoundingClientRect().bottom),
-    base.evaluate((element) => element.getBoundingClientRect().top),
-  ]).then(([screenBottom, baseTop]) => Math.abs(screenBottom - baseTop));
-  const closedBaseTop = await base.evaluate(
-    (element) => element.getBoundingClientRect().top,
-  );
-  const closedHeadingBox = await heading.boundingBox();
-
-  expect(closed.transform).toBe("none");
-  expect(
-    Math.abs(closed.renderedHeight - closed.layoutHeight),
-  ).toBeLessThanOrEqual(1);
-  expect(
-    Math.abs(closed.renderedWidth - closed.layoutWidth),
-  ).toBeLessThanOrEqual(1);
-  expect(closedCover.transform).toContain("matrix3d");
-  expect(closedCover.renderedHeight).toBeLessThan(closedCover.layoutHeight * 0.2);
-  expect(closedBaseGap).toBeLessThanOrEqual(4);
-  expect(
-    Number(
-      await cover.evaluate((element) => getComputedStyle(element).opacity),
+  const rendering = await Promise.all(
+    [frame, screenshot].map((locator) =>
+      locator.evaluate((element) => ({
+        transform: getComputedStyle(element).transform,
+        willChange: getComputedStyle(element).willChange,
+      })),
     ),
-  ).toBeGreaterThan(0.85);
-  expect(closedBaseTop).toBeGreaterThan(0);
-  expect(closedBaseTop).toBeLessThan(viewportHeight * 0.84);
-  expect(closedHeadingBox).not.toBeNull();
-  expect(closedHeadingBox!.y).toBeGreaterThan(80);
-  expect(closed.screenTop - (closedHeadingBox!.y + closedHeadingBox!.height)).toBeLessThan(
-    viewportHeight * 0.45,
   );
 
-  await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.22));
-
-  await expect
-    .poll(async () =>
-      cover.evaluate((element) => element.getBoundingClientRect().height),
-    )
-    .toBeGreaterThan(closedCover.renderedHeight * 3);
-
-  const midway = await screen.evaluate((element) => ({
-    screenTop: element.getBoundingClientRect().top,
-    screenBottom: element.getBoundingClientRect().bottom,
-    renderedHeight: element.getBoundingClientRect().height,
-    renderedWidth: element.getBoundingClientRect().width,
-    transform: getComputedStyle(element).transform,
-  }));
-  const midwayBaseGap = await Promise.all([
-    screen.evaluate((element) => element.getBoundingClientRect().bottom),
-    base.evaluate((element) => element.getBoundingClientRect().top),
-  ]).then(([screenBottom, baseTop]) => Math.abs(screenBottom - baseTop));
-  const midwayBaseTop = await base.evaluate(
-    (element) => element.getBoundingClientRect().top,
-  );
-
-  expect(midway.transform).toBe("none");
-  expect(Math.abs(midway.screenTop - closed.screenTop)).toBeLessThanOrEqual(2);
-  expect(
-    Math.abs(midway.screenBottom - closed.screenBottom),
-  ).toBeLessThanOrEqual(2);
-  expect(
-    Math.abs(midway.renderedHeight - closed.renderedHeight),
-  ).toBeLessThanOrEqual(1);
-  expect(
-    Math.abs(midway.renderedWidth - closed.renderedWidth),
-  ).toBeLessThanOrEqual(1);
-  expect(midwayBaseGap).toBeLessThanOrEqual(4);
-  expect(Math.abs(midwayBaseTop - closedBaseTop)).toBeLessThanOrEqual(2);
-  expect(
-    Number(
-      await cover.evaluate((element) => getComputedStyle(element).opacity),
-    ),
-  ).toBeGreaterThan(0.85);
-
-  await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.26));
-
-  await expect
-    .poll(async () =>
-      screen.evaluate((element) => getComputedStyle(element).transform),
-    )
-    .toBe("none");
-  await expect(cover).toHaveCount(0);
-  const open = await screen.evaluate((element) => ({
-    screenTop: element.getBoundingClientRect().top,
-    screenBottom: element.getBoundingClientRect().bottom,
-    renderedHeight: element.getBoundingClientRect().height,
-    renderedWidth: element.getBoundingClientRect().width,
-  }));
-  const openBaseTop = await base.evaluate(
-    (element) => element.getBoundingClientRect().top,
-  );
-  expect(Math.abs(open.screenTop - closed.screenTop)).toBeLessThanOrEqual(2);
-  expect(
-    Math.abs(open.screenBottom - closed.screenBottom),
-  ).toBeLessThanOrEqual(2);
-  expect(
-    Math.abs(open.renderedHeight - closed.renderedHeight),
-  ).toBeLessThanOrEqual(1);
-  expect(
-    Math.abs(open.renderedWidth - closed.renderedWidth),
-  ).toBeLessThanOrEqual(1);
-  expect(Math.abs(openBaseTop - closedBaseTop)).toBeLessThanOrEqual(2);
-
-  await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.08));
-  const heldOpenBaseTop = await base.evaluate(
-    (element) => element.getBoundingClientRect().top,
-  );
-  expect(Math.abs(heldOpenBaseTop - closedBaseTop)).toBeLessThanOrEqual(2);
-  expect(
-    await stage.evaluate((element) => getComputedStyle(element).transform),
-  ).toBe("none");
-  expect(
-    await page.evaluate(() => document.documentElement.scrollWidth),
-  ).toBeLessThanOrEqual(await page.evaluate(() => window.innerWidth));
+  expect(rendering).toEqual([
+    { transform: "none", willChange: "auto" },
+    { transform: "none", willChange: "auto" },
+  ]);
 });
 
-test("mantém o painel e a dobradiça fixos em viewport compacta", async ({
+test("separa título e Prisma Glass nos viewports que reproduzem o problema", async ({
   page,
 }, testInfo) => {
   test.skip(
     testInfo.project.name !== "mobile-chromium",
-    "O cenário reproduz a largura compacta registrada pelo usuário.",
-  );
-  await page.setViewportSize({ width: 552, height: 800 });
-  await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/", { waitUntil: "networkidle" });
-
-  const frame = page.locator('[data-laptop-frame="true"]');
-  const hardware = page.locator('[data-laptop-hardware="true"]');
-  const screen = page.locator('[data-laptop-opening-screen="true"]');
-  const cover = page.locator('[data-laptop-cover="true"]');
-  const base = page.locator('[data-laptop-base="true"]');
-  const frameDocumentTop = await frame.evaluate(
-    (element) => element.getBoundingClientRect().top + window.scrollY,
+    "A geometria compacta precisa rodar uma vez.",
   );
 
-  await page.evaluate(
-    ({ top }) => window.scrollTo(0, top - 160),
-    { top: frameDocumentTop },
-  );
-  await expect
-    .poll(async () =>
-      frame.evaluate((element) => element.getBoundingClientRect().top),
-    )
-    .toBeGreaterThan(158);
-  expect(
-    Number(
-      await hardware.evaluate((element) => getComputedStyle(element).opacity),
-    ),
-  ).toBeLessThan(0.05);
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 660, height: 694 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/", { waitUntil: "networkidle" });
 
-  await page.evaluate(() => window.scrollBy(0, 160));
-  await expect
-    .poll(async () =>
-      frame.evaluate((element) =>
-        Math.abs(element.getBoundingClientRect().top),
-      ),
-    )
-    .toBeLessThanOrEqual(1);
-  await expect
-    .poll(async () =>
-      hardware.evaluate((element) => Number(getComputedStyle(element).opacity)),
-    )
-    .toBeGreaterThan(0.95);
+    const geometry = await page.evaluate(() => {
+      const heading = document.querySelector<HTMLElement>(
+        '[data-landing-panel-heading="true"]',
+      );
+      const frame = document.querySelector<HTMLElement>(
+        '[data-prisma-panel-frame="true"]',
+      );
+      const viewport = document.querySelector<HTMLElement>(
+        '[data-dashboard-screenshot-viewport="true"]',
+      );
+      if (!heading || !frame || !viewport) return null;
 
-  const closed = await screen.evaluate((element) => ({
-    layoutHeight: element.clientHeight,
-    layoutWidth: element.clientWidth,
-    top: element.getBoundingClientRect().top,
-    bottom: element.getBoundingClientRect().bottom,
-    renderedHeight: element.getBoundingClientRect().height,
-    renderedWidth: element.getBoundingClientRect().width,
-  }));
-  const closedCoverHeight = await cover.evaluate(
-    (element) => element.getBoundingClientRect().height,
-  );
-  const closedBaseTop = await base.evaluate(
-    (element) => element.getBoundingClientRect().top,
-  );
+      const headingRect = heading.getBoundingClientRect();
+      const frameRect = frame.getBoundingClientRect();
+      return {
+        gap:
+          frameRect.top + window.scrollY -
+          (headingRect.bottom + window.scrollY),
+        pageWidth: document.documentElement.scrollWidth,
+        viewportWidth: window.innerWidth,
+        panelClientWidth: viewport.clientWidth,
+        panelScrollWidth: viewport.scrollWidth,
+      };
+    });
 
-  expect(
-    Math.abs(closed.renderedHeight - closed.layoutHeight),
-  ).toBeLessThanOrEqual(1);
-  expect(
-    Math.abs(closed.renderedWidth - closed.layoutWidth),
-  ).toBeLessThanOrEqual(1);
-  expect(closedCoverHeight).toBeLessThan(closed.layoutHeight * 0.2);
-  expect(closedBaseTop).toBeLessThan(800);
-
-  await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.22));
-  await expect
-    .poll(async () =>
-      cover.evaluate((element) => element.getBoundingClientRect().height),
-    )
-    .toBeGreaterThan(closedCoverHeight * 3);
-
-  const opening = await screen.evaluate((element) => ({
-    top: element.getBoundingClientRect().top,
-    bottom: element.getBoundingClientRect().bottom,
-    renderedHeight: element.getBoundingClientRect().height,
-    renderedWidth: element.getBoundingClientRect().width,
-  }));
-  const openingBaseTop = await base.evaluate(
-    (element) => element.getBoundingClientRect().top,
-  );
-  expect(Math.abs(opening.top - closed.top)).toBeLessThanOrEqual(2);
-  expect(Math.abs(opening.bottom - closed.bottom)).toBeLessThanOrEqual(2);
-  expect(
-    Math.abs(opening.renderedHeight - closed.renderedHeight),
-  ).toBeLessThanOrEqual(1);
-  expect(
-    Math.abs(opening.renderedWidth - closed.renderedWidth),
-  ).toBeLessThanOrEqual(1);
-  expect(Math.abs(openingBaseTop - closedBaseTop)).toBeLessThanOrEqual(2);
-});
-
-test("mantém o notebook aberto quando o movimento é reduzido", async ({
-  page,
-}) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/", { waitUntil: "networkidle" });
-
-  const screen = page.locator('[data-laptop-opening-screen="true"]');
-
-  await expect(screen).toBeVisible();
-  await expect(page.locator('[data-laptop-cover="true"]')).toHaveCount(0);
-  expect(
-    await screen.evaluate((element) => getComputedStyle(element).transform),
-  ).toBe("none");
-  expect(
-    await screen.evaluate((element) => getComputedStyle(element).willChange),
-  ).toBe("auto");
-});
-
-test("enquadra o print em uma moldura reconhecível de notebook", async ({
-  page,
-}) => {
-  await page.goto("/", { waitUntil: "networkidle" });
-
-  const frame = page.locator('[data-laptop-frame="true"]');
-  const screen = page.locator('[data-laptop-screen="true"]');
-  const camera = page.locator('[data-laptop-camera="true"]');
-  const base = page.locator('[data-laptop-base="true"]');
-
-  await expect(frame).toBeVisible();
-  await expect(camera).toBeVisible();
-  await expect(base).toBeVisible();
-  await expect(
-    screen.locator('[data-dashboard-screenshot="true"]'),
-  ).toBeVisible();
-
-  const [screenBox, cameraBox, baseBox] = await Promise.all([
-    screen.boundingBox(),
-    camera.boundingBox(),
-    base.boundingBox(),
-  ]);
-
-  expect(screenBox).not.toBeNull();
-  expect(cameraBox).not.toBeNull();
-  expect(baseBox).not.toBeNull();
-
-  if (!screenBox || !cameraBox || !baseBox) return;
-
-  expect(baseBox.width).toBeGreaterThan(screenBox.width);
-  expect(baseBox.height).toBeGreaterThanOrEqual(10);
-  expect(baseBox.y).toBeGreaterThanOrEqual(screenBox.y + screenBox.height - 2);
-  expect(
-    Math.abs(
-      cameraBox.x + cameraBox.width / 2 - (screenBox.x + screenBox.width / 2),
-    ),
-  ).toBeLessThan(2);
+    expect(geometry).not.toBeNull();
+    expect(geometry!.gap).toBeGreaterThanOrEqual(20);
+    expect(geometry!.pageWidth).toBeLessThanOrEqual(geometry!.viewportWidth);
+    if (viewport.width < 640) {
+      expect(geometry!.panelScrollWidth).toBeGreaterThan(
+        geometry!.panelClientWidth,
+      );
+    } else {
+      expect(
+        geometry!.panelScrollWidth - geometry!.panelClientWidth,
+      ).toBeLessThanOrEqual(1);
+    }
+  }
 });
 
 test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({
