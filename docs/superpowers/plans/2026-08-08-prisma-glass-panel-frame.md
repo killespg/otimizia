@@ -217,7 +217,7 @@ Remover `landing-panel-heading` do `className` do título e usar:
 className="relative z-[1] mx-auto max-w-[720px] text-center"
 ```
 
-No palco, trocar a margem por `mt-8 sm:mt-10 lg:mt-12`, preservando `id`, `data-landing-stage="panel"`, larguras máximas e `scroll-mt-0`.
+No wrapper externo que contém título e palco, manter o único `id="painel"` e usar `scroll-mt-[calc(6rem+env(safe-area-inset-top))]`. No palco, trocar a margem por `mt-8 sm:mt-10 lg:mt-12`, preservando `data-landing-stage="panel"` e larguras máximas; o palco não recebe `id` nem `scroll-mt`.
 
 - [ ] **Step 5: Substituir o CSS do hardware pela moldura de vidro**
 
