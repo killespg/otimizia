@@ -277,6 +277,60 @@ test("separa título e Prisma Glass nos viewports que reproduzem o problema", as
   }
 });
 
+test("mantém o título do painel visível ao abrir a âncora Prisma Glass", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== "desktop-chromium",
+    "A navegação direta é exercitada uma vez com os três viewports literais.",
+  );
+
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 660, height: 694 },
+    { width: 1440, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/#painel", { waitUntil: "networkidle" });
+
+    const geometry = await page.evaluate(() => {
+      const navigation = document.querySelector<HTMLElement>("header");
+      const heading = document.querySelector<HTMLElement>(
+        '[data-landing-panel-heading="true"]',
+      );
+      const frame = document.querySelector<HTMLElement>(
+        '[data-prisma-panel-frame="true"]',
+      );
+      if (!navigation || !heading || !frame) return null;
+
+      const navigationRect = navigation.getBoundingClientRect();
+      const headingRect = heading.getBoundingClientRect();
+      const frameRect = frame.getBoundingClientRect();
+      return {
+        navigationBottom: navigationRect.bottom,
+        headingTop: headingRect.top,
+        headingBottom: headingRect.bottom,
+        frameTop: frameRect.top,
+        pageWidth: document.documentElement.scrollWidth,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry!.headingTop).toBeGreaterThanOrEqual(
+      geometry!.navigationBottom,
+    );
+    expect(geometry!.headingBottom).toBeLessThanOrEqual(
+      geometry!.viewportHeight,
+    );
+    expect(geometry!.frameTop - geometry!.headingBottom).toBeGreaterThanOrEqual(
+      20,
+    );
+    expect(geometry!.pageWidth).toBeLessThanOrEqual(geometry!.viewportWidth);
+  }
+});
+
 test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({
   page,
 }) => {
