@@ -247,8 +247,27 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
     };
     const results: Record<
       string,
-      Record<string, { backgroundColor: string; backdropFilter: string }>
+      Record<
+        string,
+        {
+          backgroundColor: string;
+          backgroundIsTransparent: boolean;
+          backdropFilter: string;
+        }
+      >
     > = {};
+
+    function backgroundIsTransparent(style: CSSStyleDeclaration) {
+      const probe = document.createElement("span");
+      probe.style.background = style.background;
+      probe.style.backgroundColor = style.backgroundColor;
+      document.body.append(probe);
+      const color = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+
+      const channels = color.match(/[\d.]+/g)?.map(Number) ?? [];
+      return channels.length === 4 && channels[3] === 0;
+    }
 
     function visit(rules: CSSRuleList, inheritedCondition?: string) {
       for (const rule of Array.from(rules)) {
@@ -270,6 +289,7 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
               if (ruleSelectors.includes(selector)) {
                 results[fallbackName][name] = {
                   backgroundColor: rule.style.backgroundColor,
+                  backgroundIsTransparent: backgroundIsTransparent(rule.style),
                   backdropFilter: rule.style.backdropFilter,
                 };
               }
@@ -295,14 +315,17 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
 
   const expectedFallback = {
     panelStage: {
+      backgroundIsTransparent: true,
       backdropFilter: "none",
     },
     frame: {
       backgroundColor: "rgb(16, 26, 50)",
+      backgroundIsTransparent: false,
       backdropFilter: "none",
     },
     hint: {
       backgroundColor: "rgb(7, 17, 38)",
+      backgroundIsTransparent: false,
       backdropFilter: "none",
     },
   };
