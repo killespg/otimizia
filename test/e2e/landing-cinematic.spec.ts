@@ -251,22 +251,29 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
         string,
         {
           backgroundColor: string;
-          backgroundIsTransparent: boolean;
+          backgroundColorHasZeroAlpha: boolean;
+          backgroundImageIsNone: boolean;
           backdropFilter: string;
         }
       >
     > = {};
 
-    function backgroundIsTransparent(style: CSSStyleDeclaration) {
+    function normalizeBackground(style: CSSStyleDeclaration) {
       const probe = document.createElement("span");
       probe.style.background = style.background;
       probe.style.backgroundColor = style.backgroundColor;
       document.body.append(probe);
-      const color = getComputedStyle(probe).backgroundColor;
+      const computedStyle = getComputedStyle(probe);
+      const color = computedStyle.backgroundColor;
+      const backgroundImage = computedStyle.backgroundImage;
       probe.remove();
 
       const channels = color.match(/[\d.]+/g)?.map(Number) ?? [];
-      return channels.length === 4 && channels[3] === 0;
+      return {
+        backgroundColorHasZeroAlpha:
+          channels.length === 4 && channels[3] === 0,
+        backgroundImageIsNone: backgroundImage === "none",
+      };
     }
 
     function visit(rules: CSSRuleList, inheritedCondition?: string) {
@@ -289,7 +296,7 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
               if (ruleSelectors.includes(selector)) {
                 results[fallbackName][name] = {
                   backgroundColor: rule.style.backgroundColor,
-                  backgroundIsTransparent: backgroundIsTransparent(rule.style),
+                  ...normalizeBackground(rule.style),
                   backdropFilter: rule.style.backdropFilter,
                 };
               }
@@ -315,17 +322,20 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
 
   const expectedFallback = {
     panelStage: {
-      backgroundIsTransparent: true,
+      backgroundColorHasZeroAlpha: true,
+      backgroundImageIsNone: true,
       backdropFilter: "none",
     },
     frame: {
       backgroundColor: "rgb(16, 26, 50)",
-      backgroundIsTransparent: false,
+      backgroundColorHasZeroAlpha: false,
+      backgroundImageIsNone: true,
       backdropFilter: "none",
     },
     hint: {
       backgroundColor: "rgb(7, 17, 38)",
-      backgroundIsTransparent: false,
+      backgroundColorHasZeroAlpha: false,
+      backgroundImageIsNone: true,
       backdropFilter: "none",
     },
   };
