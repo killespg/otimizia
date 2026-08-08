@@ -145,6 +145,8 @@ test("substitui o notebook pela moldura Prisma Glass estática", async ({
   });
 
   await viewport.focus();
+  await expect(viewport).toHaveCSS("outline-width", "3px");
+  await expect(viewport).toHaveCSS("outline-offset", "3px");
   const focusedIndicator = await viewport.evaluate((element) => {
     const style = getComputedStyle(element);
     return {
