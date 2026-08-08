@@ -1656,7 +1656,6 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
 
 .landing-cinematic-panel-stage {
   z-index: 1;
-  transform-style: preserve-3d;
   overflow: visible;
   border: 0;
   background: transparent;
@@ -1715,6 +1714,12 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
   background: #030817;
   scrollbar-color: rgba(145, 169, 255, 0.55) transparent;
   scrollbar-width: thin;
+}
+
+.landing-prisma-panel-viewport:focus-visible {
+  outline: 3px solid rgb(var(--landing-logo-blue) / 0.98);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px rgb(var(--landing-logo-purple) / 0.36);
 }
 
 .landing-prisma-panel-image {
@@ -1882,8 +1887,11 @@ header.landing-cinematic-nav {
   .landing-cinematic-stage,
   .landing-cinematic-plate,
   .landing-cinematic-mobile-cta,
-  header.landing-cinematic-nav {
-    background: rgba(14, 23, 46, 0.97);
+  header.landing-cinematic-nav,
+  .landing-prisma-panel-frame {
+    background: #101a32;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }
 
@@ -1891,7 +1899,8 @@ header.landing-cinematic-nav {
   .landing-cinematic-stage,
   .landing-cinematic-plate,
   .landing-cinematic-mobile-cta,
-  header.landing-cinematic-nav {
+  header.landing-cinematic-nav,
+  .landing-prisma-panel-frame {
     background: #101a32;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;

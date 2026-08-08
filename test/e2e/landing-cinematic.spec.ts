@@ -102,10 +102,16 @@ test("substitui o notebook pela moldura Prisma Glass estática", async ({
 }) => {
   await page.goto("/#painel", { waitUntil: "networkidle" });
 
+  const stage = page.locator('[data-landing-stage="panel"]');
   const frame = page.locator('[data-prisma-panel-frame="true"]');
+  const viewport = frame.locator(
+    '[data-dashboard-screenshot-viewport="true"]',
+  );
   const screenshot = frame.locator('[data-dashboard-screenshot="true"]');
 
+  await expect(stage).toBeVisible();
   await expect(frame).toBeVisible();
+  await expect(viewport).toBeVisible();
   await expect(screenshot).toBeVisible();
   await expect(page.locator('[data-laptop-frame="true"]')).toHaveCount(0);
   await expect(page.locator('[data-laptop-hardware="true"]')).toHaveCount(0);
@@ -114,18 +120,106 @@ test("substitui o notebook pela moldura Prisma Glass estática", async ({
   await expect(page.locator('[data-laptop-hinge="true"]')).toHaveCount(0);
 
   const rendering = await Promise.all(
-    [frame, screenshot].map((locator) =>
+    [stage, frame, screenshot].map((locator) =>
       locator.evaluate((element) => ({
         transform: getComputedStyle(element).transform,
+        transformStyle: getComputedStyle(element).transformStyle,
         willChange: getComputedStyle(element).willChange,
       })),
     ),
   );
 
   expect(rendering).toEqual([
-    { transform: "none", willChange: "auto" },
-    { transform: "none", willChange: "auto" },
+    { transform: "none", transformStyle: "flat", willChange: "auto" },
+    { transform: "none", transformStyle: "flat", willChange: "auto" },
+    { transform: "none", transformStyle: "flat", willChange: "auto" },
   ]);
+
+  const unfocusedIndicator = await viewport.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      outlineColor: style.outlineColor,
+      outlineOffset: style.outlineOffset,
+      outlineWidth: style.outlineWidth,
+    };
+  });
+
+  await viewport.focus();
+  const focusedIndicator = await viewport.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      matchesFocusVisible: element.matches(":focus-visible"),
+      outlineColor: style.outlineColor,
+      outlineOffset: style.outlineOffset,
+      outlineWidth: style.outlineWidth,
+    };
+  });
+
+  expect(focusedIndicator.matchesFocusVisible).toBe(true);
+  expect(Number.parseFloat(focusedIndicator.outlineWidth)).toBeGreaterThanOrEqual(
+    2,
+  );
+  expect(Number.parseFloat(focusedIndicator.outlineOffset)).toBeGreaterThan(0);
+  expect(focusedIndicator).not.toMatchObject(unfocusedIndicator);
+});
+
+test("preserva a Prisma Glass nos fallbacks de transparência", async ({
+  page,
+}) => {
+  await page.goto("/#painel", { waitUntil: "networkidle" });
+
+  const fallbacks = await page.evaluate(() => {
+    const selector = ".landing-prisma-panel-frame";
+    const results: Record<string, CSSStyleDeclaration | undefined> = {};
+
+    function visit(rules: CSSRuleList, condition?: string) {
+      for (const rule of Array.from(rules)) {
+        if (rule instanceof CSSStyleRule && rule.selectorText.includes(selector)) {
+          if (condition?.includes("backdrop-filter")) {
+            results.unsupportedBackdrop = rule.style;
+          }
+          if (condition?.includes("prefers-reduced-transparency")) {
+            results.reducedTransparency = rule.style;
+          }
+        }
+
+        if (rule instanceof CSSGroupingRule) {
+          const conditionText = (
+            rule as CSSGroupingRule & { conditionText?: string }
+          ).conditionText;
+          visit(rule.cssRules, conditionText);
+        }
+      }
+    }
+
+    for (const sheet of Array.from(document.styleSheets)) {
+      visit(sheet.cssRules);
+    }
+
+    return Object.fromEntries(
+      Object.entries(results).map(([name, style]) => [
+        name,
+        style && {
+          background: style.background,
+          backgroundColor: style.backgroundColor,
+          backdropFilter: style.backdropFilter,
+        },
+      ]),
+    );
+  });
+
+  expect(fallbacks).toEqual({
+    unsupportedBackdrop: {
+      background: "rgb(16, 26, 50)",
+      backgroundColor: "rgb(16, 26, 50)",
+      backdropFilter: "none",
+    },
+    reducedTransparency: {
+      background: "rgb(16, 26, 50)",
+      backgroundColor: "rgb(16, 26, 50)",
+      backdropFilter: "none",
+    },
+  });
 });
 
 test("separa título e Prisma Glass nos viewports que reproduzem o problema", async ({
