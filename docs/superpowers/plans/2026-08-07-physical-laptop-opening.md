@@ -1,5 +1,7 @@
 # Physical Laptop Opening Implementation Plan
 
+> **Superseded on 2026-08-08:** A direção de notebook foi removida após validação visual do usuário. A implementação vigente está em `2026-08-08-prisma-glass-panel-frame.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Fazer o notebook parecer fechado e abrir pela dobradiça conforme o scroll revela a seção `#painel`, sem deslocar ou rasterizar o print.
