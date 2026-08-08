@@ -104,7 +104,7 @@ Não haverá texto em gradiente, arco-íris, ciano decorativo, bordas coloridas 
 
 ### Materiais
 
-As regras novas ficam escopadas sob `.landing-cinematic-page` e não alteram `.glass`, `.panel`, `.od-chrome` ou tokens globais do produto.
+As regras novas usam os prefixos exclusivos da landing `landing-cinematic-*`, `landing-prisma-panel-*` e `lp-*`. Elas podem ser seletores de topo em `app/globals.css`, mas não alteram `.glass`, `.panel`, `.od-chrome` ou tokens globais do produto.
 
 - `.landing-cinematic-page`: canvas contínuo, isolamento e campos de luz.
 - `.landing-cinematic-light`: luz ambiente ampla, desfocada e sem conteúdo.
@@ -152,7 +152,7 @@ Um stage usa uma única borda iluminada, preenchimento grafite translúcido, sat
 
 - Texto normal atinge pelo menos 4,5:1 e texto grande pelo menos 3:1 sobre o pixel renderizado do fundo real.
 - Placeholder e texto secundário não recebem exceção de contraste.
-- `prefers-reduced-transparency` troca os stages por grafite opaco, sem remover fronteiras ou hierarquia.
+- `prefers-reduced-transparency` troca os stages por grafite opaco; no capítulo do painel, o stage permanece transparente e apenas a Prisma Glass e sua dica ficam opacas, sem remover fronteiras ou hierarquia.
 - `prefers-contrast: more` reforça bordas e reduz interferência das luzes.
 - Foco visível usa o azul da landing sem depender somente de cor; o preview mantém o violeta canônico do produto.
 - A ordem de leitura do DOM acompanha a narrativa visual; placas deslocadas não alteram a sequência semântica.
@@ -164,7 +164,7 @@ Um stage usa uma única borda iluminada, preenchimento grafite translúcido, sat
 - `components/landing/hero.tsx` recebe a nova composição editorial e as placas iniciais.
 - `components/landing/cinematic-scroll-corridor.tsx` coordena somente progresso de rolagem e transforms das placas; copy, dados e navegação continuam nos componentes semânticos da página.
 - `DashboardScreenshot`, `FeatureTabs`, `AiComposer`, `Pricing`, `FaqAccordion` e `About` preservam suas responsabilidades e recebem apenas a nova moldura visual necessária.
-- `app/globals.css` recebe classes exclusivamente prefixadas por `landing-cinematic-` e ajustes dos tokens `lp-*` já exclusivos da landing.
+- `app/globals.css` recebe classes exclusivamente prefixadas por `landing-cinematic-`, `landing-prisma-panel-` e ajustes dos tokens `lp-*`, todos exclusivos da landing.
 - O bloco antigo `.landing-liquid-*` só permanece se ainda houver uso comprovado; seletores mortos são removidos antes da nova camada para não manter duas implementações concorrentes.
 - Componentes apagados no refactor de 2026-08-07 não serão restaurados apenas para recuperar efeitos antigos; novas abstrações precisam corresponder à narrativa aprovada.
 

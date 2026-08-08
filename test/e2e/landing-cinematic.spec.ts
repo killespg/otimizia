@@ -17,8 +17,10 @@ test("apresenta o corredor cinematográfico com o produto antes das profissões"
   await expect(plates.nth(2)).toContainText("Negócios");
 
   const chapterOrder = await page
-    .locator("main section[id]")
-    .evaluateAll((sections) => sections.map((section) => section.id));
+    .locator("main [id]")
+    .evaluateAll((targets) => targets.map((target) => target.id));
+  expect(chapterOrder).toContain("painel");
+  expect(chapterOrder).toContain("recursos");
   expect(chapterOrder.indexOf("painel")).toBeLessThan(
     chapterOrder.indexOf("recursos"),
   );
@@ -83,18 +85,38 @@ test("mantém o print fora de transformações 3D que rasterizam o texto", async
   await page.goto("/#painel", { waitUntil: "networkidle" });
 
   const stage = page.locator('[data-landing-stage="panel"]');
+  const frame = page.locator('[data-prisma-panel-frame="true"]');
+  const screenshot = page.locator('[data-dashboard-screenshot="true"]');
   await expect(stage).toBeVisible();
+  await expect(frame).toBeVisible();
+  await expect(screenshot).toBeVisible();
 
-  const rendering = await stage.evaluate((element) => {
-    const style = getComputedStyle(element);
-    return {
-      transform: style.transform,
-      willChange: style.willChange,
-    };
-  });
+  const maximumScroll = await page.evaluate(
+    () => document.documentElement.scrollHeight - window.innerHeight,
+  );
 
-  expect(rendering.transform).toBe("none");
-  expect(rendering.willChange).not.toContain("transform");
+  for (const scrollY of [0, maximumScroll / 2, maximumScroll]) {
+    await page.evaluate((top) => window.scrollTo({ top }), scrollY);
+
+    const rendering = await Promise.all(
+      [stage, frame, screenshot].map((locator) =>
+        locator.evaluate((element) => {
+          const style = getComputedStyle(element);
+          return {
+            transform: style.transform,
+            transformStyle: style.transformStyle,
+            willChange: style.willChange,
+          };
+        }),
+      ),
+    );
+
+    expect(rendering).toEqual([
+      { transform: "none", transformStyle: "flat", willChange: "auto" },
+      { transform: "none", transformStyle: "flat", willChange: "auto" },
+      { transform: "none", transformStyle: "flat", willChange: "auto" },
+    ]);
+  }
 });
 
 test("substitui o notebook pela moldura Prisma Glass estática", async ({
@@ -168,20 +190,90 @@ test("substitui o notebook pela moldura Prisma Glass estática", async ({
 test("preserva a Prisma Glass nos fallbacks de transparência", async ({
   page,
 }) => {
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Emulation.setEmulatedMedia", {
+    media: "screen",
+    features: [{ name: "prefers-reduced-transparency", value: "reduce" }],
+  });
   await page.goto("/#painel", { waitUntil: "networkidle" });
 
-  const fallbacks = await page.evaluate(() => {
-    const selector = ".landing-prisma-panel-frame";
-    const results: Record<string, CSSStyleDeclaration | undefined> = {};
+  const fallbackRendering = await page.evaluate(() => {
+    const stage = document.querySelector<HTMLElement>(
+      ".landing-cinematic-panel-stage",
+    );
+    const frame = document.querySelector<HTMLElement>(
+      ".landing-prisma-panel-frame",
+    );
+    const hint = document.querySelector<HTMLElement>(
+      ".landing-prisma-panel-drag-hint",
+    );
+    if (!stage || !frame || !hint) return null;
 
-    function visit(rules: CSSRuleList, condition?: string) {
+    function renderingOf(element: HTMLElement) {
+      const style = getComputedStyle(element);
+      return {
+        backgroundColor: style.backgroundColor,
+        backdropFilter: style.backdropFilter,
+      };
+    }
+
+    return {
+      stage: renderingOf(stage),
+      frame: renderingOf(frame),
+      hint: renderingOf(hint),
+    };
+  });
+
+  expect(fallbackRendering).toEqual({
+    stage: {
+      backgroundColor: "rgba(0, 0, 0, 0)",
+      backdropFilter: "none",
+    },
+    frame: {
+      backgroundColor: "rgb(16, 26, 50)",
+      backdropFilter: "none",
+    },
+    hint: {
+      backgroundColor: "rgb(7, 17, 38)",
+      backdropFilter: "none",
+    },
+  });
+
+  const fallbackRules = await page.evaluate(() => {
+    const selectors = {
+      panelStage: ".landing-cinematic-panel-stage",
+      frame: ".landing-prisma-panel-frame",
+      hint: ".landing-prisma-panel-drag-hint",
+    };
+    const results: Record<
+      string,
+      Record<string, { backgroundColor: string; backdropFilter: string }>
+    > = {};
+
+    function visit(rules: CSSRuleList, inheritedCondition?: string) {
       for (const rule of Array.from(rules)) {
-        if (rule instanceof CSSStyleRule && rule.selectorText.includes(selector)) {
-          if (condition?.includes("backdrop-filter")) {
-            results.unsupportedBackdrop = rule.style;
-          }
-          if (condition?.includes("prefers-reduced-transparency")) {
-            results.reducedTransparency = rule.style;
+        if (rule instanceof CSSStyleRule && inheritedCondition) {
+          const ruleSelectors = rule.selectorText
+            .split(",")
+            .map((selector) => selector.trim());
+          const fallbackName = inheritedCondition.includes(
+            "prefers-reduced-transparency",
+          )
+            ? "reducedTransparency"
+            : inheritedCondition.includes("backdrop-filter")
+              ? "unsupportedBackdrop"
+              : undefined;
+
+          if (fallbackName) {
+            results[fallbackName] ??= {};
+            for (const [name, selector] of Object.entries(selectors)) {
+              if (ruleSelectors.includes(selector)) {
+                results[fallbackName][name] = {
+                  backgroundColor: rule.style.backgroundColor,
+                  backdropFilter: rule.style.backdropFilter,
+                };
+              }
+            }
           }
         }
 
@@ -189,7 +281,7 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
           const conditionText = (
             rule as CSSGroupingRule & { conditionText?: string }
           ).conditionText;
-          visit(rule.cssRules, conditionText);
+          visit(rule.cssRules, conditionText ?? inheritedCondition);
         }
       }
     }
@@ -198,28 +290,28 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
       visit(sheet.cssRules);
     }
 
-    return Object.fromEntries(
-      Object.entries(results).map(([name, style]) => [
-        name,
-        style && {
-          background: style.background,
-          backgroundColor: style.backgroundColor,
-          backdropFilter: style.backdropFilter,
-        },
-      ]),
-    );
+    return results;
   });
 
-  expect(fallbacks).toEqual({
-    unsupportedBackdrop: {
-      background: "rgb(16, 26, 50)",
+  const expectedFallback = {
+    panelStage: {
+      backdropFilter: "none",
+    },
+    frame: {
       backgroundColor: "rgb(16, 26, 50)",
       backdropFilter: "none",
     },
-    reducedTransparency: {
-      background: "rgb(16, 26, 50)",
-      backgroundColor: "rgb(16, 26, 50)",
+    hint: {
+      backgroundColor: "rgb(7, 17, 38)",
       backdropFilter: "none",
+    },
+  };
+  expect(fallbackRules).toMatchObject({
+    unsupportedBackdrop: {
+      ...expectedFallback,
+    },
+    reducedTransparency: {
+      ...expectedFallback,
     },
   });
 });
@@ -270,6 +362,39 @@ test("separa título e Prisma Glass nos viewports que reproduzem o problema", as
     if (viewport.width < 640) {
       expect(geometry!.panelScrollWidth).toBeGreaterThan(
         geometry!.panelClientWidth,
+      );
+
+      const screenshotViewport = page.locator(
+        '[data-dashboard-screenshot-viewport="true"]',
+      );
+      await screenshotViewport.evaluate((element) => {
+        element.scrollLeft = 0;
+        window.scrollTo({ left: 0 });
+      });
+      const beforeKeyboardScroll = await screenshotViewport.evaluate(
+        (element) => ({
+          pageScrollX: window.scrollX,
+          panelScrollLeft: element.scrollLeft,
+        }),
+      );
+
+      await screenshotViewport.focus();
+      await page.keyboard.press("ArrowRight");
+      await page.evaluate(
+        () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+      );
+
+      const afterKeyboardScroll = await screenshotViewport.evaluate(
+        (element) => ({
+          pageScrollX: window.scrollX,
+          panelScrollLeft: element.scrollLeft,
+        }),
+      );
+      expect(afterKeyboardScroll.panelScrollLeft).toBeGreaterThan(
+        beforeKeyboardScroll.panelScrollLeft,
+      );
+      expect(afterKeyboardScroll.pageScrollX).toBe(
+        beforeKeyboardScroll.pageScrollX,
       );
     } else {
       expect(

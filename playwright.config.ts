@@ -64,12 +64,10 @@ export default defineConfig({
     storageState,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
-    // ContainerScroll (components/landing/container-scroll-animation.tsx)
-    // nasce em scale(0.92) e só chega a 1 conforme o scroll — sem isso, o
-    // teste de alvo de toque media a prévia do painel a meio da animação e
-    // reprovava botões que, parados, batem os 44px exigidos pelo DESIGN.md.
-    // O componente já pula esse transform com prefers-reduced-motion; isso
-    // também passa a exercitar esse caminho, que nada mais testava.
+    // A suíte usa o estado final acessível por padrão para que animações
+    // decorativas da landing não alterem medições de geometria e alvo de toque.
+    // Os contratos Prisma Glass que protegem o comportamento durante scroll
+    // comum sobrescrevem isso explicitamente com `no-preference`.
     contextOptions: { reducedMotion: "reduce" },
   },
   webServer: process.env.E2E_BASE_URL

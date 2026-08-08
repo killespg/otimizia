@@ -1893,6 +1893,18 @@ header.landing-cinematic-nav {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
+
+  .landing-cinematic-panel-stage {
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .landing-prisma-panel-drag-hint {
+    background: #071126;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 @media (prefers-reduced-transparency: reduce) {
@@ -1902,6 +1914,18 @@ header.landing-cinematic-nav {
   header.landing-cinematic-nav,
   .landing-prisma-panel-frame {
     background: #101a32;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .landing-cinematic-panel-stage {
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .landing-prisma-panel-drag-hint {
+    background: #071126;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
