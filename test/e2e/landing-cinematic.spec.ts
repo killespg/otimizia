@@ -245,6 +245,58 @@ test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
   ).toBeLessThanOrEqual(await page.evaluate(() => window.innerWidth));
 });
 
+test("mantém a dobradiça fixa quando a abertura começa em viewport compacta", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== "mobile-chromium",
+    "O cenário reproduz a largura compacta registrada pelo usuário.",
+  );
+  await page.setViewportSize({ width: 552, height: 800 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  const frame = page.locator('[data-laptop-frame="true"]');
+  const screen = page.locator('[data-laptop-opening-screen="true"]');
+  const base = page.locator('[data-laptop-base="true"]');
+  const frameDocumentTop = await frame.evaluate(
+    (element) => element.getBoundingClientRect().top + window.scrollY,
+  );
+
+  await page.evaluate(
+    ({ top }) => window.scrollTo(0, top - 160),
+    { top: frameDocumentTop },
+  );
+  await expect
+    .poll(async () =>
+      frame.evaluate((element) => element.getBoundingClientRect().top),
+    )
+    .toBeGreaterThan(158);
+
+  const closed = await screen.evaluate((element) => ({
+    layoutHeight: element.clientHeight,
+    renderedHeight: element.getBoundingClientRect().height,
+  }));
+  const closedBaseTop = await base.evaluate(
+    (element) => element.getBoundingClientRect().top,
+  );
+
+  expect(closed.renderedHeight).toBeLessThan(closed.layoutHeight * 0.2);
+  expect(closedBaseTop).toBeLessThan(800);
+
+  await page.evaluate(() => window.scrollBy(0, 160 + window.innerHeight * 0.22));
+  await expect
+    .poll(async () =>
+      screen.evaluate((element) => element.getBoundingClientRect().height),
+    )
+    .toBeGreaterThan(closed.renderedHeight * 3);
+
+  const openingBaseTop = await base.evaluate(
+    (element) => element.getBoundingClientRect().top,
+  );
+  expect(Math.abs(openingBaseTop - closedBaseTop)).toBeLessThanOrEqual(2);
+});
+
 test("mantém o notebook aberto quando o movimento é reduzido", async ({
   page,
 }) => {

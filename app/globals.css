@@ -1895,6 +1895,16 @@ header.landing-cinematic-nav {
   .landing-cinematic-plates {
     max-width: 560px;
   }
+
+  .landing-laptop-sticky-scene {
+    top: clamp(112px, 20vh, 160px);
+    top: clamp(112px, 20svh, 160px);
+  }
+
+  .landing-laptop-scroll-tail {
+    height: calc(64vh + clamp(112px, 20vh, 160px));
+    height: calc(64svh + clamp(112px, 20svh, 160px));
+  }
 }
 
 @media (max-width: 639px) {
@@ -1941,6 +1951,18 @@ header.landing-cinematic-nav {
   header.landing-cinematic-nav {
     width: calc(100% - 16px);
     margin-top: 8px;
+  }
+}
+
+@media (max-width: 479px) {
+  .landing-laptop-sticky-scene {
+    top: clamp(96px, 16vh, 120px);
+    top: clamp(96px, 16svh, 120px);
+  }
+
+  .landing-laptop-scroll-tail {
+    height: calc(64vh + clamp(96px, 16vh, 120px));
+    height: calc(64svh + clamp(96px, 16svh, 120px));
   }
 }
 
