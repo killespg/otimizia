@@ -227,6 +227,16 @@ test("abre o notebook fisicamente pela dobradiça conforme o scroll", async ({
     )
     .toBe("none");
   await expect(cover).toHaveCount(0);
+  const openBaseTop = await base.evaluate(
+    (element) => element.getBoundingClientRect().top,
+  );
+  expect(Math.abs(openBaseTop - closedBaseTop)).toBeLessThanOrEqual(2);
+
+  await page.evaluate(() => window.scrollBy(0, window.innerHeight * 0.08));
+  const heldOpenBaseTop = await base.evaluate(
+    (element) => element.getBoundingClientRect().top,
+  );
+  expect(Math.abs(heldOpenBaseTop - closedBaseTop)).toBeLessThanOrEqual(2);
   expect(
     await stage.evaluate((element) => getComputedStyle(element).transform),
   ).toBe("none");

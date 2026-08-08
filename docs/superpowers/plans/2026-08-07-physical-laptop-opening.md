@@ -4,7 +4,7 @@
 
 **Goal:** Fazer o notebook começar fisicamente fechado e abrir pela dobradiça conforme o scroll revela a seção `#painel`.
 
-**Architecture:** `LaptopOpeningScreen` continua sendo o único controlador de movimento. A figura cria uma cena sticky com a altura natural do hardware e uma cauda de `45svh` que mede o curso do scroll; dentro dela, um trilho estático fornece perspectiva longa para a tampa animada, o print e a face externa grafite. O título da seção também fica sticky no espaço superior, e a tampa volta a um `div` sem transformação quando chega ao estado aberto. A âncora `#painel` pertence ao palco, para entrar na seção com a cena sticky já travada; o contêiner do hardware nunca recebe transformação.
+**Architecture:** `LaptopOpeningScreen` continua sendo o único controlador de movimento. A figura cria uma cena sticky com a altura natural do hardware, um marcador de `45svh` que mede a abertura e uma cauda de `64svh` que mantém o estado aberto ancorado antes da saída; dentro dela, um trilho estático fornece perspectiva longa para a tampa animada, o print e a face externa grafite. O título da seção também fica sticky no espaço superior, e a tampa volta a um `div` sem transformação quando chega ao estado aberto. A âncora `#painel` pertence ao palco, para entrar na seção com a cena sticky já travada; o contêiner do hardware nunca recebe transformação.
 
 **Tech Stack:** React 19, Next.js, Framer Motion, CSS, Playwright.
 
@@ -12,6 +12,7 @@
 
 - A base do notebook deve permanecer parada durante todo o movimento.
 - O contêiner do hardware não pode receber `transform`; somente a tampa gira e muda discretamente de largura.
+- O estado aberto precisa permanecer ancorado por pelo menos `8svh` antes de o notebook sair da seção.
 - O estado fechado deve estar visível dentro da viewport quando o progresso da animação é zero.
 - O título da seção deve permanecer visível acima da tampa fechada, sem um viewport vazio entre navegação e notebook.
 - A tampa começa quase horizontal e termina vertical, acompanhando o progresso do scroll.
