@@ -215,9 +215,7 @@ Trocar os blocos atuais pelos materiais passivos:
 }
 
 .landing-prisma-panel-frame::before {
-  inset: 0;
-  height: auto;
-  background: var(--landing-glass-reflection);
+  display: none;
   filter: none;
 }
 
@@ -240,7 +238,7 @@ header.landing-cinematic-nav,
 .landing-cinematic-segmented { background: rgba(255, 255, 255, 0.04); }
 ```
 
-O `::before` do Prisma fica atrás do conteúdo do frame e não pode interceptar foco ou scroll; manter `pointer-events: none` e o `z-index` existente.
+O `::before` do Prisma fica removido. A reflexão vem somente da borda, do preenchimento baixo e do blur aplicados ao frame; nenhuma camada pode cobrir o print.
 
 - [ ] **Step 5: Rodar o teste focado e confirmar GREEN**
 
