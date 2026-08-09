@@ -522,9 +522,30 @@ test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({
   await page.goto("/", { waitUntil: "networkidle" });
 
   const material = await page.evaluate(() => {
+    function colorsOf(value: string) {
+      return Array.from(value.matchAll(/rgba?\(([^)]+)\)/g), (match) => {
+        const channels = match[1].match(/[\d.]+/g)?.map(Number) ?? [];
+        return {
+          red: channels[0] ?? 0,
+          green: channels[1] ?? 0,
+          blue: channels[2] ?? 0,
+          alpha: channels[3] ?? 1,
+        };
+      });
+    }
+
     function alphaOf(color: string) {
       const channels = color.match(/[\d.]+/g)?.map(Number) ?? [];
       return channels.length === 4 ? channels[3] : 1;
+    }
+
+    function hasColoredEmission(value: string) {
+      return colorsOf(value).some((color) => {
+        if (color.alpha === 0) return false;
+        const blue = color.blue > color.red + 40 && color.blue > color.green + 20;
+        const purple = color.blue > color.green + 40 && color.red > color.green + 10;
+        return blue || purple;
+      });
     }
 
     const root = document.querySelector<HTMLElement>(
@@ -533,30 +554,60 @@ test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({
     const primaryLight = document.querySelector<HTMLElement>(
       ".landing-cinematic-light--blue",
     );
-    const plate = document.querySelector<HTMLElement>("[data-cinematic-plate]");
-    const stages = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-landing-stage]"),
-    );
-
-    if (!root || !primaryLight || !plate || stages.length === 0) {
+    if (!root || !primaryLight) {
       throw new Error("Materiais cinematográficos não renderizados");
     }
+
+    const selectors = [
+      "[data-cinematic-plate]",
+      '[data-landing-stage="tim"]',
+      '[data-landing-stage="professions"]',
+      '[data-landing-stage="pricing"]',
+      '[data-landing-stage="faq"]',
+      '[data-landing-stage="about"]',
+      '[data-landing-stage="conversion"]',
+      ".landing-prisma-panel-frame",
+      "header.landing-cinematic-nav",
+      ".landing-cinematic-mobile-cta",
+    ];
+
+    const surfaces = selectors.map((selector) => {
+      const element = document.querySelector<HTMLElement>(selector);
+      if (!element) throw new Error(`Superfície ausente: ${selector}`);
+      const style = getComputedStyle(element);
+      const before = getComputedStyle(element, "::before");
+      const after = getComputedStyle(element, "::after");
+      const paint = [
+        style.backgroundImage,
+        style.boxShadow,
+        before.backgroundImage,
+        before.boxShadow,
+        after.backgroundImage,
+        after.boxShadow,
+      ].join(" ");
+      return {
+        selector,
+        alpha: alphaOf(style.backgroundColor),
+        backdropFilter: style.backdropFilter,
+        hasColoredEmission: hasColoredEmission(paint),
+      };
+    });
 
     return {
       ambientLayer: getComputedStyle(root, "::before").backgroundImage,
       lightCoverage:
         primaryLight.getBoundingClientRect().width / window.innerWidth,
-      plateAlpha: alphaOf(getComputedStyle(plate).backgroundColor),
-      stageAlphas: stages.map((stage) =>
-        alphaOf(getComputedStyle(stage).backgroundColor),
-      ),
+      surfaces,
     };
   });
 
   expect(material.ambientLayer).not.toBe("none");
   expect(material.lightCoverage).toBeGreaterThan(1.1);
-  expect(material.plateAlpha).toBeLessThanOrEqual(0.5);
-  expect(Math.max(...material.stageAlphas)).toBeLessThanOrEqual(0.6);
+  expect(Math.max(...material.surfaces.map((surface) => surface.alpha))).toBeLessThanOrEqual(0.3);
+  expect(material.surfaces.filter((surface) => surface.hasColoredEmission)).toEqual([]);
+  expect(
+    material.surfaces.filter((surface) => !surface.backdropFilter.includes("blur")),
+  ).toEqual([]);
 });
 
 test("usa o azul da logo como luz dominante e o roxo como apoio", async ({
