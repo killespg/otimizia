@@ -578,15 +578,21 @@ test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({
       const before = getComputedStyle(element, "::before");
       const after = getComputedStyle(element, "::after");
       const paint = [
+        style.backgroundColor,
         style.backgroundImage,
         style.boxShadow,
+        before.backgroundColor,
         before.backgroundImage,
         before.boxShadow,
+        after.backgroundColor,
         after.backgroundImage,
         after.boxShadow,
       ].join(" ");
       return {
         selector,
+        red: colorsOf(style.backgroundColor)[0]?.red ?? 0,
+        green: colorsOf(style.backgroundColor)[0]?.green ?? 0,
+        blue: colorsOf(style.backgroundColor)[0]?.blue ?? 0,
         alpha: alphaOf(style.backgroundColor),
         backdropFilter: style.backdropFilter,
         hasColoredEmission: hasColoredEmission(paint),
@@ -604,6 +610,11 @@ test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({
   expect(material.ambientLayer).not.toBe("none");
   expect(material.lightCoverage).toBeGreaterThan(1.1);
   expect(Math.max(...material.surfaces.map((surface) => surface.alpha))).toBeLessThanOrEqual(0.3);
+  expect(
+    material.surfaces.filter(
+      (surface) => surface.alpha > 0 && (surface.red !== 0 || surface.green !== 0 || surface.blue !== 0),
+    ),
+  ).toEqual([]);
   expect(material.surfaces.filter((surface) => surface.hasColoredEmission)).toEqual([]);
   expect(
     material.surfaces.filter((surface) => !surface.backdropFilter.includes("blur")),
