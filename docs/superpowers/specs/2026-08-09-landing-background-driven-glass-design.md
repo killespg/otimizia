@@ -37,7 +37,7 @@ contínua e atrás de todo o conteúdo, com azul dominante e roxo de apoio.
 Placas, painéis, navegação, moldura do print e barras flutuantes compartilham o
 mesmo material base:
 
-- preenchimento marinho com opacidade baixa;
+- preenchimento preto puro com opacidade baixa;
 - `backdrop-filter` para revelar e desfocar o canvas;
 - borda branca discreta, um pouco mais clara no topo;
 - reflexão neutra branca e grão quase imperceptível;
@@ -47,8 +47,8 @@ mesmo material base:
 
 Valores de referência para a implementação:
 
-- preenchimento base: `rgba(6, 12, 27, 0.22)`;
-- preenchimento quieto: `rgba(6, 12, 27, 0.28)`;
+- preenchimento base: `rgba(0, 0, 0, 0.18)`;
+- preenchimento quieto: `rgba(0, 0, 0, 0.24)`;
 - borda: branco a 12%, com topo a 19%;
 - reflexão: branco a no máximo 8%, desaparecendo antes de 40% do volume;
 - blur: 18px e saturação máxima de 125%;
@@ -91,14 +91,14 @@ O `::after` desses painéis mantém somente grão e reflexão branca. O radial a
 local é removido. O CTA final deixa de ter seu próprio holofote.
 
 Faixas internas como `.od-band`, linhas alternadas e balões de conversa usam
-somente branco ou marinho em baixa opacidade. Nenhuma dessas peças cria uma
+somente branco ou preto em baixa opacidade. Nenhuma dessas peças cria uma
 segunda fonte de luz.
 
 ### Prisma Glass
 
 `.landing-prisma-panel-frame` deve parecer uma lâmina sobre o fundo:
 
-- preenchimento marinho baixo;
+- preenchimento preto baixo;
 - borda neutra e reflexão branca;
 - blur moderado;
 - sem gradiente azul próprio;
@@ -140,7 +140,7 @@ continuam permitidos quando comunicam informação real.
 Quando `backdrop-filter` não existir ou `prefers-reduced-transparency` estiver
 ativo:
 
-- as superfícies usam o marinho opaco já aprovado;
+- as superfícies usam preto opaco;
 - a hierarquia de bordas permanece;
 - reflexos, blur e halos são removidos;
 - stage externo do Prisma continua transparente para não criar painel duplo;

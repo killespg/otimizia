@@ -12,7 +12,7 @@
 
 - Escopo estrito em `components/landing`, CSS da landing em `app/globals.css`, seus testes E2E e a documentação canônica; não alterar `components/design-system`.
 - Azul e roxo decorativos só podem nascer em `.landing-cinematic-page::before`, `.landing-cinematic-light--blue` e `.landing-cinematic-light--purple`.
-- Preenchimento passivo tem alfa máximo de 30%; reflexão branca, 8%; borda, 20%.
+- Preenchimento passivo nasce de preto puro (`rgba(0, 0, 0, alfa)`) e tem alfa máximo de 30%; reflexão branca, 8%; borda, 20%.
 - Não usar sombra externa azul/roxa, gradiente radial colorido local nem recipiente passivo com azul sólido.
 - Azul sólido permanece em botão primário, aba selecionada e indicadores reais de foco/seleção.
 - O print `painel-imobiliario-mariana` e sua fidelidade não mudam.
@@ -102,6 +102,9 @@ const surfaces = selectors.map((selector) => {
   ].join(" ");
   return {
     selector,
+    red: colorsOf(style.backgroundColor)[0]?.red ?? 0,
+    green: colorsOf(style.backgroundColor)[0]?.green ?? 0,
+    blue: colorsOf(style.backgroundColor)[0]?.blue ?? 0,
     alpha: alphaOf(style.backgroundColor),
     backdropFilter: style.backdropFilter,
     hasColoredEmission: hasColoredEmission(paint),
@@ -121,6 +124,11 @@ Fora de `page.evaluate`, exigir:
 expect(material.ambientLayer).not.toBe("none");
 expect(material.lightCoverage).toBeGreaterThan(1.1);
 expect(Math.max(...material.surfaces.map((surface) => surface.alpha))).toBeLessThanOrEqual(0.3);
+expect(
+  material.surfaces.filter(
+    (surface) => surface.alpha > 0 && (surface.red !== 0 || surface.green !== 0 || surface.blue !== 0),
+  ),
+).toEqual([]);
 expect(material.surfaces.filter((surface) => surface.hasColoredEmission)).toEqual([]);
 expect(
   material.surfaces.filter((surface) => !surface.backdropFilter.includes("blur")),
@@ -142,8 +150,8 @@ Expected: FAIL porque stages atuais chegam a alfa `0.52`, a placa do Tim tem gra
 Em `.landing-cinematic-page`, acrescentar:
 
 ```css
---landing-glass-fill: rgba(6, 12, 27, 0.22);
---landing-glass-fill-quiet: rgba(6, 12, 27, 0.28);
+--landing-glass-fill: rgba(0, 0, 0, 0.18);
+--landing-glass-fill-quiet: rgba(0, 0, 0, 0.24);
 --landing-glass-border: rgba(255, 255, 255, 0.12);
 --landing-glass-border-top: rgba(255, 255, 255, 0.19);
 --landing-glass-reflection: linear-gradient(148deg, rgba(255, 255, 255, 0.08), transparent 38%);
@@ -208,7 +216,7 @@ Trocar os blocos atuais pelos materiais passivos:
 .landing-prisma-panel-frame {
   border-color: rgba(255, 255, 255, 0.15);
   border-top-color: rgba(255, 255, 255, 0.2);
-  background: rgba(6, 12, 27, 0.2);
+  background: rgba(0, 0, 0, 0.16);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   -webkit-backdrop-filter: blur(14px) saturate(125%);
   backdrop-filter: blur(14px) saturate(125%);
@@ -220,7 +228,7 @@ Trocar os blocos atuais pelos materiais passivos:
 }
 
 .landing-prisma-panel-drag-hint {
-  background: rgba(6, 12, 27, 0.28);
+  background: rgba(0, 0, 0, 0.24);
   -webkit-backdrop-filter: blur(12px) saturate(120%);
   backdrop-filter: blur(12px) saturate(120%);
 }
@@ -454,7 +462,7 @@ function luminance({ red, green, blue }: ReturnType<typeof parseColor>) {
 }
 
 function composite(foreground: ReturnType<typeof parseColor>) {
-  const background = { red: 16, green: 26, blue: 50, alpha: 1 };
+  const background = { red: 0, green: 0, blue: 0, alpha: 1 };
   return {
     red: foreground.red * foreground.alpha + background.red * (1 - foreground.alpha),
     green: foreground.green * foreground.alpha + background.green * (1 - foreground.alpha),
@@ -469,7 +477,7 @@ const secondaryText = document.querySelector<HTMLElement>(
 if (!secondaryText) throw new Error("Texto secundário do Tim ausente");
 const foreground = composite(parseColor(getComputedStyle(secondaryText).color));
 const foregroundLuminance = luminance(foreground);
-const backgroundLuminance = luminance({ red: 16, green: 26, blue: 50, alpha: 1 });
+const backgroundLuminance = luminance({ red: 0, green: 0, blue: 0, alpha: 1 });
 const bodyContrast =
   (Math.max(foregroundLuminance, backgroundLuminance) + 0.05) /
   (Math.min(foregroundLuminance, backgroundLuminance) + 0.05);
@@ -483,7 +491,7 @@ Exigir no modo `prefers-reduced-transparency: reduce`:
 const opaquePassive = ["stage", "plate", "navigation", "mobileCta", "frame"];
 for (const name of opaquePassive) {
   expect(fallbackRendering![name]).toEqual({
-    backgroundColor: "rgb(16, 26, 50)",
+    backgroundColor: "rgb(0, 0, 0)",
     backgroundImage: "none",
     backdropFilter: "none",
     boxShadow: "none",
@@ -496,7 +504,7 @@ expect(fallbackRendering!.panelStage).toEqual({
   boxShadow: "none",
 });
 expect(fallbackRendering!.hint).toEqual({
-  backgroundColor: "rgb(7, 17, 38)",
+  backgroundColor: "rgb(0, 0, 0)",
   backgroundImage: "none",
   backdropFilter: "none",
   boxShadow: "none",
@@ -526,7 +534,7 @@ Em ambos os blocos — `@supports not (...)` e `@media (prefers-reduced-transpar
 .landing-cinematic-mobile-cta,
 header.landing-cinematic-nav,
 .landing-prisma-panel-frame {
-  background: #101a32;
+  background: #000;
   background-image: none;
   box-shadow: none;
   -webkit-backdrop-filter: none;
@@ -542,7 +550,7 @@ header.landing-cinematic-nav,
 }
 
 .landing-prisma-panel-drag-hint {
-  background: #071126;
+  background: #000;
   background-image: none;
   box-shadow: none;
   -webkit-backdrop-filter: none;
@@ -567,7 +575,7 @@ Acrescentar ao fim de `## Material: liquid glass`:
 
 Na landing, azul e roxo decorativos nascem somente no canvas
 (`.landing-cinematic-page::before` e `.landing-cinematic-light-*`). Placas,
-stages, Prisma, navegação e CTA móvel usam preenchimento marinho de até 30%,
+stages, Prisma, navegação e CTA móvel usam preenchimento preto de até 30%,
 reflexo branco de até 8% e nenhuma sombra colorida externa. Azul sólido fica
 restrito a ação, seleção e foco; o marketing não altera os componentes centrais
 do produto.
