@@ -359,6 +359,9 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
       panelStage: ".landing-cinematic-panel-stage",
       frame: ".landing-prisma-panel-frame",
       hint: ".landing-prisma-panel-drag-hint",
+      stageReflection: ".landing-cinematic-stage::after",
+      plateReflection: ".landing-cinematic-plate::before",
+      frameReflection: ".landing-prisma-panel-frame::before",
     };
     const results: Record<
       string,
@@ -370,6 +373,7 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
           backgroundImageIsNone: boolean;
           backdropFilter: string;
           boxShadow: string;
+          display: string;
         }
       >
     > = {};
@@ -415,6 +419,7 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
                   ...normalizeBackground(rule.style),
                   backdropFilter: rule.style.backdropFilter,
                   boxShadow: rule.style.boxShadow,
+                  display: rule.style.display,
                 };
               }
             }
@@ -486,6 +491,15 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
       backdropFilter: "none",
       boxShadow: "none",
     },
+    stageReflection: {
+      display: "none",
+    },
+    plateReflection: {
+      display: "none",
+    },
+    frameReflection: {
+      display: "none",
+    },
   };
   expect(fallbackRules).toMatchObject({
     unsupportedBackdrop: {
@@ -495,6 +509,47 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
       ...expectedFallback,
     },
   });
+});
+
+test("reforça o Prisma e remove a luz decorativa com contraste alto", async ({
+  page,
+}) => {
+  await page.goto("/#painel", { waitUntil: "networkidle" });
+
+  async function contrastRendering() {
+    return page.evaluate(() => {
+      const frame = document.querySelector<HTMLElement>(
+        ".landing-prisma-panel-frame",
+      );
+      const light = document.querySelector<HTMLElement>(
+        ".landing-cinematic-light",
+      );
+      if (!frame || !light) {
+        throw new Error("Superfície de alto contraste ausente");
+      }
+
+      return {
+        frameBorderColor: getComputedStyle(frame).borderTopColor,
+        lightDisplay: getComputedStyle(light).display,
+      };
+    });
+  }
+
+  const normalRendering = await contrastRendering();
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Emulation.setEmulatedMedia", {
+    media: "screen",
+    features: [{ name: "prefers-contrast", value: "more" }],
+  });
+  const contrastRenderingResult = await contrastRendering();
+
+  expect(contrastRenderingResult.frameBorderColor).toBe(
+    "rgba(255, 255, 255, 0.68)",
+  );
+  expect(contrastRenderingResult.frameBorderColor).not.toBe(
+    normalRendering.frameBorderColor,
+  );
+  expect(contrastRenderingResult.lightDisplay).toBe("none");
 });
 
 test("separa título e Prisma Glass nos viewports que reproduzem o problema", async ({
