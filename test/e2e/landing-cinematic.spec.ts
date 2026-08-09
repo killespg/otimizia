@@ -621,6 +621,36 @@ test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({
   ).toEqual([]);
 });
 
+test("reserva azul sólido para ação, seleção e foco", async ({ page }) => {
+  await page.goto("/#recursos", { waitUntil: "networkidle" });
+
+  const passive = page.locator("[data-landing-passive-surface]");
+  await expect(passive).not.toHaveCount(0);
+
+  const passivePaint = await passive.evaluateAll((elements) =>
+    elements.map((element) => {
+      const style = getComputedStyle(element);
+      const channels = style.backgroundColor.match(/[\d.]+/g)?.map(Number) ?? [];
+      return {
+        name: element.getAttribute("data-landing-passive-surface"),
+        alpha: channels.length === 4 ? channels[3] : 1,
+        boxShadow: style.boxShadow,
+      };
+    }),
+  );
+
+  expect(passivePaint.every((surface) => surface.alpha <= 0.08)).toBe(true);
+  expect(passivePaint.every((surface) => surface.boxShadow === "none")).toBe(true);
+
+  const solidActions = await Promise.all([
+    page.locator("#hero-cta").evaluate((element) => getComputedStyle(element).backgroundColor),
+    page.locator('[role="tab"][aria-selected="true"]').evaluate(
+      (element) => getComputedStyle(element).backgroundColor,
+    ),
+  ]);
+  expect(solidActions).toEqual(["rgb(77, 113, 255)", "rgb(77, 113, 255)"]);
+});
+
 test("usa o azul da logo como luz dominante e o roxo como apoio", async ({
   page,
 }) => {

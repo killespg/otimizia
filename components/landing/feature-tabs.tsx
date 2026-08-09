@@ -204,7 +204,10 @@ function FeatureRow({ feature, index }: { feature: Feature; index: number }) {
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1], delay: Math.min(index, 5) * 0.045 }}
     >
-      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-od-accent/12 text-od-accent-hover">
+      <span
+        data-landing-passive-surface="feature-icon"
+        className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-white/[0.05] text-od-accent-hover"
+      >
         <Icon className="size-4" strokeWidth={2} />
       </span>
       <span className="min-w-0">
@@ -265,7 +268,10 @@ export function FeatureTabs() {
           <p className="text-od-label text-od-accent-hover">Sócio-assistente</p>
           <div className="min-w-0">
             <div className="flex items-start gap-4">
-              <span className="grid size-11 shrink-0 place-items-center rounded-full bg-od-accent text-white">
+              <span
+                data-landing-passive-surface="tim-icon"
+                className="grid size-11 shrink-0 place-items-center rounded-full bg-white/[0.05] text-od-accent-hover"
+              >
                 <Bot className="size-5" strokeWidth={2} />
               </span>
               <div className="min-w-0">

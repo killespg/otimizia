@@ -18,14 +18,20 @@ export function AiComposer() {
   return (
     <div data-landing-stage="tim" className="landing-cinematic-stage landing-cinematic-stage--quiet mx-auto max-w-[560px] overflow-hidden">
       <div className="space-y-3 px-4 pt-5 sm:px-5">
-        <p className="ml-auto w-fit max-w-[85%] rounded-lg bg-od-accent px-3.5 py-2 text-[13px] text-white">
+        <p
+          data-landing-passive-surface="user-message"
+          className="ml-auto w-fit max-w-[85%] rounded-lg border border-od-accent/20 bg-white/[0.055] px-3.5 py-2 text-[13px] text-od-text"
+        >
           Cadastra a Carla e abre uma negociação
         </p>
         <div className="w-fit max-w-[85%]">
           <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.04em] text-od-text-3">
             Tim
           </span>
-          <p className="rounded-lg bg-white/[0.07] px-3.5 py-2 text-[13px] leading-relaxed text-od-text-2">
+          <p
+            data-landing-passive-surface="tim-reply"
+            className="rounded-lg bg-white/[0.05] px-3.5 py-2 text-[13px] leading-relaxed text-od-text-2"
+          >
             Prontinho — cadastrei a Carla e abri uma negociação nova em Qualificação.
           </p>
         </div>
