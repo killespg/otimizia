@@ -1847,21 +1847,33 @@ header.landing-cinematic-nav {
   .landing-cinematic-mobile-cta,
   header.landing-cinematic-nav,
   .landing-prisma-panel-frame {
-    background: #101a32;
+    background: #000;
+    background-image: none;
+    box-shadow: none;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
 
   .landing-cinematic-panel-stage {
     background: transparent;
+    background-image: none;
+    box-shadow: none;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
 
   .landing-prisma-panel-drag-hint {
-    background: #071126;
+    background: #000;
+    background-image: none;
+    box-shadow: none;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+  }
+
+  .landing-cinematic-stage::after,
+  .landing-cinematic-plate::before,
+  .landing-prisma-panel-frame::before {
+    display: none;
   }
 }
 
@@ -1871,24 +1883,32 @@ header.landing-cinematic-nav {
   .landing-cinematic-mobile-cta,
   header.landing-cinematic-nav,
   .landing-prisma-panel-frame {
-    background: #101a32;
+    background: #000;
+    background-image: none;
+    box-shadow: none;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
 
   .landing-cinematic-panel-stage {
     background: transparent;
+    background-image: none;
+    box-shadow: none;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
 
   .landing-prisma-panel-drag-hint {
-    background: #071126;
+    background: #000;
+    background-image: none;
+    box-shadow: none;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
 
   .landing-cinematic-stage::after,
+  .landing-cinematic-plate::before,
+  .landing-prisma-panel-frame::before,
   .landing-cinematic-light {
     display: none;
   }
@@ -1898,7 +1918,8 @@ header.landing-cinematic-nav {
   .landing-cinematic-stage,
   .landing-cinematic-plate,
   .landing-cinematic-mobile-cta,
-  header.landing-cinematic-nav {
+  header.landing-cinematic-nav,
+  .landing-prisma-panel-frame {
     border-color: rgba(255, 255, 255, 0.68);
   }
 

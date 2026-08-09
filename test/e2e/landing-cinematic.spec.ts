@@ -223,49 +223,139 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
   await page.goto("/#painel", { waitUntil: "networkidle" });
 
   const fallbackRendering = await page.evaluate(() => {
-    const stage = document.querySelector<HTMLElement>(
-      ".landing-cinematic-panel-stage",
-    );
-    const frame = document.querySelector<HTMLElement>(
-      ".landing-prisma-panel-frame",
-    );
-    const hint = document.querySelector<HTMLElement>(
-      ".landing-prisma-panel-drag-hint",
-    );
-    if (!stage || !frame || !hint) return null;
-
     function renderingOf(element: HTMLElement) {
       const style = getComputedStyle(element);
       return {
         backgroundColor: style.backgroundColor,
+        backgroundImage: style.backgroundImage,
         backdropFilter: style.backdropFilter,
+        boxShadow: style.boxShadow,
       };
     }
 
-    return {
-      stage: renderingOf(stage),
-      frame: renderingOf(frame),
-      hint: renderingOf(hint),
+    const elements = {
+      stage: document.querySelector<HTMLElement>('[data-landing-stage="tim"]'),
+      plate: document.querySelector<HTMLElement>("[data-cinematic-plate]"),
+      navigation: document.querySelector<HTMLElement>(
+        "header.landing-cinematic-nav",
+      ),
+      mobileCta: document.querySelector<HTMLElement>(
+        ".landing-cinematic-mobile-cta",
+      ),
+      panelStage: document.querySelector<HTMLElement>(
+        ".landing-cinematic-panel-stage",
+      ),
+      frame: document.querySelector<HTMLElement>(
+        ".landing-prisma-panel-frame",
+      ),
+      hint: document.querySelector<HTMLElement>(
+        ".landing-prisma-panel-drag-hint",
+      ),
     };
+    if (Object.values(elements).some((element) => !element)) {
+      throw new Error("Superfície de fallback ausente");
+    }
+    const rendered = Object.fromEntries(
+      Object.entries(elements).map(([name, element]) => [
+        name,
+        renderingOf(element!),
+      ]),
+    ) as Record<keyof typeof elements, ReturnType<typeof renderingOf>>;
+
+    function parseColor(value: string) {
+      const channels = value.match(/[\d.]+/g)?.map(Number) ?? [];
+      return {
+        red: channels[0] ?? 0,
+        green: channels[1] ?? 0,
+        blue: channels[2] ?? 0,
+        alpha: channels[3] ?? 1,
+      };
+    }
+
+    function luminance({ red, green, blue }: ReturnType<typeof parseColor>) {
+      const linear = [red, green, blue].map((channel) => {
+        const normalized = channel / 255;
+        return normalized <= 0.04045
+          ? normalized / 12.92
+          : ((normalized + 0.055) / 1.055) ** 2.4;
+      });
+      return (
+        0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+      );
+    }
+
+    function composite(foreground: ReturnType<typeof parseColor>) {
+      const background = { red: 0, green: 0, blue: 0, alpha: 1 };
+      return {
+        red:
+          foreground.red * foreground.alpha +
+          background.red * (1 - foreground.alpha),
+        green:
+          foreground.green * foreground.alpha +
+          background.green * (1 - foreground.alpha),
+        blue:
+          foreground.blue * foreground.alpha +
+          background.blue * (1 - foreground.alpha),
+        alpha: 1,
+      };
+    }
+
+    const secondaryText = document.querySelector<HTMLElement>(
+      '[data-landing-stage="tim"] .text-od-text-2',
+    );
+    if (!secondaryText) throw new Error("Texto secundário do Tim ausente");
+    const foreground = composite(
+      parseColor(getComputedStyle(secondaryText).color),
+    );
+    const foregroundLuminance = luminance(foreground);
+    const backgroundLuminance = luminance({
+      red: 0,
+      green: 0,
+      blue: 0,
+      alpha: 1,
+    });
+    const bodyContrast =
+      (Math.max(foregroundLuminance, backgroundLuminance) + 0.05) /
+      (Math.min(foregroundLuminance, backgroundLuminance) + 0.05);
+
+    return { ...rendered, bodyContrast };
   });
 
-  expect(fallbackRendering).toEqual({
-    stage: {
-      backgroundColor: "rgba(0, 0, 0, 0)",
+  const opaquePassive = [
+    "stage",
+    "plate",
+    "navigation",
+    "mobileCta",
+    "frame",
+  ] as const;
+  for (const name of opaquePassive) {
+    expect(fallbackRendering![name]).toEqual({
+      backgroundColor: "rgb(0, 0, 0)",
+      backgroundImage: "none",
       backdropFilter: "none",
-    },
-    frame: {
-      backgroundColor: "rgb(16, 26, 50)",
-      backdropFilter: "none",
-    },
-    hint: {
-      backgroundColor: "rgb(7, 17, 38)",
-      backdropFilter: "none",
-    },
+      boxShadow: "none",
+    });
+  }
+  expect(fallbackRendering!.panelStage).toEqual({
+    backgroundColor: "rgba(0, 0, 0, 0)",
+    backgroundImage: "none",
+    backdropFilter: "none",
+    boxShadow: "none",
   });
+  expect(fallbackRendering!.hint).toEqual({
+    backgroundColor: "rgb(0, 0, 0)",
+    backgroundImage: "none",
+    backdropFilter: "none",
+    boxShadow: "none",
+  });
+  expect(fallbackRendering!.bodyContrast).toBeGreaterThanOrEqual(4.5);
 
   const fallbackRules = await page.evaluate(() => {
     const selectors = {
+      stage: ".landing-cinematic-stage",
+      plate: ".landing-cinematic-plate",
+      navigation: "header.landing-cinematic-nav",
+      mobileCta: ".landing-cinematic-mobile-cta",
       panelStage: ".landing-cinematic-panel-stage",
       frame: ".landing-prisma-panel-frame",
       hint: ".landing-prisma-panel-drag-hint",
@@ -279,6 +369,7 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
           backgroundColorHasZeroAlpha: boolean;
           backgroundImageIsNone: boolean;
           backdropFilter: string;
+          boxShadow: string;
         }
       >
     > = {};
@@ -323,6 +414,7 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
                   backgroundColor: rule.style.backgroundColor,
                   ...normalizeBackground(rule.style),
                   backdropFilter: rule.style.backdropFilter,
+                  boxShadow: rule.style.boxShadow,
                 };
               }
             }
@@ -346,22 +438,53 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
   });
 
   const expectedFallback = {
+    stage: {
+      backgroundColor: "rgb(0, 0, 0)",
+      backgroundColorHasZeroAlpha: false,
+      backgroundImageIsNone: true,
+      backdropFilter: "none",
+      boxShadow: "none",
+    },
+    plate: {
+      backgroundColor: "rgb(0, 0, 0)",
+      backgroundColorHasZeroAlpha: false,
+      backgroundImageIsNone: true,
+      backdropFilter: "none",
+      boxShadow: "none",
+    },
+    navigation: {
+      backgroundColor: "rgb(0, 0, 0)",
+      backgroundColorHasZeroAlpha: false,
+      backgroundImageIsNone: true,
+      backdropFilter: "none",
+      boxShadow: "none",
+    },
+    mobileCta: {
+      backgroundColor: "rgb(0, 0, 0)",
+      backgroundColorHasZeroAlpha: false,
+      backgroundImageIsNone: true,
+      backdropFilter: "none",
+      boxShadow: "none",
+    },
     panelStage: {
       backgroundColorHasZeroAlpha: true,
       backgroundImageIsNone: true,
       backdropFilter: "none",
+      boxShadow: "none",
     },
     frame: {
-      backgroundColor: "rgb(16, 26, 50)",
+      backgroundColor: "rgb(0, 0, 0)",
       backgroundColorHasZeroAlpha: false,
       backgroundImageIsNone: true,
       backdropFilter: "none",
+      boxShadow: "none",
     },
     hint: {
-      backgroundColor: "rgb(7, 17, 38)",
+      backgroundColor: "rgb(0, 0, 0)",
       backgroundColorHasZeroAlpha: false,
       backgroundImageIsNone: true,
       backdropFilter: "none",
+      boxShadow: "none",
     },
   };
   expect(fallbackRules).toMatchObject({

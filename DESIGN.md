@@ -139,6 +139,15 @@ Movimento respeita `prefers-reduced-motion`.
 Textos e ícones nunca entram nas camadas de distorção. Qualquer mudança de
 opacidade deve reverificar contraste WCAG AA e os alvos mínimos de 44 px.
 
+### Landing: canvas emissivo, vidro passivo
+
+Na landing, azul e roxo decorativos nascem somente no canvas
+(`.landing-cinematic-page::before` e `.landing-cinematic-light-*`). Placas,
+stages, Prisma, navegação e CTA móvel usam preenchimento preto de até 30%,
+reflexo branco de até 8% e nenhuma sombra colorida externa. Azul sólido fica
+restrito a ação, seleção e foco; o marketing não altera os componentes centrais
+do produto.
+
 ## Paridade entre as verticais
 
 O shell é o mesmo nas quatro áreas; o que muda é o domínio. Uma peça que não
