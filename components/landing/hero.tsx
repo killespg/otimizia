@@ -31,9 +31,7 @@ export function Hero() {
     <section className="landing-cinematic-hero">
       <div className="lp-shell landing-cinematic-hero-grid">
         <div className="landing-cinematic-hero-copy">
-          <p className="landing-cinematic-kicker">CRM com WhatsApp e IA para quem vende</p>
-
-          <h1 className="lp-h1 mt-6 max-w-[13ch]">
+          <h1 className="lp-h1 max-w-[13ch]">
             Seu negócio não para. <span>Você também não.</span>
           </h1>
 

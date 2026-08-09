@@ -29,6 +29,31 @@ test("apresenta o corredor cinematográfico com o produto antes das profissões"
   await expect(panelStage).toBeVisible();
 });
 
+test("remove os balões decorativos e o texto contido neles", async ({
+  page,
+}) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  await expect(page.locator(".landing-cinematic-kicker")).toHaveCount(0);
+  await expect(
+    page.getByText("CRM com WhatsApp e IA para quem vende", { exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByText("Seu próximo negócio", { exact: true }),
+  ).toHaveCount(0);
+
+  const margins = await page.evaluate(() => ({
+    heroTitle: getComputedStyle(
+      document.querySelector(".landing-cinematic-hero h1")!,
+    ).marginTop,
+    finalTitle: getComputedStyle(
+      document.querySelector(".landing-cinematic-final-cta h2")!,
+    ).marginTop,
+  }));
+
+  expect(margins).toEqual({ heroTitle: "0px", finalTitle: "0px" });
+});
+
 test("mostra o print real do painel no lugar do mockup", async ({
   page,
   isMobile,
@@ -413,9 +438,9 @@ test("separa título e Prisma Glass nos viewports que reproduzem o problema", as
 
       await screenshotViewport.focus();
       await page.keyboard.press("ArrowRight");
-      await page.evaluate(
-        () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
-      );
+      await expect
+        .poll(() => screenshotViewport.evaluate((element) => element.scrollLeft))
+        .toBeGreaterThan(beforeKeyboardScroll.panelScrollLeft);
 
       const afterKeyboardScroll = await screenshotViewport.evaluate(
         (element) => ({

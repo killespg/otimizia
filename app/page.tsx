@@ -101,7 +101,6 @@ export default async function LandingPage() {
             id="painel"
             titleComponent={
               <>
-                <p className="landing-cinematic-kicker mb-5">Hoje</p>
                 <h2 className="lp-h2 text-od-text">
                   Um painel só, <span className="text-od-accent-hover">sem planilha escondida.</span>
                 </h2>
@@ -159,8 +158,7 @@ export default async function LandingPage() {
               data-landing-stage="conversion"
               className="landing-cinematic-stage landing-cinematic-final-cta text-center"
             >
-              <p className="landing-cinematic-kicker">Seu próximo negócio</p>
-              <h2 className="lp-h2 mx-auto mt-5 max-w-[20ch] text-od-text">
+              <h2 className="lp-h2 mx-auto max-w-[20ch] text-od-text">
                 Pronto para parar de perder negócio por esquecimento?
               </h2>
               <p className="lp-lead mx-auto mt-4 max-w-[44ch]">

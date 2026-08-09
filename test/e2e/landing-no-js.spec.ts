@@ -15,6 +15,7 @@ test("mantém proposta, Prisma Glass, recursos e preço visíveis sem JavaScript
     page.getByRole("heading", { name: /Seu negócio não para/i }),
   ).toBeVisible();
   await expect(page.locator('[data-landing-cinematic="true"]')).toBeVisible();
+  await expect(page.locator(".landing-cinematic-kicker")).toHaveCount(0);
   await expect(page.locator('[data-prisma-panel-frame="true"]')).toBeVisible();
   await expect(
     page.locator('[data-dashboard-screenshot="true"]'),

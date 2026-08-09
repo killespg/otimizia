@@ -1480,19 +1480,6 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
   background: transparent;
 }
 
-.landing-cinematic-kicker {
-  width: fit-content;
-  border: 1px solid rgb(var(--landing-logo-blue) / 0.26);
-  border-radius: 999px;
-  background: rgb(var(--landing-logo-blue) / 0.12);
-  padding: 7px 11px;
-  color: #c3d0ff;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.02em;
-}
-
 .landing-cinematic-page .lp-h1 {
   font-size: clamp(42px, 6vw, 76px);
   font-weight: 800;
@@ -1776,10 +1763,6 @@ select option { background: var(--od-muted-surface-solid); color: var(--od-text)
   background:
     radial-gradient(72% 120% at 50% 118%, rgb(var(--landing-logo-blue) / 0.42), transparent 68%),
     rgba(9, 17, 36, 0.52);
-}
-
-.landing-cinematic-final-cta .landing-cinematic-kicker {
-  margin-inline: auto;
 }
 
 header.landing-cinematic-nav {
