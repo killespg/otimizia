@@ -1764,7 +1764,9 @@ header.landing-cinematic-nav {
 
 .landing-cinematic-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(3, 8, 20, 0.16);
+  background: rgba(0, 0, 0, 0.16);
+  -webkit-backdrop-filter: var(--landing-glass-filter);
+  backdrop-filter: var(--landing-glass-filter);
 }
 
 .landing-cinematic-page .landing-dashboard-preview {
@@ -1845,6 +1847,7 @@ header.landing-cinematic-nav {
   .landing-cinematic-stage,
   .landing-cinematic-plate,
   .landing-cinematic-mobile-cta,
+  .landing-cinematic-footer,
   header.landing-cinematic-nav,
   .landing-prisma-panel-frame {
     background: #000;
@@ -1881,6 +1884,7 @@ header.landing-cinematic-nav {
   .landing-cinematic-stage,
   .landing-cinematic-plate,
   .landing-cinematic-mobile-cta,
+  .landing-cinematic-footer,
   header.landing-cinematic-nav,
   .landing-prisma-panel-frame {
     background: #000;

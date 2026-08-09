@@ -242,6 +242,9 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
       mobileCta: document.querySelector<HTMLElement>(
         ".landing-cinematic-mobile-cta",
       ),
+      footer: document.querySelector<HTMLElement>(
+        ".landing-cinematic-footer",
+      ),
       panelStage: document.querySelector<HTMLElement>(
         ".landing-cinematic-panel-stage",
       ),
@@ -326,6 +329,7 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
     "plate",
     "navigation",
     "mobileCta",
+    "footer",
     "frame",
   ] as const;
   for (const name of opaquePassive) {
@@ -356,6 +360,7 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
       plate: ".landing-cinematic-plate",
       navigation: "header.landing-cinematic-nav",
       mobileCta: ".landing-cinematic-mobile-cta",
+      footer: ".landing-cinematic-footer",
       panelStage: ".landing-cinematic-panel-stage",
       frame: ".landing-prisma-panel-frame",
       hint: ".landing-prisma-panel-drag-hint",
@@ -465,6 +470,13 @@ test("preserva a Prisma Glass nos fallbacks de transparência", async ({
       boxShadow: "none",
     },
     mobileCta: {
+      backgroundColor: "rgb(0, 0, 0)",
+      backgroundColorHasZeroAlpha: false,
+      backgroundImageIsNone: true,
+      backdropFilter: "none",
+      boxShadow: "none",
+    },
+    footer: {
       backgroundColor: "rgb(0, 0, 0)",
       backgroundColorHasZeroAlpha: false,
       backgroundImageIsNone: true,
@@ -747,34 +759,43 @@ test("deixa a iluminação do canvas atravessar os volumes de vidro", async ({
       ".landing-prisma-panel-frame",
       "header.landing-cinematic-nav",
       ".landing-cinematic-mobile-cta",
+      ".landing-cinematic-footer",
     ];
 
-    const surfaces = selectors.map((selector) => {
-      const element = document.querySelector<HTMLElement>(selector);
-      if (!element) throw new Error(`Superfície ausente: ${selector}`);
-      const style = getComputedStyle(element);
-      const before = getComputedStyle(element, "::before");
-      const after = getComputedStyle(element, "::after");
-      const paint = [
-        style.backgroundColor,
-        style.backgroundImage,
-        style.boxShadow,
-        before.backgroundColor,
-        before.backgroundImage,
-        before.boxShadow,
-        after.backgroundColor,
-        after.backgroundImage,
-        after.boxShadow,
-      ].join(" ");
-      return {
-        selector,
-        red: colorsOf(style.backgroundColor)[0]?.red ?? 0,
-        green: colorsOf(style.backgroundColor)[0]?.green ?? 0,
-        blue: colorsOf(style.backgroundColor)[0]?.blue ?? 0,
-        alpha: alphaOf(style.backgroundColor),
-        backdropFilter: style.backdropFilter,
-        hasColoredEmission: hasColoredEmission(paint),
-      };
+    const surfaces = selectors.flatMap((selector) => {
+      const elements = Array.from(
+        document.querySelectorAll<HTMLElement>(selector),
+      );
+      if (elements.length === 0) {
+        throw new Error(`Superfície ausente: ${selector}`);
+      }
+
+      return elements.map((element, index) => {
+        const style = getComputedStyle(element);
+        const before = getComputedStyle(element, "::before");
+        const after = getComputedStyle(element, "::after");
+        const paint = [
+          style.backgroundColor,
+          style.backgroundImage,
+          style.boxShadow,
+          before.backgroundColor,
+          before.backgroundImage,
+          before.boxShadow,
+          after.backgroundColor,
+          after.backgroundImage,
+          after.boxShadow,
+        ].join(" ");
+        return {
+          selector,
+          identifier: `${selector}[${index}]`,
+          red: colorsOf(style.backgroundColor)[0]?.red ?? 0,
+          green: colorsOf(style.backgroundColor)[0]?.green ?? 0,
+          blue: colorsOf(style.backgroundColor)[0]?.blue ?? 0,
+          alpha: alphaOf(style.backgroundColor),
+          backdropFilter: style.backdropFilter,
+          hasColoredEmission: hasColoredEmission(paint),
+        };
+      });
     });
 
     return {
@@ -817,6 +838,20 @@ test("reserva azul sólido para ação, seleção e foco", async ({ page }) => {
     }),
   );
 
+  const passiveCounts = passivePaint.reduce<Record<string, number>>(
+    (counts, surface) => {
+      if (surface.name) counts[surface.name] = (counts[surface.name] ?? 0) + 1;
+      return counts;
+    },
+    {},
+  );
+  expect(Object.keys(passiveCounts).sort()).toEqual([
+    "feature-icon",
+    "tim-icon",
+    "tim-reply",
+    "user-message",
+  ]);
+  expect(Object.values(passiveCounts).every((count) => count >= 1)).toBe(true);
   expect(passivePaint.every((surface) => surface.alpha <= 0.08)).toBe(true);
   expect(passivePaint.every((surface) => surface.boxShadow === "none")).toBe(true);
 
