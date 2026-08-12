@@ -13,6 +13,8 @@
 - Visual baseline: production health endpoint reported commit `2623e0347b0462bc1289cc07e25840e58ec32d88` on 2026-08-12.
 - Never run a broad `git checkout 2623e03 -- .`, `git reset`, or revert of all commits after production. That would discard functional work unrelated to the visual direction.
 - Preserve the behavior introduced after production, especially money parsing, voice-call cancellation, profile avatar, notification/operation summary data, demo accounts, WhatsApp demo media, multi-vertical shell parity, database grants, and the approved OtimizIA/Tim identity.
+- The new OtimizIA logo is an explicit exception to the production visual baseline. Keep the current 2026 wordmark, symbol, PWA icons, proportions, and transparent-image implementation everywhere; never restore the older production logo assets or their blend-mode workaround.
+- Canonical identity assets remain `public/otimizia-logo-2026-dark.png`, `public/otimizia-logo-2026.png`, `public/otimizia-mark-2026-dark.png`, `public/otimizia-mark-2026.png`, `public/otimizia-app-icon-2026.png`, and `public/otimizia-app-icon-2026-maskable.png`.
 - Preserve the useful line-reduction work from commits `e882788`, `2e81342`, `5c3e96e`, `2e52b99`, `5baa83f`, `d440d1c`, and `8fc568c`.
 - Restore the production palette exactly: `#151419` canvas, `#2a292f` primary surface, `#1f1e24` muted surface, `#3a3840` resting border, `#515058` hover border, `#f5f4f7` primary text, `#b2b0b7` secondary text, `#928f98` tertiary text, and `#0b0a0f` sidebar.
 - Keep the current radius scale exactly: `12px`, `16px`, `20px`, `24px`, `28px`, `32px`, and `36px` for `--radius-sm` through `--radius-4xl`; `999px` remains restricted to pills, round icons, avatars, and the mobile navigation indicator.
@@ -100,6 +102,13 @@
 - `lib/liquid-glass-contract.test.ts`
 - `test/e2e/liquid-glass.spec.ts`
 
+### Verify and preserve without changing unless a regression is found
+
+- `components/design-system/logo.tsx` — keep the new 2026 wordmark/symbol sources and `1280 / 277` wordmark ratio.
+- `app/layout.tsx` — keep the new 2026 favicon and Apple touch icon.
+- `app/manifest.ts` — keep the new regular and maskable 2026 PWA icons.
+- `public/sw.js` — keep the new 2026 notification icon and badge.
+
 ---
 
 ### Task 1: Lock the Hybrid Direction in Tests and Documentation
@@ -154,6 +163,23 @@ describe("production base with rounded geometry", () => {
     expect(css).toContain(".settings-hub [data-settings-card]");
     expect(css).not.toMatch(/--od-glass-|backdrop-filter|od-glass-distortion/);
   });
+
+  it("keeps the new OtimizIA identity instead of restoring production artwork", () => {
+    const logo = read("components/design-system/logo.tsx");
+    const layout = read("app/layout.tsx");
+    const manifest = read("app/manifest.ts");
+    const serviceWorker = read("public/sw.js");
+
+    expect(logo).toContain("const WORDMARK_RATIO = 1280 / 277");
+    expect(logo).toContain('src="/otimizia-logo-2026-dark.png"');
+    expect(logo).toContain('src="/otimizia-mark-2026-dark.png"');
+    expect(logo).not.toMatch(/className=\{[^}]*mix-blend-screen/);
+    expect(layout).toContain('icon: "/otimizia-app-icon-2026.png"');
+    expect(manifest).toContain('src: "/otimizia-app-icon-2026.png"');
+    expect(manifest).toContain('src: "/otimizia-app-icon-2026-maskable.png"');
+    expect(serviceWorker).toContain('icon: "/otimizia-app-icon-2026.png"');
+    expect(serviceWorker).toContain('badge: "/otimizia-mark-2026.png"');
+  });
 });
 ```
 
@@ -184,6 +210,8 @@ no desktop. Métricas e filtros relacionados usam uma única faixa `.od-band`.
 ```
 
 Also replace current canvas/surface values in the document with the exact production palette listed in Global Constraints and retain the existing sections about multi-vertical parity, avatar, real authorization, empty states, and `44px` targets.
+
+Add an identity rule stating that the 2026 logo supersedes the production artwork: the visual rollback must not change `LogoWordmark`, `LogoMark`, manifest icons, install icons, notification icons, or their current asset paths.
 
 - [ ] **Step 4: Run the contract again and confirm that documentation alone does not make it pass**
 
@@ -375,6 +403,8 @@ export type ProductNavigationShellProps = {
 ```
 
 Base the desktop DOM on `git show 2623e03:components/design-system/product-navigation.tsx`: one collapsible `aside`, solid `--od-sidebar`, one navigation column, one footer, and no detail pane/resizer. Keep `WorkspaceSwitcher`, `UserAvatar`, current badges, route prefetch, collapsed-state persistence, and real logout behavior.
+
+Use the current `LogoWordmark` in the expanded sidebar and `LogoMark` in the collapsed sidebar. Copy the production shell geometry only; do not copy its old image paths, dimensions, blend modes, or logo markup.
 
 - [ ] **Step 3: Convert all four vertical adapters to the shared shell**
 
@@ -665,6 +695,8 @@ footer
 
 Use `git show 2623e03:app/page.tsx` and the four deleted production components as source references. Retain the current approved logo assets, current FAQ copy corrections, semantic tabs, keyboard behavior, mobile menu dialog, no-JS content visibility, and all `44px` targets.
 
+The landing navigation and footer must render the current `LogoWordmark`; mobile/compact brand marks must use the current `LogoMark`. The production commit supplies layout and information architecture only, never its older artwork.
+
 - [ ] **Step 3: Apply the requested rounding without reviving glass**
 
 Use `var(--radius-md)` for standard landing panels, `var(--radius-lg)` for the interactive dashboard frame and major marketing stages, `var(--radius-sm)` for controls, and full pills only for intentional CTA/tag shapes. No backdrop filter, translucent stage, prism frame, colored outer glow, or animated cinematic light.
@@ -846,6 +878,8 @@ Check these surfaces at `390×844`, `768×1024`, `1440×900`, and `1728×1117`:
 
 For each surface, verify: production palette, rounded geometry, no translucent/glass layer, no repetitive row rules, no nested cards, no overflow, visible focus, `44px` targets, and honest empty/loading/error states.
 
+Also verify that the new wordmark appears in the landing navigation/footer, authentication shell, and expanded product sidebar; the new symbol appears in collapsed/mobile placements; install metadata and notifications resolve to the 2026 app icon/mark assets without a visible rectangular background.
+
 - [ ] **Step 5: Run a final zero-glass and separator audit**
 
 Run:
@@ -872,7 +906,7 @@ Skip this commit only when Step 4 and Step 5 require no source changes.
 
 ## Self-Review Result
 
-- Spec coverage: production baseline, current rounding, reduced lines, product/landing separation, functional preservation, responsive behavior, accessibility, and preview gate are each mapped to an implementation task.
+- Spec coverage: production baseline, new logo exception, current rounding, reduced lines, product/landing separation, functional preservation, responsive behavior, accessibility, and preview gate are each mapped to an implementation task.
 - Placeholder scan: no deferred placeholders or undefined interfaces remain.
 - Type consistency: every navigation task uses `ProductNavigationShellProps`, `NavGroup`, `NavItem`, and `NavIcon`; later tasks do not rename those interfaces.
 - Scope boundary: this plan changes visual presentation and tests only. It explicitly preserves current authorization, data, integrations, migrations, billing, and domain behavior.
