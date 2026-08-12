@@ -8,6 +8,282 @@
 
 **Tech Stack:** Next.js App Router, React, TypeScript, Tailwind CSS 4, Vitest, Playwright, Supabase local stack.
 
+## Handoff operacional para outro agente
+
+Esta seção é autocontida e pode ser encaminhada junto com o restante deste
+documento. O agente deve ler o plano inteiro antes de editar qualquer arquivo.
+
+### Endereços, referências e estado inicial
+
+| Item | Endereço ou valor |
+|---|---|
+| Checkout de origem | `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia` |
+| Worktree recomendado | `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui` |
+| Branch recomendada | `codex/production-rounded-ui` |
+| Commit de início do trabalho | `c2a6d5786ba6fd6ebaed3a6728c5cb5ef7ad0fa8` |
+| Commit usado somente como referência visual de produção | `2623e0347b0462bc1289cc07e25840e58ec32d88` |
+| Plano completo no checkout de origem | `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\docs\superpowers\plans\2026-08-12-production-base-rounded-ui.md` |
+| Plano completo dentro do futuro worktree | `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\docs\superpowers\plans\2026-08-12-production-base-rounded-ui.md` |
+| Instruções obrigatórias do projeto | `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\AGENTS.md` |
+| Contexto do produto | `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\PRODUCT.md` |
+| Design system canônico atual | `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\DESIGN.md` |
+| Scripts e dependências | `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\package.json` |
+| Site em produção | `https://useotimizia.com/` |
+| Health que informa ambiente e commit | `https://useotimizia.com/api/health` |
+| Configuração local do projeto Vercel | `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.vercel\project.json` |
+| Projeto Vercel | `prj_7fbETMmXgCZAexU0vw1DLCdPkCDu` (`otimizia`) |
+
+O endpoint de health informou `environment: production` e commit
+`2623e0347b0462bc1289cc07e25840e58ec32d88` em 2026-08-12. O agente deve
+verificar novamente o endpoint antes da comparação visual final, porque o
+deploy pode mudar depois da redação deste plano.
+
+### Texto pronto para enviar ao agente executor
+
+```text
+Implemente integralmente o plano localizado em:
+C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\docs\superpowers\plans\2026-08-12-production-base-rounded-ui.md
+
+Objetivo: usar a aparência sólida atualmente publicada em produção, manter a
+logo nova de 2026, manter os raios da versão Liquid Glass e reduzir linhas
+divisórias repetitivas. Liquid Glass, prisma, blur, refração, grão e a landing
+cinematográfica devem sair.
+
+Crie ou reutilize com segurança o worktree:
+C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui
+
+Parta exatamente do commit:
+c2a6d5786ba6fd6ebaed3a6728c5cb5ef7ad0fa8
+
+Use o commit abaixo apenas como referência visual; não faça reset nem rollback
+amplo para ele:
+2623e0347b0462bc1289cc07e25840e58ec32d88
+
+Preserve integralmente autorização, RLS, isolamento por organização/workspace,
+dados, rotas, ações, avatar, voz, notificações, demos, identidade do Tim,
+correções funcionais e paridade entre verticais que entraram depois da produção.
+
+Siga TDD: escreva e execute o teste falhando antes da mudança correspondente.
+Faça commits pequenos ao fim de cada tarefa. Execute todas as verificações do
+plano. Não aceite testes autenticados pulados como validação. Não publique em
+produção; entregue branch, commits, evidências e preview para aprovação.
+
+Antes da resposta final, execute o registro obrigatório do AGENTS.md por meio
+de scripts/obsidian-log.ps1 sem incluir segredos ou dados privados.
+```
+
+### Preparação segura do worktree
+
+Execute primeiro, no PowerShell:
+
+```powershell
+$SourceRepo = 'C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia'
+$WorktreeRoot = 'C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui'
+$ImplementationBranch = 'codex/production-rounded-ui'
+$StartCommit = 'c2a6d5786ba6fd6ebaed3a6728c5cb5ef7ad0fa8'
+
+git -C $SourceRepo status --short --branch
+git -C $SourceRepo worktree list --porcelain
+git -C $SourceRepo check-ignore -v .worktrees
+git -C $SourceRepo show-ref --verify "refs/heads/$ImplementationBranch"
+Test-Path -LiteralPath $WorktreeRoot
+```
+
+Interpretação obrigatória:
+
+- Se a branch e o diretório não existirem, criar com:
+
+```powershell
+git -C $SourceRepo worktree add $WorktreeRoot -b $ImplementationBranch $StartCommit
+```
+
+- Se um deles já existir, não apagar, não sobrescrever e não recriar. Conferir
+  `git -C $WorktreeRoot status --short --branch` e
+  `git -C $WorktreeRoot rev-parse HEAD`. Reutilizar somente se o worktree for o
+  caminho indicado, estiver na branch indicada e não contiver trabalho alheio.
+- Nunca usar `git reset --hard`, `git checkout -- .`, `git clean -fd` ou remoção
+  recursiva para “preparar” o workspace.
+
+Depois de entrar no worktree:
+
+```powershell
+Set-Location -LiteralPath $WorktreeRoot
+Get-Content -Raw -LiteralPath "$WorktreeRoot\AGENTS.md"
+Get-Content -Raw -LiteralPath "$WorktreeRoot\PRODUCT.md"
+Get-Content -Raw -LiteralPath "$WorktreeRoot\DESIGN.md"
+Get-Content -Raw -LiteralPath "$WorktreeRoot\docs\superpowers\plans\2026-08-12-production-base-rounded-ui.md"
+npm ci
+npm run typecheck
+npm run lint
+npm test
+```
+
+Se a baseline falhar antes de qualquer edição, o agente deve registrar o erro
+exato e investigar a causa. Não deve atribuir uma falha preexistente à mudança
+visual nem seguir adiante silenciosamente.
+
+### Inventário absoluto dos arquivos em escopo
+
+Todos os endereços abaixo apontam para o worktree recomendado. O checkout de
+origem serve somente para criar o worktree e consultar referências.
+
+#### Criar
+
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\lib\production-rounded-ui-contract.test.ts`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\design-system\product-navigation-shell.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\test\e2e\production-rounded-ui.spec.ts`
+
+#### Renomear
+
+- De `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\test\e2e\landing-cinematic.spec.ts`
+- Para `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\test\e2e\landing-production.spec.ts`
+
+#### Modificar: fundações, documentação e shell
+
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\DESIGN.md`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\app\globals.css`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\app\(dashboard)\painel\layout.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\design-system\product-nav-groups.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\design-system\product-navigation.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\design-system\seller-product-navigation.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\design-system\legal-product-navigation.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\design-system\real-estate-product-navigation.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\design-system\mobile-app-nav.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\design-system\product-topbar.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\design-system\seller-product-topbar.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\design-system\legal-product-topbar.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\design-system\real-estate-product-topbar.tsx`
+
+#### Modificar: controles, overlays e painel imobiliário
+
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\design-system\account-settings-button.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\design-system\action-drawer.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\real-estate\operation-summary-button.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\real-estate\real-estate-dashboard-header.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\tim\VoicePanel.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\tim\VoiceSheet.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\ui\AnchoredPanel.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\app\(dashboard)\painel\imoveis\dashboard\RealEstateDashboard.tsx`
+
+#### Modificar: redução de linhas nas telas operacionais
+
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\app\(dashboard)\painel\configuracoes\page.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\app\(dashboard)\painel\contatos\ContactsExplorer.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\app\(dashboard)\painel\contatos\importar\ContactsCsvImporter.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\app\(dashboard)\painel\financeiro\importar\FinanceCsvImporter.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\app\(dashboard)\painel\funil\relatorio\page.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\app\(dashboard)\painel\imoveis\visitas\page.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\app\(dashboard)\painel\tarefas\page.tsx`
+
+#### Modificar ou restaurar: landing
+
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\app\page.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\hero.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\landing-nav.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\mobile-sticky-cta.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\feature-tabs.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\container-scroll-animation.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\dashboard-preview.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\ai-composer.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\pricing.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\FaqAccordion.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\about.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\logo-marquee.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\panel.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\reveal.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\spotlight-card.tsx`
+
+#### Modificar: testes existentes
+
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\lib\frontend-route-parity.test.ts`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\lib\real-estate-dashboard-liquid-stage.test.ts`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\test\e2e\landing-responsive.spec.ts`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\test\e2e\landing-no-js.spec.ts`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\test\e2e\critical-flows.spec.ts`
+
+#### Preservar e verificar; modificar somente se a implementação revelar regressão
+
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\design-system\logo.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\app\layout.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\app\manifest.ts`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\public\sw.js`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\public\otimizia-logo-2026-dark.png`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\public\otimizia-logo-2026.png`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\public\otimizia-mark-2026-dark.png`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\public\otimizia-mark-2026.png`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\public\otimizia-app-icon-2026.png`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\public\otimizia-app-icon-2026-maskable.png`
+
+#### Remover somente depois de `rg` provar zero referências em runtime
+
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\cinematic-scroll-corridor.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\components\landing\dashboard-screenshot.tsx`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\public\backgrounds\liquid-ambient.svg`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\public\backgrounds\dashboard-landscape.webp`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\public\backgrounds\dashboard-landscape-mobile.webp`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\public\landing\painel-imobiliario-mariana.png`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\lib\liquid-glass-contract.test.ts`
+- `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\.worktrees\production-rounded-ui\test\e2e\liquid-glass.spec.ts`
+
+### Referências Git que o agente pode consultar sem restaurar em massa
+
+Use comandos pontuais, sempre com o path entre aspas quando contiver
+parênteses:
+
+```powershell
+git show '2623e03:app/globals.css'
+git show '2623e03:app/page.tsx'
+git show '2623e03:components/design-system/product-navigation.tsx'
+git show '2623e03:components/design-system/mobile-app-nav.tsx'
+git show '2623e03:app/(dashboard)/painel/layout.tsx'
+git show '2623e03:app/(dashboard)/painel/imoveis/dashboard/RealEstateDashboard.tsx'
+git show '2623e03:components/landing/hero.tsx'
+git show '2623e03:components/landing/landing-nav.tsx'
+git show '2623e03:components/landing/dashboard-preview.tsx'
+git show '2623e03:components/landing/logo-marquee.tsx'
+git show '2623e03:components/landing/panel.tsx'
+git show '2623e03:components/landing/reveal.tsx'
+git show '2623e03:components/landing/spotlight-card.tsx'
+```
+
+Os commits pós-produção que devem ser estudados para preservar a redução de
+linhas são:
+
+```text
+e882788  tira superfícies cinzas e réguas duplicadas
+2e81342  troca régua por separação no material
+5c3e96e  alinha raios e separação por papel do componente
+2e52b99  mantém a faixa de métricas aberta
+5baa83f  remove régua por item de filas
+d440d1c  simplifica Configurações e remove ajustes inertes
+8fc568c  usa faixas alternadas no corpo de tabelas
+```
+
+### Resultado que o agente deve entregar
+
+O handoff só está completo quando vier acompanhado de:
+
+1. Caminho do worktree e nome da branch usados.
+2. Lista de commits produzidos, um por tarefa ou unidade revisável.
+3. Resumo dos arquivos criados, modificados, renomeados e removidos.
+4. Saída final de `npm run typecheck`, `npm run lint`, `npm test`,
+   `npm run build` e `git diff --check`.
+5. Resultado dos E2E desktop e mobile, declarando explicitamente quantos testes
+   passaram, falharam e foram pulados.
+6. Evidência visual nas larguras `390×844`, `768×1024`, `1440×900` e
+   `1728×1117` para a landing, login/signup e as quatro verticais do painel.
+7. Confirmação de que a logo nova aparece na landing, autenticação, sidebar,
+   PWA e notificações.
+8. Confirmação de que autorização, RLS, organização/workspace e dados não foram
+   alterados pela restauração visual.
+9. URL do preview, se um preview tiver sido autorizado e criado. Não inventar
+   ou presumir uma URL antes de a plataforma retorná-la.
+10. Registro Obsidian criado conforme
+    `C:\Users\kille\Documents\TROCA DE DESIGN SYSTEM OtimizIA\otimizia\AGENTS.md`.
+
+Não fazer deploy de produção, merge ou remoção do worktree sem autorização
+explícita do usuário.
+
 ## Global Constraints
 
 - Visual baseline: production health endpoint reported commit `2623e0347b0462bc1289cc07e25840e58ec32d88` on 2026-08-12.
