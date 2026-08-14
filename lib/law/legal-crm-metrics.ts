@@ -74,13 +74,13 @@ export type LegalCrmMetrics = {
   firstResponse:
     | { status: "ready"; medianMinutes: number | null; responded: number; pending: number; ai: number; human: number }
     | { status: "empty" | "unavailable"; reason: "no_whatsapp" | "no_conversations" | "partial_failure" };
-  leads: { total: number; qualified: number };
+  leads: { total: number; qualified: number } | null;
   funnel: Array<{
     stage: LegalCrmFunnelStage;
     label: string;
     reached: number;
     conversionFromPrevious: number | null;
-  }>;
+  }> | null;
   origins: Array<{
     source: string;
     leads: number;
@@ -88,13 +88,13 @@ export type LegalCrmMetrics = {
     wins: number;
     conversion: number | null;
     receivedCents: number | null;
-  }>;
-  losses: Array<{ code: string; label: string; count: number }>;
+  }> | null;
+  losses: Array<{ code: string; label: string; count: number }> | null;
   cac:
     | { status: "ready"; valueCents: number; totalCostCents: number; wins: number }
     | { status: "hidden" | "unavailable" | "not_configured" | "no_wins" };
-  ltv: { receivedCents: number | null; contractedCents: number | null; unlinkedRecords: number } | null;
-  coverage: { partial: boolean; startedAt: string | null };
+  ltv: { receivedCents: number | null; contractedCents: number | null; unlinkedRecords: number | null } | null;
+  coverage: { partial: boolean; startedAt: string } | null;
   /** Consumers must not render a value when its availability is not "ready". */
   availability: LegalCrmMetricAvailability;
 };
@@ -116,7 +116,7 @@ export type LegalCrmMetricInput = {
   canViewFinance: boolean;
   coverageStartedAt: string | null;
   whatsappStatus?: "ready" | "not_configured" | "partial_failure";
-  failedSources?: readonly LegalCrmMetricQuerySource[];
+  failedSources: readonly LegalCrmMetricQuerySource[];
 };
 
 type ZonedDateParts = { year: number; month: number; day: number };
@@ -215,7 +215,7 @@ function hasTrustedCoverageAnchor(coverageStartedAt: string | null) {
 }
 
 function buildAvailability(input: LegalCrmMetricInput): LegalCrmMetricAvailability {
-  const failed = new Set(input.failedSources ?? []);
+  const failed = new Set(input.failedSources);
   const unavailable = (...sources: LegalCrmMetricQuerySource[]) => sources.some((source) => failed.has(source));
   const financeStatus = (unavailableSources: LegalCrmMetricQuerySource[]): LegalCrmMetricAvailabilityStatus => {
     if (!input.canViewFinance) return "hidden";
@@ -247,7 +247,7 @@ function includedMonths(period: LegalCrmPeriod) {
 }
 
 function buildFirstResponse(input: LegalCrmMetricInput): LegalCrmMetrics["firstResponse"] {
-  if (input.failedSources?.includes("responses")) return { status: "unavailable", reason: "partial_failure" };
+  if (input.failedSources.includes("responses")) return { status: "unavailable", reason: "partial_failure" };
   if (input.whatsappStatus === "not_configured") return { status: "unavailable", reason: "no_whatsapp" };
   if (input.whatsappStatus === "partial_failure") return { status: "unavailable", reason: "partial_failure" };
 
@@ -422,7 +422,7 @@ export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetric
     return {
       receivedCents: availability.ltvReceived === "ready" ? receivedCents : null,
       contractedCents: availability.ltvContracted === "ready" ? contractedCents : null,
-      unlinkedRecords: availability.ltvUnlinked === "ready" ? unlinkedRecords : 0,
+      unlinkedRecords: availability.ltvUnlinked === "ready" ? unlinkedRecords : null,
     };
   })() : null;
 
@@ -432,13 +432,13 @@ export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetric
   return {
     period: input.period,
     firstResponse: buildFirstResponse(input),
-    leads: { total: leadContacts.size, qualified: qualifiedContacts.size },
-    funnel,
-    origins,
-    losses,
+    leads: availability.leads === "ready" ? { total: leadContacts.size, qualified: qualifiedContacts.size } : null,
+    funnel: availability.funnel === "ready" ? funnel : null,
+    origins: availability.origins === "ready" ? origins : null,
+    losses: availability.losses === "ready" ? losses : null,
     cac,
     ltv,
-    coverage: { partial: coveragePartial, startedAt: coverageStartedAt },
+    coverage: availability.coverage === "ready" ? { partial: coveragePartial, startedAt: coverageStartedAt! } : null,
     availability,
   };
 }

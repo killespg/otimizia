@@ -29,9 +29,27 @@ function input(overrides: Partial<LegalCrmMetricInput> = {}): LegalCrmMetricInpu
     lossRows: [],
     canViewFinance: true,
     coverageStartedAt: null,
+    failedSources: [],
     ...overrides,
   };
 }
+
+const inputWithoutFailureProvenance = {
+  period,
+  deals: [],
+  stageHistory: completeHistory([]),
+  contacts: [],
+  responses: [],
+  costs: [],
+  agreements: [],
+  payments: [],
+  lossRows: [],
+  canViewFinance: true,
+  coverageStartedAt: null,
+};
+// @ts-expect-error Every adapter must explicitly declare whether any source failed.
+const rejectedWithoutFailureProvenance: LegalCrmMetricInput = inputWithoutFailureProvenance;
+void rejectedWithoutFailureProvenance;
 
 describe("resolveLegalCrmPeriod", () => {
   it("uses Sao Paulo civil-month boundaries at a UTC edge", () => {
@@ -98,8 +116,8 @@ describe("buildLegalCrmMetrics", () => {
       status: "ready", medianMinutes: 12, responded: 1, pending: 1, ai: 1, human: 0,
     });
     expect(metrics.leads).toEqual({ total: 2, qualified: 1 });
-    expect(metrics.funnel.map((item) => item.reached)).toEqual([2, 1, 1, 1]);
-    expect(metrics.funnel.map((item) => item.conversionFromPrevious)).toEqual([null, 50, 100, 100]);
+    expect(metrics.funnel?.map((item) => item.reached)).toEqual([2, 1, 1, 1]);
+    expect(metrics.funnel?.map((item) => item.conversionFromPrevious)).toEqual([null, 50, 100, 100]);
     expect(metrics.origins).toEqual([
       { source: "Indicação", leads: 1, qualified: 1, wins: 1, conversion: 100, receivedCents: 600_000 },
       { source: "Sem origem", leads: 1, qualified: 0, wins: 0, conversion: 0, receivedCents: 0 },
@@ -119,7 +137,7 @@ describe("buildLegalCrmMetrics", () => {
     }));
 
     expect(metrics.leads).toEqual({ total: 1, qualified: 0 });
-    expect(metrics.funnel.map((item) => item.reached)).toEqual([1, 0, 0, 0]);
+    expect(metrics.funnel?.map((item) => item.reached)).toEqual([1, 0, 0, 0]);
     expect(metrics.cac).toEqual({ status: "no_wins" });
   });
 
@@ -138,7 +156,7 @@ describe("buildLegalCrmMetrics", () => {
     }));
 
     expect(metrics.leads).toEqual({ total: 1, qualified: 1 });
-    expect(metrics.funnel.map((item) => item.reached)).toEqual([2, 2, 1, 1]);
+    expect(metrics.funnel?.map((item) => item.reached)).toEqual([2, 2, 1, 1]);
     expect(metrics.origins).toEqual([
       { source: "Indicação", leads: 1, qualified: 1, wins: 1, conversion: 100, receivedCents: 0 },
     ]);
@@ -246,7 +264,7 @@ describe("buildLegalCrmMetrics", () => {
     }));
 
     expect(metrics.leads).toEqual({ total: 1, qualified: 1 });
-    expect(metrics.funnel.map((item) => item.reached)).toEqual([1, 1, 1, 1]);
+    expect(metrics.funnel?.map((item) => item.reached)).toEqual([1, 1, 1, 1]);
     expect(metrics.origins).toEqual([
       { source: "Indicação", leads: 1, qualified: 1, wins: 1, conversion: 100, receivedCents: 0 },
     ]);
@@ -281,7 +299,7 @@ describe("buildLegalCrmMetrics", () => {
       contacts: [{ id: "c1", source: "Indicação" }],
     }));
 
-    expect(metrics.funnel.map((item) => item.reached)).toEqual([1, 1, 0, 0]);
+    expect(metrics.funnel?.map((item) => item.reached)).toEqual([1, 1, 0, 0]);
   });
 
   it("uses the same non-cancelled payment eligibility for origin revenue and LTV", () => {
@@ -295,7 +313,7 @@ describe("buildLegalCrmMetrics", () => {
       ],
     }));
 
-    expect(metrics.origins[0]?.receivedCents).toBe(100_000);
+    expect(metrics.origins?.[0]?.receivedCents).toBe(100_000);
     expect(metrics.ltv?.receivedCents).toBe(100_000);
   });
 
@@ -330,6 +348,16 @@ describe("buildLegalCrmMetrics", () => {
       ltvUnlinked: "ready",
       coverage: "ready",
     });
+    expect(metrics.leads).toEqual({ total: 0, qualified: 0 });
+    expect(metrics.funnel).toEqual([
+      { stage: "novo", label: "Novo lead", reached: 0, conversionFromPrevious: null },
+      { stage: "em_contato", label: "Qualificação", reached: 0, conversionFromPrevious: null },
+      { stage: "negociacao", label: "Proposta enviada", reached: 0, conversionFromPrevious: null },
+      { stage: "ganho", label: "Contratado", reached: 0, conversionFromPrevious: null },
+    ]);
+    expect(metrics.origins).toEqual([]);
+    expect(metrics.losses).toEqual([]);
+    expect(metrics.coverage).toEqual({ partial: false, startedAt: "2026-08-01T00:00:00Z" });
   });
 
   it("gives finance denial precedence over failed financial sources", () => {
@@ -361,7 +389,7 @@ describe("buildLegalCrmMetrics", () => {
     const metrics = buildLegalCrmMetrics(input({ coverageStartedAt: null }));
 
     expect(metrics.availability.coverage).toBe("unavailable");
-    expect(metrics.coverage).toEqual({ partial: false, startedAt: null });
+    expect(metrics.coverage).toBeNull();
   });
 
   it("returns a JSON-round-trippable availability contract", () => {
@@ -371,5 +399,56 @@ describe("buildLegalCrmMetrics", () => {
     }));
 
     expect(JSON.parse(JSON.stringify(metrics))).toEqual(metrics);
+  });
+
+  it("nulls unavailable operational and coverage values instead of returning believable empty data", () => {
+    const failedDeals = buildLegalCrmMetrics(input({
+      failedSources: ["deals"],
+      coverageStartedAt: "2026-08-01T00:00:00Z",
+    }));
+    const failedHistory = buildLegalCrmMetrics(input({
+      failedSources: ["history"],
+      coverageStartedAt: "2026-08-01T00:00:00Z",
+    }));
+    const failedContacts = buildLegalCrmMetrics(input({
+      failedSources: ["contacts"],
+      coverageStartedAt: "2026-08-01T00:00:00Z",
+    }));
+
+    expect(failedDeals).toMatchObject({ leads: null, funnel: null, origins: null, losses: null });
+    expect(failedHistory).toMatchObject({ leads: null, funnel: null, origins: null, coverage: null, losses: [] });
+    expect(failedContacts.origins).toBeNull();
+  });
+
+  it("nulls only unavailable LTV components and never fabricates an unlinked-record count", () => {
+    const failedAgreements = buildLegalCrmMetrics(input({
+      failedSources: ["agreements"],
+      payments: [{ contact_id: "c1", amount_cents: 75_000, receivable_status: "paid" }],
+    }));
+    const failedPayments = buildLegalCrmMetrics(input({
+      failedSources: ["payments"],
+      agreements: [{ contact_id: "c1", total_cents: 125_000, status: "active" }],
+    }));
+
+    expect(failedAgreements.ltv).toEqual({ receivedCents: 75_000, contractedCents: null, unlinkedRecords: null });
+    expect(failedPayments.ltv).toEqual({ receivedCents: null, contractedCents: 125_000, unlinkedRecords: null });
+  });
+
+  it("keeps finance denied values hidden even when non-empty financial inputs and failures are supplied", () => {
+    const metrics = buildLegalCrmMetrics(input({
+      canViewFinance: false,
+      failedSources: ["costs", "agreements", "payments"],
+      deals: [{ id: "d1", contact_id: "c1", stage: "novo", created_at: "2026-08-02T12:00:00Z", is_placeholder: false }],
+      contacts: [{ id: "c1", source: "Indicação" }],
+      costs: [{ month: "2026-08-01", marketing_cents: 50_000, commercial_cents: 0 }],
+      agreements: [{ contact_id: "c1", total_cents: 120_000, status: "active" }],
+      payments: [{ contact_id: "c1", amount_cents: 70_000, receivable_status: "paid" }],
+    }));
+
+    expect(metrics.cac).toEqual({ status: "hidden" });
+    expect(metrics.ltv).toBeNull();
+    expect(metrics.origins).toEqual([
+      { source: "Indicação", leads: 1, qualified: 0, wins: 0, conversion: 0, receivedCents: null },
+    ]);
   });
 });
