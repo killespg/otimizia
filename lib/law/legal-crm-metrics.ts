@@ -44,6 +44,12 @@ export type LegalCrmPeriod = {
 
 export type LegalCrmFunnelStage = (typeof FUNNEL_STAGES)[number];
 export type LegalCrmStage = LegalCrmFunnelStage | "perdido";
+export type LegalCrmMetricQuerySource = "deals" | "history" | "contacts" | "responses" | "costs" | "agreements" | "payments";
+export type LegalCrmMetricAvailabilityStatus = "ready" | "unavailable" | "hidden";
+export type LegalCrmMetricAvailability = Record<
+  "leads" | "funnel" | "origins" | "originRevenue" | "losses" | "cac" | "ltvReceived" | "ltvContracted" | "ltvUnlinked" | "coverage",
+  LegalCrmMetricAvailabilityStatus
+>;
 
 export type LegalCrmStageHistoryRow = {
   deal_id: string;
@@ -86,9 +92,11 @@ export type LegalCrmMetrics = {
   losses: Array<{ code: string; label: string; count: number }>;
   cac:
     | { status: "ready"; valueCents: number; totalCostCents: number; wins: number }
-    | { status: "hidden" | "not_configured" | "no_wins" };
+    | { status: "hidden" | "unavailable" | "not_configured" | "no_wins" };
   ltv: { receivedCents: number | null; contractedCents: number | null; unlinkedRecords: number } | null;
   coverage: { partial: boolean; startedAt: string | null };
+  /** Consumers must not render a value when its availability is not "ready". */
+  availability: LegalCrmMetricAvailability;
 };
 
 export type LegalCrmMetricInput = {
@@ -108,6 +116,7 @@ export type LegalCrmMetricInput = {
   canViewFinance: boolean;
   coverageStartedAt: string | null;
   whatsappStatus?: "ready" | "not_configured" | "partial_failure";
+  failedSources?: readonly LegalCrmMetricQuerySource[];
 };
 
 type ZonedDateParts = { year: number; month: number; day: number };
@@ -201,6 +210,32 @@ function isEligiblePayment(payment: LegalCrmMetricInput["payments"][number]) {
   return payment.receivable_status !== "cancelled";
 }
 
+function hasTrustedCoverageAnchor(coverageStartedAt: string | null) {
+  return coverageStartedAt !== null && Number.isFinite(new Date(coverageStartedAt).getTime());
+}
+
+function buildAvailability(input: LegalCrmMetricInput): LegalCrmMetricAvailability {
+  const failed = new Set(input.failedSources ?? []);
+  const unavailable = (...sources: LegalCrmMetricQuerySource[]) => sources.some((source) => failed.has(source));
+  const financeStatus = (unavailableSources: LegalCrmMetricQuerySource[]): LegalCrmMetricAvailabilityStatus => {
+    if (!input.canViewFinance) return "hidden";
+    return unavailable(...unavailableSources) ? "unavailable" : "ready";
+  };
+
+  return {
+    leads: unavailable("deals", "history") ? "unavailable" : "ready",
+    funnel: unavailable("deals", "history") ? "unavailable" : "ready",
+    origins: unavailable("deals", "history", "contacts") ? "unavailable" : "ready",
+    originRevenue: financeStatus(["payments"]),
+    losses: unavailable("deals") ? "unavailable" : "ready",
+    cac: financeStatus(["history", "costs"]),
+    ltvReceived: financeStatus(["payments"]),
+    ltvContracted: financeStatus(["agreements"]),
+    ltvUnlinked: financeStatus(["agreements", "payments"]),
+    coverage: unavailable("history") || !hasTrustedCoverageAnchor(input.coverageStartedAt) ? "unavailable" : "ready",
+  };
+}
+
 function includedMonths(period: LegalCrmPeriod) {
   const start = new Date(`${period.startMonth}T00:00:00Z`);
   const end = new Date(`${period.endMonth}T00:00:00Z`);
@@ -212,6 +247,7 @@ function includedMonths(period: LegalCrmPeriod) {
 }
 
 function buildFirstResponse(input: LegalCrmMetricInput): LegalCrmMetrics["firstResponse"] {
+  if (input.failedSources?.includes("responses")) return { status: "unavailable", reason: "partial_failure" };
   if (input.whatsappStatus === "not_configured") return { status: "unavailable", reason: "no_whatsapp" };
   if (input.whatsappStatus === "partial_failure") return { status: "unavailable", reason: "partial_failure" };
 
@@ -248,6 +284,7 @@ function buildFirstResponse(input: LegalCrmMetricInput): LegalCrmMetrics["firstR
 }
 
 export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetrics {
+  const availability = buildAvailability(input);
   const cohort = input.deals.filter((deal) => !deal.is_placeholder && isInPeriod(deal.created_at, input.period));
   const cohortDealIds = new Set(cohort.map((deal) => deal.id));
   const observedAt = new Date(input.stageHistory.observedAt).getTime();
@@ -311,7 +348,7 @@ export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetric
       qualified: group.qualified.size,
       wins: group.wins.size,
       conversion: percentage(group.wins.size, group.contacts.size),
-      receivedCents: input.canViewFinance ? group.receivedCents : null,
+      receivedCents: availability.originRevenue === "ready" ? group.receivedCents : null,
     }))
     .sort((left, right) => right.leads - left.leads || left.source.localeCompare(right.source, "pt-BR"));
 
@@ -347,6 +384,8 @@ export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetric
   const requiredMonths = includedMonths(input.period);
   const cac = !input.canViewFinance
     ? { status: "hidden" as const }
+    : availability.cac === "unavailable"
+      ? { status: "unavailable" as const }
     : requiredMonths.some((month) => !costsByMonth.has(month))
       ? { status: "not_configured" as const }
       : cacWins === 0
@@ -380,7 +419,11 @@ export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetric
     const receivedCents = validPayments.length === 0
       ? null
       : Math.round(validPayments.reduce((sum, payment) => sum + payment.amount_cents, 0) / paymentContacts.size);
-    return { receivedCents, contractedCents, unlinkedRecords };
+    return {
+      receivedCents: availability.ltvReceived === "ready" ? receivedCents : null,
+      contractedCents: availability.ltvContracted === "ready" ? contractedCents : null,
+      unlinkedRecords: availability.ltvUnlinked === "ready" ? unlinkedRecords : 0,
+    };
   })() : null;
 
   const coverageStartedAt = input.coverageStartedAt;
@@ -396,5 +439,6 @@ export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetric
     cac,
     ltv,
     coverage: { partial: coveragePartial, startedAt: coverageStartedAt },
+    availability,
   };
 }

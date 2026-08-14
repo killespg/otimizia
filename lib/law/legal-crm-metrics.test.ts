@@ -3,6 +3,7 @@ import {
   buildLegalCrmMetrics,
   resolveLegalCrmPeriod,
   type LegalCrmMetricInput,
+  type LegalCrmMetricQuerySource,
 } from "./legal-crm-metrics";
 
 const now = new Date("2026-08-14T12:00:00-03:00");
@@ -296,5 +297,79 @@ describe("buildLegalCrmMetrics", () => {
 
     expect(metrics.origins[0]?.receivedCents).toBe(100_000);
     expect(metrics.ltv?.receivedCents).toBe(100_000);
+  });
+
+  it.each([
+    ["deals", { leads: "unavailable", funnel: "unavailable", origins: "unavailable", losses: "unavailable", cac: "ready" }],
+    ["history", { leads: "unavailable", funnel: "unavailable", origins: "unavailable", losses: "ready", cac: "unavailable", coverage: "unavailable" }],
+    ["contacts", { origins: "unavailable" }],
+    ["costs", { cac: "unavailable" }],
+    ["agreements", { ltvContracted: "unavailable", ltvUnlinked: "unavailable", ltvReceived: "ready" }],
+    ["payments", { originRevenue: "unavailable", ltvReceived: "unavailable", ltvUnlinked: "unavailable", ltvContracted: "ready" }],
+  ] as const)("marks every metric dependent on a failed %s source unavailable", (source, expected) => {
+    const metrics = buildLegalCrmMetrics(input({
+      failedSources: [source as LegalCrmMetricQuerySource],
+      coverageStartedAt: "2026-08-01T00:00:00Z",
+    }));
+
+    expect(metrics.availability).toMatchObject(expected);
+  });
+
+  it("returns ready availability for a genuine empty result with trusted coverage", () => {
+    const metrics = buildLegalCrmMetrics(input({ coverageStartedAt: "2026-08-01T00:00:00Z" }));
+
+    expect(metrics.availability).toEqual({
+      leads: "ready",
+      funnel: "ready",
+      origins: "ready",
+      originRevenue: "ready",
+      losses: "ready",
+      cac: "ready",
+      ltvReceived: "ready",
+      ltvContracted: "ready",
+      ltvUnlinked: "ready",
+      coverage: "ready",
+    });
+  });
+
+  it("gives finance denial precedence over failed financial sources", () => {
+    const metrics = buildLegalCrmMetrics(input({
+      canViewFinance: false,
+      failedSources: ["costs", "agreements", "payments"],
+      coverageStartedAt: "2026-08-01T00:00:00Z",
+    }));
+
+    expect(metrics.availability).toMatchObject({
+      leads: "ready",
+      funnel: "ready",
+      origins: "ready",
+      cac: "hidden",
+      originRevenue: "hidden",
+      ltvReceived: "hidden",
+      ltvContracted: "hidden",
+      ltvUnlinked: "hidden",
+    });
+  });
+
+  it("surfaces a failed response query through the existing first-response state", () => {
+    const metrics = buildLegalCrmMetrics(input({ failedSources: ["responses"] }));
+
+    expect(metrics.firstResponse).toEqual({ status: "unavailable", reason: "partial_failure" });
+  });
+
+  it("keeps an unknown coverage anchor unavailable instead of treating it as complete", () => {
+    const metrics = buildLegalCrmMetrics(input({ coverageStartedAt: null }));
+
+    expect(metrics.availability.coverage).toBe("unavailable");
+    expect(metrics.coverage).toEqual({ partial: false, startedAt: null });
+  });
+
+  it("returns a JSON-round-trippable availability contract", () => {
+    const metrics = buildLegalCrmMetrics(input({
+      failedSources: ["history", "payments"],
+      coverageStartedAt: "2026-08-01T00:00:00Z",
+    }));
+
+    expect(JSON.parse(JSON.stringify(metrics))).toEqual(metrics);
   });
 });
