@@ -14,6 +14,7 @@ import {
 } from "@/lib/crm/deals";
 import { stageFromPipelineList } from "@/lib/crm/pipeline-stage";
 import { formatBRL } from "@/lib/utils/format";
+import { pipelineMetaFromList } from "./pipeline-meta";
 import {
   acceptDealHandoff,
   adminReassignDeal,
@@ -38,37 +39,6 @@ function firstDetail(details: Record<string, string> | undefined, fields: FieldS
   }
   return null;
 }
-
-const STAGE_META: Record<
-  DealStage,
-  { dot: string; chip: string; empty: string }
-> = {
-  novo: {
-    dot: "bg-sky-500",
-    chip: "bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-200",
-    empty: "Novos cards entram aqui.",
-  },
-  em_contato: {
-    dot: "bg-brand-500",
-    chip: "bg-brand-50 text-brand-700",
-    empty: "Sem cards nesta lista.",
-  },
-  negociacao: {
-    dot: "bg-warning-500",
-    chip: "bg-warning-50 text-warning-700",
-    empty: "Nenhum card agora.",
-  },
-  ganho: {
-    dot: "bg-success-500",
-    chip: "bg-success-50 text-success-700 dark:bg-[#062d1c] dark:text-[#9ff0c5]",
-    empty: "Nenhum card fechado.",
-  },
-  perdido: {
-    dot: "bg-danger-500",
-    chip: "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
-    empty: "Sem cards perdidos.",
-  },
-};
 
 export default function Board({
   initialDeals,
@@ -891,22 +861,5 @@ function formatPercent(value: number | null) {
 }
 
 function trelloMeta(list: string) {
-  const normalized = list
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-  if (normalized.includes("perdido") || normalized.includes("perda")) return STAGE_META.perdido;
-  if (
-    normalized.includes("fechado") ||
-    normalized.includes("vendidos") ||
-    normalized.includes("vendas") ||
-    normalized.includes("ganho")
-  ) {
-    return STAGE_META.ganho;
-  }
-  if (normalized.includes("visita") || normalized.includes("proposta") || normalized.includes("negociacao")) {
-    return STAGE_META.negociacao;
-  }
-  if (normalized.includes("analise") || normalized.includes("contato")) return STAGE_META.em_contato;
-  return STAGE_META.novo;
+  return pipelineMetaFromList(list);
 }
