@@ -48,7 +48,7 @@ export type LegalCrmStage = LegalCrmFunnelStage | "perdido";
 export type LegalCrmMetrics = {
   period: LegalCrmPeriod;
   firstResponse:
-    | { status: "ready"; medianMinutes: number; responded: number; pending: number; ai: number; human: number }
+    | { status: "ready"; medianMinutes: number | null; responded: number; pending: number; ai: number; human: number }
     | { status: "empty" | "unavailable"; reason: "no_whatsapp" | "no_conversations" | "partial_failure" };
   leads: { total: number; qualified: number };
   funnel: Array<{
@@ -204,7 +204,16 @@ function buildFirstResponse(input: LegalCrmMetricInput): LegalCrmMetrics["firstR
     (new Date(response.first_response_at!).getTime() - new Date(response.first_inbound_at).getTime()) / 60_000
   ));
 
-  if (durations.length === 0) return { status: "empty", reason: "no_conversations" };
+  if (durations.length === 0) {
+    return {
+      status: "ready",
+      medianMinutes: null,
+      responded: 0,
+      pending: responses.length,
+      ai: 0,
+      human: 0,
+    };
+  }
 
   return {
     status: "ready",
@@ -222,7 +231,7 @@ export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetric
   const highestReached = new Map<string, number>();
 
   for (const entry of input.stageHistory) {
-    if (entry.is_baseline || !cohortDealIds.has(entry.deal_id) || !isInPeriod(entry.occurred_at, input.period)) continue;
+    if (entry.is_baseline || !cohortDealIds.has(entry.deal_id)) continue;
     const rank = STAGE_RANK[entry.to_stage];
     if (rank >= 0) highestReached.set(entry.deal_id, Math.max(highestReached.get(entry.deal_id) ?? 0, rank));
   }
@@ -291,7 +300,15 @@ export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetric
     .map(([code, value]) => ({ code, ...value }))
     .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label, "pt-BR"));
 
-  const winDeals = cohort.filter((deal) => (highestReached.get(deal.id) ?? 0) >= STAGE_RANK.ganho);
+  const firstRealWinByDeal = new Map<string, string>();
+  for (const entry of input.stageHistory) {
+    if (entry.is_baseline || entry.to_stage !== "ganho") continue;
+    const existing = firstRealWinByDeal.get(entry.deal_id);
+    if (!existing || new Date(entry.occurred_at).getTime() < new Date(existing).getTime()) {
+      firstRealWinByDeal.set(entry.deal_id, entry.occurred_at);
+    }
+  }
+  const cacWins = [...firstRealWinByDeal.values()].filter((occurredAt) => isInPeriod(occurredAt, input.period)).length;
   const costsByMonth = new Map<string, { marketing_cents: number; commercial_cents: number }>();
   for (const cost of input.costs) {
     if (!includedMonths(input.period).includes(cost.month)) continue;
@@ -305,7 +322,7 @@ export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetric
     ? { status: "hidden" as const }
     : requiredMonths.some((month) => !costsByMonth.has(month))
       ? { status: "not_configured" as const }
-      : winDeals.length === 0
+      : cacWins === 0
         ? { status: "no_wins" as const }
         : (() => {
             const totalCostCents = [...costsByMonth.values()].reduce(
@@ -314,9 +331,9 @@ export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetric
             );
             return {
               status: "ready" as const,
-              valueCents: Math.round(totalCostCents / winDeals.length),
+              valueCents: Math.round(totalCostCents / cacWins),
               totalCostCents,
-              wins: winDeals.length,
+              wins: cacWins,
             };
           })();
 
@@ -324,10 +341,10 @@ export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetric
     const validAgreements = input.agreements.filter((agreement) => (
       (agreement.status === "active" || agreement.status === "completed") && Boolean(agreement.contact_id)
     ));
-    const validPayments = input.payments.filter((payment) => payment.receivable_status === "paid" && Boolean(payment.contact_id));
+    const validPayments = input.payments.filter((payment) => payment.receivable_status !== "cancelled" && Boolean(payment.contact_id));
     const unlinkedRecords = input.agreements.filter((agreement) => (
       (agreement.status === "active" || agreement.status === "completed") && !agreement.contact_id
-    )).length + input.payments.filter((payment) => payment.receivable_status === "paid" && !payment.contact_id).length;
+    )).length + input.payments.filter((payment) => payment.receivable_status !== "cancelled" && !payment.contact_id).length;
     const agreementContacts = new Set(validAgreements.map((agreement) => agreement.contact_id!));
     const paymentContacts = new Set(validPayments.map((payment) => payment.contact_id!));
     const contractedCents = validAgreements.length === 0

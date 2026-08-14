@@ -199,4 +199,60 @@ describe("buildLegalCrmMetrics", () => {
 
     expect(metrics.ltv).toEqual({ receivedCents: 30_000, contractedCents: 100_000, unlinkedRecords: 2 });
   });
+
+  it("keeps an all-pending WhatsApp backlog distinct from a period with no conversations", () => {
+    const metrics = buildLegalCrmMetrics(input({
+      responses: [
+        { first_inbound_at: "2026-08-02T10:00:00Z", first_response_at: null, first_response_sent_by: null },
+        { first_inbound_at: "2026-08-03T10:00:00Z", first_response_at: null, first_response_sent_by: null },
+      ],
+    }));
+
+    expect(metrics.firstResponse).toEqual({
+      status: "ready", medianMinutes: null, responded: 0, pending: 2, ai: 0, human: 0,
+    });
+  });
+
+  it("counts CAC from each deal's first real win in the selected month, not its creation cohort or a re-win", () => {
+    const metrics = buildLegalCrmMetrics(input({
+      costs: [{ month: "2026-08-01", marketing_cents: 300, commercial_cents: 0 }],
+      stageHistory: [
+        { deal_id: "older-first-win", to_stage: "ganho", occurred_at: "2026-08-02T12:00:00Z", is_baseline: false },
+        { deal_id: "re-win", to_stage: "ganho", occurred_at: "2026-07-02T12:00:00Z", is_baseline: false },
+        { deal_id: "re-win", to_stage: "ganho", occurred_at: "2026-08-03T12:00:00Z", is_baseline: false },
+        { deal_id: "baseline-then-first-real-win", to_stage: "ganho", occurred_at: "2026-07-01T12:00:00Z", is_baseline: true },
+        { deal_id: "baseline-then-first-real-win", to_stage: "ganho", occurred_at: "2026-08-04T12:00:00Z", is_baseline: false },
+      ],
+    }));
+
+    expect(metrics.cac).toEqual({ status: "ready", valueCents: 150, totalCostCents: 300, wins: 2 });
+  });
+
+  it("lets a creation cohort mature through real milestones after its selected month", () => {
+    const previousMonth = resolveLegalCrmPeriod("previous_month", now);
+    const metrics = buildLegalCrmMetrics(input({
+      period: previousMonth,
+      deals: [{ id: "july-lead", contact_id: "c1", stage: "ganho", created_at: "2026-07-20T12:00:00Z", is_placeholder: false }],
+      stageHistory: [{ deal_id: "july-lead", to_stage: "ganho", occurred_at: "2026-08-03T12:00:00Z", is_baseline: false }],
+      contacts: [{ id: "c1", source: "Indicação" }],
+    }));
+
+    expect(metrics.leads).toEqual({ total: 1, qualified: 1 });
+    expect(metrics.funnel.map((item) => item.reached)).toEqual([1, 1, 1, 1]);
+    expect(metrics.origins).toEqual([
+      { source: "Indicação", leads: 1, qualified: 1, wins: 1, conversion: 100, receivedCents: 0 },
+    ]);
+  });
+
+  it("includes linked and unlinked partial receivables in received LTV while excluding cancelled rows", () => {
+    const metrics = buildLegalCrmMetrics(input({
+      payments: [
+        { contact_id: "c1", amount_cents: 40_000, receivable_status: "partial" },
+        { contact_id: null, amount_cents: 50_000, receivable_status: "partial" },
+        { contact_id: "c2", amount_cents: 90_000, receivable_status: "cancelled" },
+      ],
+    }));
+
+    expect(metrics.ltv).toEqual({ receivedCents: 40_000, contractedCents: null, unlinkedRecords: 1 });
+  });
 });
