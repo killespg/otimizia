@@ -8,11 +8,18 @@ import {
 const now = new Date("2026-08-14T12:00:00-03:00");
 const period = resolveLegalCrmPeriod("current_month", now);
 
+function completeHistory(
+  rows: LegalCrmMetricInput["stageHistory"]["rows"],
+  observedAt = now.toISOString(),
+): LegalCrmMetricInput["stageHistory"] {
+  return { completeness: "complete_through_observed_at", observedAt, rows };
+}
+
 function input(overrides: Partial<LegalCrmMetricInput> = {}): LegalCrmMetricInput {
   return {
     period,
     deals: [],
-    stageHistory: [],
+    stageHistory: completeHistory([]),
     contacts: [],
     responses: [],
     costs: [],
@@ -70,10 +77,10 @@ describe("buildLegalCrmMetrics", () => {
         { id: "d1", contact_id: "c1", stage: "ganho", created_at: "2026-08-02T12:00:00Z", is_placeholder: false },
         { id: "d2", contact_id: "c2", stage: "perdido", created_at: "2026-08-03T12:00:00Z", is_placeholder: false },
       ],
-      stageHistory: [
+      stageHistory: completeHistory([
         { deal_id: "d1", to_stage: "novo", occurred_at: "2026-08-02T12:00:00Z", is_baseline: false },
         { deal_id: "d1", to_stage: "ganho", occurred_at: "2026-08-05T12:00:00Z", is_baseline: false },
-      ],
+      ]),
       contacts: [{ id: "c1", source: "Indicação" }, { id: "c2", source: null }],
       responses: [
         { first_inbound_at: "2026-08-02T10:00:00Z", first_response_at: "2026-08-02T10:12:00Z", first_response_sent_by: "ai" },
@@ -105,7 +112,7 @@ describe("buildLegalCrmMetrics", () => {
   it("does not infer qualified or won milestones from baseline-only history", () => {
     const metrics = buildLegalCrmMetrics(input({
       deals: [{ id: "d1", contact_id: "c1", stage: "ganho", created_at: "2026-08-02T12:00:00Z", is_placeholder: false }],
-      stageHistory: [{ deal_id: "d1", to_stage: "ganho", occurred_at: "2026-08-02T12:00:00Z", is_baseline: true }],
+      stageHistory: completeHistory([{ deal_id: "d1", to_stage: "ganho", occurred_at: "2026-08-02T12:00:00Z", is_baseline: true }]),
       contacts: [{ id: "c1", source: "Evento" }],
       costs: [{ month: "2026-08-01", marketing_cents: 1, commercial_cents: 0 }],
     }));
@@ -121,10 +128,10 @@ describe("buildLegalCrmMetrics", () => {
         { id: "d1", contact_id: "c1", stage: "em_contato", created_at: "2026-08-02T12:00:00Z", is_placeholder: false },
         { id: "d2", contact_id: "c1", stage: "ganho", created_at: "2026-08-03T12:00:00Z", is_placeholder: false },
       ],
-      stageHistory: [
+      stageHistory: completeHistory([
         { deal_id: "d1", to_stage: "em_contato", occurred_at: "2026-08-02T13:00:00Z", is_baseline: false },
         { deal_id: "d2", to_stage: "ganho", occurred_at: "2026-08-03T13:00:00Z", is_baseline: false },
-      ],
+      ]),
       contacts: [{ id: "c1", source: "Indicação" }],
       costs: [{ month: "2026-08-01", marketing_cents: 100, commercial_cents: 0 }],
     }));
@@ -176,7 +183,7 @@ describe("buildLegalCrmMetrics", () => {
     });
     expect(buildLegalCrmMetrics(input({
       deals: [{ id: "d1", contact_id: "c1", stage: "ganho", created_at: "2026-08-02T12:00:00Z", is_placeholder: false }],
-      stageHistory: [{ deal_id: "d1", to_stage: "ganho", occurred_at: "2026-08-02T12:00:00Z", is_baseline: false }],
+      stageHistory: completeHistory([{ deal_id: "d1", to_stage: "ganho", occurred_at: "2026-08-02T12:00:00Z", is_baseline: false }]),
     }))).toMatchObject({ cac: { status: "not_configured" } });
     expect(buildLegalCrmMetrics(input({
       costs: [{ month: "2026-08-01", marketing_cents: 50_000, commercial_cents: 0 }],
@@ -216,13 +223,13 @@ describe("buildLegalCrmMetrics", () => {
   it("counts CAC from each deal's first real win in the selected month, not its creation cohort or a re-win", () => {
     const metrics = buildLegalCrmMetrics(input({
       costs: [{ month: "2026-08-01", marketing_cents: 300, commercial_cents: 0 }],
-      stageHistory: [
+      stageHistory: completeHistory([
         { deal_id: "older-first-win", to_stage: "ganho", occurred_at: "2026-08-02T12:00:00Z", is_baseline: false },
         { deal_id: "re-win", to_stage: "ganho", occurred_at: "2026-07-02T12:00:00Z", is_baseline: false },
         { deal_id: "re-win", to_stage: "ganho", occurred_at: "2026-08-03T12:00:00Z", is_baseline: false },
         { deal_id: "baseline-then-first-real-win", to_stage: "ganho", occurred_at: "2026-07-01T12:00:00Z", is_baseline: true },
         { deal_id: "baseline-then-first-real-win", to_stage: "ganho", occurred_at: "2026-08-04T12:00:00Z", is_baseline: false },
-      ],
+      ]),
     }));
 
     expect(metrics.cac).toEqual({ status: "ready", valueCents: 150, totalCostCents: 300, wins: 2 });
@@ -233,7 +240,7 @@ describe("buildLegalCrmMetrics", () => {
     const metrics = buildLegalCrmMetrics(input({
       period: previousMonth,
       deals: [{ id: "july-lead", contact_id: "c1", stage: "ganho", created_at: "2026-07-20T12:00:00Z", is_placeholder: false }],
-      stageHistory: [{ deal_id: "july-lead", to_stage: "ganho", occurred_at: "2026-08-03T12:00:00Z", is_baseline: false }],
+      stageHistory: completeHistory([{ deal_id: "july-lead", to_stage: "ganho", occurred_at: "2026-08-03T12:00:00Z", is_baseline: false }]),
       contacts: [{ id: "c1", source: "Indicação" }],
     }));
 
@@ -254,5 +261,40 @@ describe("buildLegalCrmMetrics", () => {
     }));
 
     expect(metrics.ltv).toEqual({ receivedCents: 40_000, contractedCents: null, unlinkedRecords: 1 });
+  });
+
+  it("accepts complete history through observedAt and ignores future-dated milestones", () => {
+    const previousMonth = resolveLegalCrmPeriod("previous_month", now);
+    const history: LegalCrmMetricInput["stageHistory"] = {
+      completeness: "complete_through_observed_at",
+      observedAt: "2026-08-14T15:00:00.000Z",
+      rows: [
+        { deal_id: "july-lead", to_stage: "em_contato", occurred_at: "2026-08-03T12:00:00Z", is_baseline: false },
+        { deal_id: "july-lead", to_stage: "ganho", occurred_at: "2026-08-15T12:00:00Z", is_baseline: false },
+      ],
+    };
+    const metrics = buildLegalCrmMetrics(input({
+      period: previousMonth,
+      deals: [{ id: "july-lead", contact_id: "c1", stage: "ganho", created_at: "2026-07-20T12:00:00Z", is_placeholder: false }],
+      stageHistory: history,
+      contacts: [{ id: "c1", source: "Indicação" }],
+    }));
+
+    expect(metrics.funnel.map((item) => item.reached)).toEqual([1, 1, 0, 0]);
+  });
+
+  it("uses the same non-cancelled payment eligibility for origin revenue and LTV", () => {
+    const metrics = buildLegalCrmMetrics(input({
+      deals: [{ id: "d1", contact_id: "c1", stage: "novo", created_at: "2026-08-02T12:00:00Z", is_placeholder: false }],
+      contacts: [{ id: "c1", source: "Indicação" }],
+      payments: [
+        { contact_id: "c1", amount_cents: 40_000, receivable_status: "partial" },
+        { contact_id: "c1", amount_cents: 60_000, receivable_status: "paid" },
+        { contact_id: "c1", amount_cents: 90_000, receivable_status: "cancelled" },
+      ],
+    }));
+
+    expect(metrics.origins[0]?.receivedCents).toBe(100_000);
+    expect(metrics.ltv?.receivedCents).toBe(100_000);
   });
 });

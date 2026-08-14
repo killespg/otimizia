@@ -45,6 +45,24 @@ export type LegalCrmPeriod = {
 export type LegalCrmFunnelStage = (typeof FUNNEL_STAGES)[number];
 export type LegalCrmStage = LegalCrmFunnelStage | "perdido";
 
+export type LegalCrmStageHistoryRow = {
+  deal_id: string;
+  to_stage: LegalCrmStage;
+  occurred_at: string;
+  is_baseline: boolean;
+};
+
+/**
+ * Task 4 must load every stage event available from analytics coverage through
+ * observedAt. It must never provide only the selected [period.start, period.end)
+ * window, because re-wins and cohort maturation require the complete history.
+ */
+export type LegalCrmCompleteStageHistory = {
+  completeness: "complete_through_observed_at";
+  observedAt: string;
+  rows: LegalCrmStageHistoryRow[];
+};
+
 export type LegalCrmMetrics = {
   period: LegalCrmPeriod;
   firstResponse:
@@ -76,7 +94,7 @@ export type LegalCrmMetrics = {
 export type LegalCrmMetricInput = {
   period: LegalCrmPeriod;
   deals: Array<{ id: string; contact_id: string | null; stage: LegalCrmStage; created_at: string; is_placeholder: boolean }>;
-  stageHistory: Array<{ deal_id: string; to_stage: LegalCrmStage; occurred_at: string; is_baseline: boolean }>;
+  stageHistory: LegalCrmCompleteStageHistory;
   contacts: Array<{ id: string; source: string | null }>;
   responses: Array<{
     first_inbound_at: string;
@@ -179,6 +197,10 @@ function sourceName(source: string | null | undefined) {
   return source?.trim() || "Sem origem";
 }
 
+function isEligiblePayment(payment: LegalCrmMetricInput["payments"][number]) {
+  return payment.receivable_status !== "cancelled";
+}
+
 function includedMonths(period: LegalCrmPeriod) {
   const start = new Date(`${period.startMonth}T00:00:00Z`);
   const end = new Date(`${period.endMonth}T00:00:00Z`);
@@ -228,9 +250,14 @@ function buildFirstResponse(input: LegalCrmMetricInput): LegalCrmMetrics["firstR
 export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetrics {
   const cohort = input.deals.filter((deal) => !deal.is_placeholder && isInPeriod(deal.created_at, input.period));
   const cohortDealIds = new Set(cohort.map((deal) => deal.id));
+  const observedAt = new Date(input.stageHistory.observedAt).getTime();
+  const observedHistory = input.stageHistory.rows.filter((entry) => {
+    const occurredAt = new Date(entry.occurred_at).getTime();
+    return Number.isFinite(occurredAt) && occurredAt <= observedAt;
+  });
   const highestReached = new Map<string, number>();
 
-  for (const entry of input.stageHistory) {
+  for (const entry of observedHistory) {
     if (entry.is_baseline || !cohortDealIds.has(entry.deal_id)) continue;
     const rank = STAGE_RANK[entry.to_stage];
     if (rank >= 0) highestReached.set(entry.deal_id, Math.max(highestReached.get(entry.deal_id) ?? 0, rank));
@@ -262,7 +289,7 @@ export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetric
   const paidByContact = new Map<string, number>();
   if (input.canViewFinance) {
     for (const payment of input.payments) {
-      if (payment.receivable_status !== "paid" || !payment.contact_id) continue;
+      if (!isEligiblePayment(payment) || !payment.contact_id) continue;
       paidByContact.set(payment.contact_id, (paidByContact.get(payment.contact_id) ?? 0) + payment.amount_cents);
     }
   }
@@ -301,7 +328,7 @@ export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetric
     .sort((left, right) => right.count - left.count || left.label.localeCompare(right.label, "pt-BR"));
 
   const firstRealWinByDeal = new Map<string, string>();
-  for (const entry of input.stageHistory) {
+  for (const entry of observedHistory) {
     if (entry.is_baseline || entry.to_stage !== "ganho") continue;
     const existing = firstRealWinByDeal.get(entry.deal_id);
     if (!existing || new Date(entry.occurred_at).getTime() < new Date(existing).getTime()) {
@@ -341,10 +368,10 @@ export function buildLegalCrmMetrics(input: LegalCrmMetricInput): LegalCrmMetric
     const validAgreements = input.agreements.filter((agreement) => (
       (agreement.status === "active" || agreement.status === "completed") && Boolean(agreement.contact_id)
     ));
-    const validPayments = input.payments.filter((payment) => payment.receivable_status !== "cancelled" && Boolean(payment.contact_id));
+    const validPayments = input.payments.filter((payment) => isEligiblePayment(payment) && Boolean(payment.contact_id));
     const unlinkedRecords = input.agreements.filter((agreement) => (
       (agreement.status === "active" || agreement.status === "completed") && !agreement.contact_id
-    )).length + input.payments.filter((payment) => payment.receivable_status !== "cancelled" && !payment.contact_id).length;
+    )).length + input.payments.filter((payment) => isEligiblePayment(payment) && !payment.contact_id).length;
     const agreementContacts = new Set(validAgreements.map((agreement) => agreement.contact_id!));
     const paymentContacts = new Set(validPayments.map((payment) => payment.contact_id!));
     const contractedCents = validAgreements.length === 0
