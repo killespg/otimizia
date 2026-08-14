@@ -13,7 +13,7 @@ export function PageHeader({ eyebrow, title, description, action }: { eyebrow: s
 type ActionProps = ButtonHTMLAttributes<HTMLButtonElement> & { icon?: LucideIcon; href?: string };
 
 export function PrimaryAction({ icon: Icon, children, href, className = "", ...props }: ActionProps) {
-  const styles = `inline-flex min-h-11 items-center gap-2 rounded-md bg-[#7146dc] px-4 text-[13px] font-semibold text-white hover:bg-[#8055e8] ${className}`;
+  const styles = `inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover ${className}`;
   if (href) return <Link href={href} className={styles}>{Icon ? <Icon size={16} /> : null}{children}</Link>;
   return <button type="button" className={styles} {...props}>{Icon ? <Icon size={16} /> : null}{children}</button>;
 }
@@ -34,7 +34,7 @@ export function MetricStrip({ items }: { items: Array<{ label: string; value: st
 
 export function StatusTag({ children, tone = "neutral" }: { children: React.ReactNode; tone?: "neutral" | "brand" | "danger" | "success" | "warning" }) {
   const tones = { neutral: "border-white/[0.08] text-od-text-3", brand: "border-od-accent/20 text-od-text/70", danger: "border-red-400/20 text-[#ff8175]", success: "border-emerald-400/20 text-emerald-300/70", warning: "border-amber-400/20 text-amber-300/70" };
-  return <span className={`inline-flex w-fit rounded-[3px] border px-2 py-1 text-xs font-medium ${tones[tone]}`}>{children}</span>;
+  return <span className={`inline-flex w-fit rounded-[var(--radius-round)] border px-2 py-1 text-xs font-medium ${tones[tone]}`}>{children}</span>;
 }
 
 export function Avatar({ initials }: { initials: string }) {

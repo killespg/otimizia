@@ -30,7 +30,7 @@ export function SellerSummaryStrip({ items }: { items: Array<{ label: string; va
   const wideColumnClass = count === 1 ? "xl:grid-cols-1" : count === 2 ? "xl:grid-cols-2" : count === 3 ? "xl:grid-cols-3" : count === 4 ? "xl:grid-cols-4" : count === 5 ? "xl:grid-cols-5" : "xl:grid-cols-6";
   const smallLastRowStart = items.length - (items.length % smallColumns || smallColumns);
   return (
-    <section className={`grid border-y border-white/[0.08] bg-[#1e1d22]/80 ${smallColumnClass} ${wideColumnClass}`}>
+    <section className={`grid border-y border-od-border bg-od-surface/80 ${smallColumnClass} ${wideColumnClass}`}>
       {items.map((item, index) => (
         <div key={item.label} className={`border-white/[0.07] px-3 py-3 sm:px-4 ${index >= smallLastRowStart ? "border-b-0" : "border-b"} ${(index + 1) % smallColumns === 0 || index === items.length - 1 ? "border-r-0" : "border-r"} xl:border-b-0 ${index === items.length - 1 ? "xl:border-r-0" : "xl:border-r"}`}>
           <p className="text-xs text-od-text-3">{item.label}</p>
@@ -67,7 +67,7 @@ export function ProductThumb({ src, name, size = "md" }: { src?: string | null; 
 
 export function SellerStatus({ tone = "neutral", children }: { tone?: "neutral" | "violet" | "success" | "warning" | "danger"; children: ReactNode }) {
   const tones = {
-    neutral: "border-white/[0.1] text-white/56",
+    neutral: "border-od-border text-white/56",
     violet: "border-od-accent/25 bg-od-accent/[0.07] text-od-text",
     success: "border-emerald-400/25 bg-emerald-400/[0.06] text-emerald-300",
     warning: "border-amber-300/25 bg-amber-300/[0.06] text-amber-300",

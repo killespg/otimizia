@@ -74,7 +74,7 @@ export default async function LawPage(props: { searchParams?: Promise<{ busca?: 
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-4 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold text-od-text-2">Jurídico / Processos</p>
           <h1 className="mt-2 text-od-title text-white">Carteira de processos</h1>
@@ -101,13 +101,13 @@ export default async function LawPage(props: { searchParams?: Promise<{ busca?: 
         </div>
       </header>
 
-      <section className="grid border-y border-white/[0.08] sm:grid-cols-3">
+      <section className="od-band grid sm:grid-cols-3">
         <Metric icon={IconColumns} label="Casos ativos" value={String(activeCases.length)} />
         <Metric icon={IconAlert} label="Prazos nos próximos 7 dias" value={String(deadlines.length)} warning />
         <Metric icon={IconUsers} label="Clientes com caso" value={String(new Set(activeCases.map((item) => item.contact_id).filter(Boolean)).size)} />
       </section>
 
-      <section className="overflow-hidden border border-white/[0.09] bg-[#1e1d22]">
+      <section className="overflow-hidden panel">
         <div className="flex flex-col gap-3 border-b border-white/[0.08] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-base font-semibold text-white">Processos em acompanhamento</h2>

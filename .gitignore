@@ -25,6 +25,7 @@ next-dev-*.err.log
 .claude/
 .copilot/
 .impeccable/
+.superpowers/
 .vscode/
 .vscode-shared/
 ~/**

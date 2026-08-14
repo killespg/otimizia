@@ -122,7 +122,7 @@ export default async function WorkspacesPage() {
                       {option.label}
                     </h2>
                     {isActive ? (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-od-accent-tint px-2 py-1 text-xs font-semibold text-violet-200">
+                      <span className="inline-flex items-center gap-1 rounded-control bg-od-accent-tint px-2 py-1 text-xs font-semibold text-od-accent-soft">
                         <Check size={13} aria-hidden="true" />
                         Em uso
                       </span>
@@ -161,7 +161,7 @@ export default async function WorkspacesPage() {
         Para habilitar ou remover uma área, use{" "}
         <Link
           href="/painel/configuracoes"
-          className="font-semibold text-violet-300 underline decoration-violet-300/50 underline-offset-4 hover:text-violet-200"
+          className="font-semibold text-od-accent-soft underline decoration-od-accent/50 underline-offset-4 hover:text-od-text"
         >
           Configurações
         </Link>

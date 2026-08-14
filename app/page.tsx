@@ -8,7 +8,7 @@ import { LogoMarquee } from "@/components/landing/logo-marquee";
 import { FeatureTabs } from "@/components/landing/feature-tabs";
 import { DashboardPreview } from "@/components/landing/dashboard-preview";
 import { Pricing } from "@/components/landing/pricing";
-import { Glow, Reveal } from "@/components/landing/reveal";
+import { Reveal } from "@/components/landing/reveal";
 import { FaqAccordion } from "@/components/landing/FaqAccordion";
 import { CookiePreferencesLink } from "@/components/site/CookieConsent";
 import { SpotlightCard } from "@/components/landing/spotlight-card";
@@ -44,9 +44,8 @@ function Section({
   return (
     <section
       id={id}
-      className={`relative isolate scroll-mt-16 overflow-hidden border-t border-od-border ${raised ? "bg-od-muted-surface" : "bg-od-bg"}`}
+      className={`relative isolate scroll-mt-16 overflow-hidden ${raised ? "bg-od-muted-surface" : "bg-od-bg"}`}
     >
-      <Glow className="-top-40 left-1/2 -translate-x-1/2" size={640} intensity={0.1} pulse />
       <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-20 sm:px-8 md:py-24">
         {title || description ? (
           <Reveal className="mx-auto mb-12 max-w-[560px] text-center">
@@ -74,24 +73,13 @@ export default async function LandingPage() {
   return (
     <div className="landing-page dark relative bg-od-bg">
 
-      {/* Glow de fundo único, atravessando hero → features → dashboard, pra costurar
-          as seções em vez de cada uma "recomeçar" visualmente do zero. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[1400px]"
-        style={{
-          background:
-            "radial-gradient(ellipse 70% 45% at 50% 0%, rgba(92,34,232,0.22), transparent 65%)",
-        }}
-      />
-
       <LandingNav />
       <MobileStickyCta />
       <main className="relative overflow-hidden">
         {/* Abertura: hero e prova social continuam emendados, sem regua entre
             eles — sao um bloco de entrada, nao duas categorias. */}
         <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 pt-10 sm:px-8">
-          <Hero animated />
+          <Hero />
           <div className="-mt-4 pb-20 pt-14">
             <p className="mb-7 text-center text-od-label text-od-text-3">
               Feito para quem trabalha sozinho e para equipes inteiras
@@ -109,7 +97,7 @@ export default async function LandingPage() {
           <FeatureTabs />
         </Section>
 
-        <section id="painel" className="scroll-mt-16 border-t border-od-border bg-od-bg">
+        <section id="painel" className="scroll-mt-16 bg-od-bg">
           <ContainerScroll
             titleComponent={
               <>
@@ -143,7 +131,7 @@ export default async function LandingPage() {
           raised
         >
           <div className="flex flex-col gap-3">
-            <SpotlightCard localSpotlight={false} />
+            <SpotlightCard />
             <AiComposer />
           </div>
         </Section>
@@ -199,7 +187,7 @@ export default async function LandingPage() {
           <About />
         </Section>
 
-        <section id="cta-final" className="border-t border-od-border bg-od-muted-surface">
+        <section id="cta-final" className="bg-od-muted-surface">
           <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-24 text-center sm:px-8">
             <h2 className="mx-auto mb-4 max-w-[520px] text-od-title text-od-text">
               Pronto pra parar de perder negócio por esquecimento?
@@ -214,7 +202,7 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        <footer className="border-t border-od-border bg-od-bg">
+        <footer className="bg-od-bg">
           <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-12 sm:px-8">
             <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
               <div className="max-w-[320px]">

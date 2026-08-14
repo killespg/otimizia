@@ -10,7 +10,9 @@ import {
   FileSearch,
   RefreshCw,
 } from "lucide-react";
-import { canViewFinance, canViewLegal } from "@/lib/law/law-office";
+import { canManageFinance, canViewFinance, canViewLegal } from "@/lib/law/law-office";
+import { getLegalCrmMetrics } from "@/lib/law/legal-crm-data";
+import type { LegalCrmPeriodKey } from "@/lib/law/legal-crm-metrics";
 import { formatBRL } from "@/lib/utils/format";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
@@ -22,6 +24,7 @@ import type {
 } from "@/lib/supabase/types";
 import { LegalDashboardAssistant } from "@/components/design-system/legal-dashboard-assistant";
 import { LegalDashboardFilters } from "@/components/design-system/legal-dashboard-filters";
+import { LegalCrmPerformance } from "@/components/legal/legal-crm-performance";
 
 type ContactRow = { id: string; name: string };
 type PaymentRow = { amount_cents: number; paid_at: string };
@@ -67,10 +70,21 @@ function outstanding(item: Receivable) {
   return Math.max(0, item.original_cents - item.paid_cents);
 }
 
+function normalizeLegalCrmPeriodKey(value: string | undefined): LegalCrmPeriodKey {
+  return value === "previous_month" || value === "last_3_months" || value === "last_6_months"
+    ? value
+    : "current_month";
+}
+
 export default async function LegalDashboardPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ period?: string; portfolio?: string; area?: string }>;
+  searchParams?: Promise<{
+    period?: string;
+    portfolio?: string;
+    area?: string;
+    crm_period?: string;
+  }>;
 }) {
   const filters = await searchParams;
   const supabase = await createClient();
@@ -154,7 +168,7 @@ export default async function LegalDashboardPage({
   const isAdmin = orgRole === "admin";
   if (!canViewLegal(membership?.job_role, isAdmin)) {
     return (
-      <section className="rounded-xl border border-od-border bg-od-surface p-6">
+      <section className="rounded-[var(--radius-panel)] border border-od-border bg-od-surface p-6">
         <h1 className="text-xl font-semibold">Acesso jurídico restrito</h1>
         <p className="mt-2 text-sm text-white/55">
           Peça a um administrador do escritório para revisar seu cargo.
@@ -162,6 +176,16 @@ export default async function LegalDashboardPage({
       </section>
     );
   }
+
+  const financeVisible = canViewFinance(membership?.job_role, isAdmin);
+  const financeManageable = canManageFinance(membership?.job_role, isAdmin);
+  const commercialMetrics = await getLegalCrmMetrics({
+    supabase,
+    orgId,
+    periodKey: normalizeLegalCrmPeriodKey(filters?.crm_period),
+    now,
+    canViewFinance: financeVisible,
+  });
 
   const cases = (caseRows ?? []) as LegalCase[];
   const deadlines = (deadlineRows ?? []) as LegalDeadline[];
@@ -228,11 +252,6 @@ export default async function LegalDashboardPage({
     (sum, item) => sum + item.amount_cents,
     0,
   );
-  const collectionTarget = Math.max(openCents + paidThisMonth, 1);
-  const collectionProgress = Math.min(
-    100,
-    Math.round((paidThisMonth / collectionTarget) * 100),
-  );
   const displayName =
     profile?.name ||
     (typeof user?.user_metadata?.name === "string"
@@ -261,30 +280,31 @@ export default async function LegalDashboardPage({
   const deadlinesOutOfScope = deadlines.length - visibleDeadlines.length;
 
   return (
-    <div id="carteira" className="mx-auto w-full max-w-[1640px] text-white">
-      <section className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+    <div
+      id="carteira"
+      data-legal-dashboard="true"
+      className="dashboard-board relative isolate mx-auto w-full max-w-[1640px] space-y-6 text-od-text"
+    >
+      <header className="flex flex-col gap-5 pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div className="min-w-0">
-          <p className="flex items-center gap-2 text-xs font-semibold text-od-text-3">
-            <CalendarDays size={16} />
-            {dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}
+          <p className="flex items-center gap-2 text-xs font-semibold capitalize text-od-text-3">
+            <CalendarDays size={14} />
+            <time dateTime={now.toISOString()}>
+              {dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}
+            </time>
           </p>
-          <h1 className="mt-2 text-od-title font-extrabold tracking-[-0.02em]">
-            Bom dia,{" "}
-            <span className="text-od-text">{firstName(displayName)}.</span>
+          <h1 className="mt-3 text-od-title text-white">
+            Bom dia, <span className="text-od-text">{firstName(displayName)}.</span>
           </h1>
-          {/* Cor de estado só aparece quando existe estado. Vermelho sobre um
-              zero era alarme anunciando que não há nada de errado — e era o
-              único ponto forte de cor da tela. */}
           {!hasAnyCase ? (
-            <p className="mt-2 max-w-3xl text-sm text-white/60">
-              Seu escritório ainda não tem casos cadastrados. Comece por um caso
-              e o painel passa a mostrar prazos, movimentações e honorários.
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-white/56">
+              Cadastre o primeiro caso para organizar prazos, movimentações e honorários em um só lugar.
             </p>
           ) : hasSignals ? (
-            <p className="mt-2 flex max-w-3xl flex-wrap items-center gap-x-2 gap-y-1 text-sm text-white/60">
-              <span>O escritório começa o dia com</span>
+            <p className="mt-2 flex max-w-3xl flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-relaxed text-white/56">
+              <span>Seu escritório começa o dia com</span>
               {critical.length > 0 ? (
-                <span className="inline-flex items-center gap-1 font-semibold text-[#fca79b]">
+                <span className="inline-flex items-center gap-1 font-semibold text-danger-600">
                   <AlertTriangle size={14} />
                   {critical.length}{" "}
                   {critical.length === 1 ? "prazo crítico" : "prazos críticos"}
@@ -294,7 +314,7 @@ export default async function LegalDashboardPage({
                 <span className="text-od-text-3">e</span>
               ) : null}
               {reviews.length > 0 ? (
-                <span className="inline-flex items-center gap-1 font-semibold text-od-text">
+                <span className="inline-flex items-center gap-1 font-semibold text-od-accent-soft">
                   <FileCheck2 size={14} />
                   {reviews.length}{" "}
                   {reviews.length === 1 ? "movimentação" : "movimentações"} para
@@ -303,38 +323,221 @@ export default async function LegalDashboardPage({
               ) : null}
             </p>
           ) : (
-            <p className="mt-2 flex max-w-3xl flex-wrap items-center gap-x-1.5 text-sm text-white/60">
-              <Check size={15} className="mt-1 shrink-0 text-emerald-300/80" />
+            <p className="mt-2 flex max-w-3xl flex-wrap items-center gap-x-1.5 text-sm leading-relaxed text-white/56">
               <span>
-                Nenhum prazo crítico e nenhuma movimentação pendente.{" "}
-                <span className="text-od-text-3">
+                Sua operação jurídica está em ordem. Há{" "}
+                <strong className="font-semibold text-od-text">
                   {allActiveCases.length}{" "}
                   {allActiveCases.length === 1
                     ? "caso ativo na carteira"
                     : "casos ativos na carteira"}
-                  .
-                </span>
+                </strong>.
               </span>
             </p>
           )}
         </div>
-        {/* Sem caso nenhum não há o que filtrar: três seletores desabilitados
-            de fato só somam moldura no dia um. */}
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/painel/juridico/prazos"
+            className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:bg-od-surface-hover hover:text-od-text"
+          >
+            <CalendarDays size={15} />
+            Agenda e prazos
+          </Link>
+          <Link
+            href="/painel/juridico/processos?novo=1"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover"
+          >
+            <FileCheck2 size={16} />
+            Novo caso
+          </Link>
+        </div>
+      </header>
+
+      <LegalDashboardAssistant />
+
+      <LegalCrmPerformance
+        metrics={commercialMetrics}
+        canManageFinance={financeManageable}
+        searchParams={filters}
+      />
+
+      <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold text-od-text-3">Área de trabalho</p>
+          <h2 className="mt-1 text-sm font-semibold text-white">Visão geral jurídica</h2>
+        </div>
         {hasAnyCase ? (
           <LegalDashboardFilters period={period} portfolio={portfolio} area={area} areas={areas} />
         ) : null}
       </section>
 
-      <div className="space-y-6">
-        <LegalDashboardAssistant
-          suggestions={[
-            "Quais casos vencem essa semana?",
-            "Resuma a carteira atual",
-            "Quem está com honorário atrasado?",
-          ]}
-        />
+      <section
+        id="movimentacoes"
+        data-legal-metric-band="true"
+        data-dashboard-card
+        aria-label="Panorama operacional"
+        className="grid grid-cols-2 overflow-hidden panel xl:grid-cols-4"
+      >
+          <OperationalMetric
+            icon={AlertTriangle}
+            label="Prazos críticos"
+            value={String(critical.length)}
+            detail={`${weekDeadlines.length} nos próximos 7 dias`}
+            href="/painel/juridico/prazos"
+            tone={critical.length > 0 ? "danger" : "neutral"}
+          />
+          <OperationalMetric
+            icon={FileClock}
+            label="Casos sem movimento"
+            value={String(stalled.length)}
+            detail="há mais de 30 dias"
+            href="/painel/juridico/processos"
+            tone={stalled.length > 0 ? "warning" : "neutral"}
+          />
+          <OperationalMetric
+            icon={RefreshCw}
+            label="Movimentações para revisar"
+            value={String(reviews.length)}
+            detail={`${events.length} registradas hoje`}
+            href="/painel/juridico/consulta"
+            tone={reviews.length > 0 ? "brand" : "neutral"}
+          />
+          {financeVisible ? (
+            <OperationalMetric
+              icon={CircleDollarSign}
+              label="Valores vencidos"
+              value={formatBRL(overdueCents)}
+              detail={`${overdueReceivables.length} cobranças abertas`}
+              href="/painel/financeiro#recebiveis"
+              tone={overdueCents > 0 ? "danger" : "neutral"}
+            />
+          ) : (
+            <OperationalMetric
+              icon={FileCheck2}
+              label="Carteira ativa"
+              value={String(activeCases.length)}
+              detail="casos sob acompanhamento"
+              href="/painel/juridico/processos"
+              tone="brand"
+            />
+          )}
+      </section>
 
-        <section>
+      <section data-legal-indicators="true" data-dashboard-card className="overflow-hidden panel">
+        <header className="flex items-end justify-between gap-4 px-4 py-4 sm:px-5">
+          <div>
+            <h2 className="text-sm font-semibold text-white">Indicadores jurídicos</h2>
+            <p className="mt-1 text-xs text-od-text-3">
+              Prazos, carteira e posição financeira do escritório.
+            </p>
+          </div>
+          <span className="shrink-0 text-xs font-medium text-od-text-3">Atualizado agora</span>
+        </header>
+        <div className="grid gap-2 pb-2 lg:grid-cols-3">
+          <IndicatorGroup
+            title="Prazos e movimento"
+            items={[
+              {
+                label: "Prazos críticos",
+                value: String(critical.length),
+                note: `${weekDeadlines.length} nos próximos 7 dias`,
+                href: "/painel/juridico/prazos",
+              },
+              {
+                label: "Movimentações para revisar",
+                value: String(reviews.length),
+                note: `${events.length} registradas hoje`,
+                href: "/painel/juridico/consulta",
+              },
+              {
+                label: "Fora do filtro atual",
+                value: String(Math.max(0, deadlinesOutOfScope)),
+                note: "prazos pendentes em outro recorte",
+                href: "/painel/juridico/prazos",
+              },
+            ]}
+          />
+          <IndicatorGroup
+            title="Carteira"
+            items={[
+              {
+                label: "Casos ativos",
+                value: String(activeCases.length),
+                note: portfolio === "mine" ? "na sua carteira" : "na carteira do escritório",
+                href: "/painel/juridico/processos",
+              },
+              {
+                label: "Sem movimento",
+                value: String(stalled.length),
+                note: "há mais de 30 dias",
+                href: "/painel/juridico/processos",
+              },
+              {
+                label: "Áreas acompanhadas",
+                value: String(areas.length),
+                note: area === "all" ? "todas as áreas" : area,
+                href: "/painel/juridico/processos",
+              },
+            ]}
+          />
+          {financeVisible ? (
+            <IndicatorGroup
+              title="Financeiro"
+              items={[
+                {
+                  label: "Recebido neste mês",
+                  value: formatBRL(paidThisMonth),
+                  note: "pagamentos confirmados",
+                  href: "/painel/financeiro#recebiveis",
+                },
+                {
+                  label: "Em aberto",
+                  value: formatBRL(openCents),
+                  note: `${openReceivables.length} ${openReceivables.length === 1 ? "parcela" : "parcelas"}`,
+                  href: "/painel/financeiro#recebiveis",
+                },
+                {
+                  label: "Vencido",
+                  value: formatBRL(overdueCents),
+                  note: `${overdueReceivables.length} ${overdueReceivables.length === 1 ? "cobrança" : "cobranças"}`,
+                  href: "/painel/financeiro#recebiveis",
+                },
+              ]}
+            />
+          ) : (
+            <IndicatorGroup
+              title="Acompanhamento"
+              items={[
+                {
+                  label: "Casos da equipe",
+                  value: String(allActiveCases.length),
+                  note: "em acompanhamento",
+                  href: "/painel/juridico/processos",
+                },
+                {
+                  label: "Prazos visíveis",
+                  value: String(visibleDeadlines.length),
+                  note: `nos próximos ${period} dias`,
+                  href: "/painel/juridico/prazos",
+                },
+                {
+                  label: "Movimentações hoje",
+                  value: String(events.length),
+                  note: "na carteira atual",
+                  href: "/painel/juridico/consulta",
+                },
+              ]}
+            />
+          )}
+        </div>
+      </section>
+
+      <section className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(21rem,.55fr)]">
+          <section
+            data-legal-primary-workbench="true"
+            className="panel min-w-0 p-5"
+          >
           <div className="mb-3 flex items-end justify-between gap-4">
             <div>
               <h2 className="text-base font-semibold">
@@ -353,26 +556,14 @@ export default async function LegalDashboardPage({
             {hasAnyCase ? (
               <Link
                 href="/painel/juridico/prazos"
-                className="shrink-0 text-xs font-semibold text-od-text-2 hover:text-od-text"
+                className="inline-flex min-h-11 shrink-0 items-center text-xs font-semibold text-od-text-2 hover:text-od-text"
               >
                 Ver meu dia
               </Link>
             ) : null}
           </div>
-          {/* O cabeçalho de coluna vive DENTRO do caso com linhas. Fora dele,
-              prometia cinco colunas e entregava uma frase centralizada. */}
           {priorityItems.length ? (
-            <div className="hidden grid-cols-[128px_minmax(0,1.2fr)_minmax(150px,.8fr)_110px_120px_32px] gap-x-3 px-3 pb-2 text-od-label text-od-text-3 sm:grid">
-              <span>Prioridade</span>
-              <span>Caso</span>
-              <span>Próxima ação</span>
-              <span>Área</span>
-              <span>Responsável</span>
-              <span />
-            </div>
-          ) : null}
-          {priorityItems.length ? (
-            <div className="divide-y divide-od-border border-y border-od-border">
+            <div className="divide-y divide-od-border border-t border-od-border">
               {priorityItems.map((deadline) => {
                 const item = caseById.get(deadline.case_id);
                 const urgent = new Date(deadline.due_at) <= todayEnd;
@@ -384,48 +575,27 @@ export default async function LegalDashboardPage({
                   <Link
                     key={deadline.id}
                     href={`/painel/juridico/processos/${deadline.case_id}`}
-                    className="grid min-h-[68px] grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-x-3 px-3 py-3 hover:bg-white/[0.025] sm:grid-cols-[128px_minmax(0,1.2fr)_minmax(150px,.8fr)_110px_120px_32px]"
+                    className="group flex min-h-[76px] items-center gap-3 py-3 hover:bg-white/[0.025]"
                   >
-                    <div className="flex min-w-0 items-center gap-2.5">
-                      <span
-                        className={`grid size-8 shrink-0 place-items-center rounded-xl ${urgent ? "bg-red-400/10 text-[#fb7767]" : "bg-white/[0.06] text-od-text-2"}`}
-                      >
-                        <PriorityIcon size={14} />
-                      </span>
-                      <span className="hidden min-w-0 sm:block">
-                        <strong
-                          className={`block text-od-label ${urgent ? "text-[#fca79b]" : "text-od-text-3"}`}
-                        >
-                          {urgent ? "Crítico" : "Revisão"}
-                        </strong>
-                        <small className="mt-0.5 block truncate text-xs font-semibold text-white/75">
-                          {dateTime(deadline.due_at)}
-                        </small>
-                      </span>
-                    </div>
-                    <span className="min-w-0">
+                    <span
+                      className={`grid size-9 shrink-0 place-items-center rounded-[var(--radius-control)] ${urgent ? "bg-danger-50 text-danger-600" : "bg-od-muted-surface text-od-text-2"}`}
+                    >
+                      <PriorityIcon size={15} />
+                    </span>
+                    <span className="min-w-0 flex-1">
                       <strong className="block truncate text-[13px] font-semibold leading-snug">
                         {item?.title || "Caso jurídico"}
                       </strong>
-                      <small className="mt-1 block truncate text-xs text-white/55 sm:hidden">
+                      <small className={`mt-1 block truncate text-xs font-medium ${urgent ? "text-danger-600" : "text-od-text-2"}`}>
+                        {urgent ? "Crítico" : "Revisão"} · {dateTime(deadline.due_at)} · {owner}
+                      </small>
+                      <small className="mt-0.5 block truncate text-xs text-od-text-3">
                         {deadline.title}
                       </small>
                     </span>
-                    <span className="hidden truncate text-xs text-white/60 sm:block">
-                      {deadline.title}
-                    </span>
-                    <span className="hidden text-xs text-white/55 sm:block">
-                      {item?.area || "Não informada"}
-                    </span>
-                    <span className="hidden items-center gap-2 text-xs text-white/65 sm:flex">
-                      <span className="grid size-5 place-items-center rounded-full bg-white/[0.08] text-xs font-bold text-white/70">
-                        {owner.charAt(0)}
-                      </span>
-                      {owner}
-                    </span>
-                    <Check
+                    <ArrowUpRight
                       size={15}
-                      className="hidden text-od-text-3 sm:block"
+                      className="shrink-0 text-od-text-3 transition-colors group-hover:text-od-text"
                     />
                   </Link>
                 );
@@ -435,9 +605,9 @@ export default async function LegalDashboardPage({
             /* Carteira em dia: boa notícia dita como boa notícia. Se existem
                prazos fora do escopo atual, dizemos quantos — senão o usuário
                conclui que zerou quando só está olhando por uma fresta. */
-            <div className="flex flex-col gap-3 border-y border-od-border px-3 py-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-t border-od-border px-3 py-6 sm:flex-row sm:items-center sm:justify-between">
               <p className="flex items-start gap-2.5 text-sm text-white/70">
-                <span className="mt-px grid size-8 shrink-0 place-items-center rounded-xl bg-emerald-400/10 text-emerald-300">
+                 <span className="mt-px grid size-8 shrink-0 place-items-center rounded-[var(--radius-control)] bg-success-50 text-success-600">
                   <Check size={15} />
                 </span>
                 <span>
@@ -457,7 +627,7 @@ export default async function LegalDashboardPage({
               </p>
               <Link
                 href="/painel/juridico/prazos"
-                className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-md border border-od-border px-4 text-[13px] font-semibold text-white/80 hover:border-white/25 hover:text-white"
+                className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-[var(--radius-control)] border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:border-od-border-hover hover:bg-od-surface-hover hover:text-od-text"
               >
                 Ver todos os prazos
                 <ArrowUpRight size={14} />
@@ -467,7 +637,7 @@ export default async function LegalDashboardPage({
             /* Dia um: ensina a área em vez de dizer "nada aqui". Numerado
                porque é uma sequência de verdade — cada passo destrava o
                seguinte. */
-            <ol className="divide-y divide-od-border border-y border-od-border">
+              <div className="grid divide-y divide-od-border border-y border-od-border xl:grid-cols-3 xl:divide-x xl:divide-y-0">
               {[
                 {
                   step: "1",
@@ -494,116 +664,57 @@ export default async function LegalDashboardPage({
                   Icon: FileClock,
                 },
               ].map(({ step, title, body, href, action, Icon }) => (
-                <li
+                <div
                   key={step}
-                  className="flex flex-col gap-3 px-3 py-4 sm:flex-row sm:items-center sm:gap-4"
+                   className="flex flex-col gap-3 p-4"
                 >
-                  <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-od-accent/12 text-[13px] font-bold text-od-accent">
-                    {step}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <strong className="flex items-center gap-2 text-[13px] font-semibold text-white">
-                      <Icon size={14} className="shrink-0 text-od-text-3" />
-                      {title}
-                    </strong>
-                    <span className="mt-1 block max-w-[62ch] text-xs leading-5 text-white/55">
-                      {body}
+                  <div className="flex items-center gap-2">
+                     <span className="grid size-8 shrink-0 place-items-center rounded-[var(--radius-control)] bg-od-accent-tint text-[13px] font-bold text-od-accent-soft">
+                      {step}
                     </span>
-                  </span>
+                    <Icon size={14} className="shrink-0 text-od-text-3" />
+                  </div>
+                  <div>
+                    <strong className="text-[13px] font-semibold text-white">{title}</strong>
+                    <p className="mt-1 text-xs leading-5 text-white/55">{body}</p>
+                  </div>
                   <Link
                     href={href}
-                    className={`inline-flex h-11 shrink-0 items-center gap-1.5 rounded-md px-4 text-[13px] font-semibold transition-colors ${
+                    className={`mt-auto inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-[var(--radius-control)] px-4 text-[13px] font-semibold transition-colors ${
                       step === "1"
-                        ? "bg-od-accent text-white hover:bg-brand-600"
-                        : "border border-od-border text-white/80 hover:border-white/25 hover:text-white"
+                        ? "bg-od-accent text-white hover:bg-od-accent-hover"
+                        : "border border-od-border text-od-text-2 hover:border-od-border-hover hover:bg-od-surface-hover hover:text-od-text"
                     }`}
                   >
                     {action}
                     <ArrowUpRight size={14} />
                   </Link>
-                </li>
+                </div>
               ))}
-            </ol>
-          )}
-        </section>
-
-        <section id="movimentacoes">
-          <div className="mb-3 flex items-end justify-between">
-            <div>
-              <h2 className="text-sm font-semibold">Panorama operacional</h2>
-              <p className="mt-1 text-xs text-white/60">
-                O que precisa de decisão no escritório agora
-              </p>
             </div>
-            <span className="text-xs font-medium text-od-text-3">
-              Atualizado agora
-            </span>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              icon={AlertTriangle}
-              label="Prazos críticos"
-              value={String(critical.length)}
-              detail="vencem hoje"
-              context={`${weekDeadlines.length} nos próximos 7 dias`}
-              href="/painel/juridico/prazos"
-              action="Ver prazos"
-              tone="danger"
-            />
-            <StatCard
-              icon={FileClock}
-              label="Casos sem movimento"
-              value={String(stalled.length)}
-              detail="há mais de 30 dias"
-              context="exigem contato"
-              href="/painel/juridico/processos"
-              action="Ver casos"
-              tone="warning"
-            />
-            <StatCard
-              icon={RefreshCw}
-              label="Pendências processuais"
-              value={String(reviews.length)}
-              detail="aguardam revisão"
-              context={`${events.length} movimentações hoje`}
-              href="/painel/juridico/consulta"
-              action="Revisar"
-              tone="brand"
-            />
-            {canViewFinance(membership?.job_role, isAdmin) ? (
-              <StatCard
-                icon={CircleDollarSign}
-                label="Valores vencidos"
-                value={formatBRL(overdueCents)}
-                detail={`${overdueReceivables.length} cobranças abertas`}
-                context="ação financeira"
-                href="/painel/financeiro#recebiveis"
-                action="Ver cobranças"
-                tone="danger"
-              />
-            ) : null}
-          </div>
-        </section>
-
-        <section className="grid gap-4 xl:grid-cols-[minmax(0,1.8fr)_minmax(320px,.72fr)]">
-          <PortfolioChart cases={cases} />
-          {canViewFinance(membership?.job_role, isAdmin) ? (
+          )}
+          </section>
+          {financeVisible ? (
             <FinanceSummary
-              progress={collectionProgress}
               paid={paidThisMonth}
               overdue={overdueCents}
               open={openCents}
               count={openReceivables.length}
             />
           ) : (
-            <div className="rounded-xl border border-od-border bg-od-surface p-5">
-              <h2 className="text-base font-semibold">
-                Carteira do escritório
-              </h2>
-              <p className="mt-2 text-sm text-od-text-3">
-                {activeCases.length} casos ativos sob acompanhamento.
+             <section className="od-band self-start p-5">
+              <h2 className="text-base font-semibold">Carteira do escritório</h2>
+              <p className="mt-2 text-sm text-od-text-2">
+                {activeCases.length} casos ativos sob acompanhamento no filtro atual.
               </p>
-            </div>
+              <Link
+                href="/painel/juridico/processos"
+                className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:border-od-border-hover hover:bg-od-surface-hover hover:text-od-text"
+              >
+                Abrir carteira
+                <ArrowUpRight size={14} />
+              </Link>
+            </section>
           )}
         </section>
 
@@ -613,58 +724,91 @@ export default async function LegalDashboardPage({
           contacts={contactNames}
           members={memberNames}
         />
+
+        <PortfolioChart cases={cases} />
+    </div>
+  );
+}
+
+function IndicatorGroup({
+  title,
+  items,
+}: {
+  title: string;
+  items: Array<{ label: string; value: string; note: string; href: string }>;
+}) {
+  return (
+    <div className="min-w-0 px-4 py-4 sm:px-5">
+      <h3 className="text-xs font-semibold text-white/68">{title}</h3>
+      <div className="mt-3 space-y-1">
+        {items.map((item) => (
+          <Link
+            href={item.href}
+            key={item.label}
+            aria-label={`Abrir ${item.label.toLowerCase()}`}
+            className="group grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1 rounded-[var(--radius-control)] px-2 py-3 transition-colors hover:bg-white/[0.02] focus-visible:z-10"
+          >
+            <span className="text-xs text-od-text-3 transition-colors group-hover:text-white/64">
+              {item.label}
+            </span>
+            <span
+              className="max-w-44 truncate text-right text-sm font-semibold text-white/82 group-hover:text-od-text"
+              title={item.value}
+            >
+              {item.value}
+            </span>
+            <span className="col-span-2 text-xs leading-relaxed text-od-text-3">
+              {item.note}
+            </span>
+          </Link>
+        ))}
       </div>
     </div>
   );
 }
 
-function StatCard({
+function OperationalMetric({
   icon: Icon,
   label,
   value,
   detail,
-  context,
   href,
-  action,
   tone,
 }: {
   icon: typeof AlertTriangle;
   label: string;
   value: string;
   detail: string;
-  context: string;
   href: string;
-  action: string;
-  tone: "danger" | "warning" | "brand";
+  tone: "danger" | "warning" | "brand" | "neutral";
 }) {
   const color =
     tone === "danger"
-      ? "text-[#fb7767]"
+      ? "text-danger-600"
       : tone === "warning"
-        ? "text-amber-300"
-        : "text-od-text-2";
+        ? "text-warning-700"
+        : tone === "brand"
+          ? "text-od-accent-soft"
+          : "text-od-text-3";
   return (
-    <article className="min-w-0 rounded-xl border border-od-border bg-od-surface p-4">
-      <div className="flex items-center gap-2">
-        <Icon size={16} className={`shrink-0 ${color}`} strokeWidth={2} />
-        <span className="text-xs font-semibold text-white/65">{label}</span>
-      </div>
-      <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-        <strong className="text-2xl font-bold tracking-[-.02em]">
+    <Link
+      href={href}
+      aria-label={`Abrir ${label.toLowerCase()}`}
+      className="group flex min-h-24 items-start gap-3 border-b border-r border-white/[0.08] px-4 py-4 transition-colors hover:bg-white/[0.025] focus-visible:z-10 even:border-r-0 [&:nth-last-child(-n+2)]:border-b-0 xl:min-h-28 xl:border-b-0 xl:border-r xl:even:border-r xl:last:border-r-0 xl:px-5"
+    >
+      <span className={`mt-0.5 grid size-8 shrink-0 place-items-center rounded-[var(--radius-control)] bg-white/[0.06] ${color}`}>
+        <Icon size={16} strokeWidth={2} />
+      </span>
+      <div className="min-w-0">
+        <p className="text-xs font-medium text-od-text-3">{label}</p>
+        <p className="mt-2 truncate text-2xl font-bold tracking-[-0.03em] text-white">
           {value}
-        </strong>
-        <span className={`text-xs font-semibold ${color}`}>{detail}</span>
+        </p>
+        <p className="mt-2 text-xs leading-relaxed text-od-text-3 transition-colors group-hover:text-white/52">
+          {detail}
+        </p>
       </div>
-      <div className="mt-3 flex items-center justify-between gap-3 border-t border-white/[0.07] pt-3">
-        <span className="text-xs text-od-text-3">{context}</span>
-        <Link
-          href={href}
-          className="shrink-0 text-xs font-semibold text-od-text-2 hover:text-od-text"
-        >
-          {action}
-        </Link>
-      </div>
-    </article>
+    </Link>
   );
 }
 
@@ -697,14 +841,19 @@ function PortfolioChart({ cases }: { cases: LegalCase[] }) {
     1,
     ...months.flatMap((item) => [item.opened, item.closed]),
   );
-  const points = months
+  const openedPoints = months
     .map(
       (item, index) => `${index * (100 / 6)},${100 - (item.opened / max) * 84}`,
     )
     .join(" ");
+  const closedPoints = months
+    .map(
+      (item, index) => `${index * (100 / 6)},${100 - (item.closed / max) * 84}`,
+    )
+    .join(" ");
   const delta = months[6].opened - months[6].closed;
   return (
-    <section className="h-full rounded-xl border border-od-border bg-od-surface p-5">
+    <section className="panel h-full p-5">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-base font-semibold">Fluxo da carteira</h2>
@@ -712,17 +861,26 @@ function PortfolioChart({ cases }: { cases: LegalCase[] }) {
             Novos casos e encerramentos nos últimos 7 meses
           </p>
         </div>
-        <span className="text-xs font-semibold text-od-text-2">
-          {delta >= 0 ? "+" : ""}
-          {delta} casos no mês
-        </span>
+        <div className="flex flex-wrap items-center gap-4 text-xs text-od-text-2">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="size-2 rounded-full bg-od-accent" />
+            Abertos
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="size-2 rounded-full bg-od-text-3" />
+            Encerrados
+          </span>
+          <strong className="font-semibold text-od-text">
+            {delta >= 0 ? "+" : ""}{delta} no mês
+          </strong>
+        </div>
       </div>
       <div className="h-56 w-full sm:h-64">
         <svg
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           className="h-full w-full overflow-visible"
-          aria-label="Evolução de novos casos"
+          aria-label="Evolução de casos abertos e encerrados"
         >
           <g stroke="rgba(255,255,255,.07)" strokeWidth=".35">
             {[20, 40, 60, 80, 100].map((y) => (
@@ -730,15 +888,21 @@ function PortfolioChart({ cases }: { cases: LegalCase[] }) {
             ))}
           </g>
           <polyline
-            points={points}
+            aria-label="Casos abertos"
+            points={openedPoints}
             fill="none"
-            stroke="#a78bfa"
+            stroke="var(--od-data-accent)"
             strokeWidth="1.4"
             vectorEffect="non-scaling-stroke"
           />
-          <polygon
-            points={`0,100 ${points} 100,100`}
-            fill="rgba(139,92,246,.12)"
+          <polyline
+            aria-label="Casos encerrados"
+            points={closedPoints}
+            fill="none"
+            stroke="var(--od-text-3)"
+            strokeWidth="1.15"
+            strokeDasharray="3 3"
+            vectorEffect="non-scaling-stroke"
           />
         </svg>
       </div>
@@ -752,67 +916,51 @@ function PortfolioChart({ cases }: { cases: LegalCase[] }) {
 }
 
 function FinanceSummary({
-  progress,
   paid,
   overdue,
   open,
   count,
 }: {
-  progress: number;
   paid: number;
   overdue: number;
   open: number;
   count: number;
 }) {
   return (
-    <section className="h-full overflow-hidden rounded-xl border border-od-border bg-[#292530] p-5">
-      <div className="flex items-start justify-between gap-4">
+    <section className="panel self-start p-5">
+      <div className="flex items-start justify-between gap-4 border-b border-od-border pb-4">
         <div>
-          <h2 className="text-base font-semibold">Meta de recebimento</h2>
-          <p className="mt-1 text-xs text-white/65">
-            Resultado financeiro do mês
+          <h2 className="text-sm font-semibold">Recebíveis</h2>
+          <p className="mt-1 text-xs text-od-text-2">
+            Posição financeira do escritório
           </p>
         </div>
         <Link
           href="/painel/financeiro#recebiveis"
-          className="shrink-0 whitespace-nowrap text-xs font-semibold text-white/75 hover:text-white"
+          className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap text-xs font-semibold text-od-text-2 hover:text-od-text"
         >
           Ver recebíveis
         </Link>
       </div>
-      <strong className="mt-6 block text-3xl font-extrabold tracking-[-.03em]">
-        {progress}%
-      </strong>
-      <span className="mt-1 block text-xs text-white/65">
-        da previsão mensal recebida
-      </span>
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/15">
-        <div
-          className="h-full rounded-full bg-white"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-      <dl className="mt-6 grid grid-cols-2 divide-x divide-white/15 border-y border-white/15 py-4">
-        <div className="pr-4">
-          <dt className="text-xs font-medium text-white/65">Recebido</dt>
-          <dd className="mt-2 text-lg font-bold">{formatBRL(paid)}</dd>
+      <dl className="divide-y divide-od-border pt-2">
+        <div className="flex items-center justify-between gap-4 py-3">
+          <dt className="text-xs text-od-text-3">Recebido neste mês</dt>
+          <dd className="text-sm font-semibold text-od-text">{formatBRL(paid)}</dd>
         </div>
-        <div className="pl-4">
-          <dt className="text-xs font-medium text-white/65">Vencido</dt>
-          <dd className="mt-2 text-lg font-bold text-red-100">
+        <div className="flex items-center justify-between gap-4 py-3">
+          <dt className="text-xs text-od-text-3">Em aberto</dt>
+          <dd className="text-sm font-semibold text-od-text">{formatBRL(open)}</dd>
+        </div>
+        <div className="flex items-center justify-between gap-4 py-3">
+          <dt className="text-xs text-od-text-3">Vencido</dt>
+          <dd className={`text-sm font-semibold ${overdue > 0 ? "text-danger-600" : "text-od-text"}`}>
             {formatBRL(overdue)}
           </dd>
         </div>
       </dl>
-      <div className="mt-5 flex items-center justify-between gap-4 text-xs">
-        <span className="font-medium text-white/65">Honorários a receber</span>
-        <span className="text-right font-semibold">
-          {formatBRL(open)}
-          <small className="block font-normal text-white/60">
-            {count} parcelas
-          </small>
-        </span>
-      </div>
+      <p className="border-t border-od-border pt-4 text-xs text-od-text-3">
+        {count} {count === 1 ? "parcela aberta" : "parcelas abertas"} no total
+      </p>
     </section>
   );
 }
@@ -831,8 +979,8 @@ function CasesTable({
   const urgentLimit = new Date();
   urgentLimit.setDate(urgentLimit.getDate() + 7);
   return (
-    <section className="overflow-hidden rounded-xl border border-od-border bg-od-surface p-5">
-      <div className="mb-4 flex items-center justify-between border-b border-white/[0.08] pb-4">
+    <section className="panel overflow-hidden p-5">
+      <div className="mb-4 flex items-center justify-between border-b border-od-border pb-4">
         <div>
           <h2 className="text-base font-semibold">Casos em acompanhamento</h2>
           <p className="mt-1 text-xs text-white/65">
@@ -841,13 +989,13 @@ function CasesTable({
         </div>
         <Link
           href="/painel/juridico/processos"
-          className="flex items-center gap-1 text-xs font-semibold text-white/65 hover:text-white"
+          className="flex min-h-11 items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text"
         >
           Ver {total} casos
           <ArrowUpRight size={13} />
         </Link>
       </div>
-      <div className="hidden grid-cols-[1.4fr_.75fr_1fr_.9fr_1fr_28px] items-center gap-3 pb-2 text-xs font-semibold uppercase tracking-wide text-white/65 sm:grid">
+      <div className="hidden grid-cols-[1.4fr_.75fr_1fr_.9fr_1fr_28px] items-center gap-3 pb-2 text-xs font-semibold uppercase tracking-wide text-white/65 xl:grid">
         <span>Cliente / caso</span>
         <span>Área</span>
         <span>Responsável</span>
@@ -871,7 +1019,7 @@ function CasesTable({
             <Link
               key={item.id}
               href={`/painel/juridico/processos/${item.id}`}
-              className="grid gap-2 border-t border-white/[0.06] py-3 hover:bg-white/[0.02] sm:grid-cols-[1.4fr_.75fr_1fr_.9fr_1fr_28px] sm:items-center sm:gap-3"
+              className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-t border-white/[0.06] py-3 hover:bg-white/[0.02] xl:grid-cols-[1.4fr_.75fr_1fr_.9fr_1fr_28px]"
             >
               <span className="min-w-0">
                 <strong className="block truncate text-[13px] font-semibold">
@@ -880,27 +1028,35 @@ function CasesTable({
                 <small className="mt-1 block truncate font-mono text-xs text-od-text-3">
                   {item.case_number || item.title}
                 </small>
+                <small className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-od-text-3 xl:hidden">
+                  <span>{item.area || "Não informada"}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{owner}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{CASE_STATUS[item.status]}</span>
+                </small>
               </span>
-              <span className="text-xs text-white/65">
+              <span className="hidden text-xs text-od-text-2 xl:block">
                 {item.area || "Não informada"}
               </span>
-              <span className="flex items-center gap-1.5 text-xs text-white/65">
+              <span className="hidden items-center gap-1.5 text-xs text-od-text-2 xl:flex">
                 <span className="grid size-5 place-items-center rounded-full bg-white/[0.08] text-xs">
                   {owner.charAt(0)}
                 </span>
                 {owner}
               </span>
-              <span className="w-fit rounded-md bg-white/[0.06] px-2 py-0.5 text-xs font-semibold text-od-text-2">
+              <span className="hidden w-fit rounded-[var(--radius-round)] bg-od-muted-surface px-2 py-0.5 text-xs font-semibold text-od-text-2 xl:inline-flex">
                 {CASE_STATUS[item.status]}
               </span>
               <span
-                className={`text-xs sm:text-right ${urgent ? "font-semibold text-[#fb7767]" : "text-white/65"}`}
+                className={`text-right text-xs ${urgent ? "font-semibold text-danger-600" : "text-od-text-2"}`}
               >
+                <span className="block text-[10px] font-medium uppercase tracking-wide text-od-text-3 xl:hidden">Próximo prazo</span>
                 {shortDate(item.next_deadline_at)}
               </span>
               <ArrowUpRight
                 size={13}
-                className="hidden text-od-text-3 sm:block"
+                className="hidden text-od-text-3 xl:block"
               />
             </Link>
           );

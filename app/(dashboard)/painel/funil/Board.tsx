@@ -4,6 +4,10 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PendingButton } from "@/components/ui/PendingButton";
+import {
+  LegalLossReasonDialog,
+  type LegalLossReason,
+} from "@/components/legal/legal-loss-reason-dialog";
 import type { FieldSpec } from "@/lib/people/professions";
 import type { Deal, DealStage } from "@/lib/supabase/types";
 import {
@@ -12,7 +16,7 @@ import {
   formatDealValue,
   getCommissionPercent,
 } from "@/lib/crm/deals";
-import { stageFromPipelineList } from "@/lib/crm/pipeline-stage";
+import { isLostPipelineList, stageFromPipelineList } from "@/lib/crm/pipeline-stage";
 import { formatBRL } from "@/lib/utils/format";
 import { pipelineMetaFromList } from "./pipeline-meta";
 import {
@@ -30,6 +34,13 @@ import {
 import { IconCheck, IconChevronRight, IconGrip, IconPlus, IconTrash } from "../icons";
 
 type Member = { user_id: string; name: string | null };
+
+type PendingLegalLoss = {
+  dealId: string;
+  targetList: string;
+  previousStage: DealStage;
+  previousDetails: Record<string, string>;
+} | null;
 
 function firstDetail(details: Record<string, string> | undefined, fields: FieldSpec[]) {
   if (!details) return null;
@@ -50,6 +61,7 @@ export default function Board({
   isAdmin = false,
   isSeller = false,
   isRealEstate = false,
+  isLegal = false,
   flat = false,
 }: {
   initialDeals: Deal[];
@@ -62,6 +74,7 @@ export default function Board({
   isAdmin?: boolean;
   isSeller?: boolean;
   isRealEstate?: boolean;
+  isLegal?: boolean;
   flat?: boolean;
 }) {
   const [deals, setDeals] = useState(initialDeals);
@@ -70,6 +83,8 @@ export default function Board({
   const [savingId, setSavingId] = useState<string | null>(null);
   const [menuId, setMenuId] = useState<string | null>(null);
   const [handoffId, setHandoffId] = useState<string | null>(null);
+  const [pendingLegalLoss, setPendingLegalLoss] = useState<PendingLegalLoss>(null);
+  const [legalLossReturnFocus, setLegalLossReturnFocus] = useState<HTMLElement | null>(null);
   const nameById = new Map(members.map((m) => [m.user_id, m.name]));
   const [canDrag, setCanDrag] = useState(true);
   const [search, setSearch] = useState("");
@@ -127,7 +142,7 @@ export default function Board({
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
-  function commitMove(id: string, targetList: string) {
+  function commitMove(id: string, targetList: string, lossReason?: LegalLossReason) {
     if (boardBusy) return;
     const deal = deals.find((item) => item.id === id);
     if (!deal) return;
@@ -141,6 +156,20 @@ export default function Board({
     // só ela fecha a negociação de fato.
     if (isSeller && stageFromPipelineList(targetList) === "ganho") {
       router.push(`/painel/vendas/${id}/confirmar`);
+      return;
+    }
+
+    if (isLegal && isLostPipelineList(targetList) && !lossReason) {
+      const activeElement = document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+      setLegalLossReturnFocus(activeElement?.closest<HTMLElement>("[data-deal-card]") ?? activeElement);
+      setPendingLegalLoss({
+        dealId: id,
+        targetList,
+        previousStage,
+        previousDetails,
+      });
       return;
     }
 
@@ -158,7 +187,7 @@ export default function Board({
     setSavingId(id);
 
     startTransition(() => {
-      void moveDealToList(id, targetList)
+      void moveDealToList(id, targetList, lossReason)
         .catch(() => {
           setDeals((prev) =>
             prev.map((item) =>
@@ -171,6 +200,11 @@ export default function Board({
           router.refresh();
         });
     });
+  }
+
+  function confirmLegalLoss(pending: NonNullable<PendingLegalLoss>, lossReason: LegalLossReason) {
+    setPendingLegalLoss(null);
+    commitMove(pending.dealId, pending.targetList, lossReason);
   }
 
   function onDrop(targetList: string) {
@@ -190,6 +224,14 @@ export default function Board({
 
   return (
     <div className={flat ? "space-y-5" : "space-y-4"}>
+      {pendingLegalLoss ? (
+        <LegalLossReasonDialog
+          dealTitle={deals.find((deal) => deal.id === pendingLegalLoss.dealId)?.title ?? "Atendimento"}
+          onCancel={() => setPendingLegalLoss(null)}
+          onConfirm={(lossReason) => confirmLegalLoss(pendingLegalLoss, lossReason)}
+          returnFocusTo={legalLossReturnFocus}
+        />
+      ) : null}
       <form action={createPipelineList} className={flat ? "flex flex-col gap-3 border-y border-white/[0.08] py-4 sm:flex-row sm:items-end" : "panel flex flex-col gap-3 p-4 sm:flex-row sm:items-end"}>
         <input type="hidden" name="return_to" value="/painel/funil" />
         <div className="min-w-0 flex-1">
@@ -263,7 +305,7 @@ export default function Board({
       </section>
 
       {columns.length > 1 && (
-        <div className={flat ? "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 border-y border-white/[0.08] bg-[#151419] py-2 sm:hidden" : "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 rounded-xl border border-line bg-surface/92 p-1.5 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] backdrop-blur-xl sm:hidden"}>
+        <div className={flat ? "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 border-y border-od-border bg-od-bg py-2 sm:hidden" : "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 rounded-inner border border-od-border bg-od-surface p-1.5 sm:hidden"}>
           <button
             type="button"
             onClick={() => scrollBoard("previous")}
@@ -352,6 +394,8 @@ export default function Board({
                     return (
                       <article
                         key={deal.id}
+                        data-deal-card
+                        tabIndex={0}
                         draggable={canDrag && !boardBusy}
                         onDragStart={() => setDragId(deal.id)}
                         onDragEnd={() => {

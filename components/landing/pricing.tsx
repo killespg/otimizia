@@ -22,7 +22,7 @@ const INCLUSO = [
 
 export function Pricing() {
   return (
-    <div className="grid divide-y divide-od-border border-y border-od-border md:grid-cols-2 md:divide-x md:divide-y-0">
+    <div className="grid divide-y divide-od-border md:grid-cols-2 md:divide-x md:divide-y-0">
       <div className="px-0 py-8 md:pr-10">
         <p className="text-od-label text-od-text-3">Para começar</p>
         <p className="mt-3 text-od-title text-od-text">Teste grátis</p>

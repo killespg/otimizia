@@ -26,7 +26,7 @@ export function DeadlineCalculatorWidget() {
         <label className="space-y-2"><span className="text-xs font-medium text-od-text-3">Quantidade de dias úteis</span><input ref={daysRef} type="number" min={1} max={120} defaultValue="15" className="h-11 w-full border-b border-white/[0.12] bg-transparent px-1 text-[13px] text-white/75 outline-none focus:border-od-accent" /></label>
       </div>
       <label className="mt-6 flex items-center gap-3 text-xs text-od-text-3"><input type="checkbox" checked={countRecess} onChange={(event) => setCountRecess(event.target.checked)} className="accent-od-accent" />Considerar o recesso forense de 20 de dezembro a 20 de janeiro</label>
-      <button type="button" onClick={calculate} className="mt-7 inline-flex h-10 items-center gap-2 rounded-[3px] bg-[#7146dc] px-4 text-xs font-semibold text-white"><Calculator size={14} />Calcular prazo</button>
+      <button type="button" onClick={calculate} className="mt-7 inline-flex h-10 items-center gap-2 rounded-control bg-od-accent px-4 text-xs font-semibold text-white hover:bg-od-accent-hover"><Calculator size={14} />Calcular prazo</button>
       <p className="mt-5 max-w-xl text-xs leading-relaxed text-od-text-3">A contagem aplica fins de semana, feriados nacionais e, quando marcado, recesso forense. Feriados estaduais, municipais e suspensões específicas do tribunal precisam ser conferidos.</p>
     </section>
     <aside className="border-l border-white/[0.08] pl-7">

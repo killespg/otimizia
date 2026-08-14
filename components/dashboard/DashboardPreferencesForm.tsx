@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { PendingButton } from "@/components/ui/PendingButton";
 import {
   ALL_DASHBOARD_METRICS,
@@ -24,38 +25,38 @@ type DashboardPreferencesFormProps = {
 };
 
 const STYLE_LABELS: Record<DashboardStyle, string> = {
-  glow: "Roxo iluminado",
-  clean: "Claro e limpo",
+  glow: "Padrão",
+  clean: "Discreto",
   compact: "Compacto",
   executive: "Executivo escuro",
 };
 
 const STYLE_PREVIEWS: Record<DashboardStyle, string> = {
-  glow: "border-od-accent/45 bg-od-accent-tint text-od-text",
-  clean: "border-[#d8d2dc] bg-[#f7f5f8] text-[#241f29]",
+  glow: "border-od-accent bg-od-accent-tint text-od-text",
+  clean: "border-od-border bg-od-surface text-od-text",
   compact: "border-od-border bg-od-muted-surface text-od-text-2",
-  executive: "border-[#38343d] bg-[#0f0d11] text-[#faf9f8]",
+  executive: "border-od-border-strong bg-od-bg text-od-text",
 };
 
 const SELLER_STYLE_LABELS: Record<DashboardStyle, string> = {
-  glow: "Roxo iluminado",
+  glow: "Padrão",
   clean: "Escuro limpo",
   compact: "Compacto",
   executive: "Executivo",
 };
 
 const SELLER_STYLE_PREVIEWS: Record<DashboardStyle, string> = {
-  glow: "border-od-accent/45 bg-od-accent-tint text-od-text",
-  clean: "border-[#38343d] bg-[#1e1d22] text-[#faf9f8]",
-  compact: "border-[#323039] bg-[#19181d] text-[#a39da8]",
-  executive: "border-[#38343d] bg-[#0f0d11] text-[#faf9f8]",
+  glow: "border-od-accent bg-od-accent-tint text-od-text",
+  clean: "border-od-border bg-od-surface text-od-text",
+  compact: "border-od-border bg-od-muted-surface text-od-text-2",
+  executive: "border-od-border-strong bg-od-bg text-od-text",
 };
 
 const ACCENT_LABELS: Record<DashboardAccent, string> = {
-  purple: "Roxo OtimizIA",
-  violet: "Violeta",
-  cyan: "Ciano",
-  pink: "Magenta",
+  purple: "Cobalto",
+  violet: "Azul suave",
+  cyan: "Azul claro",
+  pink: "Azul profundo",
 };
 
 export function DashboardPreferencesForm({
@@ -71,9 +72,6 @@ export function DashboardPreferencesForm({
   const [accent, setAccent] = useState(preferences.accent);
   const [metrics, setMetrics] = useState(preferences.metrics);
   const [metricLabels, setMetricLabels] = useState(preferences.metricLabels);
-  const [showAnimatedBackground, setShowAnimatedBackground] = useState(
-    preferences.showAnimatedBackground,
-  );
   const [salesMarketingCost, setSalesMarketingCost] = useState(
     preferences.salesMarketingCostCents
       ? (preferences.salesMarketingCostCents / 100).toFixed(2).replace(".", ",")
@@ -83,9 +81,11 @@ export function DashboardPreferencesForm({
   const [isSaving, startSaving] = useTransition();
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
   const [section, setSection] = useState<"appearance" | "metrics">("appearance");
+  const shouldReduceMotion = useReducedMotion();
   const isSeller = preset.key === "autonomous_seller";
-  const usesFlatTabs = isSeller || preset.key === "real_estate_broker";
-  const supportsAnimatedBackground = isSeller || preset.key === "real_estate_broker";
+  const panelTransition = shouldReduceMotion
+    ? { duration: 0 }
+    : { duration: 0.16, ease: [0.16, 1, 0.3, 1] as const };
 
   const availableMetrics = useMemo(
     () =>
@@ -125,16 +125,6 @@ export function DashboardPreferencesForm({
     });
   }, [accent, metricLabels, metrics, preset, style]);
 
-  useEffect(() => {
-    if (!supportsAnimatedBackground) return;
-
-    window.dispatchEvent(
-      new CustomEvent("dashboard-background-visibility", {
-        detail: { enabled: showAnimatedBackground },
-      }),
-    );
-  }, [showAnimatedBackground, supportsAnimatedBackground]);
-
   function submitPreferences(formData: FormData) {
     setSaveStatus("idle");
     startSaving(() => {
@@ -163,6 +153,26 @@ export function DashboardPreferencesForm({
     setMetrics((current) => reorder(current, from, to));
   }
 
+  function handleSectionKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+
+    event.preventDefault();
+    const sections = ["appearance", "metrics"] as const;
+    const currentIndex = sections.indexOf(section);
+    const nextSection = event.key === "Home"
+      ? sections[0]
+      : event.key === "End"
+        ? sections[sections.length - 1]
+        : event.key === "ArrowRight"
+          ? sections[(currentIndex + 1) % sections.length]
+          : sections[(currentIndex - 1 + sections.length) % sections.length];
+
+    setSection(nextSection);
+    event.currentTarget
+      .querySelector<HTMLButtonElement>(`#dashboard-preferences-${nextSection}-tab`)
+      ?.focus();
+  }
+
   return (
     <form ref={formRef} action={submitPreferences} className={isSeller ? "seller-dashboard-preferences space-y-5" : "space-y-4"}>
       <input type="hidden" name="dashboard_style" value={style} />
@@ -172,18 +182,56 @@ export function DashboardPreferencesForm({
       <input
         type="hidden"
         name="dashboard_animated_background"
-        value={showAnimatedBackground ? "1" : "0"}
+        value="0"
       />
       {metrics.map((metric) => (
         <input key={metric} type="hidden" name="dashboard_metrics" value={metric} />
       ))}
 
-      <div className={usesFlatTabs ? "grid grid-cols-2 border-b border-white/[0.09]" : "dashboard-preferences-tabs"} role="tablist" aria-label="Seções da personalização">
-        <button type="button" role="tab" aria-selected={section === "appearance"} onClick={() => setSection("appearance")} className={usesFlatTabs ? `min-h-11 border-b-2 px-3 text-xs font-semibold transition-colors ${section === "appearance" ? "border-od-accent text-white" : "border-transparent text-od-text-3 hover:text-white/72"}` : section === "appearance" ? "is-active" : ""}>Aparência</button>
-        <button type="button" role="tab" aria-selected={section === "metrics"} onClick={() => setSection("metrics")} className={usesFlatTabs ? `min-h-11 border-b-2 px-3 text-xs font-semibold transition-colors ${section === "metrics" ? "border-od-accent text-white" : "border-transparent text-od-text-3 hover:text-white/72"}` : section === "metrics" ? "is-active" : ""}>Estatísticas <span className={usesFlatTabs ? "ml-1 text-od-text-3" : undefined}>{metrics.length}/8</span></button>
+      <div
+        className="grid grid-cols-2 gap-1 rounded-inner border border-od-border bg-od-muted-surface p-1"
+        role="tablist"
+        aria-label="Seções da personalização"
+        onKeyDown={handleSectionKeyDown}
+      >
+        <button
+          id="dashboard-preferences-appearance-tab"
+          type="button"
+          role="tab"
+          aria-selected={section === "appearance"}
+          aria-controls="dashboard-preferences-appearance-panel"
+          tabIndex={section === "appearance" ? 0 : -1}
+          onClick={() => setSection("appearance")}
+          className={`min-h-11 rounded-control px-3 text-xs font-semibold transition-colors ${section === "appearance" ? "bg-od-surface text-od-text" : "text-od-text-3 hover:bg-od-surface-hover hover:text-od-text"}`}
+        >
+          Aparência
+        </button>
+        <button
+          id="dashboard-preferences-metrics-tab"
+          type="button"
+          role="tab"
+          aria-selected={section === "metrics"}
+          aria-controls="dashboard-preferences-metrics-panel"
+          tabIndex={section === "metrics" ? 0 : -1}
+          onClick={() => setSection("metrics")}
+          className={`min-h-11 rounded-control px-3 text-xs font-semibold transition-colors ${section === "metrics" ? "bg-od-surface text-od-text" : "text-od-text-3 hover:bg-od-surface-hover hover:text-od-text"}`}
+        >
+          Estatísticas <span className="ml-1 text-od-text-3">{metrics.length}/8</span>
+        </button>
       </div>
 
-      {section === "appearance" && <div className="grid gap-4 lg:grid-cols-2" role="tabpanel">
+      <AnimatePresence mode="wait" initial={false}>
+      {section === "appearance" && <motion.div
+        key="appearance"
+        id="dashboard-preferences-appearance-panel"
+        className="grid gap-4 lg:grid-cols-2"
+        role="tabpanel"
+        aria-labelledby="dashboard-preferences-appearance-tab"
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -4 }}
+        transition={panelTransition}
+      >
         <Panel title="Estilo" description="A cara do painel, sem mexer nos dados." seller={isSeller}>
           <div className="grid gap-2 sm:grid-cols-2">
             {DASHBOARD_STYLES.map((item) => (
@@ -212,47 +260,19 @@ export function DashboardPreferencesForm({
           </div>
         </Panel>
 
-        {supportsAnimatedBackground ? (
-          <Panel
-            title="Fundo da dashboard"
-            description="Controle o efeito animado sem alterar seus dados ou indicadores."
-            seller={usesFlatTabs}
-            className="lg:col-span-2"
-          >
-            <button
-              type="button"
-              role="switch"
-              aria-checked={showAnimatedBackground}
-              onClick={() => setShowAnimatedBackground((current) => !current)}
-              className="flex min-h-12 w-full items-center justify-between gap-4 rounded-md border border-white/[0.09] bg-[#151419] px-3 text-left transition-colors hover:border-white/[0.16]"
-            >
-              <span>
-                <span className="block text-sm font-semibold text-white/82">Fundo animado</span>
-                <span className="mt-0.5 block text-xs text-od-text-3">
-                  {showAnimatedBackground ? "Ativado na visão geral" : "Desativado na visão geral"}
-                </span>
-              </span>
-              <span
-                aria-hidden="true"
-                className={`relative h-6 w-11 shrink-0 rounded-full border transition-colors ${
-                  showAnimatedBackground
-                    ? "border-od-accent/60 bg-od-accent"
-                    : "border-white/[0.12] bg-white/[0.06]"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 size-4 rounded-full bg-white shadow-sm transition-transform ${
-                    showAnimatedBackground ? "translate-x-5" : "translate-x-1"
-                  }`}
-                />
-              </span>
-            </button>
-          </Panel>
-        ) : null}
-      </div>}
+      </motion.div>}
 
 
-      {section === "metrics" && <div role="tabpanel"><Panel
+      {section === "metrics" && <motion.div
+        key="metrics"
+        id="dashboard-preferences-metrics-panel"
+        role="tabpanel"
+        aria-labelledby="dashboard-preferences-metrics-tab"
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -4 }}
+        transition={panelTransition}
+      ><Panel
         title="Estatísticas"
         description="Escolha até 8 métricas, arraste a ordem e personalize os nomes."
         seller={isSeller}
@@ -265,7 +285,7 @@ export function DashboardPreferencesForm({
             </div>
             <label className="block w-full sm:w-52">
               <span className="sr-only">Custo mensal de vendas e marketing</span>
-              <span className="flex h-11 items-center rounded-md border border-white/[0.09] bg-[#151419] px-3 focus-within:border-od-accent">
+              <span className="flex h-11 items-center rounded-control border border-od-border bg-od-muted-surface px-3 focus-within:border-od-focus">
                 <span className="mr-2 text-sm text-od-text-3">R$</span>
                 <input
                   value={salesMarketingCost}
@@ -331,7 +351,7 @@ export function DashboardPreferencesForm({
                   }
                   placeholder={preset.metrics.find((metric) => metric.key === key)?.label ?? fallbackLabel}
                   maxLength={42}
-                  className={isSeller ? "mt-2 h-10 w-full rounded-md border border-white/[0.09] bg-[#151419] px-3 text-sm text-white/72 outline-none placeholder:text-od-text-3 focus:border-od-accent" : "field mt-2 h-9 text-sm"}
+                  className={isSeller ? "mt-2 h-10 w-full rounded-control border border-od-border bg-od-muted-surface px-3 text-sm text-od-text outline-none placeholder:text-od-text-3 focus:border-od-focus" : "field mt-2 h-9 text-sm"}
                 />
                 {active && (
                     <MobileOrderButtons
@@ -344,7 +364,8 @@ export function DashboardPreferencesForm({
             );
           })}
         </div>
-      </Panel></div>}
+      </Panel></motion.div>}
+      </AnimatePresence>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className={isSeller ? "text-xs text-od-text-3" : "text-xs font-semibold text-ink-muted"}>
@@ -357,7 +378,7 @@ export function DashboardPreferencesForm({
                 : "As mudanças aparecem no painel antes de você salvar."}
         </p>
         <PendingButton
-          className={isSeller ? "inline-flex min-h-11 items-center justify-center rounded-md bg-od-accent px-4 text-xs font-semibold text-white hover:bg-brand-600 disabled:opacity-50" : compact ? "btn-soft" : "btn"}
+          className={isSeller ? "inline-flex min-h-11 items-center justify-center rounded-control bg-od-accent px-4 text-xs font-semibold text-white hover:bg-brand-600 disabled:opacity-50" : compact ? "btn-soft" : "btn"}
           disabled={isSaving}
           pendingLabel="Salvando"
         >
@@ -382,7 +403,7 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section data-preferences-panel className={`${seller ? "rounded-md border border-white/[0.08] bg-white/[0.018] p-4" : "rounded-lg border border-line bg-surface p-3 sm:p-4"} ${className}`}>
+    <section data-preferences-panel className={`${seller ? "rounded-panel border border-white/[0.08] bg-white/[0.018] p-4" : "rounded-panel border border-line bg-surface p-3 sm:p-4"} ${className}`}>
       <div className="mb-3">
         <h3 className={seller ? "text-sm font-semibold text-white" : "text-sm font-black text-ink"}>{title}</h3>
         <p className={seller ? "mt-1 text-xs leading-relaxed text-od-text-3" : "mt-0.5 text-xs font-semibold leading-relaxed text-ink-muted"}>{description}</p>
@@ -411,9 +432,9 @@ function OptionButton({
       onClick={onClick}
       aria-pressed={active}
       className={
-        "flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm font-black transition-colors focus-visible:ring-2 focus-visible:ring-brand-600 " +
+        "flex min-h-11 items-center gap-2 rounded-control border px-3 py-2 text-left text-sm font-black transition-colors focus-visible:ring-2 focus-visible:ring-brand-600 " +
         (previewClassName ?? "border-od-border bg-od-muted-surface text-od-text-2 hover:border-od-border-hover hover:text-od-text") +
-        (active ? " ring-2 ring-od-accent ring-offset-1 ring-offset-[#151419]" : " opacity-80 hover:opacity-100")
+        (active ? " ring-2 ring-od-focus ring-offset-1 ring-offset-od-bg" : " opacity-80 hover:opacity-100")
       }
     >
       {swatch && <span className={`h-4 w-4 rounded-full ${swatch}`} />}
@@ -433,10 +454,10 @@ function MobileOrderButtons({
 }) {
   return (
     <div className="mt-2 grid grid-cols-2 gap-2 sm:hidden">
-      <button type="button" onClick={onMoveUp} className={seller ? "min-h-10 rounded-md border border-white/[0.09] px-2 text-xs font-semibold text-white/58" : "rounded-md border border-line bg-surface px-2 py-1.5 text-xs font-black text-ink-soft"}>
+      <button type="button" onClick={onMoveUp} className={seller ? "min-h-11 rounded-control border border-white/[0.09] px-2 text-xs font-semibold text-white/58" : "min-h-11 rounded-control border border-line bg-surface px-2 text-xs font-black text-ink-soft"}>
         Subir
       </button>
-      <button type="button" onClick={onMoveDown} className={seller ? "min-h-10 rounded-md border border-white/[0.09] px-2 text-xs font-semibold text-white/58" : "rounded-md border border-line bg-surface px-2 py-1.5 text-xs font-black text-ink-soft"}>
+      <button type="button" onClick={onMoveDown} className={seller ? "min-h-11 rounded-control border border-white/[0.09] px-2 text-xs font-semibold text-white/58" : "min-h-11 rounded-control border border-line bg-surface px-2 text-xs font-black text-ink-soft"}>
         Descer
       </button>
     </div>

@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { BrandName } from "@/components/design-system/BrandName";
 import { PendingButton } from "@/components/ui/PendingButton";
-import { AnimatedShapesBackground } from "@/components/design-system/animated-shapes-background";
 import { safeInternalPath } from "@/lib/crm/invitations";
 import { PROFESSION_OPTIONS } from "@/lib/people/professions";
 import { createClient } from "@/lib/supabase/server";
@@ -17,9 +16,7 @@ import { submitCpf } from "./actions";
  * Quem já tem CPF (cadastro por senha, ou quem já passou por aqui antes)
  * nunca vê esta tela: o middleware nem deixa chegar.
  *
- * Moldura igual à do AuthShell (glow + cápsulas animadas + card com
- * `shadow-od-float`) — é literalmente a tela seguinte ao login/cadastro por
- * Google, então precisa continuar a mesma identidade, não um card solto.
+ * A moldura segue o AuthShell neutro para manter continuidade depois do OAuth.
  */
 export default async function CpfOnboardingPage(props: {
   searchParams: Promise<{ error?: string; next?: string }>;
@@ -41,18 +38,8 @@ export default async function CpfOnboardingPage(props: {
   if (profile?.cpf) redirect(nextPath);
 
   return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-od-bg p-0 sm:grid sm:place-items-center sm:p-5">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 70% 55% at 50% 0%, rgba(92,34,232,0.32), transparent 70%)",
-        }}
-      />
-      <AnimatedShapesBackground />
-
-      <div className="relative z-10 mx-auto w-full max-w-md overflow-hidden rounded-none border-od-border bg-od-surface p-6 shadow-none sm:min-h-0 sm:rounded-[28px] sm:border sm:p-8 sm:shadow-od-float">
+    <main className="min-h-[100dvh] bg-od-bg p-0 sm:grid sm:place-items-center sm:p-5">
+      <div className="mx-auto w-full max-w-md overflow-hidden border-od-border bg-od-surface p-6 sm:rounded-panel sm:border sm:p-8">
         <p className="text-xs font-semibold uppercase tracking-[.08em] text-od-text-3">
           Só mais um passo
         </p>
@@ -90,7 +77,7 @@ export default async function CpfOnboardingPage(props: {
               {PROFESSION_OPTIONS.map((option, index) => (
                 <label
                   key={option.value}
-                  className="flex min-h-11 items-center gap-2.5 rounded-lg border border-od-border bg-white/[0.02] px-3 py-2 text-sm font-medium text-od-text-2"
+                  className="flex min-h-11 items-center gap-2.5 rounded-inner border border-od-border bg-od-muted-surface px-3 py-2 text-sm font-medium text-od-text-2 hover:border-od-border-hover"
                 >
                   <input
                     type="checkbox"

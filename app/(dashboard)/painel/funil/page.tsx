@@ -80,7 +80,8 @@ export default async function PipelinePage() {
   );
   const isSeller = workspaceKey === "autonomous_seller";
   const isRealEstate = workspaceKey === "real_estate_broker";
-  const usesFlatPipeline = isSeller || isRealEstate;
+  const isLegal = workspaceKey === "law_office";
+  const usesFlatPipeline = isSeller || isRealEstate || isLegal;
   const pipelineLists = pipelineListsFor(allDeals, preset.key);
   const contactNames = Object.fromEntries(
     allContacts.map((contact) => [contact.id, contact.name])
@@ -216,6 +217,7 @@ export default async function PipelinePage() {
         isAdmin={isAdmin}
         isSeller={isSeller}
         isRealEstate={isRealEstate}
+        isLegal={isLegal}
         flat={usesFlatPipeline}
       />
     </div>

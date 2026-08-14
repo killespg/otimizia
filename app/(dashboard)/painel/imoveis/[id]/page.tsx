@@ -242,7 +242,7 @@ export default async function ImovelDetailPage(props: { params: Promise<{ id: st
           <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3">
             {photoUrls.map((photo) => (
               // eslint-disable-next-line @next/next/no-img-element -- vem de storage público, sem next/image configurado
-              (<img key={photo.id} src={photo.url} alt={`Foto de ${property.title}`} className="aspect-square w-full rounded-lg border border-line object-cover" />)
+              (<img key={photo.id} src={photo.url} alt={`Foto de ${property.title}`} className="aspect-square w-full rounded-md border border-line object-cover" />)
             ))}
           </div>
         )}
@@ -261,7 +261,7 @@ export default async function ImovelDetailPage(props: { params: Promise<{ id: st
               <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </summary>
-          <form action={updateProperty} className="divide-y divide-line border-t border-line p-5 sm:p-6">
+          <form action={updateProperty} className="divide-y divide-line p-5 sm:p-6">
             <input type="hidden" name="id" value={property.id} />
 
             <FormSection

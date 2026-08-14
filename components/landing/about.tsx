@@ -55,7 +55,7 @@ export function About() {
           <p className="text-od-label text-od-accent-hover">No OtimizIA</p>
         </div>
 
-        <div className="divide-y divide-od-border border-b border-od-border">
+        <div className="lp-rows">
           {POSICOES.map((posicao) => (
             <div key={posicao.nosso} className="grid grid-cols-2 gap-x-8 py-5">
               <div className="flex min-w-0 items-start gap-2.5">

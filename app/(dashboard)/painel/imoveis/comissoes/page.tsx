@@ -109,30 +109,32 @@ export default async function RealEstateCommissionsPage({
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-6">
-      <header className="flex flex-col gap-5 border-b border-white/[0.08] pb-6 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-5 pb-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <Link href="/painel/imoveis/dashboard" className="inline-flex items-center gap-2 text-xs font-semibold text-od-text-3 hover:text-white/72"><ArrowLeft size={14} /> Voltar à visão geral</Link>
           <h1 className="mt-4 text-od-title text-white">Comissões e metas</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/52">Registre previsões, acompanhe recebimentos e defina objetivos para a equipe ou para cada corretor.</p>
         </div>
-        <a href={`/api/reports/real-estate-commissions?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}${brokerFilter ? `&broker=${encodeURIComponent(brokerFilter)}` : ""}`} download className="inline-flex min-h-11 items-center justify-center gap-2 rounded border border-white/[0.1] px-4 text-[13px] font-semibold text-white/68 hover:bg-white/[0.04] hover:text-white"><Download size={15} /> Baixar relatório filtrado</a>
+        <a href={`/api/reports/real-estate-commissions?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}${brokerFilter ? `&broker=${encodeURIComponent(brokerFilter)}` : ""}`} download className="inline-flex min-h-11 items-center justify-center gap-2 rounded border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text"><Download size={15} /> Baixar relatório filtrado</a>
       </header>
 
       {/* Barra de controle, nao modulo: fica aberta e colada no cabecalho, com
           uma regra abaixo separando controle de conteudo. Virar card daria a
           um filtro o mesmo peso visual dos paineis de trabalho. */}
-      <form method="get" className="-mt-2 grid gap-3 border-b border-od-border pb-5 sm:grid-cols-[minmax(9rem,1fr)_minmax(9rem,1fr)_minmax(12rem,1.3fr)_auto] sm:items-end">
+      <form method="get" className="-mt-2 grid gap-3 pb-5 sm:grid-cols-[minmax(9rem,1fr)_minmax(9rem,1fr)_minmax(12rem,1.3fr)_auto] sm:items-end">
         <label><span className="label">De</span><input type="date" name="from" defaultValue={from} className="field mt-1" /></label>
         <label><span className="label">Até</span><input type="date" name="to" defaultValue={to} className="field mt-1" /></label>
         <label><span className="label">Corretor</span><select name="broker" defaultValue={brokerFilter} className="field mt-1"><option value="">Todos</option>{members.map((member) => <option key={member.user_id} value={member.user_id}>{member.name ?? "Sem nome"}</option>)}</select></label>
         <button type="submit" className="btn-secondary">Aplicar filtros</button>
       </form>
 
-      {/* MetricStrip continua aberta, com border-y e divisores — e a assinatura
-          documentada. Quem ancora a tela sao os paineis de conteudo abaixo;
-          transformar isto num card faria a quarta caixa identica da pagina. */}
-      <section className="grid grid-cols-2 border-y border-od-border xl:grid-cols-4">
-        {summary.map(({ icon: Icon, ...item }) => <div key={item.label} className="min-w-0 border-b border-r border-white/[0.08] py-4 pr-4 even:border-r-0 [&:nth-last-child(-n+2)]:border-b-0 xl:border-b-0 xl:pl-5 xl:even:border-r xl:last:border-r-0 xl:first:pl-0"><div className="flex items-center gap-2 text-xs font-medium text-od-text-3"><Icon size={15} className="text-od-text-2" />{item.label}</div><p className="mt-3 truncate text-xl font-semibold text-white" title={item.value}>{item.value}</p><p className="mt-2 text-xs text-od-text-3">{item.note}</p></div>)}
+      {/* Faixa aberta de verdade: sem caixa e sem divisor. Quem ancora a tela
+          sao os paineis de conteudo abaixo, e virar card faria a quarta caixa
+          identica da pagina. Sem a caixa, quem separa as colunas e o espaco
+          entre elas, e quem cria hierarquia dentro de cada uma e o salto do
+          rotulo para o numero — nao uma regua. */}
+      <section className="grid grid-cols-2 gap-x-10 gap-y-7 py-2 xl:grid-cols-4">
+        {summary.map(({ icon: Icon, ...item }) => <div key={item.label} className="min-w-0"><div className="flex items-center gap-2 text-xs font-medium text-od-text-3"><Icon size={15} className="text-od-text-2" />{item.label}</div><p className="mt-2.5 truncate text-2xl font-bold tracking-[-0.03em] text-od-text" title={item.value}>{item.value}</p><p className="mt-1.5 text-xs text-od-text-3">{item.note}</p></div>)}
       </section>
 
       <section className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(21rem,.55fr)]">

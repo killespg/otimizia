@@ -81,7 +81,7 @@ export default async function SettingsPage(
 
   return (
     <div className={`settings-hub mx-auto w-full max-w-[1640px] space-y-5 ${isSeller ? "seller-settings" : isRealEstate ? "real-estate-settings" : ""}`}>
-      <header className="border-b border-white/[0.08] pb-5">
+      <header className="pb-5">
         <p className="text-xs font-semibold text-od-text-2">{isSeller ? "Vendas / Configurações" : isRealEstate ? "Imobiliário / Configurações" : "Escritório / Configurações"}</p>
         <h1 className="mt-2 text-od-title text-white">
           {isSeller ? "Configurações do negócio" : isRealEstate ? "Configurações da operação imobiliária" : "Seu espaço de trabalho"}
@@ -144,7 +144,7 @@ export default async function SettingsPage(
 
           <Link
             href="/painel/equipe"
-            className="row-link flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3 text-sm font-bold text-ink-soft hover:border-brand-400 hover:text-brand-700"
+            className="row-link od-band flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-od-text-2 transition-colors hover:text-white"
           >
             {isSeller ? "Dados do negócio e contexto do assistente ficam em Meu negócio" : "Nome da empresa, contexto e preferências da IA ficam em Equipe"}
             <span aria-hidden="true">→</span>
@@ -155,34 +155,24 @@ export default async function SettingsPage(
             description="Como e quando você quer ser avisado de quem precisa de retorno."
           >
             <PushNotificationToggle vapidPublicKey={vapidPublicKey} />
-            <form action={updateNotificationPreferences} className="space-y-2 border-t border-line pt-4">
-              <label className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line px-3 py-2 text-sm font-bold text-ink-soft">
-                <input
-                  type="checkbox"
+            <form action={updateNotificationPreferences} className="space-y-3 pt-4">
+              <div className="od-band od-rows overflow-hidden">
+                <CheckRow
                   name="daily_push"
                   defaultChecked={notificationPrefs?.daily_push ?? true}
-                  className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
+                  label="Aviso push diário (hoje + atrasados)"
                 />
-                Aviso push diário (hoje + atrasados)
-              </label>
-              <label className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line px-3 py-2 text-sm font-bold text-ink-soft">
-                <input
-                  type="checkbox"
+                <CheckRow
                   name="daily_summary_email"
                   defaultChecked={notificationPrefs?.daily_summary_email ?? true}
-                  className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
+                  label="Resumo diário por e-mail"
                 />
-                Resumo diário por e-mail
-              </label>
-              <label className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line px-3 py-2 text-sm font-bold text-ink-soft">
-                <input
-                  type="checkbox"
+                <CheckRow
                   name="stalled_deal_email"
                   defaultChecked={notificationPrefs?.stalled_deal_email ?? true}
-                  className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
+                  label="Alerta por e-mail quando uma venda fica parada"
                 />
-                Alerta por e-mail quando uma venda fica parada
-              </label>
+              </div>
               <PendingButton className="btn-soft" pendingLabel="Salvando">
                 Salvar preferências
               </PendingButton>
@@ -199,14 +189,14 @@ export default async function SettingsPage(
 
         <div className="space-y-4">
       <SectionCard title="Conta" description="Dados de login e identificação.">
-        <form action={updateName} className="space-y-3">
+        <form action={updateName} className="od-band space-y-3 p-3">
           <Field name="name" label="Nome" defaultValue={displayName} required maxLength={120} />
           <PendingButton className="btn-soft" pendingLabel="Salvando">
             Salvar nome
           </PendingButton>
         </form>
 
-        <form action={updateEmail} className="space-y-2 border-t border-line pt-4">
+        <form action={updateEmail} className="od-band space-y-2 p-3">
           <Field
             name="email"
             label="E-mail"
@@ -232,7 +222,7 @@ export default async function SettingsPage(
           </PendingButton>
         </form>
 
-        <div className="border-t border-line pt-4">
+        <div className="pt-1">
           <span className="label">CPF</span>
           <p className="mt-1.5 text-sm font-bold text-ink">
             {profile?.cpf ? formatCPF(profile.cpf) : "Não informado"}
@@ -242,7 +232,7 @@ export default async function SettingsPage(
           </p>
         </div>
 
-        <form action={updatePassword} className="space-y-2 border-t border-line pt-4">
+        <form action={updatePassword} className="od-band space-y-2 p-3">
           <Field
             id="password-current-password"
             name="current_password"
@@ -281,21 +271,15 @@ export default async function SettingsPage(
         <SectionCard title="Áreas de atuação" description="Escolha qual operação quer ver e alimentar agora.">
           <form action={updateProfessionTypes} className="space-y-3">
             <input type="hidden" name="active_profession_type" value={preset.key} />
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="od-band od-rows overflow-hidden">
               {PROFESSION_OPTIONS.map((option) => (
-                <label
+                <CheckRow
                   key={option.value}
-                  className="flex min-h-11 items-center gap-2.5 rounded-lg border border-line bg-surface px-3 py-2 text-sm font-bold text-ink-soft"
-                >
-                  <input
-                    type="checkbox"
-                    name="profession_types"
-                    value={option.value}
-                    defaultChecked={(profile?.profession_types ?? [preset.key]).includes(option.value)}
-                    className="h-4 w-4 shrink-0 rounded border-line text-brand-700 focus:ring-brand-600"
-                  />
-                  <span>{option.label}</span>
-                </label>
+                  name="profession_types"
+                  value={option.value}
+                  defaultChecked={(profile?.profession_types ?? [preset.key]).includes(option.value)}
+                  label={option.label}
+                />
               ))}
             </div>
             <p className="text-xs font-medium leading-relaxed text-ink-muted">
@@ -436,9 +420,7 @@ function SectionCard({
   return (
     <section
       data-settings-card
-      className={
-        "space-y-4 border bg-[#1e1d22] p-5 " + (danger ? "border-red-400/20" : "border-white/[0.09]")
-      }
+      className={"panel space-y-4 p-5 " + (danger ? "settings-danger" : "")}
     >
       <div>
         <h2 className="text-[14px] font-semibold text-white">
@@ -448,6 +430,31 @@ function SectionCard({
       </div>
       {children}
     </section>
+  );
+}
+
+function CheckRow({
+  name,
+  label,
+  value,
+  defaultChecked,
+}: {
+  name: string;
+  label: string;
+  value?: string;
+  defaultChecked?: boolean;
+}) {
+  return (
+    <label className="flex min-h-11 cursor-pointer items-center gap-2.5 px-3 py-2.5 text-sm font-semibold text-od-text-2 transition-colors hover:text-white">
+      <input
+        type="checkbox"
+        name={name}
+        value={value}
+        defaultChecked={defaultChecked}
+        className="h-4 w-4 shrink-0 rounded border-white/25 bg-transparent text-od-accent focus:ring-od-accent"
+      />
+      <span>{label}</span>
+    </label>
   );
 }
 

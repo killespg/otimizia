@@ -218,6 +218,20 @@ function FeatureRow({ feature, index }: { feature: Feature; index: number }) {
 export function FeatureTabs() {
   const [activeKey, setActiveKey] = React.useState(VERTICALS[2].key);
   const vertical = VERTICALS.find((item) => item.key === activeKey) ?? VERTICALS[2];
+  const tabsRef = React.useRef<Array<HTMLButtonElement | null>>([]);
+
+  function handleTabKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number) {
+    const keys = ["ArrowRight", "ArrowLeft", "Home", "End"];
+    if (!keys.includes(event.key)) return;
+    event.preventDefault();
+    const nextIndex = event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? VERTICALS.length - 1
+        : (index + (event.key === "ArrowRight" ? 1 : -1) + VERTICALS.length) % VERTICALS.length;
+    setActiveKey(VERTICALS[nextIndex].key);
+    tabsRef.current[nextIndex]?.focus();
+  }
 
   return (
     <div>
@@ -228,15 +242,20 @@ export function FeatureTabs() {
         aria-label="Escolha a profissão"
         className="mx-auto flex max-w-[620px] gap-1 rounded-lg border border-od-border bg-od-muted-surface p-1"
       >
-        {VERTICALS.map((item) => {
+        {VERTICALS.map((item, index) => {
           const selected = item.key === vertical.key;
           return (
             <button
               key={item.key}
               type="button"
               role="tab"
+              id={`profession-tab-${item.key}`}
+              aria-controls="profession-tabpanel"
               aria-label={item.tab}
               aria-selected={selected}
+              tabIndex={selected ? 0 : -1}
+              ref={(node) => { tabsRef.current[index] = node; }}
+              onKeyDown={(event) => handleTabKeyDown(event, index)}
               onClick={() => setActiveKey(item.key)}
               className={`flex min-h-11 min-w-0 flex-1 items-center justify-center rounded px-2 text-[13px] font-semibold transition-colors sm:px-3 ${
                 selected ? "bg-od-surface text-od-text" : "text-od-text-3 hover:text-od-text-2"
@@ -249,6 +268,13 @@ export function FeatureTabs() {
         })}
       </div>
 
+      <div
+        id="profession-tabpanel"
+        role="tabpanel"
+        aria-labelledby={`profession-tab-${vertical.key}`}
+        tabIndex={0}
+        className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-od-focus"
+      >
       <p className="mx-auto mt-8 max-w-[560px] text-center text-od-subtitle text-od-text">{vertical.headline}</p>
 
       {/* Grupos empilhados em faixa: o rótulo à esquerda nomeia a faixa e os
@@ -312,6 +338,7 @@ export function FeatureTabs() {
             ))}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

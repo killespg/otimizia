@@ -1,19 +1,9 @@
 import { redirect } from "next/navigation";
-import { ProductNavigation } from "@/components/design-system/product-navigation";
-import { ProductTopbar } from "@/components/design-system/product-topbar";
-import { LegalProductNavigation } from "@/components/design-system/legal-product-navigation";
-import { LegalProductTopbar } from "@/components/design-system/legal-product-topbar";
-import { SellerProductNavigation } from "@/components/design-system/seller-product-navigation";
-import { SellerProductTopbar } from "@/components/design-system/seller-product-topbar";
-import { RealEstateProductNavigation } from "@/components/design-system/real-estate-product-navigation";
-import { RealEstateProductTopbar } from "@/components/design-system/real-estate-product-topbar";
-import { AmbientParticles } from "@/components/design-system/ambient-particles";
-import { SellerDashboardBackground } from "@/components/design-system/seller-dashboard-background";
-import NeuralBackground from "@/components/design-system/neural-background";
+import { ProductShell } from "@/components/design-system/product-shell";
 import { DashboardRoutePreloader } from "@/components/design-system/dashboard-route-preloader";
 import { DashboardNavigationFeedback } from "@/components/design-system/dashboard-navigation-feedback";
 import { AssistantChatProvider } from "@/lib/ai/AssistantChatProvider";
-import { getDashboardPreferences } from "@/lib/workspace/dashboard-preferences";
+import { buildProductNavigation, type ShellVariant } from "@/lib/design-system/navigation";
 import { canViewFinance, canViewLegal } from "@/lib/law/law-office";
 import { getActiveOrgId } from "@/lib/workspace/org";
 import { getUserPlanAccess } from "@/lib/billing/plan-access";
@@ -65,11 +55,6 @@ export default async function PainelLayout({
   const isLawOffice = preset.key === "law_office";
   const isAutonomousSeller = preset.key === "autonomous_seller";
   const isRealEstateBroker = preset.key === "real_estate_broker";
-  const dashboardPreferences = getDashboardPreferences(
-    profile?.dashboard_preferences,
-    preset,
-    workspaceKey,
-  );
   const workspaceOptions = isAdmin
     ? []
     : getWorkspaceOptions(profile?.profession_types, preset.key);
@@ -164,103 +149,82 @@ export default async function PainelLayout({
     collections: realEstateCountRows?.[2].count ?? 0,
     deals: realEstateCountRows?.[3].count ?? 0,
   };
+  const countGroups = [legalCounts, sellerCountRows, realEstateCountRows];
+  const countDataUnavailable = countGroups.some((group) =>
+    group?.some((response) => Boolean(response.error)),
+  );
+  const shellVariant: ShellVariant = canViewLegalWorkspace
+    ? "legal"
+    : isAutonomousSeller
+      ? "seller"
+      : canViewRealEstateWorkspace
+        ? "real-estate"
+        : "generic";
+  const navigation = buildProductNavigation({
+    variant: shellVariant,
+    counts:
+      shellVariant === "legal"
+        ? counts
+        : shellVariant === "seller"
+          ? sellerCounts
+          : shellVariant === "real-estate"
+            ? realEstateCounts
+            : undefined,
+    enabledSellerModules:
+      sellerOperationPreferences?.enabled_modules ?? ["catalog", "orders"],
+    access: {
+      canViewLegal: lawOfficeAccess.canViewLegal,
+      canViewFinance: lawOfficeAccess.canViewFinance,
+      canViewRealEstate: realEstateAccess.enabled,
+      isAdmin,
+    },
+    labels: {
+      contacts: labels.contacts,
+      pipeline: labels.pipeline,
+      followups: labels.followups,
+    },
+  });
+  const organizationName =
+    org?.name ||
+    (shellVariant === "legal"
+      ? "Seu escritório"
+      : shellVariant === "real-estate"
+        ? "Sua imobiliária"
+        : "Seu negócio");
+  const notificationCount =
+    shellVariant === "legal"
+      ? counts.deadlines
+      : shellVariant === "real-estate"
+        ? realEstateCounts.visits
+        : shellVariant === "seller"
+          ? sellerCounts.reminders
+          : 0;
   return (
     <AssistantChatProvider>
-      <div className={`dark product-workspace workspace-${preset.key}`}>
-        <DashboardRoutePreloader />
-        <DashboardNavigationFeedback />
-        {canViewLegalWorkspace ? (
-          <LegalProductNavigation
-            displayName={displayName}
-            organizationName={org?.name || "Seu escritório"}
-            canViewFinance={lawOfficeAccess.canViewFinance}
-            counts={counts}
-          />
-        ) : isAutonomousSeller ? (
-          <SellerProductNavigation
-            workspaceKey={workspaceKey}
-            workspaceOptions={workspaceOptions}
-            displayName={displayName}
-            organizationName={org?.name || "Seu negócio"}
-            counts={sellerCounts}
-            enabledModules={(sellerOperationPreferences?.enabled_modules ?? ["catalog", "orders"]) as import("@/lib/supabase/types").SellerModule[]}
-          />
-        ) : canViewRealEstateWorkspace ? (
-          <RealEstateProductNavigation
-            workspaceKey={workspaceKey}
-            workspaceOptions={workspaceOptions}
-            displayName={displayName}
-            organizationName={org?.name || "Sua imobiliária"}
-            counts={realEstateCounts}
-          />
-        ) : (
-          <ProductNavigation
-            workspaceKey={workspaceKey}
-            workspaceOptions={workspaceOptions}
-            workspaceLabel={preset.signupLabel}
-            displayName={displayName}
-            isAdmin={isAdmin}
-            lawOfficeAccess={lawOfficeAccess}
-            realEstateAccess={realEstateAccess}
-            labels={{
-              contacts: labels.contacts,
-              pipeline: labels.pipeline,
-              followups: labels.followups,
-            }}
-          />
-        )}
-        <div
-          className={`product-content relative isolate flex min-h-screen flex-col ${isLawOffice || isAutonomousSeller || isRealEstateBroker ? "overflow-hidden bg-[#151419]" : ""}`}
-        >
-          {/* Poeira de fundo de todo o painel, abaixo do shader (z-0 contra
-              z-[1]) e do conteúdo (z-10). Vale pra qualquer vertical: o
-              workspace inteiro é sempre-escuro. */}
-          <AmbientParticles />
-          {isLawOffice || isAutonomousSeller || isRealEstateBroker ? (
-            <>
-              {isAutonomousSeller || isRealEstateBroker ? (
-                <SellerDashboardBackground enabled={dashboardPreferences.showAnimatedBackground} />
-              ) : null}
-              {isLawOffice ? (
-                <div
-                  className="pointer-events-none absolute inset-0 z-[1] overflow-hidden"
-                  aria-hidden="true"
-                >
-                  <div
-                    className="sticky top-0 h-screen opacity-[0.12]"
-                    data-dashboard-particles="legal"
-                  >
-                    <NeuralBackground
-                      color="#8b5cf6"
-                      backgroundColor="#151419"
-                      trailOpacity={0.2}
-                      particleCount={260}
-                      speed={0.5}
-                    />
-                  </div>
-                </div>
-              ) : null}
-            </>
-          ) : null}
-          {canViewLegalWorkspace ? (
-            <LegalProductTopbar initials={getInitials(displayName)} />
-          ) : isAutonomousSeller ? (
-            <SellerProductTopbar initials={getInitials(displayName)} reminderCount={sellerCounts.reminders} />
-          ) : canViewRealEstateWorkspace ? (
-            <RealEstateProductTopbar initials={getInitials(displayName)} visitCount={realEstateCounts.visits} />
-          ) : (
-            <ProductTopbar initials={getInitials(displayName)} />
-          )}
-          {access.status === "trialing" && access.trialDaysLeft !== null ? (
+      <DashboardRoutePreloader />
+      <DashboardNavigationFeedback />
+      <ProductShell
+        navigation={navigation}
+        workspaceKey={workspaceKey}
+        workspaceOptions={workspaceOptions}
+        workspaceLabel={preset.signupLabel}
+        organizationName={organizationName}
+        displayName={displayName}
+        initials={getInitials(displayName)}
+        notificationCount={notificationCount}
+        dataNotice={
+          countDataUnavailable
+            ? "Alguns indicadores não puderam ser atualizados. Os dados principais continuam disponíveis nas respectivas áreas."
+            : null
+        }
+        trialBanner={
+          access.status === "trialing" && access.trialDaysLeft !== null ? (
             <TrialBanner trialDaysLeft={access.trialDaysLeft} />
-          ) : null}
-          <main
-            className={`relative z-10 w-full flex-1 ${isLawOffice || isAutonomousSeller || isRealEstateBroker ? "p-4 pb-6 md:p-8 md:pb-8" : "px-4 pb-8 pt-5 sm:px-6 lg:px-8 lg:pt-7"}`}
-          >
-            {children}
-          </main>
-        </div>
-      </div>
+          ) : null
+        }
+      >
+        {children}
+      </ProductShell>
     </AssistantChatProvider>
   );
 }

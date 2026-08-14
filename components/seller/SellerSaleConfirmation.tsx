@@ -214,7 +214,7 @@ export function SellerSaleConfirmation({
 
         <div className="relative border-b border-white/[0.08] p-4">
           <label className="relative block max-w-2xl"><span className="sr-only">Buscar produto</span><Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-od-text-3" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar produto ou criar agora" className="field pl-10" /></label>
-          {matches.length > 0 ? <div className="absolute left-4 right-4 top-[64px] z-[var(--z-dropdown)] max-w-2xl border border-white/[0.13] bg-[#151419] shadow-lg">
+          {matches.length > 0 ? <div className="absolute left-4 right-4 top-[64px] z-[var(--z-dropdown)] max-w-2xl rounded-inner border border-od-border bg-od-surface shadow-lg">
             {matches.map((option) => <button type="button" key={option.key} onClick={() => addCatalogOption(option)} className="grid min-h-14 w-full grid-cols-[minmax(0,1fr)_7rem_6rem] items-center gap-3 border-b border-white/[0.07] px-3 text-left last:border-b-0 hover:bg-white/[0.04]"><span className="min-w-0"><strong className="block truncate text-sm font-semibold text-white/78">{option.name}</strong><span className="mt-1 block truncate text-xs text-od-text-3">{option.variantName || option.sku || "Produto principal"}</span></span><span className="text-sm font-medium tabular-nums text-white/68">{formatMoney(option.price)}</span><span className={`text-right text-xs ${option.available !== null && option.available <= 0 ? "text-[#fb7767]" : "text-od-text-3"}`}>{option.available === null ? "Livre" : `${option.available} un.`}</span></button>)}
           </div> : null}
         </div>
@@ -265,7 +265,7 @@ export function SellerSaleConfirmation({
 
       {state.error ? <div role="alert" className="flex items-start gap-3 border border-[#fb7767]/30 bg-[#fb7767]/[0.06] p-4 text-sm text-[#fca79b]"><AlertTriangle size={18} className="mt-0.5 shrink-0" /><div><strong className="font-semibold">A venda não foi confirmada.</strong><p className="mt-1 text-[#fca79b]/80">{state.error}</p></div></div> : null}
 
-      <footer className="sticky bottom-[calc(64px+env(safe-area-inset-bottom))] z-[var(--z-sticky)] flex flex-col-reverse gap-2 border-t border-white/[0.08] bg-[#151419]/96 py-3 sm:flex-row sm:items-center sm:justify-end md:bottom-0">
+      <footer className="sticky bottom-[calc(64px+env(safe-area-inset-bottom))] z-[var(--z-sticky)] flex flex-col-reverse gap-2 border-t border-od-border bg-od-bg py-3 sm:flex-row sm:items-center sm:justify-end md:bottom-0">
         <button type="button" onClick={() => router.push("/painel/funil")} className="btn-secondary">Voltar ao funil</button>
         <button type="submit" disabled={pending || items.length === 0} className="btn min-w-64">{pending ? "Confirmando venda…" : <><Check size={16} /> Confirmar venda e criar pedido</>}</button>
       </footer>

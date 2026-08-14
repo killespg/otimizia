@@ -13,9 +13,9 @@ import {
   type FieldSpec,
   type ProfessionType,
 } from "@/lib/people/professions";
-import { stageFromPipelineList } from "@/lib/crm/pipeline-stage";
+import { isLostPipelineList, stageFromPipelineList } from "@/lib/crm/pipeline-stage";
 import { createClient } from "@/lib/supabase/server";
-import { DEAL_STAGES, type DealStage } from "@/lib/supabase/types";
+import { DEAL_STAGES, type DealStage, type LegalLossReasonCode } from "@/lib/supabase/types";
 import { getWorkspaceKey, isWorkspaceEnabled, normalizeWorkspaceKeys } from "@/lib/workspace/workspaces";
 
 const LIMIT = {
@@ -351,7 +351,11 @@ export async function createPipelineList(formData: FormData) {
   redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
 }
 
-export async function moveDealToList(id: string, listName: string) {
+export async function moveDealToList(
+  id: string,
+  listName: string,
+  lossReason?: { code: LegalLossReasonCode; notes: string },
+) {
   const { supabase, orgId, workspaceKey } = await requireActiveUserWithWorkspace();
   const name = listName.trim().slice(0, LIMIT.title);
   if (!name) throw new Error("Lista inválida.");
@@ -367,12 +371,25 @@ export async function moveDealToList(id: string, listName: string) {
   if (!existing) throw new Error("Venda não encontrada.");
   const stage = stageFromPipelineList(name);
   const closed = stage === "ganho" || stage === "perdido";
+  const legalLoss = workspaceKey === "law_office" && isLostPipelineList(name);
+  if (legalLoss && (!lossReason || !isLegalLossReasonCode(lossReason.code))) {
+    throw new Error("Informe o motivo da perda.");
+  }
+  const lossFields = workspaceKey === "law_office"
+    ? {
+        loss_reason_code: legalLoss ? lossReason!.code : null,
+        loss_reason_notes: legalLoss
+          ? (typeof lossReason!.notes === "string" ? lossReason!.notes : "").trim().slice(0, 500) || null
+          : null,
+      }
+    : {};
 
   const { error } = await supabase
     .from("deals")
     .update({
       stage,
       closed_at: closed ? new Date().toISOString() : null,
+      ...lossFields,
       details: {
         ...(existing.details ?? {}),
         pipeline_list: name,
@@ -384,6 +401,20 @@ export async function moveDealToList(id: string, listName: string) {
   ensureOk(error, "Não deu para mover a venda.");
   revalidatePath("/painel/funil");
   revalidatePath("/painel");
+}
+
+function isLegalLossReasonCode(value: unknown): value is LegalLossReasonCode {
+  switch (value) {
+    case "price":
+    case "competitor":
+    case "no_response":
+    case "timing":
+    case "profile_mismatch":
+    case "other":
+      return true;
+    default:
+      return false;
+  }
 }
 
 export async function moveDeal(id: string, stage: DealStage) {

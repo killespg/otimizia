@@ -19,8 +19,6 @@ export function DashboardCustomizePanel({
 }: DashboardCustomizePanelProps) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const [open, setOpen] = useState(false);
-  const isSeller = preset.key === "autonomous_seller";
-
   useEffect(() => {
     window.dispatchEvent(
       new CustomEvent("dashboard-edit-mode", { detail: { enabled: open } })
@@ -33,28 +31,28 @@ export function DashboardCustomizePanel({
   }, [open]);
 
   return (
-    <div className={isSeller ? "flex flex-col gap-3 border-b border-white/[0.08] pb-4 sm:flex-row sm:items-end sm:justify-between" : "dashboard-customize-header"}>
+    <div className="flex flex-col gap-3 border-b border-od-border pb-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p className={isSeller ? "text-xs font-semibold text-od-text-2" : "dashboard-section-eyebrow"}>Área de trabalho</p>
-        <h2 className={isSeller ? "mt-1 text-sm font-semibold text-white" : "dashboard-customize-title"}>{isSeller ? "Visão geral de vendas" : "Visão geral do escritório"}</h2>
+        <p className="text-xs font-semibold text-od-text-2">Área de trabalho</p>
+        <h2 className="mt-1 text-sm font-semibold text-od-text">{preset.key === "autonomous_seller" ? "Visão geral de vendas" : "Visão geral do escritório"}</h2>
       </div>
       <details
         ref={detailsRef}
-        className={isSeller ? "group relative" : "dashboard-customize"}
+        className="group relative"
         onToggle={(event) => setOpen(event.currentTarget.open)}
       >
-        <summary className={isSeller ? "flex min-h-11 cursor-pointer list-none items-center justify-center gap-2 rounded-md border border-od-border px-3 text-xs font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text" : "dashboard-customize-trigger"}>
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-center gap-2 rounded-control border border-od-border bg-od-surface px-3 text-xs font-semibold text-od-text-2 transition-colors hover:border-od-border-hover hover:bg-od-surface-hover hover:text-od-text">
         {open ? <IconCheck className="h-4 w-4" /> : <IconSettings className="h-4 w-4" />}
         <span>{open ? "Fechar editor" : "Personalizar painel"}</span>
       </summary>
-      <div className={isSeller ? "mt-3 w-full rounded-xl border border-od-border bg-od-muted-surface p-4 sm:absolute sm:right-0 sm:top-11 sm:z-[var(--z-dropdown)] sm:min-w-[640px] sm:p-5 lg:min-w-[760px]" : "dashboard-customize-panel"}>
-        <div className={isSeller ? "mb-5 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between" : "dashboard-customize-header"}>
+      <div className="mt-3 w-full rounded-panel border border-od-border bg-od-muted-surface p-4 sm:absolute sm:right-0 sm:top-11 sm:z-[var(--z-dropdown)] sm:min-w-[640px] sm:p-5 lg:min-w-[760px]">
+        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className={isSeller ? "text-xs font-semibold text-od-text-2" : "dashboard-customize-eyebrow"}>Modo de edição</p>
-            <h2 className={isSeller ? "mt-1 text-od-subtitle text-white" : "dashboard-customize-title"}>Deixe o painel do seu jeito</h2>
-            <p className={isSeller ? "mt-1 text-xs leading-relaxed text-od-text-3" : "dashboard-customize-description"}>Escolha a aparência, o fundo e as métricas. Para reorganizar os blocos, use as alças no painel abaixo.</p>
+            <p className="text-xs font-semibold text-od-text-2">Modo de edição</p>
+            <h2 className="mt-1 text-od-subtitle text-od-text">Deixe o painel do seu jeito</h2>
+            <p className="mt-1 text-xs leading-relaxed text-od-text-3">Escolha a aparência e as métricas. Para reorganizar os blocos, use as alças no painel abaixo.</p>
           </div>
-          <span className={isSeller ? "inline-flex items-center gap-2 text-xs font-semibold text-emerald-300" : "dashboard-customize-live"}><span className={isSeller ? "size-1.5 rounded-full bg-emerald-400" : undefined} />Prévia ao vivo</span>
+          <span className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-300"><span className="size-1.5 rounded-full bg-emerald-400" />Prévia ao vivo</span>
         </div>
           <DashboardPreferencesForm
             preferences={preferences}

@@ -55,7 +55,7 @@ export default async function TeamPage(
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
-      <header className="border-b border-white/[0.08] pb-5">
+      <header className="pb-5">
         <p className="text-xs font-semibold text-od-text-2">{isSeller ? "Vendas / Meu negócio" : isRealEstate ? "Imobiliário / Equipe" : "Escritório / Equipe"}</p>
         <h1 className="mt-2 text-od-title text-white">
           {org?.name ?? "Sua empresa"}
@@ -178,7 +178,7 @@ export default async function TeamPage(
       </SectionCard>
 
       {isAdmin && (
-        <section className={usesFlatSurface ? "space-y-3 border-y border-white/[0.08] py-5" : "space-y-3 border border-white/[0.09] bg-[#1e1d22] p-5"}>
+        <section className={usesFlatSurface ? "space-y-3 border-t border-white/[0.08] py-5" : "space-y-3 border border-white/[0.09] bg-od-muted-surface p-5"}>
           <div>
             <h2 className="text-base font-semibold text-white">
               Convidar
@@ -239,7 +239,7 @@ export default async function TeamPage(
         </section>
       )}
 
-      <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "overflow-hidden border border-white/[0.09] bg-[#1e1d22]"}>
+      <section className={usesFlatSurface ? "overflow-hidden border-t border-white/[0.08]" : "overflow-hidden border border-white/[0.09] bg-od-muted-surface"}>
         <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
           <h2 className="text-base font-semibold text-white">
             Membros
@@ -249,12 +249,12 @@ export default async function TeamPage(
           </span>
         </div>
 
-        <ul className="px-5">
+        <ul className="od-rows px-5">
           {members.map((member) => {
             const isSelf = member.user_id === user.id;
             const isLastAdmin = member.role === "admin" && adminCount <= 1;
             return (
-              <li key={member.user_id} className="flex items-center gap-3 border-b border-white/[0.06] py-4">
+              <li key={member.user_id} className="flex items-center gap-3 py-4">
                 <span className="grid size-9 shrink-0 place-items-center rounded-full bg-white/[0.07] text-od-text-2">
                   <IconUsers className="h-4 w-4" />
                 </span>
@@ -355,7 +355,7 @@ function SectionCard({
   flat?: boolean;
 }) {
   return (
-    <section className={flat ? "space-y-4 border-y border-white/[0.08] py-5" : "space-y-4 border border-white/[0.09] bg-[#1e1d22] p-5"}>
+    <section className={flat ? "space-y-4 border-t border-white/[0.08] py-5" : "space-y-4 border border-white/[0.09] bg-od-muted-surface p-5"}>
       <div>
         <h2 className="text-base font-semibold text-white">
           {title}

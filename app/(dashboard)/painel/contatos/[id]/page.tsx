@@ -124,7 +124,7 @@ export default async function ContactDetailPage(
         {copy.backLabel}
       </Link>
 
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 sm:flex-row sm:items-center sm:justify-between">
+      <header className="flex flex-col gap-4 pb-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <Avatar name={contactName} className="size-12 text-sm" />
           <div className="min-w-0">
@@ -161,7 +161,7 @@ export default async function ContactDetailPage(
       </header>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "panel overflow-hidden"}>
+        <section className={usesFlatSurface ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}>
           <div className="border-b border-line px-5 py-4">
             <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
               {copy.dataTitle}
@@ -219,7 +219,7 @@ export default async function ContactDetailPage(
 
           <form
             action={deleteContact}
-            className={usesFlatSurface ? "flex items-center justify-between gap-3 border-t border-white/[0.08] px-5 py-4" : "flex items-center justify-between gap-3 border-t border-line bg-[#f8fbff] px-5 py-4"}
+            className="flex items-center justify-between gap-3 border-t border-white/[0.08] px-5 py-4"
           >
             <div>
               <p className="text-sm font-black text-ink">{copy.deleteTitle}</p>
@@ -229,7 +229,7 @@ export default async function ContactDetailPage(
             </div>
             <input type="hidden" name="id" value={c.id} />
             <PendingButton
-              className="press inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-danger-200 bg-white px-3.5 py-2 text-sm font-black text-danger-700 hover:bg-danger-50"
+              className="press inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-danger-200 bg-danger-50 px-3.5 py-2 text-sm font-black text-danger-700 hover:bg-danger-100"
               pendingLabel="Excluindo"
             >
               <IconTrash className="h-4 w-4" />
@@ -240,7 +240,7 @@ export default async function ContactDetailPage(
 
         <div className="space-y-5">
           {isSeller ? (
-            <section className="overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)]">
+            <section className="overflow-hidden border-t border-white/[0.08]">
               <div className="border-b border-white/[0.08] px-5 py-4">
                 <h2 className="text-base font-semibold text-white">Preferências de compra</h2>
                 <p className="mt-1 text-sm text-white/52">Tamanhos, medidas e hábitos para atender e recomprar sem perguntar tudo de novo.</p>
@@ -259,7 +259,7 @@ export default async function ContactDetailPage(
           ) : null}
 
           {showLeadPreferences && (
-            <section className="overflow-hidden border-y border-white/[0.08]">
+            <section className="overflow-hidden border-t border-white/[0.08]">
               <div className="border-b border-line px-5 py-4">
                 <h2 className="text-lg font-black tracking-[-0.02em] text-ink">Perfil de busca do cliente</h2>
                 <p className="mt-1 text-sm font-medium text-ink-muted">
@@ -289,7 +289,7 @@ export default async function ContactDetailPage(
           />
 
           {preset.followUpOffsets.length > 0 && (
-            <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "panel overflow-hidden"}>
+            <section className={usesFlatSurface ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}>
               <div className="border-b border-line px-5 py-4">
                 <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
                   Lembrete rápido
@@ -310,7 +310,7 @@ export default async function ContactDetailPage(
                       value={new Date(now.getTime() + offset.days * 86_400_000).toISOString()}
                     />
                     <PendingButton
-                      className="press-sm min-h-9 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                      className="press-sm min-h-9 rounded-md border border-line bg-transparent px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
                       pendingLabel="Agendando"
                     >
                       {offset.label}
@@ -321,7 +321,7 @@ export default async function ContactDetailPage(
             </section>
           )}
 
-          <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "panel overflow-hidden"}>
+          <section className={usesFlatSurface ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}>
             <div className="border-b border-line px-5 py-4">
               <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
                 Conversas
@@ -347,14 +347,14 @@ export default async function ContactDetailPage(
               </form>
 
               {logs.length === 0 ? (
-                <div className={usesFlatSurface ? "mt-5 py-5 text-left" : "mt-5 rounded-lg border border-dashed border-line bg-[#f8fbff] p-5 text-center"}>
+                <div className="mt-5 py-5 text-left">
                   <IconMessage className="mx-auto h-7 w-7 text-brand-700" />
                   <p className="mt-3 text-sm font-black text-ink">
                     Nenhuma conversa anotada ainda.
                   </p>
                 </div>
               ) : (
-                <ol className="enter mt-5 divide-y divide-white/[0.08] border-y border-white/[0.08]">
+                <ol className="enter mt-5 divide-y divide-white/[0.08] border-t border-white/[0.08]">
                   {logs.map((log) => (
                     <li key={log.id} className="py-4">
                       <p className="text-safe text-sm font-medium leading-relaxed text-ink">
@@ -370,7 +370,7 @@ export default async function ContactDetailPage(
             </div>
           </section>
 
-          <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "panel overflow-hidden"}>
+          <section className={usesFlatSurface ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}>
             <div className="border-b border-line px-5 py-4">
               <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
                 {copy.tasksTitle}
@@ -391,7 +391,7 @@ export default async function ContactDetailPage(
                       <span
                         className={
                           "grid h-5 w-5 shrink-0 place-items-center rounded-full " +
-                          (task.done ? "bg-brand-700 text-white" : "border border-line bg-white")
+                          (task.done ? "bg-brand-700 text-white" : "border border-line bg-transparent")
                         }
                       >
                         {task.done && <IconCheck className="h-3 w-3" />}
@@ -433,7 +433,7 @@ function MiniStat({
   pink?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-3 border-l border-white/[0.08] px-3 py-2">
+    <div className="flex items-center gap-3 px-3 py-2">
       <Icon className={`h-4 w-4 ${pink ? "text-amber-300" : "text-od-text-2"}`} />
       <div><p className="text-xs text-od-text-3">{label}</p><p className="text-[18px] font-bold text-white">{value}</p></div>
     </div>

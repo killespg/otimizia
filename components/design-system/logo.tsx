@@ -2,7 +2,9 @@ import * as React from "react";
 import Image from "next/image";
 
 const MARK_RATIO = 1;
-const WORDMARK_RATIO = 1280 / 329;
+// A marca de 2026-08-05 e mais achatada que a anterior (4,62 contra 3,89).
+// A razao acompanha a arte para o asset nao carregar sobra morta.
+const WORDMARK_RATIO = 1280 / 277;
 
 /**
  * Marca oficial da OtimizIA.
