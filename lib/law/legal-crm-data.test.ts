@@ -304,6 +304,38 @@ describe("loadLegalCrmMetrics", () => {
     expect(metrics.availability.coverage).toBe("unavailable");
   });
 
+  it("does not turn a lost pipeline-list placeholder into a commercial loss", async () => {
+    const fake = repository({
+      deals: async () => ok([
+        {
+          id: "placeholder-lost",
+          contact_id: null,
+          stage: "perdido",
+          created_at: "2026-08-02T12:00:00.000Z",
+          details: { pipeline_list_placeholder: "true" },
+          loss_reason_code: null,
+        },
+        {
+          id: "real-lost",
+          contact_id: "contact-1",
+          stage: "perdido",
+          created_at: "2026-08-03T12:00:00.000Z",
+          details: {},
+          loss_reason_code: "price",
+        },
+      ]),
+    });
+
+    const metrics = await loadLegalCrmMetrics(fake, {
+      orgId: "org-1",
+      period,
+      observedAt: now.toISOString(),
+      canViewFinance: false,
+    });
+
+    expect(metrics.losses).toEqual([{ code: "price", label: "Preço", count: 1 }]);
+  });
+
   it("marks only a failed source unavailable, preserves successful data, and logs no rows", async () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
     const fake = repository({
@@ -386,17 +418,25 @@ function operation(query: RecordedQuery, name: string) {
 
 describe("createSupabaseLegalCrmRepository", () => {
   it("pages complete history with a deterministic order until the final short page", async () => {
-    const firstPage = Array.from({ length: 1_000 }, (_, index) => ({
+    const expectedFirstPage = Array.from({ length: 1_000 }, (_, index) => ({
       deal_id: `deal-${index}`,
       to_stage: "novo",
       occurred_at: "2026-08-01T12:00:00.000Z",
       is_baseline: false,
     }));
-    const finalRow = {
+    const firstPage = expectedFirstPage.map((row) => ({
+      ...row,
+      deal_parent: { details: {}, org_id: "org-1", workspace_key: "law_office" },
+    }));
+    const expectedFinalRow = {
       deal_id: "deal-final",
       to_stage: "ganho",
       occurred_at: "2026-08-05T12:00:00.000Z",
       is_baseline: false,
+    };
+    const finalRow = {
+      ...expectedFinalRow,
+      deal_parent: { details: {}, org_id: "org-1", workspace_key: "law_office" },
     };
     const recorder = new SupabaseRecorder({
       deal_stage_history: [
@@ -408,7 +448,7 @@ describe("createSupabaseLegalCrmRepository", () => {
 
     const result = await adapter.stageHistory("org-1", now.toISOString());
 
-    expect(result).toEqual(ok([...firstPage, finalRow]));
+    expect(result).toEqual(ok([...expectedFirstPage, expectedFinalRow]));
     const pages = recorder.queries.filter((query) => query.table === "deal_stage_history");
     expect(pages).toHaveLength(2);
     expect(pages.map((query) => operation(query, "range"))).toEqual([
@@ -421,6 +461,75 @@ describe("createSupabaseLegalCrmRepository", () => {
         ["id", { ascending: true }],
       ]);
     }
+  });
+
+  it("joins the parent legal deal and removes placeholder wins before CAC", async () => {
+    const recorder = new SupabaseRecorder({
+      deal_stage_history: [{
+        data: [
+          {
+            deal_id: "placeholder",
+            to_stage: "ganho",
+            occurred_at: "2026-08-04T12:00:00.000Z",
+            is_baseline: false,
+            deal_parent: {
+              details: { pipeline_list_placeholder: "true" },
+              org_id: "org-1",
+              workspace_key: "law_office",
+            },
+          },
+          {
+            deal_id: "real",
+            to_stage: "ganho",
+            occurred_at: "2026-08-05T12:00:00.000Z",
+            is_baseline: false,
+            deal_parent: {
+              details: {},
+              org_id: "org-1",
+              workspace_key: "law_office",
+            },
+          },
+        ],
+        error: null,
+      }],
+    });
+    const adapter = createSupabaseLegalCrmRepository(recorder as unknown as SupabaseClient);
+
+    const history = await adapter.stageHistory("org-1", now.toISOString());
+
+    expect(history).toEqual(ok([
+      {
+        deal_id: "real",
+        to_stage: "ganho",
+        occurred_at: "2026-08-05T12:00:00.000Z",
+        is_baseline: false,
+      },
+    ]));
+    const historyQuery = recorder.queries.find((query) => query.table === "deal_stage_history")!;
+    expect(operation(historyQuery, "select")[0]?.[0]).toContain(
+      "deal_parent:deals!inner(details,org_id,workspace_key)",
+    );
+    expect(operation(historyQuery, "eq")).toContainEqual(["deal_parent.org_id", "org-1"]);
+    expect(operation(historyQuery, "eq")).toContainEqual(["deal_parent.workspace_key", "law_office"]);
+
+    const metrics = await loadLegalCrmMetrics(repository({
+      stageHistory: async () => history,
+      costs: async () => ok([
+        { month: "2026-08-01", marketing_cents: 50_000, commercial_cents: 30_000 },
+      ]),
+    }), {
+      orgId: "org-1",
+      period,
+      observedAt: now.toISOString(),
+      canViewFinance: true,
+    });
+
+    expect(metrics.cac).toEqual({
+      status: "ready",
+      valueCents: 80_000,
+      totalCostCents: 80_000,
+      wins: 1,
+    });
   });
 
   it("uses explicit columns and tenant/workspace filters, with full history and safe finance joins", async () => {

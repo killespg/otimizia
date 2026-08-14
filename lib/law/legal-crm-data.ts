@@ -25,6 +25,9 @@ export type DealMetricRow = {
 };
 
 export type StageMetricRow = LegalCrmStageHistoryRow;
+type StageMetricQueryRow = StageMetricRow & {
+  deal_parent: { details: Record<string, unknown> | null } | Array<{ details: Record<string, unknown> | null }>;
+};
 export type ContactMetricRow = { id: string; source: string | null };
 export type ResponseMetricRow = {
   first_inbound_at: string;
@@ -90,10 +93,16 @@ async function pagedRows<T>(
   }
 }
 
-function paymentParent(row: Record<string, unknown>) {
-  const joined = row.receivables;
+function joinedRecord(value: unknown) {
+  const joined = value;
   if (Array.isArray(joined)) return joined[0] as Record<string, unknown> | undefined;
   return joined && typeof joined === "object" ? joined as Record<string, unknown> : undefined;
+}
+
+function isPipelinePlaceholder(details: unknown) {
+  if (!details || typeof details !== "object" || Array.isArray(details)) return false;
+  const marker = (details as Record<string, unknown>).pipeline_list_placeholder;
+  return marker === "true" || marker === true;
 }
 
 export function createSupabaseLegalCrmRepository(supabase: SupabaseClient): LegalCrmRepository {
@@ -112,15 +121,31 @@ export function createSupabaseLegalCrmRepository(supabase: SupabaseClient): Lega
     },
 
     async stageHistory(orgId, observedAt) {
-      return pagedRows<StageMetricRow>("history", (from, to) => supabase
+      const result = await pagedRows<StageMetricQueryRow>("history", (from, to) => supabase
           .from("deal_stage_history")
-          .select("deal_id,to_stage,occurred_at,is_baseline")
+          .select("deal_id,to_stage,occurred_at,is_baseline,deal_parent:deals!inner(details,org_id,workspace_key)")
           .eq("org_id", orgId)
           .eq("workspace_key", LEGAL_WORKSPACE)
+          .eq("deal_parent.org_id", orgId)
+          .eq("deal_parent.workspace_key", LEGAL_WORKSPACE)
           .lte("occurred_at", observedAt)
           .order("occurred_at", { ascending: true })
           .order("id", { ascending: true })
-          .range(from, to) as unknown as PromiseLike<{ data: StageMetricRow[] | null; error: unknown }>);
+          .range(from, to) as unknown as PromiseLike<{ data: StageMetricQueryRow[] | null; error: unknown }>);
+      if (!result.ok) return result;
+      return {
+        ok: true,
+        data: result.data.flatMap((row) => {
+          const parent = joinedRecord(row.deal_parent);
+          if (!parent || isPipelinePlaceholder(parent.details)) return [];
+          return [{
+            deal_id: row.deal_id,
+            to_stage: row.to_stage,
+            occurred_at: row.occurred_at,
+            is_baseline: row.is_baseline,
+          }];
+        }),
+      };
     },
 
     async contacts(orgId) {
@@ -195,7 +220,7 @@ export function createSupabaseLegalCrmRepository(supabase: SupabaseClient): Lega
       if (!result.ok) return failedResult("payments", []);
 
       const rows = result.data.flatMap((row) => {
-        const parent = paymentParent(row);
+        const parent = joinedRecord(row.receivables);
         if (!parent) return [];
         return [{
           contact_id: typeof parent.contact_id === "string" ? parent.contact_id : null,
@@ -289,7 +314,7 @@ export async function loadLegalCrmMetrics(
       contact_id: deal.contact_id,
       stage: deal.stage,
       created_at: deal.created_at,
-      is_placeholder: deal.details?.pipeline_list_placeholder === "true",
+      is_placeholder: isPipelinePlaceholder(deal.details),
     })),
     stageHistory: {
       completeness: "complete_through_observed_at",
@@ -302,7 +327,7 @@ export async function loadLegalCrmMetrics(
     agreements: agreements.ok ? agreements.data : [],
     payments: payments.ok ? payments.data : [],
     lossRows: dealRows
-      .filter((deal) => deal.stage === "perdido")
+      .filter((deal) => deal.stage === "perdido" && !isPipelinePlaceholder(deal.details))
       .map((deal) => ({
         loss_reason_code: deal.loss_reason_code,
         legacy_reason: legacyLossReason(deal.details),
