@@ -235,6 +235,98 @@ describe("saveLegalAcquisitionCost", () => {
     });
   });
 
+  async function expectRecoverableAuthorizationFailure(
+    formData = acquisitionCostForm({
+      month: "2026-08",
+      marketing: "1.00",
+      commercial: "300,50",
+      notes: "manter estes valores",
+    }),
+  ) {
+    const state = await saveLegalAcquisitionCost(
+      initialLegalAcquisitionCostState,
+      formData,
+    );
+
+    expect(state).toEqual({
+      status: "error",
+      message: "Não foi possível confirmar sua autorização.",
+      revision: 1,
+      values: {
+        month: "2026-08",
+        marketing: "1.00",
+        commercial: "300,50",
+        notes: "manter estes valores",
+      },
+    });
+    expect(actionMocks.logError).toHaveBeenCalledOnce();
+    expect(actionMocks.revalidatePath).not.toHaveBeenCalled();
+  }
+
+  it("recupera throw síncrono ao criar o client", async () => {
+    actionMocks.createClient.mockImplementation(() => {
+      throw new Error("client sync internals");
+    });
+
+    await expectRecoverableAuthorizationFailure();
+  });
+
+  it("recupera rejeição assíncrona ao criar o client", async () => {
+    actionMocks.createClient.mockRejectedValue(new Error("client async internals"));
+
+    await expectRecoverableAuthorizationFailure();
+  });
+
+  it("recupera throw síncrono de getUser", async () => {
+    const { supabase } = setupAction();
+    supabase.auth.getUser.mockImplementation(() => {
+      throw new Error("auth sync internals");
+    });
+
+    await expectRecoverableAuthorizationFailure();
+  });
+
+  it("recupera rejeição assíncrona de getUser", async () => {
+    const { supabase } = setupAction();
+    supabase.auth.getUser.mockRejectedValue(new Error("auth async internals"));
+
+    await expectRecoverableAuthorizationFailure();
+  });
+
+  it("trata auth error resolvido como falha recuperável", async () => {
+    const { supabase } = setupAction();
+    supabase.auth.getUser.mockResolvedValue({
+      data: { user: null },
+      error: { message: "auth provider internals" },
+    });
+
+    await expectRecoverableAuthorizationFailure();
+    expect(actionMocks.redirect).not.toHaveBeenCalled();
+  });
+
+  it("recupera throw ao construir query de autorização", async () => {
+    const { from } = setupAction();
+    from.mockImplementationOnce(() => {
+      throw new Error("query construction internals");
+    });
+
+    await expectRecoverableAuthorizationFailure();
+  });
+
+  it("recupera rejeição assíncrona da query de profile", async () => {
+    const { profileQuery } = setupAction();
+    profileQuery.maybeSingle.mockRejectedValue(new Error("profile query internals"));
+
+    await expectRecoverableAuthorizationFailure();
+  });
+
+  it("recupera rejeição assíncrona da query de membership", async () => {
+    const { membershipQuery } = setupAction();
+    membershipQuery.maybeSingle.mockRejectedValue(new Error("membership query internals"));
+
+    await expectRecoverableAuthorizationFailure();
+  });
+
   it("devolve erro recuperável e preserva 1.00 para correção", async () => {
     const { costQuery } = setupAction();
     const formData = acquisitionCostForm({

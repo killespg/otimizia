@@ -54,15 +54,64 @@ function parserMessage(error: unknown) {
     : "Confira os valores informados e tente novamente.";
 }
 
+function authorizationErrorState(
+  previousState: LegalAcquisitionCostActionState,
+  values: LegalAcquisitionCostFormValues,
+) {
+  return actionState(
+    previousState,
+    "error",
+    "Não foi possível confirmar sua autorização.",
+    values,
+  );
+}
+
+async function loadAuthorization(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  orgId: string,
+  userId: string,
+) {
+  return Promise.all([
+    supabase
+      .from("profiles")
+      .select("profession_type,profession_types,is_admin")
+      .eq("id", userId)
+      .maybeSingle(),
+    supabase
+      .from("organization_members")
+      .select("role,job_role")
+      .eq("org_id", orgId)
+      .eq("user_id", userId)
+      .maybeSingle(),
+  ]);
+}
+
 export async function saveLegalAcquisitionCost(
   previousState: LegalAcquisitionCostActionState,
   formData: FormData,
 ): Promise<LegalAcquisitionCostActionState> {
   const values = submittedValues(formData);
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let supabase: Awaited<ReturnType<typeof createClient>>;
+  try {
+    supabase = await createClient();
+  } catch (error) {
+    logError("legal-acquisition-cost.client", error);
+    return authorizationErrorState(previousState, values);
+  }
+
+  let authResult: Awaited<ReturnType<typeof supabase.auth.getUser>>;
+  try {
+    authResult = await supabase.auth.getUser();
+  } catch (error) {
+    logError("legal-acquisition-cost.auth", error);
+    return authorizationErrorState(previousState, values);
+  }
+  if (authResult.error) {
+    logError("legal-acquisition-cost.auth", authResult.error);
+    return authorizationErrorState(previousState, values);
+  }
+
+  const user = authResult.data.user;
   if (!user) redirect("/login");
 
   let orgId: string;
@@ -70,30 +119,23 @@ export async function saveLegalAcquisitionCost(
     orgId = await getActiveOrgId(supabase, user.id);
   } catch (error) {
     logError("legal-acquisition-cost.active-org", error, { userId: user.id });
-    return actionState(
-      previousState,
-      "error",
-      "Não foi possível confirmar sua autorização.",
-      values,
-    );
+    return authorizationErrorState(previousState, values);
   }
 
+  let authorization: Awaited<ReturnType<typeof loadAuthorization>>;
+  try {
+    authorization = await loadAuthorization(supabase, orgId, user.id);
+  } catch (error) {
+    logError("legal-acquisition-cost.authorization", error, {
+      orgId,
+      userId: user.id,
+    });
+    return authorizationErrorState(previousState, values);
+  }
   const [
     { data: profile, error: profileError },
     { data: membership, error: membershipError },
-  ] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("profession_type,profession_types,is_admin")
-      .eq("id", user.id)
-      .maybeSingle(),
-    supabase
-      .from("organization_members")
-      .select("role,job_role")
-      .eq("org_id", orgId)
-      .eq("user_id", user.id)
-      .maybeSingle(),
-  ]);
+  ] = authorization;
 
   if (profileError || membershipError) {
     logError(
@@ -101,12 +143,7 @@ export async function saveLegalAcquisitionCost(
       profileError ?? membershipError,
       { orgId, userId: user.id },
     );
-    return actionState(
-      previousState,
-      "error",
-      "Não foi possível confirmar sua autorização.",
-      values,
-    );
+    return authorizationErrorState(previousState, values);
   }
   if (!membership || !profile || !hasLegalWorkspace(profile)) {
     return actionState(
