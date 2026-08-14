@@ -779,9 +779,15 @@ describe("instrumentação das métricas comerciais jurídicas", () => {
   it("revoga execução direta de todas as funções internas da instrumentação", () => {
     const privileges = localSql(`
       select pg_catalog.concat_ws('|',
-        pg_catalog.has_function_privilege('authenticated', function_oid, 'execute'),
-        pg_catalog.has_function_privilege('anon', function_oid, 'execute'),
-        pg_catalog.has_function_privilege('public', function_oid, 'execute')
+        case when pg_catalog.has_function_privilege(
+          'authenticated', function_oid, 'execute'
+        ) then 'true' else 'false' end,
+        case when pg_catalog.has_function_privilege(
+          'anon', function_oid, 'execute'
+        ) then 'true' else 'false' end,
+        case when pg_catalog.has_function_privilege(
+          'public', function_oid, 'execute'
+        ) then 'true' else 'false' end
       )
       from pg_catalog.unnest(array[
         'public.capture_legal_deal_stage_history()'::pg_catalog.regprocedure::oid,
