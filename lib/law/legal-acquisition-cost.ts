@@ -8,6 +8,32 @@ export type LegalAcquisitionCostInput = {
   notes: string | null;
 };
 
+export type LegalAcquisitionCostFormValues = {
+  month: string;
+  marketing: string;
+  commercial: string;
+  notes: string;
+};
+
+export type LegalAcquisitionCostActionState = {
+  status: "idle" | "success" | "error";
+  message: string;
+  revision: number;
+  values: LegalAcquisitionCostFormValues;
+};
+
+export const initialLegalAcquisitionCostState: LegalAcquisitionCostActionState = {
+  status: "idle",
+  message: "",
+  revision: 0,
+  values: {
+    month: "",
+    marketing: "",
+    commercial: "",
+    notes: "",
+  },
+};
+
 function parseMonth(value: FormDataEntryValue | null) {
   if (typeof value !== "string" || !value.trim()) {
     throw new Error("Informe o mês.");
