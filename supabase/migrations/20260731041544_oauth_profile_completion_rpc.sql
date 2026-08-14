@@ -35,3 +35,4 @@ $$;
 
 revoke all on function public.complete_oauth_profile(text, text[]) from public;
 grant execute on function public.complete_oauth_profile(text, text[]) to authenticated;
+;
