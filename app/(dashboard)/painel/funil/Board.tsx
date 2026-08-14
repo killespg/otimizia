@@ -12,6 +12,7 @@ import {
   formatDealValue,
   getCommissionPercent,
 } from "@/lib/crm/deals";
+import { stageFromPipelineList } from "@/lib/crm/pipeline-stage";
 import { formatBRL } from "@/lib/utils/format";
 import {
   acceptDealHandoff,
@@ -168,7 +169,7 @@ export default function Board({
     // No workspace de produtos, "Ganho" não é só uma coluna: precisa virar
     // pedido com itens, estoque e garantias. A confirmação é transacional e
     // só ela fecha a negociação de fato.
-    if (isSeller && stageFromList(targetList) === "ganho") {
+    if (isSeller && stageFromPipelineList(targetList) === "ganho") {
       router.push(`/painel/vendas/${id}/confirmar`);
       return;
     }
@@ -178,7 +179,7 @@ export default function Board({
         item.id === id
           ? {
               ...item,
-              stage: stageFromList(targetList),
+              stage: stageFromPipelineList(targetList),
               details: { ...(item.details ?? {}), pipeline_list: targetList },
             }
           : item
@@ -908,34 +909,4 @@ function trelloMeta(list: string) {
   }
   if (normalized.includes("analise") || normalized.includes("contato")) return STAGE_META.em_contato;
   return STAGE_META.novo;
-}
-
-function stageFromList(list: string): DealStage {
-  const normalized = list
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-  if (normalized.includes("perdido") || normalized.includes("perda") || normalized.includes("lost")) {
-    return "perdido";
-  }
-  if (
-    normalized.includes("fechado") ||
-    normalized.includes("vendido") ||
-    normalized.includes("vendas") ||
-    normalized.includes("ganho") ||
-    normalized.includes("won")
-  ) {
-    return "ganho";
-  }
-  if (
-    normalized.includes("proposta") ||
-    normalized.includes("negociacao") ||
-    normalized.includes("visita")
-  ) {
-    return "negociacao";
-  }
-  if (normalized.includes("analise") || normalized.includes("contato") || normalized.includes("follow")) {
-    return "em_contato";
-  }
-  return "novo";
 }

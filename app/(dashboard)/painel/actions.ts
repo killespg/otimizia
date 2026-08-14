@@ -13,6 +13,7 @@ import {
   type FieldSpec,
   type ProfessionType,
 } from "@/lib/people/professions";
+import { stageFromPipelineList } from "@/lib/crm/pipeline-stage";
 import { createClient } from "@/lib/supabase/server";
 import { DEAL_STAGES, type DealStage } from "@/lib/supabase/types";
 import { getWorkspaceKey, isWorkspaceEnabled, normalizeWorkspaceKeys } from "@/lib/workspace/workspaces";
@@ -1024,36 +1025,6 @@ async function resolveOrCreateContactId(
 
 function isDealStage(stage: string): stage is DealStage {
   return DEAL_STAGES.some((item) => item.key === stage);
-}
-
-function stageFromPipelineList(listName: string): DealStage {
-  const normalized = listName
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase();
-  if (normalized.includes("perdido") || normalized.includes("perda") || normalized.includes("lost")) {
-    return "perdido";
-  }
-  if (
-    normalized.includes("fechado") ||
-    normalized.includes("vendido") ||
-    normalized.includes("vendas") ||
-    normalized.includes("ganho") ||
-    normalized.includes("won")
-  ) {
-    return "ganho";
-  }
-  if (
-    normalized.includes("proposta") ||
-    normalized.includes("negociacao") ||
-    normalized.includes("visita")
-  ) {
-    return "negociacao";
-  }
-  if (normalized.includes("analise") || normalized.includes("contato") || normalized.includes("follow")) {
-    return "em_contato";
-  }
-  return "novo";
 }
 
 function selectedProfessionTypes(formData: FormData): ProfessionType[] {
