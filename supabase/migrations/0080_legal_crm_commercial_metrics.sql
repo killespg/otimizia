@@ -14,6 +14,11 @@ alter table public.deals
 -- depois dela precisam entrar explicitamente para o fluxo jurídico da Task 6.
 grant update (loss_reason_code, loss_reason_notes) on public.deals to authenticated;
 
+-- Organização e workspace são identidade do registro, não campos operacionais.
+-- Impedir sua troca pelo cliente fecha a evasão que combinava mudança de etapa
+-- com saída do workspace jurídico (ou transferência para outro tenant).
+revoke update (org_id, workspace_key) on public.deals from authenticated;
+
 create table public.deal_stage_history (
   id uuid primary key default gen_random_uuid(),
   org_id uuid not null references public.organizations(id) on delete cascade,
@@ -131,6 +136,18 @@ from public.deals
 where public.deals.workspace_key = 'law_office'
 order by public.deals.id;
 
+-- A mensagem e sua conversa precisam pertencer à mesma organização. As FKs
+-- independentes anteriores permitiam associar org A a uma conversa da org B.
+alter table public.whatsapp_conversations
+  add constraint whatsapp_conversations_org_id_id_unique unique (org_id, id);
+
+alter table public.whatsapp_messages
+  drop constraint whatsapp_messages_conversation_id_fkey,
+  add constraint whatsapp_messages_org_conversation_fkey
+    foreign key (org_id, conversation_id)
+    references public.whatsapp_conversations(org_id, id)
+    on delete cascade;
+
 alter table public.whatsapp_conversations
   add column first_inbound_at timestamptz,
   add column first_response_at timestamptz,
@@ -148,17 +165,18 @@ alter table public.whatsapp_conversations
   );
 
 -- Os marcadores são derivados das mensagens e não podem ser forjados por
--- um membro. Recria a allowlist de UPDATE sem essas três colunas.
-revoke update on public.whatsapp_conversations from authenticated;
+-- um membro. Recria as allowlists de INSERT e UPDATE sem essas três colunas.
+revoke insert, update on public.whatsapp_conversations from authenticated;
 do $$
 declare
-  allowed_columns text;
+  allowed_insert_columns text;
+  allowed_update_columns text;
 begin
   select pg_catalog.string_agg(
       pg_catalog.format('%I', information_schema.columns.column_name),
       ', ' order by information_schema.columns.ordinal_position
     )
-    into allowed_columns
+    into allowed_insert_columns
   from information_schema.columns
   where information_schema.columns.table_schema = 'public'
     and information_schema.columns.table_name = 'whatsapp_conversations'
@@ -168,14 +186,35 @@ begin
       'first_response_sent_by'
     );
 
+  select pg_catalog.string_agg(
+      pg_catalog.format('%I', information_schema.columns.column_name),
+      ', ' order by information_schema.columns.ordinal_position
+    )
+    into allowed_update_columns
+  from information_schema.columns
+  where information_schema.columns.table_schema = 'public'
+    and information_schema.columns.table_name = 'whatsapp_conversations'
+    and information_schema.columns.column_name not in (
+      'id',
+      'org_id',
+      'first_inbound_at',
+      'first_response_at',
+      'first_response_sent_by'
+    );
+
+  execute pg_catalog.format(
+    'grant insert (%s) on public.whatsapp_conversations to authenticated',
+    allowed_insert_columns
+  );
   execute pg_catalog.format(
     'grant update (%s) on public.whatsapp_conversations to authenticated',
-    allowed_columns
+    allowed_update_columns
   );
 end;
 $$;
 
 create or replace function public.recalculate_whatsapp_response_markers(
+  p_org_id uuid,
   p_conversation_id uuid
 )
 returns void
@@ -189,10 +228,23 @@ declare
   v_first_response_at timestamptz;
   v_first_response_sent_by text;
 begin
+  -- O lock vem antes de qualquer leitura. Em READ COMMITTED, uma chamada que
+  -- aguardou outra transação lê um snapshot novo depois que recebe o lock.
+  perform 1
+  from public.whatsapp_conversations
+  where public.whatsapp_conversations.org_id = p_org_id
+    and public.whatsapp_conversations.id = p_conversation_id
+  for update;
+
+  if not found then
+    return;
+  end if;
+
   select public.whatsapp_messages.id, public.whatsapp_messages.created_at
     into v_first_inbound_id, v_first_inbound_at
   from public.whatsapp_messages
-  where public.whatsapp_messages.conversation_id = p_conversation_id
+  where public.whatsapp_messages.org_id = p_org_id
+    and public.whatsapp_messages.conversation_id = p_conversation_id
     and public.whatsapp_messages.direction = 'inbound'
   order by public.whatsapp_messages.created_at, public.whatsapp_messages.id
   limit 1;
@@ -201,7 +253,8 @@ begin
     select public.whatsapp_messages.created_at, public.whatsapp_messages.sent_by
       into v_first_response_at, v_first_response_sent_by
     from public.whatsapp_messages
-    where public.whatsapp_messages.conversation_id = p_conversation_id
+    where public.whatsapp_messages.org_id = p_org_id
+      and public.whatsapp_messages.conversation_id = p_conversation_id
       and public.whatsapp_messages.direction = 'outbound'
       and public.whatsapp_messages.sent_by in ('ai', 'human')
       and (
@@ -220,13 +273,14 @@ begin
     first_inbound_at = v_first_inbound_at,
     first_response_at = v_first_response_at,
     first_response_sent_by = v_first_response_sent_by
-  where public.whatsapp_conversations.id = p_conversation_id;
+  where public.whatsapp_conversations.org_id = p_org_id
+    and public.whatsapp_conversations.id = p_conversation_id;
 end;
 $$;
 
-revoke all on function public.recalculate_whatsapp_response_markers(uuid)
+revoke all on function public.recalculate_whatsapp_response_markers(uuid, uuid)
   from public, anon, authenticated;
-grant execute on function public.recalculate_whatsapp_response_markers(uuid) to service_role;
+grant execute on function public.recalculate_whatsapp_response_markers(uuid, uuid) to service_role;
 
 create or replace function public.refresh_whatsapp_response_markers_from_message()
 returns trigger
@@ -236,15 +290,16 @@ set search_path = ''
 as $$
 begin
   if tg_op = 'DELETE' then
-    perform public.recalculate_whatsapp_response_markers(old.conversation_id);
+    perform public.recalculate_whatsapp_response_markers(old.org_id, old.conversation_id);
     return old;
   end if;
 
-  if tg_op = 'UPDATE' and old.conversation_id is distinct from new.conversation_id then
-    perform public.recalculate_whatsapp_response_markers(old.conversation_id);
+  if tg_op = 'UPDATE' and (old.org_id, old.conversation_id)
+      is distinct from (new.org_id, new.conversation_id) then
+    perform public.recalculate_whatsapp_response_markers(old.org_id, old.conversation_id);
   end if;
 
-  perform public.recalculate_whatsapp_response_markers(new.conversation_id);
+  perform public.recalculate_whatsapp_response_markers(new.org_id, new.conversation_id);
   return new;
 end;
 $$;
@@ -260,25 +315,29 @@ create trigger whatsapp_messages_refresh_response_markers
 -- Backfill determinístico por (created_at, id). Outbound `system` fica fora;
 -- a resposta precisa estar ordenada depois da primeira mensagem inbound.
 with first_inbound as (
-  select distinct on (public.whatsapp_messages.conversation_id)
+  select distinct on (public.whatsapp_messages.org_id, public.whatsapp_messages.conversation_id)
+    public.whatsapp_messages.org_id,
     public.whatsapp_messages.conversation_id,
     public.whatsapp_messages.id,
     public.whatsapp_messages.created_at
   from public.whatsapp_messages
   where public.whatsapp_messages.direction = 'inbound'
   order by
+    public.whatsapp_messages.org_id,
     public.whatsapp_messages.conversation_id,
     public.whatsapp_messages.created_at,
     public.whatsapp_messages.id
 ),
 first_response as (
-  select distinct on (public.whatsapp_messages.conversation_id)
+  select distinct on (public.whatsapp_messages.org_id, public.whatsapp_messages.conversation_id)
+    public.whatsapp_messages.org_id,
     public.whatsapp_messages.conversation_id,
     public.whatsapp_messages.created_at,
     public.whatsapp_messages.sent_by
   from public.whatsapp_messages
   join first_inbound
-    on first_inbound.conversation_id = public.whatsapp_messages.conversation_id
+    on first_inbound.org_id = public.whatsapp_messages.org_id
+    and first_inbound.conversation_id = public.whatsapp_messages.conversation_id
   where public.whatsapp_messages.direction = 'outbound'
     and public.whatsapp_messages.sent_by in ('ai', 'human')
     and (
@@ -289,6 +348,7 @@ first_response as (
       first_inbound.id
     )
   order by
+    public.whatsapp_messages.org_id,
     public.whatsapp_messages.conversation_id,
     public.whatsapp_messages.created_at,
     public.whatsapp_messages.id
@@ -300,8 +360,10 @@ set
   first_response_sent_by = first_response.sent_by
 from first_inbound
 left join first_response
-  on first_response.conversation_id = first_inbound.conversation_id
-where public.whatsapp_conversations.id = first_inbound.conversation_id;
+  on first_response.org_id = first_inbound.org_id
+  and first_response.conversation_id = first_inbound.conversation_id
+where public.whatsapp_conversations.org_id = first_inbound.org_id
+  and public.whatsapp_conversations.id = first_inbound.conversation_id;
 
 create table public.law_acquisition_costs (
   id uuid primary key default gen_random_uuid(),
@@ -321,9 +383,47 @@ create table public.law_acquisition_costs (
 create index law_acquisition_costs_org_month_idx
   on public.law_acquisition_costs (org_id, month);
 
+create or replace function public.stamp_law_acquisition_cost_actors()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_actor_id uuid := auth.uid();
+begin
+  if tg_op = 'UPDATE' then
+    new.created_by := old.created_by;
+  end if;
+
+  -- service_role não possui auth.uid(): nesse caminho explícito os atores
+  -- fornecidos pelo servidor são preservados, exceto created_by em updates.
+  if v_actor_id is null then
+    return new;
+  end if;
+
+  if tg_op = 'INSERT' then
+    new.created_by := v_actor_id;
+  end if;
+  new.updated_by := v_actor_id;
+  return new;
+end;
+$$;
+
+revoke all on function public.stamp_law_acquisition_cost_actors()
+  from public, anon, authenticated;
+grant execute on function public.stamp_law_acquisition_cost_actors() to service_role;
+
+create trigger law_acquisition_costs_stamp_actors
+  before insert or update on public.law_acquisition_costs
+  for each row execute function public.stamp_law_acquisition_cost_actors();
+
 create trigger law_acquisition_costs_touch
   before update on public.law_acquisition_costs
   for each row execute function public.touch_law_office_record();
+
+revoke all on function public.touch_law_office_record()
+  from public, anon, authenticated;
 
 alter table public.law_acquisition_costs enable row level security;
 create policy "law_acquisition_costs_select" on public.law_acquisition_costs
