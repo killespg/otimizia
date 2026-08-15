@@ -31,7 +31,7 @@ export function DocumentDraftViewer({ name, typeLabel, content }: { name: string
             Rascunho gerado por IA — revise, confira fundamentos e complete antes de usar ou protocolar.
           </p>
           <pre className="mt-2 max-h-96 overflow-y-auto whitespace-pre-wrap text-xs font-medium leading-relaxed text-ink-soft">{content}</pre>
-          <button type="button" onClick={copy} className="btn-soft mt-3 min-h-9 px-3 text-xs">
+          <button type="button" onClick={copy} className="btn-soft mt-3 min-h-11 px-3 text-xs">
             {copied ? "Copiado!" : "Copiar texto"}
           </button>
         </div>

@@ -48,9 +48,9 @@ export function LegalMovementsList({ initialItems }: { initialItems: LegalWatche
           <h2 className="text-base font-semibold text-od-text">Movimentações monitoradas</h2>
           <p className="mt-1 text-xs text-od-text-2">Atualizações capturadas dos processos acompanhados no DataJud.</p>
         </div>
-        <div className="flex rounded-md border border-od-border bg-od-muted-surface p-0.5">
-          <button type="button" onClick={() => setView("review")} className={`min-h-8 rounded px-3 text-xs font-semibold ${view === "review" ? "bg-od-accent-tint text-od-text" : "text-od-text-2 hover:text-od-text"}`}>Para revisar</button>
-          <button type="button" onClick={() => setView("all")} className={`min-h-8 rounded px-3 text-xs font-semibold ${view === "all" ? "bg-od-accent-tint text-od-text" : "text-od-text-2 hover:text-od-text"}`}>Todos</button>
+        <div className="flex rounded-[var(--radius-inner)] border border-od-border bg-od-muted-surface p-1">
+          <button type="button" onClick={() => setView("review")} className={`min-h-11 rounded-[var(--radius-control)] px-3 text-xs font-semibold ${view === "review" ? "bg-od-accent-tint text-od-text" : "text-od-text-2 hover:text-od-text"}`}>Para revisar</button>
+          <button type="button" onClick={() => setView("all")} className={`min-h-11 rounded-[var(--radius-control)] px-3 text-xs font-semibold ${view === "all" ? "bg-od-accent-tint text-od-text" : "text-od-text-2 hover:text-od-text"}`}>Todos</button>
         </div>
       </div>
 
@@ -78,7 +78,7 @@ export function LegalMovementsList({ initialItems }: { initialItems: LegalWatche
                 </div>
                 <div className="flex items-center justify-end gap-2">
                   {unread ? (
-                    <button type="button" disabled={saving === item.id} onClick={() => markSeen(item.id)} className="inline-flex min-h-9 items-center gap-2 rounded-md border border-od-border px-3 text-xs font-semibold text-od-text-2 hover:border-od-border-hover hover:bg-white/[0.03] disabled:opacity-50">
+                    <button type="button" disabled={saving === item.id} onClick={() => markSeen(item.id)} className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-od-border px-3 text-xs font-semibold text-od-text-2 hover:border-od-border-hover hover:bg-white/[0.03] disabled:opacity-50">
                       <Check size={13} /> {saving === item.id ? "Salvando" : "Marcar como revisada"}
                     </button>
                   ) : <span className="text-xs font-medium text-od-text-3">Revisada</span>}

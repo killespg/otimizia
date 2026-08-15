@@ -73,7 +73,7 @@ export default async function LawPage(props: { searchParams?: Promise<{ busca?: 
     : allCases;
 
   return (
-    <div className="mx-auto w-full max-w-[1640px] space-y-5">
+    <div className="ui-page">
       <header className="flex flex-col gap-4 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold text-od-text-2">Jurídico / Processos</p>
@@ -81,8 +81,8 @@ export default async function LawPage(props: { searchParams?: Promise<{ busca?: 
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/52">Casos ativos, responsáveis, risco e próximo compromisso em uma única fila operacional.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/painel/juridico/consulta" className="inline-flex min-h-11 items-center gap-2 rounded-md border border-white/[0.1] px-4 text-xs font-semibold text-white/65 hover:bg-white/[0.04] hover:text-white"><IconSearch className="h-4 w-4"/>Consulta DataJud</Link>
-          <Link href="/painel/juridico/prazos" className="inline-flex min-h-11 items-center rounded-md border border-white/[0.1] px-4 text-xs font-semibold text-white/65 hover:bg-white/[0.04] hover:text-white">Agenda e prazos</Link>
+          <Link href="/painel/juridico/consulta" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-white/[0.1] px-4 text-xs font-semibold text-white/65 hover:bg-white/[0.04] hover:text-white"><IconSearch className="h-4 w-4"/>Consulta DataJud</Link>
+          <Link href="/painel/juridico/prazos" className="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-white/[0.1] px-4 text-xs font-semibold text-white/65 hover:bg-white/[0.04] hover:text-white">Agenda e prazos</Link>
           {canManageLegal(jobRole, isAdmin) ? (
             <ActionDrawer
               label="Novo caso"
@@ -237,7 +237,7 @@ function Metric({
 }
 
 function Status({ status }: { status: LegalCase["status"] }) {
-  return <span className="w-fit rounded-md bg-white/[0.06] px-2 py-1 text-xs font-semibold text-od-text">{LEGAL_CASE_STATUS[status]}</span>;
+  return <span className="w-fit rounded-[var(--radius-round)] bg-white/[0.06] px-2 py-1 text-xs font-semibold text-od-text">{LEGAL_CASE_STATUS[status]}</span>;
 }
 
 function Field({

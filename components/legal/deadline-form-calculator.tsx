@@ -66,7 +66,7 @@ export function DeadlineFormCalculator({ defaultValue = "" }: { defaultValue?: s
           <input type="checkbox" checked={countRecess} onChange={(event) => setCountRecess(event.target.checked)} />
           Considerar recesso forense (20/dez a 20/jan)
         </label>
-        <button type="button" onClick={calculate} className="btn-soft mt-2 min-h-9 w-full text-xs">
+        <button type="button" onClick={calculate} className="btn-soft mt-2 min-h-11 w-full text-xs">
           Calcular e preencher acima
         </button>
         {breakdown && (

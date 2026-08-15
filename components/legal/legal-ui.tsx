@@ -1,13 +1,15 @@
 import Link from "next/link";
 import type { ButtonHTMLAttributes } from "react";
 import type { LucideIcon } from "lucide-react";
+import { MetricBand } from "@/components/ui/data-display";
+import { Page, PageHeader as ProductPageHeader } from "@/components/ui/surface";
 
 export function LegalPage({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto w-full max-w-[1640px]">{children}</div>;
+  return <Page>{children}</Page>;
 }
 
 export function PageHeader({ eyebrow, title, description, action }: { eyebrow: string; title: string; description?: string; action?: React.ReactNode }) {
-  return <header className="flex flex-col gap-5 border-b border-white/[0.08] pb-7 md:flex-row md:items-end md:justify-between"><div><p className="text-xs font-semibold text-od-text-2">{eyebrow}</p><h1 className="mt-2 text-od-title text-white">{title}</h1>{description ? <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/52">{description}</p> : null}</div>{action ? <div className="flex flex-wrap items-center gap-2">{action}</div> : null}</header>;
+  return <ProductPageHeader eyebrow={eyebrow} title={title} description={description} actions={action} />;
 }
 
 type ActionProps = ButtonHTMLAttributes<HTMLButtonElement> & { icon?: LucideIcon; href?: string };
@@ -19,7 +21,7 @@ export function PrimaryAction({ icon: Icon, children, href, className = "", ...p
 }
 
 export function QuietAction({ icon: Icon, children, href, className = "", ...props }: ActionProps) {
-  const styles = `inline-flex min-h-11 items-center gap-2 px-3 text-xs font-semibold text-white/55 hover:text-white ${className}`;
+  const styles = `inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] px-3 text-xs font-semibold text-white/55 hover:bg-od-surface-hover hover:text-white ${className}`;
   if (href) return <Link href={href} className={styles}>{Icon ? <Icon size={16} /> : null}{children}</Link>;
   return <button type="button" className={styles} {...props}>{Icon ? <Icon size={16} /> : null}{children}</button>;
 }
@@ -29,7 +31,7 @@ export function SectionTitle({ title, description, action }: { title: string; de
 }
 
 export function MetricStrip({ items }: { items: Array<{ label: string; value: string; note?: string; tone?: "danger" | "success" }> }) {
-  return <section className="grid grid-cols-2 border-b border-white/[0.08] py-1 lg:grid-cols-4">{items.map((item) => <div key={item.label} className="border-t border-white/[0.07] py-6 sm:border-l sm:border-t-0 sm:px-7 sm:first:border-l-0 sm:first:pl-0"><div className="flex items-baseline gap-2.5"><span className={`text-[28px] font-semibold tracking-[-0.02em] ${item.tone === "danger" ? "text-[#ff8175]" : item.tone === "success" ? "text-emerald-300/80" : "text-white"}`}>{item.value}</span>{item.note ? <span className="text-xs text-od-text-3">{item.note}</span> : null}</div><p className="mt-1.5 text-xs text-white/55">{item.label}</p></div>)}</section>;
+  return <MetricBand items={items.map((item) => ({ label: item.label, value: <span className={item.tone === "danger" ? "text-[#ff8175]" : item.tone === "success" ? "text-emerald-300/80" : undefined}>{item.value}</span>, detail: item.note }))} />;
 }
 
 export function StatusTag({ children, tone = "neutral" }: { children: React.ReactNode; tone?: "neutral" | "brand" | "danger" | "success" | "warning" }) {
