@@ -41,11 +41,11 @@ export function DashboardCustomizePanel({
         className="group relative"
         onToggle={(event) => setOpen(event.currentTarget.open)}
       >
-        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-center gap-2 rounded-control border border-od-border bg-od-surface px-3 text-xs font-semibold text-od-text-2 transition-colors hover:border-od-border-hover hover:bg-od-surface-hover hover:text-od-text">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-center gap-2 rounded-[var(--radius-control)] border border-od-border bg-od-surface px-3 text-xs font-semibold text-od-text-2 transition-colors hover:border-od-border-hover hover:bg-od-surface-hover hover:text-od-text">
         {open ? <IconCheck className="h-4 w-4" /> : <IconSettings className="h-4 w-4" />}
         <span>{open ? "Fechar editor" : "Personalizar painel"}</span>
       </summary>
-      <div className="mt-3 w-full rounded-panel border border-od-border bg-od-muted-surface p-4 sm:absolute sm:right-0 sm:top-11 sm:z-[var(--z-dropdown)] sm:min-w-[640px] sm:p-5 lg:min-w-[760px]">
+      <div className="mt-3 w-full rounded-[var(--radius-panel)] border border-od-border bg-od-muted-surface p-4 sm:absolute sm:right-0 sm:top-11 sm:z-[var(--z-dropdown)] sm:min-w-[640px] sm:p-5 lg:min-w-[760px]">
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-xs font-semibold text-od-text-2">Modo de edição</p>

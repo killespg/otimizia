@@ -174,7 +174,7 @@ export function RevenueLineChart({ series, dark = false }: { series: Point[]; da
       {displayed && hoverXPercent !== null && (
         <div
           className={
-            `pointer-events-none absolute top-2 -translate-x-1/2 rounded-control border border-line ${dark ? "bg-od-surface" : "bg-white"} px-2.5 py-1.5 text-xs font-bold text-ink shadow-[0_10px_28px_-16px_rgba(15,23,42,0.55)] transition-[left,opacity,transform] duration-100 ease-out ` +
+            `pointer-events-none absolute top-2 -translate-x-1/2 rounded-[var(--radius-control)] border border-line ${dark ? "bg-od-surface" : "bg-white"} px-2.5 py-1.5 text-xs font-bold text-ink shadow-[0_10px_28px_-16px_rgba(15,23,42,0.55)] transition-[left,opacity,transform] duration-100 ease-out ` +
             (isHovering ? "opacity-100 scale-100" : "pointer-events-none scale-95 opacity-0")
           }
           style={{ left: `${Math.min(92, Math.max(8, hoverXPercent))}%` }}

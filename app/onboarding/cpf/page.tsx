@@ -39,7 +39,7 @@ export default async function CpfOnboardingPage(props: {
 
   return (
     <main className="min-h-[100dvh] bg-od-bg p-0 sm:grid sm:place-items-center sm:p-5">
-      <div className="mx-auto w-full max-w-md overflow-hidden border-od-border bg-od-surface p-6 sm:rounded-panel sm:border sm:p-8">
+      <div className="mx-auto w-full max-w-md overflow-hidden border-od-border bg-od-surface p-6 sm:rounded-[var(--radius-panel)] sm:border sm:p-8">
         <p className="text-xs font-semibold uppercase tracking-[.08em] text-od-text-3">
           Só mais um passo
         </p>
@@ -77,7 +77,7 @@ export default async function CpfOnboardingPage(props: {
               {PROFESSION_OPTIONS.map((option, index) => (
                 <label
                   key={option.value}
-                  className="flex min-h-11 items-center gap-2.5 rounded-inner border border-od-border bg-od-muted-surface px-3 py-2 text-sm font-medium text-od-text-2 hover:border-od-border-hover"
+                  className="flex min-h-11 items-center gap-2.5 rounded-[var(--radius-inner)] border border-od-border bg-od-muted-surface px-3 py-2 text-sm font-medium text-od-text-2 hover:border-od-border-hover"
                 >
                   <input
                     type="checkbox"

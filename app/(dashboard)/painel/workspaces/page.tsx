@@ -122,7 +122,7 @@ export default async function WorkspacesPage() {
                       {option.label}
                     </h2>
                     {isActive ? (
-                      <span className="inline-flex items-center gap-1 rounded-control bg-od-accent-tint px-2 py-1 text-xs font-semibold text-od-accent-soft">
+                      <span className="inline-flex items-center gap-1 rounded-[var(--radius-control)] bg-od-accent-tint px-2 py-1 text-xs font-semibold text-od-accent-soft">
                         <Check size={13} aria-hidden="true" />
                         Em uso
                       </span>

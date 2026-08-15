@@ -189,7 +189,7 @@ export function DashboardPreferencesForm({
       ))}
 
       <div
-        className="grid grid-cols-2 gap-1 rounded-inner border border-od-border bg-od-muted-surface p-1"
+        className="grid grid-cols-2 gap-1 rounded-[var(--radius-inner)] border border-od-border bg-od-muted-surface p-1"
         role="tablist"
         aria-label="Seções da personalização"
         onKeyDown={handleSectionKeyDown}
@@ -202,7 +202,7 @@ export function DashboardPreferencesForm({
           aria-controls="dashboard-preferences-appearance-panel"
           tabIndex={section === "appearance" ? 0 : -1}
           onClick={() => setSection("appearance")}
-          className={`min-h-11 rounded-control px-3 text-xs font-semibold transition-colors ${section === "appearance" ? "bg-od-surface text-od-text" : "text-od-text-3 hover:bg-od-surface-hover hover:text-od-text"}`}
+          className={`min-h-11 rounded-[var(--radius-control)] px-3 text-xs font-semibold transition-colors ${section === "appearance" ? "bg-od-surface text-od-text" : "text-od-text-3 hover:bg-od-surface-hover hover:text-od-text"}`}
         >
           Aparência
         </button>
@@ -214,7 +214,7 @@ export function DashboardPreferencesForm({
           aria-controls="dashboard-preferences-metrics-panel"
           tabIndex={section === "metrics" ? 0 : -1}
           onClick={() => setSection("metrics")}
-          className={`min-h-11 rounded-control px-3 text-xs font-semibold transition-colors ${section === "metrics" ? "bg-od-surface text-od-text" : "text-od-text-3 hover:bg-od-surface-hover hover:text-od-text"}`}
+          className={`min-h-11 rounded-[var(--radius-control)] px-3 text-xs font-semibold transition-colors ${section === "metrics" ? "bg-od-surface text-od-text" : "text-od-text-3 hover:bg-od-surface-hover hover:text-od-text"}`}
         >
           Estatísticas <span className="ml-1 text-od-text-3">{metrics.length}/8</span>
         </button>
@@ -285,7 +285,7 @@ export function DashboardPreferencesForm({
             </div>
             <label className="block w-full sm:w-52">
               <span className="sr-only">Custo mensal de vendas e marketing</span>
-              <span className="flex h-11 items-center rounded-control border border-od-border bg-od-muted-surface px-3 focus-within:border-od-focus">
+              <span className="flex h-11 items-center rounded-[var(--radius-control)] border border-od-border bg-od-muted-surface px-3 focus-within:border-od-focus">
                 <span className="mr-2 text-sm text-od-text-3">R$</span>
                 <input
                   value={salesMarketingCost}
@@ -351,7 +351,7 @@ export function DashboardPreferencesForm({
                   }
                   placeholder={preset.metrics.find((metric) => metric.key === key)?.label ?? fallbackLabel}
                   maxLength={42}
-                  className={isSeller ? "mt-2 h-10 w-full rounded-control border border-od-border bg-od-muted-surface px-3 text-sm text-od-text outline-none placeholder:text-od-text-3 focus:border-od-focus" : "field mt-2 h-9 text-sm"}
+                  className={isSeller ? "mt-2 h-10 w-full rounded-[var(--radius-control)] border border-od-border bg-od-muted-surface px-3 text-sm text-od-text outline-none placeholder:text-od-text-3 focus:border-od-focus" : "field mt-2 h-9 text-sm"}
                 />
                 {active && (
                     <MobileOrderButtons
@@ -378,7 +378,7 @@ export function DashboardPreferencesForm({
                 : "As mudanças aparecem no painel antes de você salvar."}
         </p>
         <PendingButton
-          className={isSeller ? "inline-flex min-h-11 items-center justify-center rounded-control bg-od-accent px-4 text-xs font-semibold text-white hover:bg-brand-600 disabled:opacity-50" : compact ? "btn-soft" : "btn"}
+          className={isSeller ? "inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-od-accent px-4 text-xs font-semibold text-white hover:bg-brand-600 disabled:opacity-50" : compact ? "btn-soft" : "btn"}
           disabled={isSaving}
           pendingLabel="Salvando"
         >
@@ -403,7 +403,7 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section data-preferences-panel className={`${seller ? "rounded-panel border border-white/[0.08] bg-white/[0.018] p-4" : "rounded-panel border border-line bg-surface p-3 sm:p-4"} ${className}`}>
+    <section data-preferences-panel className={`${seller ? "rounded-[var(--radius-panel)] border border-white/[0.08] bg-white/[0.018] p-4" : "rounded-[var(--radius-panel)] border border-line bg-surface p-3 sm:p-4"} ${className}`}>
       <div className="mb-3">
         <h3 className={seller ? "text-sm font-semibold text-white" : "text-sm font-black text-ink"}>{title}</h3>
         <p className={seller ? "mt-1 text-xs leading-relaxed text-od-text-3" : "mt-0.5 text-xs font-semibold leading-relaxed text-ink-muted"}>{description}</p>
@@ -432,7 +432,7 @@ function OptionButton({
       onClick={onClick}
       aria-pressed={active}
       className={
-        "flex min-h-11 items-center gap-2 rounded-control border px-3 py-2 text-left text-sm font-black transition-colors focus-visible:ring-2 focus-visible:ring-brand-600 " +
+        "flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border px-3 py-2 text-left text-sm font-black transition-colors focus-visible:ring-2 focus-visible:ring-brand-600 " +
         (previewClassName ?? "border-od-border bg-od-muted-surface text-od-text-2 hover:border-od-border-hover hover:text-od-text") +
         (active ? " ring-2 ring-od-focus ring-offset-1 ring-offset-od-bg" : " opacity-80 hover:opacity-100")
       }
@@ -454,10 +454,10 @@ function MobileOrderButtons({
 }) {
   return (
     <div className="mt-2 grid grid-cols-2 gap-2 sm:hidden">
-      <button type="button" onClick={onMoveUp} className={seller ? "min-h-11 rounded-control border border-white/[0.09] px-2 text-xs font-semibold text-white/58" : "min-h-11 rounded-control border border-line bg-surface px-2 text-xs font-black text-ink-soft"}>
+      <button type="button" onClick={onMoveUp} className={seller ? "min-h-11 rounded-[var(--radius-control)] border border-white/[0.09] px-2 text-xs font-semibold text-white/58" : "min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-2 text-xs font-black text-ink-soft"}>
         Subir
       </button>
-      <button type="button" onClick={onMoveDown} className={seller ? "min-h-11 rounded-control border border-white/[0.09] px-2 text-xs font-semibold text-white/58" : "min-h-11 rounded-control border border-line bg-surface px-2 text-xs font-black text-ink-soft"}>
+      <button type="button" onClick={onMoveDown} className={seller ? "min-h-11 rounded-[var(--radius-control)] border border-white/[0.09] px-2 text-xs font-semibold text-white/58" : "min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-2 text-xs font-black text-ink-soft"}>
         Descer
       </button>
     </div>

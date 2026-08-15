@@ -169,10 +169,10 @@ export function SellerDashboard({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/painel/tarefas#new-task" className="inline-flex min-h-11 items-center gap-2 rounded-control border border-white/[0.1] px-4 text-[13px] font-semibold text-white/68 hover:bg-white/[0.04] hover:text-white">
+          <Link href="/painel/tarefas#new-task" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-white/[0.1] px-4 text-[13px] font-semibold text-white/68 hover:bg-white/[0.04] hover:text-white">
             <BellRing size={15} /> Novo lembrete
           </Link>
-          <Link href="/painel/funil#new-deal" className="inline-flex min-h-11 items-center gap-2 rounded-control bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover">
+          <Link href="/painel/funil#new-deal" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover">
             <Plus size={16} /> Nova venda
           </Link>
         </div>
@@ -597,11 +597,11 @@ function SellerAgenda({ now, items }: { now: Date; items: CalendarItem[] }) {
 
 function SellerOpenClaims({ tasks, deals, preset }: { tasks: Task[]; deals: Deal[]; preset: ProfessionPreset }) {
   return (
-    <section data-dashboard-card className="rounded-panel border border-od-accent/25 bg-od-accent/[0.055] p-4 sm:p-6">
+    <section data-dashboard-card className="rounded-[var(--radius-panel)] border border-od-accent/25 bg-od-accent/[0.055] p-4 sm:p-6">
       <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Disponíveis para assumir</h2><p className="mt-1 text-xs text-od-text-3">Itens da equipe ainda sem responsável</p></div><span className="rounded-full bg-od-accent/15 px-2 py-1 text-xs font-semibold text-od-text">{tasks.length + deals.length}</span></div>
       <div className="mt-4 divide-y divide-od-accent/12 border-t border-od-accent/12">
-        {tasks.map((task) => <div key={task.id} className="flex min-h-14 items-center gap-3 py-2"><BellRing size={15} className="text-od-text-3" /><span className="min-w-0 flex-1 truncate text-sm font-medium text-white/72">{task.title}</span><form action={claimTask}><input type="hidden" name="task_id" value={task.id} /><input type="hidden" name="return_to" value="/painel" /><PendingButton className="min-h-11 rounded-control bg-od-accent px-3 text-xs font-semibold text-white" pendingLabel="Assumindo">Assumir</PendingButton></form></div>)}
-        {deals.map((deal) => <div key={deal.id} className="flex min-h-14 items-center gap-3 py-2"><CircleDollarSign size={15} className="text-od-text-3" /><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-white/72">{deal.title}</span><span className="text-xs text-od-text-3">{preset.dealSingular} · {formatBRL(deal.value_cents ?? 0)}</span></span><form action={claimDeal}><input type="hidden" name="deal_id" value={deal.id} /><input type="hidden" name="return_to" value="/painel" /><PendingButton className="min-h-11 rounded-control bg-od-accent px-3 text-xs font-semibold text-white" pendingLabel="Assumindo">Assumir</PendingButton></form></div>)}
+        {tasks.map((task) => <div key={task.id} className="flex min-h-14 items-center gap-3 py-2"><BellRing size={15} className="text-od-text-3" /><span className="min-w-0 flex-1 truncate text-sm font-medium text-white/72">{task.title}</span><form action={claimTask}><input type="hidden" name="task_id" value={task.id} /><input type="hidden" name="return_to" value="/painel" /><PendingButton className="min-h-11 rounded-[var(--radius-control)] bg-od-accent px-3 text-xs font-semibold text-white" pendingLabel="Assumindo">Assumir</PendingButton></form></div>)}
+        {deals.map((deal) => <div key={deal.id} className="flex min-h-14 items-center gap-3 py-2"><CircleDollarSign size={15} className="text-od-text-3" /><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-white/72">{deal.title}</span><span className="text-xs text-od-text-3">{preset.dealSingular} · {formatBRL(deal.value_cents ?? 0)}</span></span><form action={claimDeal}><input type="hidden" name="deal_id" value={deal.id} /><input type="hidden" name="return_to" value="/painel" /><PendingButton className="min-h-11 rounded-[var(--radius-control)] bg-od-accent px-3 text-xs font-semibold text-white" pendingLabel="Assumindo">Assumir</PendingButton></form></div>)}
       </div>
     </section>
   );
@@ -617,8 +617,8 @@ function SellerOnboarding({ preset, isOrgAdmin, done }: NonNullable<Props["onboa
   ];
   if (steps.every((step) => step.done)) return <></>;
   return (
-    <section data-dashboard-card className="rounded-panel border border-od-border bg-od-surface p-4 sm:p-6">
-      <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-semibold text-od-text-3">Primeiros passos</p><h2 className="mt-2 text-od-subtitle text-white">Deixe sua rotina de vendas pronta.</h2></div><form action={dismissChecklist}><PendingButton iconOnly pendingLabel="Fechando" className="grid size-11 place-items-center rounded-control text-od-text-3 hover:bg-white/[0.05] hover:text-white" aria-label="Fechar primeiros passos">×</PendingButton></form></div>
+    <section data-dashboard-card className="rounded-[var(--radius-panel)] border border-od-border bg-od-surface p-4 sm:p-6">
+      <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-semibold text-od-text-3">Primeiros passos</p><h2 className="mt-2 text-od-subtitle text-white">Deixe sua rotina de vendas pronta.</h2></div><form action={dismissChecklist}><PendingButton iconOnly pendingLabel="Fechando" className="grid size-11 place-items-center rounded-[var(--radius-control)] text-od-text-3 hover:bg-white/[0.05] hover:text-white" aria-label="Fechar primeiros passos">×</PendingButton></form></div>
       <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">{steps.map((step) => { const Icon = step.icon; return <Link key={step.label} href={step.href} className={`flex min-h-16 items-center gap-3 rounded-md border px-3 py-3 hover:bg-white/[0.02] ${step.done ? "border-white/[0.06] text-od-text-3" : "border-white/[0.08] text-white/72"}`}><span className={`grid size-8 place-items-center rounded ${step.done ? "bg-emerald-400/10 text-emerald-300" : "bg-white/[0.06] text-od-text-2"}`}>{step.done ? <Check size={16} /> : <Icon size={16} />}</span><span className={`text-sm font-medium ${step.done ? "line-through" : ""}`}>{step.label}</span></Link>; })}</div>
     </section>
   );
