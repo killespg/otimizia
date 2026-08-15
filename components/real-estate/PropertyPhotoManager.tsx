@@ -47,7 +47,7 @@ export function PropertyPhotoManager({ propertyId, propertyTitle, photos }: { pr
           onDrop={() => handleDrop(photo.id)}
           onDragEnd={() => setDragId(null)}
           className={
-            "group relative cursor-grab overflow-hidden rounded-lg border border-line active:cursor-grabbing " +
+            "group relative cursor-grab overflow-hidden rounded-[var(--radius-inner)] border border-line active:cursor-grabbing " +
             (dragId === photo.id ? "opacity-40" : "")
           }
         >

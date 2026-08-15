@@ -131,11 +131,11 @@ export function PropertyFilterChat() {
       )}
 
       {messages.length > 0 && (
-        <div ref={scrollRef} className="enter mt-3 max-h-40 space-y-2 overflow-y-auto rounded-lg bg-surface-2 p-2.5">
+        <div ref={scrollRef} className="enter mt-3 max-h-40 space-y-2 overflow-y-auto rounded-[var(--radius-inner)] bg-surface-2 p-2.5">
           {messages.map((message, index) =>
             message.role === "user" ? (
               <div key={index} className="flex justify-end">
-                <div className="max-w-[85%] rounded-lg rounded-br-sm bg-brand-700 px-3 py-1.5 text-xs font-semibold text-white">
+                <div className="max-w-[85%] rounded-[var(--radius-inner)] rounded-br-[var(--radius-control)] bg-brand-700 px-3 py-1.5 text-xs font-semibold text-white">
                   {message.content}
                 </div>
               </div>
@@ -170,12 +170,12 @@ export function PropertyFilterChat() {
           onChange={(event) => setInput(event.target.value)}
           placeholder="Ex: apartamento até 800 mil no Itaim com 2 quartos"
           maxLength={300}
-          className="field h-10 flex-1 text-sm"
+          className="field h-11 flex-1 text-sm"
         />
         <button
           type="submit"
           disabled={sending || !input.trim()}
-          className="press-sm flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand-700 text-white transition-opacity disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-brand-600"
+          className="press-sm flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-brand-700 text-white transition-opacity disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-brand-600"
           aria-label="Enviar"
         >
           <IconArrowRight className="h-4 w-4" />

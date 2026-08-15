@@ -195,7 +195,7 @@ export default async function ColecoesPage() {
                         <form action={revokeShareCollection}>
                           <input type="hidden" name="id" value={collection.id} />
                           <PendingButton
-                            className="press-sm rounded-md border border-line bg-surface px-3 py-2 text-xs font-bold text-danger-600 hover:bg-danger-50"
+                            className="press-sm min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-3 py-2 text-xs font-bold text-danger-600 hover:bg-danger-50"
                             pendingLabel="Revogando"
                           >
                             Revogar
@@ -218,7 +218,7 @@ export default async function ColecoesPage() {
                       const price = formatItemPrice(item);
                       const local = item.address_neighborhood || item.address_city;
                       return (
-                        <div key={item.property_id} className="overflow-hidden rounded-md border border-line bg-surface">
+                        <div key={item.property_id} className="overflow-hidden rounded-[var(--radius-inner)] border border-line bg-surface">
                           <div className="relative aspect-[16/10] bg-white/[0.03]">
                             {cover ? (
                               // eslint-disable-next-line @next/next/no-img-element

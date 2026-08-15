@@ -142,7 +142,7 @@ export default async function ImovelDetailPage(props: { params: Promise<{ id: st
           <form action={deleteProperty}>
             <input type="hidden" name="id" value={property.id} />
             <PendingButton
-              className="press-sm rounded-md border border-line bg-surface px-3 py-1.5 text-xs font-bold text-danger-600 hover:bg-danger-50"
+              className="press-sm min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-3 py-1.5 text-xs font-bold text-danger-600 hover:bg-danger-50"
               pendingLabel="Excluindo"
             >
               <IconTrash className="h-4 w-4" />
@@ -150,7 +150,7 @@ export default async function ImovelDetailPage(props: { params: Promise<{ id: st
             </PendingButton>
           </form>
         ) : null} />
-      <section className="real-estate-flat-section py-5 sm:py-6">
+      <section className="panel p-5 sm:p-6">
         <div className="flex flex-wrap items-center gap-2">
           <span className={"tag " + propertyStatusTagClass(property.status)}>{propertyStatusLabel(property.status)}</span>
           <span className="tag">{propertyTypeLabel(property.property_type)}</span>
@@ -206,7 +206,7 @@ export default async function ImovelDetailPage(props: { params: Promise<{ id: st
                   <form action={confirmPropertyAiField}>
                     <input type="hidden" name="property_id" value={property.id} />
                     <input type="hidden" name="field" value={field} />
-                    <PendingButton className="press-sm rounded-md bg-brand-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-800" pendingLabel="...">
+                    <PendingButton className="press-sm min-h-11 rounded-[var(--radius-control)] bg-brand-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-800" pendingLabel="...">
                       <IconCheck className="h-3.5 w-3.5" />
                       Confirmar
                     </PendingButton>
@@ -214,7 +214,7 @@ export default async function ImovelDetailPage(props: { params: Promise<{ id: st
                   <form action={discardPropertyAiField}>
                     <input type="hidden" name="property_id" value={property.id} />
                     <input type="hidden" name="field" value={field} />
-                    <PendingButton className="press-sm rounded-md border border-line bg-surface px-2.5 py-1 text-xs font-bold text-ink-muted hover:bg-surface-2" pendingLabel="...">
+                    <PendingButton className="press-sm min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-2.5 py-1 text-xs font-bold text-ink-muted hover:bg-surface-2" pendingLabel="...">
                       <IconX className="h-3.5 w-3.5" />
                       Descartar
                     </PendingButton>
@@ -225,7 +225,7 @@ export default async function ImovelDetailPage(props: { params: Promise<{ id: st
           </div>
         </section>
       )}
-      <section className="real-estate-flat-section overflow-hidden">
+      <section className="panel overflow-hidden">
         <div className="border-b border-line px-5 py-4">
           <h2 className="text-base font-semibold text-ink">Fotos</h2>
           <p className="mt-0.5 text-xs font-medium text-ink-muted">
@@ -242,14 +242,14 @@ export default async function ImovelDetailPage(props: { params: Promise<{ id: st
           <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3">
             {photoUrls.map((photo) => (
               // eslint-disable-next-line @next/next/no-img-element -- vem de storage público, sem next/image configurado
-              (<img key={photo.id} src={photo.url} alt={`Foto de ${property.title}`} className="aspect-square w-full rounded-md border border-line object-cover" />)
+              (<img key={photo.id} src={photo.url} alt={`Foto de ${property.title}`} className="aspect-square w-full rounded-[var(--radius-inner)] border border-line object-cover" />)
             ))}
           </div>
         )}
         {canManage && <PropertyPhotoUploader propertyId={property.id} />}
       </section>
       {canManage && (
-        <details className="collapsible-details real-estate-flat-section overflow-hidden">
+        <details className="collapsible-details panel overflow-hidden">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 hover:bg-surface-2">
             <span>
               <span className="block text-base font-semibold text-ink">Editar dados do imóvel</span>
@@ -393,7 +393,7 @@ export default async function ImovelDetailPage(props: { params: Promise<{ id: st
         </details>
       )}
       {canManage && collections.length > 0 && (
-        <section className="real-estate-flat-section space-y-3 py-5 sm:py-6">
+        <section className="panel space-y-3 p-5 sm:p-6">
           <div>
             <h2 className="text-base font-semibold text-ink">Adicionar a uma vitrine</h2>
             <p className="mt-0.5 text-xs font-medium text-ink-muted">

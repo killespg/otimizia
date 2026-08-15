@@ -143,7 +143,7 @@ export default async function NovaColecaoPage(props: { searchParams: Promise<{ i
               do imóvel. Marque os que quer incluir; dá para adicionar mais depois, na página de cada imóvel.
             </p>
             {droppedCount > 0 && (
-              <p className="mt-2 rounded-md border border-line bg-surface-2 px-3 py-2 text-xs font-bold text-ink-soft">
+              <p className="mt-2 rounded-[var(--radius-inner)] border border-line bg-surface-2 px-3 py-2 text-xs font-bold text-ink-soft">
                 {droppedCount} imóvel(is) selecionado(s) na listagem não aparecem aqui porque não estão com status
                 Ativo.
               </p>

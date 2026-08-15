@@ -8,7 +8,7 @@ export type SurfaceProps = HTMLAttributes<HTMLElement> & {
   children?: ReactNode;
 };
 
-export type PanelProps = HTMLAttributes<HTMLElement> & {
+export type PanelProps = Omit<HTMLAttributes<HTMLElement>, "title"> & {
   title?: ReactNode;
   description?: ReactNode;
   actions?: ReactNode;
@@ -43,7 +43,7 @@ export function PageHeader({
   actions,
   className = "",
   ...props
-}: HTMLAttributes<HTMLElement> & {
+}: Omit<HTMLAttributes<HTMLElement>, "title"> & {
   eyebrow?: ReactNode;
   title: ReactNode;
   description?: ReactNode;
@@ -143,7 +143,7 @@ export function Section({
   children,
   className = "",
   ...props
-}: HTMLAttributes<HTMLElement> & {
+}: Omit<HTMLAttributes<HTMLElement>, "title"> & {
   title: ReactNode;
   description?: ReactNode;
   actions?: ReactNode;

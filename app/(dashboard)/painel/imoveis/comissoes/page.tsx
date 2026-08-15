@@ -115,7 +115,7 @@ export default async function RealEstateCommissionsPage({
           <h1 className="mt-4 text-od-title text-white">Comissões e metas</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/52">Registre previsões, acompanhe recebimentos e defina objetivos para a equipe ou para cada corretor.</p>
         </div>
-        <a href={`/api/reports/real-estate-commissions?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}${brokerFilter ? `&broker=${encodeURIComponent(brokerFilter)}` : ""}`} download className="inline-flex min-h-11 items-center justify-center gap-2 rounded border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text"><Download size={15} /> Baixar relatório filtrado</a>
+        <a href={`/api/reports/real-estate-commissions?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}${brokerFilter ? `&broker=${encodeURIComponent(brokerFilter)}` : ""}`} download className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text"><Download size={15} /> Baixar relatório filtrado</a>
       </header>
 
       {/* Barra de controle, nao modulo: fica aberta e colada no cabecalho, com

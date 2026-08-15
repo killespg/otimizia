@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageHeader } from "@/components/ui/surface";
 
 export function RealEstatePageHeader({
   eyebrow,
@@ -11,16 +12,7 @@ export function RealEstatePageHeader({
   description?: ReactNode;
   action?: ReactNode;
 }) {
-  return (
-    <header className="flex flex-col gap-5 border-b border-white/[0.08] pb-6 md:flex-row md:items-end md:justify-between">
-      <div className="min-w-0">
-        <p className="text-xs font-semibold text-od-text-2">{eyebrow}</p>
-        <h1 className="mt-2 text-od-title text-white">{title}</h1>
-        {description ? <p className="mt-2 max-w-3xl text-sm leading-relaxed text-white/52">{description}</p> : null}
-      </div>
-      {action ? <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div> : null}
-    </header>
-  );
+  return <PageHeader eyebrow={eyebrow} title={title} description={description} actions={action} />;
 }
 
 export function RealEstateSectionHeader({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {

@@ -34,7 +34,7 @@ export function VitrineSearch() {
         onChange={(e) => apply(e.target.value)}
         placeholder="Buscar por cliente ou nome da vitrine…"
         aria-label="Buscar vitrine por cliente ou nome"
-        className="w-full rounded border border-line bg-surface pl-9 pr-3 text-sm text-ink outline-none placeholder:text-ink-muted focus:border-brand-600"
+        className="w-full rounded-[var(--radius-control)] border border-line bg-surface pl-9 pr-3 text-sm text-ink outline-none placeholder:text-ink-muted focus:border-brand-600"
         style={{ minHeight: "2.75rem" }}
       />
     </div>

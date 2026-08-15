@@ -103,7 +103,7 @@ export default async function VisitasPage() {
         </section>
       )}
 
-      <section className="real-estate-flat-section py-5 sm:py-6">
+      <section className="panel p-5 sm:p-6">
         <h2 className="mb-3 text-base font-semibold text-ink">Agendadas ({scheduled.length})</h2>
         {scheduled.length === 0 ? (
           <p className="text-sm font-medium text-ink-muted">Nenhuma visita agendada.</p>
@@ -127,20 +127,20 @@ export default async function VisitasPage() {
                     <form action={confirmVisit}>
                       <input type="hidden" name="visit_id" value={visit.id} />
                       <input type="hidden" name="confirmation_status" value="confirmed" />
-                      <PendingButton className="press-sm rounded-md bg-brand-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-800" pendingLabel="...">
+                      <PendingButton className="press-sm min-h-11 rounded-[var(--radius-control)] bg-brand-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-800" pendingLabel="...">
                         <IconCheck className="h-3.5 w-3.5" />
                         Confirmar
                       </PendingButton>
                     </form>
                     <form action={markVisitNoShow}>
                       <input type="hidden" name="visit_id" value={visit.id} />
-                      <PendingButton className="press-sm rounded-md border border-line bg-surface px-2.5 py-1 text-xs font-bold text-ink-muted hover:bg-surface-2" pendingLabel="...">
+                      <PendingButton className="press-sm min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-2.5 py-1 text-xs font-bold text-ink-muted hover:bg-surface-2" pendingLabel="...">
                         Não compareceu
                       </PendingButton>
                     </form>
                     <form action={cancelVisit}>
                       <input type="hidden" name="visit_id" value={visit.id} />
-                      <PendingButton className="press-sm rounded-md border border-line bg-surface px-2.5 py-1 text-xs font-bold text-danger-600 hover:bg-danger-50" pendingLabel="...">
+                      <PendingButton className="press-sm min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-2.5 py-1 text-xs font-bold text-danger-600 hover:bg-danger-50" pendingLabel="...">
                         <IconX className="h-3.5 w-3.5" />
                         Cancelar
                       </PendingButton>
@@ -168,7 +168,7 @@ export default async function VisitasPage() {
       </section>
 
       {history.length > 0 && (
-        <section className="real-estate-flat-section py-5 sm:py-6">
+        <section className="panel p-5 sm:p-6">
           <h2 className="mb-3 text-base font-semibold text-ink">Histórico</h2>
           <ul className="divide-y divide-line">
             {history.map((visit) => (

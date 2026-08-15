@@ -47,9 +47,9 @@ export function PropertySelectableList({ rows, selectable = true }: { rows: Prop
               <div className="flex min-w-0 flex-1 items-center gap-3.5">
                 {row.coverUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element -- thumbnail vem de storage público
-                  <img src={row.coverUrl} alt={`Foto de capa de ${row.title}`} className="h-14 w-14 shrink-0 rounded-lg border border-line object-cover" />
+                  <img src={row.coverUrl} alt={`Foto de capa de ${row.title}`} className="h-14 w-14 shrink-0 rounded-[var(--radius-inner)] border border-line object-cover" />
                 ) : (
-                  <span className="grid h-14 w-14 shrink-0 place-items-center rounded-lg border border-line bg-surface-2 text-ink-muted/60">
+                  <span className="grid h-14 w-14 shrink-0 place-items-center rounded-[var(--radius-inner)] border border-line bg-surface-2 text-ink-muted/60">
                     <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden fill="none">
                       <rect x="5" y="3.5" width="10" height="17" rx="1.4" stroke="currentColor" strokeWidth="1.6" />
                       <path d="M15 9.5h4.5v11H15" stroke="currentColor" strokeWidth="1.6" />

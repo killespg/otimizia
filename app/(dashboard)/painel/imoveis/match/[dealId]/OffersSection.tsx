@@ -134,7 +134,7 @@ function OfferThread({ offer, chain, canManage }: { offer: RealEstateOffer; chai
           {latest.status === "draft" && (
             <form action={sendOffer}>
               <input type="hidden" name="offer_id" value={latest.id} />
-              <PendingButton className="press-sm rounded-md bg-brand-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-800" pendingLabel="...">
+              <PendingButton className="press-sm min-h-11 rounded-[var(--radius-control)] bg-brand-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-800" pendingLabel="...">
                 Enviar
               </PendingButton>
             </form>
@@ -143,13 +143,13 @@ function OfferThread({ offer, chain, canManage }: { offer: RealEstateOffer; chai
             <>
               <form action={acceptOffer}>
                 <input type="hidden" name="offer_id" value={latest.id} />
-                <PendingButton className="press-sm rounded-md bg-brand-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-800" pendingLabel="...">
+                <PendingButton className="press-sm min-h-11 rounded-[var(--radius-control)] bg-brand-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-800" pendingLabel="...">
                   Aceitar
                 </PendingButton>
               </form>
               <form action={declineOffer}>
                 <input type="hidden" name="offer_id" value={latest.id} />
-                <PendingButton className="press-sm rounded-md border border-line bg-surface px-2.5 py-1 text-xs font-bold text-ink-muted hover:bg-surface-2" pendingLabel="...">
+                <PendingButton className="press-sm min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-2.5 py-1 text-xs font-bold text-ink-muted hover:bg-surface-2" pendingLabel="...">
                   Recusar
                 </PendingButton>
               </form>

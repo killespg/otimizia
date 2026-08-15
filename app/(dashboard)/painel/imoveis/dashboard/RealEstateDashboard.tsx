@@ -150,10 +150,10 @@ export function RealEstateDashboard({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/painel/imoveis/visitas" className="inline-flex min-h-11 items-center gap-2 rounded-control border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text">
+          <Link href="/painel/imoveis/visitas" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text">
             <CalendarDays size={15} /> Agenda de visitas
           </Link>
-          <Link href="/painel/imoveis/novo" className="inline-flex min-h-11 items-center gap-2 rounded-control bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover">
+          <Link href="/painel/imoveis/novo" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover">
             <HousePlus size={16} /> Novo imóvel
           </Link>
         </div>
@@ -224,10 +224,10 @@ function DashboardFilters({
 }: Pick<Props, "from" | "to" | "brokerFilter" | "members">) {
   return (
     <details className="group relative self-start sm:self-auto">
-      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-control border border-od-border px-3 text-xs font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-[var(--radius-control)] border border-od-border px-3 text-xs font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text">
         <Settings2 size={15} /> Personalizar painel
       </summary>
-      <div className="absolute right-0 top-12 z-30 w-[min(38rem,calc(100vw-2rem))] rounded-panel border border-od-border bg-od-surface p-4 shadow-lg">
+      <div className="absolute right-0 top-12 z-30 w-[min(38rem,calc(100vw-2rem))] rounded-[var(--radius-panel)] border border-od-border bg-od-surface p-4 shadow-lg">
         <div className="mb-4">
           <h3 className="text-sm font-semibold text-white">Período e corretor</h3>
           <p className="mt-1 text-xs text-od-text-3">Ajuste quais dados aparecem na visão geral.</p>
@@ -264,7 +264,7 @@ function RealEstateMetrics({ metrics }: { metrics: DashboardMetric[] }) {
         const Icon = metric.icon;
         return (
           <Link href={metric.href} key={metric.label} aria-label={`Abrir ${metric.label.toLowerCase()}`} className="group flex min-h-24 items-start gap-3 border-b border-r border-white/[0.08] px-4 py-4 transition-colors hover:bg-white/[0.025] focus-visible:z-10 even:border-r-0 [&:nth-last-child(-n+2)]:border-b-0 xl:min-h-28 xl:border-b-0 xl:border-r xl:even:border-r xl:last:border-r-0 xl:px-5">
-            <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><Icon className="size-4" /></span>
+            <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-[var(--radius-inner)] bg-white/[0.06] text-od-text-2"><Icon className="size-4" /></span>
             <div className="min-w-0">
               <p className="text-xs font-medium text-od-text-3">{metric.label}</p>
               <p className="mt-2 truncate text-2xl font-bold tracking-[-0.03em] text-white">{metric.value}</p>
@@ -340,7 +340,7 @@ function IndicatorGroup({ title, items }: { title: string; items: Array<{ label:
       <h3 className="text-xs font-semibold text-white/68">{title}</h3>
       <div className="mt-3 space-y-1">
         {items.map((item) => (
-          <Link href={item.href} key={item.label} className="group grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1 rounded-md px-2 py-3 transition-colors hover:bg-white/[0.02] focus-visible:z-10" aria-label={`Abrir ${item.label.toLowerCase()}`}>
+          <Link href={item.href} key={item.label} className="group grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1 rounded-[var(--radius-inner)] px-2 py-3 transition-colors hover:bg-white/[0.02] focus-visible:z-10" aria-label={`Abrir ${item.label.toLowerCase()}`}>
             <span className="text-xs text-od-text-3 transition-colors group-hover:text-white/64">{item.label}</span>
             <span className="max-w-44 truncate text-right text-sm font-semibold text-white/82 group-hover:text-od-text" title={item.value}>{item.value}</span>
             <span className="col-span-2 text-xs leading-relaxed text-od-text-3 transition-colors group-hover:text-od-text-3">{item.note}</span>
@@ -416,7 +416,7 @@ export function TargetsPanel({ targets, members, canManage, from, to }: Pick<Pro
 function PublicPagePanel({ organization }: { organization: DashboardOrganization }) {
   return (
     <section className="panel flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-      <div className="flex min-w-0 items-center gap-3"><span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><CircleDollarSign size={17} /></span><div><h2 className="text-sm font-semibold text-white">Página pública do corretor</h2><p className="mt-1 text-xs text-od-text-3">Vitrine permanente com todos os imóveis ativos.</p></div></div>
+      <div className="flex min-w-0 items-center gap-3"><span className="grid size-9 shrink-0 place-items-center rounded-[var(--radius-inner)] bg-white/[0.06] text-od-text-2"><CircleDollarSign size={17} /></span><div><h2 className="text-sm font-semibold text-white">Página pública do corretor</h2><p className="mt-1 text-xs text-od-text-3">Vitrine permanente com todos os imóveis ativos.</p></div></div>
       <div className="flex flex-wrap items-center gap-2">
         <form action={togglePublicPage}><input type="hidden" name="enabled" value={organization.real_estate_public_page_enabled ? "" : "on"} /><PendingButton className="btn-secondary" pendingLabel="...">{organization.real_estate_public_page_enabled ? "Desativar" : "Ativar"}</PendingButton></form>
         {organization.real_estate_public_page_enabled ? <><Link href={`/share/corretor/${organization.real_estate_public_page_token}`} target="_blank" className="btn">Ver página</Link><form action={regeneratePublicPageToken}><PendingButton className="btn-secondary" pendingLabel="...">Gerar novo link</PendingButton></form></> : null}

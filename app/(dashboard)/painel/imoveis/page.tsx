@@ -165,7 +165,7 @@ export default async function ImoveisPage(
         </>}
       />
 
-      <section className="real-estate-flat-section space-y-4 py-5">
+      <section className="ui-form-panel space-y-4 p-5">
         <PropertyFilterChat />
         <div>
           <p className="mb-3 text-xs font-medium text-ink-muted">
@@ -230,7 +230,7 @@ export default async function ImoveisPage(
                 <button type="submit" className="btn-secondary">
                   Aplicar filtros
                 </button>
-                <Link href="/painel/imoveis" className="nav-item rounded-md border border-line bg-surface px-3 py-2 text-center text-xs font-semibold text-ink-soft hover:bg-surface-2">
+                <Link href="/painel/imoveis" className="nav-item rounded-[var(--radius-inner)] border border-line bg-surface px-3 py-2 text-center text-xs font-semibold text-ink-soft hover:bg-surface-2">
                   Limpar tudo
                 </Link>
               </div>
@@ -239,7 +239,7 @@ export default async function ImoveisPage(
         </div>
       </section>
 
-      <section className="real-estate-flat-section overflow-hidden">
+      <section className="panel overflow-hidden">
         <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
           <h2 className="text-lg font-semibold text-ink">Resultado</h2>
           <span className="tag bg-surface-2 text-ink-muted">{count ?? 0} no total</span>

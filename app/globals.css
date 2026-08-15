@@ -416,7 +416,7 @@ p { text-wrap: pretty; }
 
 .workspace-real_estate_broker .real-estate-area .panel {
   border-color: var(--od-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-panel);
 }
 
 .workspace-real_estate_broker main button:not([aria-label]),
@@ -429,12 +429,6 @@ p { text-wrap: pretty; }
 .workspace-real_estate_broker textarea:disabled {
   opacity: 1;
   color: var(--od-text-2);
-}
-
-.real-estate-flat-section {
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
 }
 
 /* Bloco que se descola do que está ao redor por plano (fundo levemente

@@ -72,12 +72,12 @@ export function ListingQualitySection({
                     <form action={updateDocumentChecklistStatus} className="flex items-center gap-1.5">
                       <input type="hidden" name="document_id" value={doc.id} />
                       <input type="hidden" name="property_id" value={property.id} />
-                      <select name="status" defaultValue={doc.status} className="field h-8 py-0 text-xs">
+                      <select name="status" defaultValue={doc.status} className="field h-11 py-0 text-xs">
                         <option value="pending">Pendente</option>
                         <option value="received">Recebido</option>
                         <option value="waived">Dispensado</option>
                       </select>
-                      <button type="submit" className="press-sm rounded-md border border-line bg-surface px-2 py-1 text-xs font-bold text-ink-muted hover:bg-surface-2">
+                      <button type="submit" className="press-sm min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-2 py-1 text-xs font-bold text-ink-muted hover:bg-surface-2">
                         Salvar
                       </button>
                     </form>
