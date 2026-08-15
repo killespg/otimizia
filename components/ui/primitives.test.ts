@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { Button, IconButton } from "./button";
 import { Input } from "./form-controls";
 import { MetricBand, Status } from "./data-display";
-import { Surface } from "./surface";
+import { DataPanel, FormPanel, InsetGroup, Page, PageHeader, Surface } from "./surface";
 
 describe("accessible UI primitives", () => {
   it("renders deterministic button intent and native semantics", () => {
@@ -62,5 +62,37 @@ describe("accessible UI primitives", () => {
     expect(metrics).toContain("24,8%");
     expect(status).toContain("ui-status--success");
     expect(status).toContain("Concluído");
+  });
+
+  it("renders the shared product page and panel vocabulary", () => {
+    const page = renderToStaticMarkup(
+      createElement(Page, null, "Conteúdo"),
+    );
+    const header = renderToStaticMarkup(
+      createElement(PageHeader, {
+        eyebrow: "Jurídico",
+        title: "Agenda e prazos",
+        description: "Fila cronológica do escritório.",
+        actions: createElement("button", null, "Adicionar"),
+      }),
+    );
+    const dataPanel = renderToStaticMarkup(
+      createElement(DataPanel, { title: "Atrasados", count: 1 }, "Linha"),
+    );
+    const formPanel = renderToStaticMarkup(
+      createElement(FormPanel, { title: "Cadastro" }, "Campos"),
+    );
+    const inset = renderToStaticMarkup(
+      createElement(InsetGroup, null, "Filtros"),
+    );
+
+    expect(page).toContain('data-ui="page"');
+    expect(header).toContain('data-ui="page-header"');
+    expect(header).toContain("Fila cronológica do escritório.");
+    expect(dataPanel).toContain('data-ui="data-panel"');
+    expect(dataPanel).toContain("Atrasados");
+    expect(dataPanel).toContain('data-count="1"');
+    expect(formPanel).toContain('data-ui="form-panel"');
+    expect(inset).toContain('data-ui="inset-group"');
   });
 });
