@@ -50,7 +50,6 @@ export default async function TeamPage(
   const selfMember = members.find((m) => m.user_id === user.id);
   const isSeller = normalizeProfession(selfMember?.profession_type) === "autonomous_seller";
   const isRealEstate = normalizeProfession(selfMember?.profession_type) === "real_estate_broker";
-  const usesFlatSurface = isSeller || isRealEstate;
   const inviteJobRoles = jobRolesFor(normalizeProfession(selfMember?.profession_type));
 
   return (
@@ -78,7 +77,6 @@ export default async function TeamPage(
       <SectionCard
         title={isSeller ? "Seu negócio" : isRealEstate ? "Imobiliária e assistente" : "Empresa e IA"}
         description={isSeller ? "Informações comerciais que orientam o assistente e mantêm sua operação coerente." : isRealEstate ? "Contexto da operação imobiliária usado pelo assistente e compartilhado com a equipe." : "Nome, contexto e preferências que a IA usa pra te ajudar — vale mesmo se for só você."}
-        flat={usesFlatSurface}
       >
         {isAdmin ? (
           <form action={updateOrganizationContext} className="space-y-3">
@@ -178,7 +176,7 @@ export default async function TeamPage(
       </SectionCard>
 
       {isAdmin && (
-        <section className={usesFlatSurface ? "space-y-3 border-t border-white/[0.08] py-5" : "space-y-3 border border-white/[0.09] bg-od-muted-surface p-5"}>
+        <section className="panel space-y-3 p-5">
           <div>
             <h2 className="text-base font-semibold text-white">
               Convidar
@@ -239,7 +237,7 @@ export default async function TeamPage(
         </section>
       )}
 
-      <section className={usesFlatSurface ? "overflow-hidden border-t border-white/[0.08]" : "overflow-hidden border border-white/[0.09] bg-od-muted-surface"}>
+      <section className="panel overflow-hidden">
         <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
           <h2 className="text-base font-semibold text-white">
             Membros
@@ -347,15 +345,13 @@ function SectionCard({
   title,
   description,
   children,
-  flat = false,
 }: {
   title: string;
   description: string;
   children: React.ReactNode;
-  flat?: boolean;
 }) {
   return (
-    <section className={flat ? "space-y-4 border-t border-white/[0.08] py-5" : "space-y-4 border border-white/[0.09] bg-od-muted-surface p-5"}>
+    <section className="panel space-y-4 p-5">
       <div>
         <h2 className="text-base font-semibold text-white">
           {title}

@@ -232,7 +232,7 @@ export default function Board({
           returnFocusTo={legalLossReturnFocus}
         />
       ) : null}
-      <form action={createPipelineList} className={flat ? "flex flex-col gap-3 border-y border-white/[0.08] py-4 sm:flex-row sm:items-end" : "panel flex flex-col gap-3 p-4 sm:flex-row sm:items-end"}>
+      <form action={createPipelineList} className="panel flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
         <input type="hidden" name="return_to" value="/painel/funil" />
         <div className="min-w-0 flex-1">
           <label className="label" htmlFor="pipeline-list-name">
@@ -247,13 +247,13 @@ export default function Board({
             className="field mt-1.5"
           />
         </div>
-        <PendingButton className="btn h-[42px]" pendingLabel="Criando">
+        <PendingButton className="btn h-11" pendingLabel="Criando">
           <IconPlus className="h-4 w-4" />
           Criar lista
         </PendingButton>
       </form>
 
-      <section className={flat ? "grid gap-3 border-y border-white/[0.08] py-4 md:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto] md:items-end" : "panel grid gap-3 p-4 md:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto] md:items-end"}>
+      <section className="panel grid gap-3 p-4 md:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto] md:items-end">
         <label className="block min-w-0">
           <span className="label">Buscar no quadro</span>
           <input
@@ -293,7 +293,7 @@ export default function Board({
             ))}
           </select>
         </label>
-        <label className={flat ? "flex min-h-[42px] items-center gap-2 px-1 text-sm font-semibold text-white/60" : "flex min-h-[42px] items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-bold text-ink-soft"}>
+        <label className={flat ? "flex min-h-11 items-center gap-2 px-1 text-sm font-semibold text-white/60" : "flex min-h-11 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-bold text-ink-soft"}>
           <input
             type="checkbox"
             checked={hideEmpty}
@@ -305,7 +305,7 @@ export default function Board({
       </section>
 
       {columns.length > 1 && (
-        <div className={flat ? "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 border-y border-od-border bg-od-bg py-2 sm:hidden" : "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 rounded-inner border border-od-border bg-od-surface p-1.5 sm:hidden"}>
+        <div className="sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 rounded-[var(--radius-inner)] border border-od-border bg-od-surface p-1.5 sm:hidden">
           <button
             type="button"
             onClick={() => scrollBoard("previous")}
@@ -486,14 +486,14 @@ export default function Board({
                             {isSeller && deal.details?.seller_order_id ? (
                               <Link
                                 href={`/painel/pedidos/${deal.details.seller_order_id}`}
-                                className="flex min-h-11 items-center justify-center border border-od-accent/25 bg-od-accent/[0.06] px-3 text-xs font-semibold text-od-text hover:bg-white/[0.04]"
+                                className="flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-od-accent/25 bg-od-accent/[0.06] px-3 text-xs font-semibold text-od-text hover:bg-white/[0.04]"
                               >
                                 Abrir pedido confirmado
                               </Link>
                             ) : isSeller && deal.stage !== "perdido" ? (
                               <Link
                                 href={`/painel/vendas/${deal.id}/confirmar`}
-                                className="flex min-h-11 items-center justify-center border border-od-accent/25 bg-od-accent/[0.06] px-3 text-xs font-semibold text-od-text hover:bg-white/[0.04]"
+                                className="flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-od-accent/25 bg-od-accent/[0.06] px-3 text-xs font-semibold text-od-text hover:bg-white/[0.04]"
                               >
                                 Confirmar venda e criar pedido
                               </Link>
@@ -524,7 +524,7 @@ export default function Board({
                                   defaultValue={deal.details?.labels ?? ""}
                                   placeholder="Ex: quente, urgente"
                                   maxLength={240}
-                                  className="field mt-1 h-9 text-xs"
+                                  className="field mt-1 h-11 text-xs"
                                 />
                               </label>
                               <label className="block">
@@ -534,7 +534,7 @@ export default function Board({
                                   defaultValue={deal.details?.external_url ?? ""}
                                   placeholder="https://..."
                                   maxLength={300}
-                                  className="field mt-1 h-9 text-xs"
+                                  className="field mt-1 h-11 text-xs"
                                 />
                               </label>
                               <label className="block">
@@ -548,7 +548,7 @@ export default function Board({
                                   inputMode="decimal"
                                   defaultValue={deal.details?.commission_percent ?? ""}
                                   placeholder="Ex: 6"
-                                  className="field mt-1 h-9 text-xs"
+                                  className="field mt-1 h-11 text-xs"
                                 />
                               </label>
                               {deal.stage === "perdido" ? (
@@ -559,12 +559,12 @@ export default function Board({
                                     defaultValue={deal.details?.loss_reason ?? ""}
                                     placeholder="Ex: preço, prazo, concorrente"
                                     maxLength={120}
-                                    className="field mt-1 h-9 text-xs"
+                                    className="field mt-1 h-11 text-xs"
                                   />
                                 </label>
                               ) : null}
                               <PendingButton
-                                className="min-h-9 rounded-md bg-brand-700 px-3 py-1.5 text-xs font-black text-white hover:bg-brand-800"
+                                className="min-h-11 rounded-[var(--radius-control)] bg-brand-700 px-3 py-1.5 text-xs font-black text-white hover:bg-brand-800"
                                 pendingLabel="Salvando"
                               >
                                 Salvar opções
@@ -580,11 +580,11 @@ export default function Board({
                                   name="photo"
                                   type="file"
                                   accept="image/*"
-                                  className="mt-1 block w-full text-xs font-bold text-ink-soft file:mr-3 file:min-h-9 file:rounded-md file:border-0 file:bg-surface-2 file:px-3 file:text-xs file:font-black file:text-ink-soft hover:file:bg-brand-50 hover:file:text-brand-700"
+                                  className="mt-1 block w-full text-xs font-bold text-ink-soft file:mr-3 file:min-h-11 file:rounded-[var(--radius-control)] file:border-0 file:bg-surface-2 file:px-3 file:text-xs file:font-black file:text-ink-soft hover:file:bg-brand-50 hover:file:text-brand-700"
                                 />
                               </label>
                               <PendingButton
-                                className="min-h-9 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                                className="min-h-11 rounded-[var(--radius-control)] border border-line bg-white px-3 py-1.5 text-xs font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
                                 pendingLabel="Anexando"
                               >
                                 Anexar foto
@@ -680,7 +680,7 @@ export default function Board({
           );
         })}
         {columns.length === 0 && (
-          <div className={flat ? "flex min-h-48 min-w-full items-center justify-center border-y border-white/[0.08] p-8 text-center" : "panel flex min-h-48 min-w-full items-center justify-center p-8 text-center"}>
+          <div className="panel flex min-h-48 min-w-full items-center justify-center p-8 text-center">
             <p className="text-sm font-bold text-ink-muted">{isSeller ? "Nenhuma venda bate com os filtros." : isRealEstate ? "Nenhum atendimento bate com os filtros." : "Nenhum card bate com os filtros."}</p>
           </div>
         )}
@@ -788,7 +788,7 @@ function DealAssignee({
           <select
             name={isAdmin ? "assignee_id" : "target_user_id"}
             required
-            className="field h-9 py-0 text-xs"
+            className="field h-11 py-0 text-xs"
             defaultValue=""
           >
             <option value="" disabled>

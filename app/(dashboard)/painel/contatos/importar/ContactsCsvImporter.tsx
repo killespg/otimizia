@@ -26,7 +26,7 @@ function guessMapping(header: string): keyof ImportContactRow | "ignore" {
   return "ignore";
 }
 
-export function ContactsCsvImporter({ flat = false }: { flat?: boolean }) {
+export function ContactsCsvImporter() {
   const router = useRouter();
   const [rows, setRows] = useState<string[][] | null>(null);
   const [mapping, setMapping] = useState<Record<number, keyof ImportContactRow | "ignore">>({});
@@ -93,7 +93,7 @@ export function ContactsCsvImporter({ flat = false }: { flat?: boolean }) {
   }
 
   return (
-    <div className={flat ? "space-y-4 border-y border-white/[0.08] py-5 sm:py-6" : "panel space-y-4 p-5 sm:p-6"}>
+    <div className="panel space-y-4 p-5 sm:p-6">
       <div>
         <label className="label" htmlFor="csv-file">
           Arquivo CSV

@@ -65,7 +65,6 @@ export default async function ContactDetailPage(
 
   const isRealEstate = workspaceKey === "real_estate_broker";
   const isSeller = workspaceKey === "autonomous_seller";
-  const usesFlatSurface = isSeller || isRealEstate;
   const [{ data: interactions }, { data: tasks }, { data: dealRows }, { data: org }, { data: sellerCustomerProfile }] = await Promise.all([
     supabase
       .from("interactions")
@@ -161,7 +160,7 @@ export default async function ContactDetailPage(
       </header>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <section className={usesFlatSurface ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}>
+        <section className="panel overflow-hidden">
           <div className="border-b border-line px-5 py-4">
             <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
               {copy.dataTitle}
@@ -285,11 +284,10 @@ export default async function ContactDetailPage(
             contactPhone={c.phone}
             contactCompany={c.company}
             myName={myName}
-            flat={usesFlatSurface}
           />
 
           {preset.followUpOffsets.length > 0 && (
-            <section className={usesFlatSurface ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}>
+            <section className="panel overflow-hidden">
               <div className="border-b border-line px-5 py-4">
                 <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
                   Lembrete rápido
@@ -310,7 +308,7 @@ export default async function ContactDetailPage(
                       value={new Date(now.getTime() + offset.days * 86_400_000).toISOString()}
                     />
                     <PendingButton
-                      className="press-sm min-h-9 rounded-md border border-line bg-transparent px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                      className="press-sm min-h-11 rounded-[var(--radius-control)] border border-line bg-transparent px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors duration-150 ease-out hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
                       pendingLabel="Agendando"
                     >
                       {offset.label}
@@ -321,7 +319,7 @@ export default async function ContactDetailPage(
             </section>
           )}
 
-          <section className={usesFlatSurface ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}>
+          <section className="panel overflow-hidden">
             <div className="border-b border-line px-5 py-4">
               <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
                 Conversas
@@ -370,7 +368,7 @@ export default async function ContactDetailPage(
             </div>
           </section>
 
-          <section className={usesFlatSurface ? "overflow-hidden border-t border-white/[0.08]" : "panel overflow-hidden"}>
+          <section className="panel overflow-hidden">
             <div className="border-b border-line px-5 py-4">
               <h2 className="text-lg font-black tracking-[-0.02em] text-ink">
                 {copy.tasksTitle}

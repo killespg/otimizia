@@ -42,8 +42,6 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
   );
   const isSeller = workspaceKey === "autonomous_seller";
   const isRealEstate = workspaceKey === "real_estate_broker";
-  const usesFlatSurface = isSeller || isRealEstate;
-
   const [orgRole, members, { data: taskRows }, { data: contactRows }] = await Promise.all([
     getOrgRole(supabase, orgId, user!.id),
     getOrgMembers(supabase, orgId),
@@ -144,7 +142,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
         </div>
       </header>
 
-      <section className="grid grid-cols-1 border-y border-white/[0.08] sm:grid-cols-3">
+      <section className="ui-metric-band grid-cols-1 sm:grid-cols-3">
         <MetricCard
           label="Atrasados"
           value={String(overdueTasks.length + overdueDeadlines.length)}
@@ -155,7 +153,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
         <MetricCard label="Este mês" value={String(monthEntries.length)} icon={IconCalendar} />
       </section>
 
-      <form id="new-reminder" action={createTask} className={usesFlatSurface ? "scroll-mt-24 border-y border-white/[0.08] py-5" : "scroll-mt-24 border border-white/[0.09] bg-[#1e1d22] p-5"}>
+      <form id="new-reminder" action={createTask} className="ui-form-panel scroll-mt-24 p-5">
         <input type="hidden" name="return_to" value="/painel/calendario" />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_13rem_minmax(0,1fr)_auto] lg:items-end">
           <div>
@@ -182,28 +180,28 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
             <input id="reminder-when" name="due_at" type="datetime-local" className="field mt-1.5" />
           </div>
           <ContactField contacts={allContacts} />
-          <PendingButton className="btn h-[42px] w-full lg:w-auto" pendingLabel="Salvando">
+          <PendingButton className="btn h-11 w-full lg:w-auto" pendingLabel="Salvando">
             <IconPlus className="h-4 w-4" />
             Salvar
           </PendingButton>
         </div>
       </form>
 
-      <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "overflow-hidden border border-white/[0.09] bg-[#1e1d22]"}>
+      <section className="panel overflow-hidden">
         <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
           <h2 className="text-[14px] font-semibold capitalize text-white">{monthTitle}</h2>
           <div className="flex gap-2">
             <Link
               href={`/painel/calendario?month=${prevParam}`}
               aria-label="Mês anterior"
-              className="nav-item grid h-9 w-9 place-items-center rounded-lg border border-line bg-od-surface text-od-text-2 hover:border-brand-300 hover:bg-brand-50 hover:text-od-text"
+              className="nav-item grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-line bg-od-surface text-od-text-2 hover:border-brand-300 hover:bg-brand-50 hover:text-od-text"
             >
               <IconArrowRight className="h-4 w-4 rotate-180" />
             </Link>
             <Link
               href={`/painel/calendario?month=${nextParam}`}
               aria-label="Próximo mês"
-              className="nav-item grid h-9 w-9 place-items-center rounded-lg border border-line bg-od-surface text-od-text-2 hover:border-brand-300 hover:bg-brand-50 hover:text-od-text"
+              className="nav-item grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-line bg-od-surface text-od-text-2 hover:border-brand-300 hover:bg-brand-50 hover:text-od-text"
             >
               <IconArrowRight className="h-4 w-4" />
             </Link>
@@ -260,7 +258,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
         </div>
       </section>
 
-      <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "panel overflow-hidden"}>
+      <section className="panel overflow-hidden">
         <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
           <h2 className="text-base font-black tracking-[-0.02em] text-ink sm:text-lg">
             Compromissos do mês
@@ -322,7 +320,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
                               <input type="hidden" name="case_id" value={entry.deadline.case_id} />
                               <PendingButton
                                 aria-label="Concluir prazo"
-                                className="nav-item grid h-9 w-9 place-items-center rounded-lg border border-line hover:bg-brand-50"
+                                className="nav-item grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-line hover:bg-brand-50"
                                 iconOnly
                                 pendingLabel="Concluindo"
                               >

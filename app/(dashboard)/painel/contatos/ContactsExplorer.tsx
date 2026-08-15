@@ -115,14 +115,14 @@ export function ContactsExplorer({
         </div>
       </header>
 
-      <section className="grid grid-cols-1 border-y border-white/[0.08] sm:grid-cols-3">
+      <section className="ui-metric-band grid-cols-1 sm:grid-cols-3">
         <MetricCard label="Total" value={String(contacts.length)} icon={IconUsers} />
         <MetricCard label="Com WhatsApp" value={String(withPhone)} icon={IconPhone} pink />
         <MetricCard label="Com empresa" value={String(withCompany)} icon={IconMessage} />
       </section>
 
       <div className="grid gap-5">
-        <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "overflow-hidden border border-white/[0.09] bg-[#1e1d22]"}>
+        <section className="panel overflow-hidden">
           <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
             <div>
               <h2 className="text-base font-semibold text-white">
