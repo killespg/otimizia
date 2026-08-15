@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Box, PackageSearch } from "lucide-react";
+import { PageHeader } from "@/components/ui/surface";
 import { formatBRL, formatDate } from "@/lib/utils/format";
 
 export function SellerPageHeader({
@@ -11,16 +12,7 @@ export function SellerPageHeader({
   description: string;
   actions?: ReactNode;
 }) {
-  return (
-    <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-6 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <p className="text-xs font-semibold text-od-text-2">Operação de vendas</p>
-        <h1 className="mt-2 text-od-title text-white">{title}</h1>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-white/52">{description}</p>
-      </div>
-      {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
-    </header>
-  );
+  return <PageHeader eyebrow="Operação de vendas" title={title} description={description} actions={actions} />;
 }
 
 export function SellerSummaryStrip({ items }: { items: Array<{ label: string; value: ReactNode; tone?: "default" | "warning" | "success" }> }) {
@@ -30,7 +22,7 @@ export function SellerSummaryStrip({ items }: { items: Array<{ label: string; va
   const wideColumnClass = count === 1 ? "xl:grid-cols-1" : count === 2 ? "xl:grid-cols-2" : count === 3 ? "xl:grid-cols-3" : count === 4 ? "xl:grid-cols-4" : count === 5 ? "xl:grid-cols-5" : "xl:grid-cols-6";
   const smallLastRowStart = items.length - (items.length % smallColumns || smallColumns);
   return (
-    <section className={`grid border-y border-od-border bg-od-surface/80 ${smallColumnClass} ${wideColumnClass}`}>
+    <section className={`ui-metric-band grid ${smallColumnClass} ${wideColumnClass}`}>
       {items.map((item, index) => (
         <div key={item.label} className={`border-white/[0.07] px-3 py-3 sm:px-4 ${index >= smallLastRowStart ? "border-b-0" : "border-b"} ${(index + 1) % smallColumns === 0 || index === items.length - 1 ? "border-r-0" : "border-r"} xl:border-b-0 ${index === items.length - 1 ? "xl:border-r-0" : "xl:border-r"}`}>
           <p className="text-xs text-od-text-3">{item.label}</p>
@@ -44,8 +36,8 @@ export function SellerSummaryStrip({ items }: { items: Array<{ label: string; va
 export function SellerEmptyState({ title, description, action, icon = "products", className = "" }: { title: string; description: string; action?: ReactNode; icon?: "products" | "box"; className?: string }) {
   const Icon = icon === "box" ? Box : PackageSearch;
   return (
-    <div className={`flex min-h-56 flex-col items-center justify-center border-y border-white/[0.08] px-5 py-10 text-center ${className}`}>
-      <span className="grid size-11 place-items-center border border-od-accent/20 bg-od-accent/[0.07] text-od-text-2"><Icon size={21} /></span>
+    <div className={`flex min-h-56 flex-col items-center justify-center rounded-[var(--radius-panel)] border border-white/[0.08] bg-[#1e1d22]/90 px-5 py-10 text-center ${className}`}>
+      <span className="grid size-11 place-items-center rounded-[var(--radius-inner)] border border-od-accent/20 bg-od-accent/[0.07] text-od-text-2"><Icon size={21} /></span>
       <h2 className="mt-4 text-base font-semibold text-white">{title}</h2>
       <p className="mt-2 max-w-md text-sm leading-relaxed text-od-text-3">{description}</p>
       {action ? <div className="mt-5">{action}</div> : null}
@@ -56,7 +48,7 @@ export function SellerEmptyState({ title, description, action, icon = "products"
 export function ProductThumb({ src, name, size = "md" }: { src?: string | null; name: string; size?: "sm" | "md" | "lg" }) {
   const sizeClass = size === "sm" ? "size-9" : size === "lg" ? "size-24" : "size-11";
   return (
-    <span className={`grid shrink-0 place-items-center overflow-hidden border border-white/[0.09] bg-white/[0.035] text-od-text-3 ${sizeClass}`}>
+    <span className={`grid shrink-0 place-items-center overflow-hidden rounded-[var(--radius-inner)] border border-white/[0.09] bg-white/[0.035] text-od-text-3 ${sizeClass}`}>
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={src} alt={name} className="h-full w-full object-cover" />
@@ -73,7 +65,7 @@ export function SellerStatus({ tone = "neutral", children }: { tone?: "neutral" 
     warning: "border-amber-300/25 bg-amber-300/[0.06] text-amber-300",
     danger: "border-[#fb7767]/30 bg-[#fb7767]/[0.06] text-[#fb7767]",
   };
-  return <span className={`inline-flex min-h-6 items-center border px-2 text-xs font-semibold ${tones[tone]}`}>{children}</span>;
+  return <span className={`inline-flex min-h-6 items-center rounded-[var(--radius-control)] border px-2 text-xs font-semibold ${tones[tone]}`}>{children}</span>;
 }
 
 export function sellerOrderStatusLabel(status: string) {

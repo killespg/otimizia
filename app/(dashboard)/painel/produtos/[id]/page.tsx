@@ -50,7 +50,7 @@ export default async function SellerProductDetailPage({ params }: { params: Prom
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-5">
-          <section className="border border-white/[0.09] bg-[#1e1d22]/90">
+          <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90">
             <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">Dados do produto</h2><p className="mt-1 text-xs text-od-text-3">Alterações futuras não modificam os pedidos já confirmados.</p></header>
             <form action={updateSellerProduct} className="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
               <input type="hidden" name="product_id" value={product.id} />
@@ -80,7 +80,7 @@ export default async function SellerProductDetailPage({ params }: { params: Prom
             </form>
           </section>
 
-          <section className="border border-white/[0.09] bg-[#1e1d22]/90">
+          <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90">
             <header className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-4 py-4"><div><h2 className="text-sm font-semibold text-white">Variações</h2><p className="mt-1 text-xs text-od-text-3">Tamanhos, cores, modelos, voltagens ou outras opções do mesmo produto.</p></div><Boxes size={18} className="text-od-text-2" /></header>
             {variants.length ? <div className="divide-y divide-white/[0.08]">{variants.map((variant) => <div key={variant.id} className="grid gap-2 px-4 py-3 text-sm sm:grid-cols-[minmax(10rem,1fr)_8rem_8rem_7rem] sm:items-center"><div><strong className="font-semibold text-white/82">{variant.name}</strong><p className="mt-1 text-xs text-od-text-3">{Object.entries(variant.attributes).map(([key, value]) => `${key}: ${value}`).join(" · ") || "Sem atributos extras"}</p></div><span className="text-xs text-white/52"><span className="mb-1 block text-xs font-medium text-od-text-3 sm:hidden">SKU</span>{variant.sku || "Sem SKU"}</span><span className="font-medium tabular-nums text-white/72"><span className="mb-1 block text-xs font-medium text-od-text-3 sm:hidden">Preço</span>{money(variant.price_cents ?? product.base_price_cents)}</span><span className="font-semibold tabular-nums text-white/72"><span className="mb-1 block text-xs font-medium text-od-text-3 sm:hidden">Estoque</span>{variant.stock_quantity - variant.reserved_quantity} un.</span></div>)}</div> : <p className="px-4 py-6 text-sm text-od-text-3">Nenhuma variação cadastrada. O produto usa o estoque principal.</p>}
             <details className="group border-t border-white/[0.08] p-4">
@@ -97,7 +97,7 @@ export default async function SellerProductDetailPage({ params }: { params: Prom
             </details>
           </section>
 
-          <section id="ajustar-estoque" className="scroll-mt-24 border border-white/[0.09] bg-[#1e1d22]/90">
+          <section id="ajustar-estoque" className="scroll-mt-24 rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90">
             <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">Movimentar estoque</h2><p className="mt-1 text-xs text-od-text-3">Use quantidade positiva para entrada e negativa para saída ou correção.</p></header>
             <form action={adjustSellerStock} className="grid gap-3 p-4 sm:grid-cols-[minmax(10rem,1fr)_8rem_minmax(12rem,1.5fr)_auto] sm:items-end">
               <input type="hidden" name="product_id" value={product.id} />
@@ -108,14 +108,14 @@ export default async function SellerProductDetailPage({ params }: { params: Prom
             </form>
           </section>
 
-          <section className="border border-white/[0.09] bg-[#1e1d22]/90">
+          <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90">
             <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">Histórico de estoque</h2></header>
             {movements.length ? <div className="divide-y divide-white/[0.07]">{movements.map((movement) => <div key={movement.id} className="grid gap-2 px-4 py-3 text-xs sm:grid-cols-[8rem_minmax(10rem,1fr)_6rem_7rem]"><span className="text-od-text-3"><span className="mr-2 font-medium text-od-text-3 sm:hidden">Data</span>{date(movement.created_at)}</span><span className="text-white/62"><span className="mr-2 font-medium text-od-text-3 sm:hidden">Motivo</span>{movement.reason || movement.movement_type}</span><strong className={movement.quantity_delta > 0 ? "text-emerald-300" : "text-[#fb7767]"}><span className="mr-2 font-medium text-od-text-3 sm:hidden">Movimento</span>{movement.quantity_delta > 0 ? "+" : ""}{movement.quantity_delta}</strong><span className="tabular-nums text-white/54 sm:text-right"><span className="mr-2 font-medium text-od-text-3 sm:hidden">Saldo</span>{movement.balance_after}</span></div>)}</div> : <p className="px-4 py-6 text-sm text-od-text-3">Nenhuma movimentação registrada.</p>}
           </section>
         </div>
 
         <aside className="space-y-4">
-          <section className="border border-white/[0.09] bg-[#1e1d22]/90 p-4">
+          <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90 p-4">
             <h2 className="text-sm font-semibold text-white">Fotos do produto</h2>
             <div className="mt-3 grid grid-cols-3 gap-2">{media.map((item) => <div key={item.id} className="group relative"><ProductThumb src={sellerProductImageUrl(item.storage_path)} name={item.alt_text || product.name} size="lg" /><form action={deleteSellerProductPhoto} className="absolute right-1 top-1"><input type="hidden" name="media_id" value={item.id} /><input type="hidden" name="product_id" value={product.id} /><PendingButton iconOnly pendingLabel="Excluindo" aria-label="Excluir foto" className="grid size-8 place-items-center bg-od-bg text-danger-400"><Trash2 size={14} /></PendingButton></form></div>)}</div>
             <form action={uploadSellerProductPhoto} className="mt-4 space-y-3 border-t border-white/[0.08] pt-4">
@@ -126,9 +126,9 @@ export default async function SellerProductDetailPage({ params }: { params: Prom
             </form>
           </section>
 
-          <section className="border border-white/[0.09] bg-[#1e1d22]/90 p-4"><h2 className="text-sm font-semibold text-white">Desempenho do produto</h2><dl className="mt-3 divide-y divide-white/[0.07] text-sm"><Metric label="Itens vendidos" value={String(orderItems.reduce((sum, item) => sum + item.quantity, 0))} /><Metric label="Receita observada" value={money(orderItems.reduce((sum, item) => sum + item.line_total_cents, 0))} /><Metric label="Garantias emitidas" value={String(warranties.length)} /><Metric label="Garantias ativas" value={String(warranties.filter((warranty) => warranty.status === "active" && new Date(`${warranty.expires_on}T23:59:59`) >= new Date()).length)} /></dl></section>
+          <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90 p-4"><h2 className="text-sm font-semibold text-white">Desempenho do produto</h2><dl className="mt-3 divide-y divide-white/[0.07] text-sm"><Metric label="Itens vendidos" value={String(orderItems.reduce((sum, item) => sum + item.quantity, 0))} /><Metric label="Receita observada" value={money(orderItems.reduce((sum, item) => sum + item.line_total_cents, 0))} /><Metric label="Garantias emitidas" value={String(warranties.length)} /><Metric label="Garantias ativas" value={String(warranties.filter((warranty) => warranty.status === "active" && new Date(`${warranty.expires_on}T23:59:59`) >= new Date()).length)} /></dl></section>
 
-          <section className="border border-white/[0.09] bg-[#1e1d22]/90 p-4"><h2 className="text-sm font-semibold text-white">Criação rápida</h2><p className="mt-2 text-xs leading-relaxed text-od-text-3">Se este produto ainda não existisse, ele poderia ser criado diretamente ao confirmar uma venda. Depois, esta tela serviria para completar fotos, variações e estoque.</p><Link href="/painel/funil" className="mt-3 inline-flex min-h-11 items-center gap-2 text-xs font-semibold text-od-text-2"><PackagePlus size={15} /> Ir para o funil</Link></section>
+          <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90 p-4"><h2 className="text-sm font-semibold text-white">Criação rápida</h2><p className="mt-2 text-xs leading-relaxed text-od-text-3">Se este produto ainda não existisse, ele poderia ser criado diretamente ao confirmar uma venda. Depois, esta tela serviria para completar fotos, variações e estoque.</p><Link href="/painel/funil" className="mt-3 inline-flex min-h-11 items-center gap-2 text-xs font-semibold text-od-text-2"><PackagePlus size={15} /> Ir para o funil</Link></section>
         </aside>
       </div>
     </div>
