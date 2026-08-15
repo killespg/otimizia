@@ -48,8 +48,8 @@ describe("dashboard control geometry", () => {
       ".dashboard-widget-order-actions button { min-height: 44px; min-width: 44px; border-radius: var(--radius-control);",
     );
     expect(preferences).not.toMatch(/min-h-10 rounded-md/);
-    expect(preferences).toContain("min-h-11 rounded-control");
-    expect(customize).toContain("rounded-control");
+    expect(preferences).toContain("min-h-11 rounded-[var(--radius-control)]");
+    expect(customize).toContain("rounded-[var(--radius-control)]");
     expect(customize).not.toContain('"dashboard-customize-trigger"');
   });
 
