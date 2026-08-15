@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
+import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 
 const read = (file: string) =>
@@ -154,7 +155,7 @@ describe("frontend route parity", () => {
     expect(areaLayout).toContain("canViewRealEstate(");
   });
 
-  it("uses the approved 2026 identity across UI and install surfaces", () => {
+  it("uses the approved 2026 identity across UI and install surfaces", async () => {
     const logo = read("components/design-system/logo.tsx");
     const manifest = read("app/manifest.ts");
     const rootLayout = read("app/layout.tsx");
@@ -166,8 +167,8 @@ describe("frontend route parity", () => {
     expect(logo).not.toMatch(/className=\{[^}]*mix-blend-screen/);
     expect(manifest).toContain('src: "/otimizia-app-icon-2026.png"');
     expect(manifest).toContain('src: "/otimizia-app-icon-2026-maskable.png"');
-    expect(rootLayout).toContain('icon: "/otimizia-app-icon-2026.png?v=20260815"');
-    expect(rootLayout).toContain('shortcut: "/otimizia-app-icon-2026.png?v=20260815"');
+    expect(rootLayout).toContain('icon: "/otimizia-mark-2026.png?v=20260815-transparent"');
+    expect(rootLayout).toContain('shortcut: "/otimizia-mark-2026.png?v=20260815-transparent"');
     expect(serviceWorker).toContain('icon: "/otimizia-app-icon-2026.png"');
 
     const expectedDimensions = new Map<string, [number, number]>([
@@ -185,5 +186,9 @@ describe("frontend route parity", () => {
         dimensions,
       );
     }
+
+    const favicon = await sharp(resolve(process.cwd(), "public/otimizia-mark-2026.png")).stats();
+    expect(favicon.channels[3]?.min).toBe(0);
+    expect(favicon.channels[3]?.max).toBe(255);
   });
 });

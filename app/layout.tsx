@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   description: "CRM multiprofissões com uma IA integrada, no painel personalizado pela sua profissão.",
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/otimizia-app-icon-2026.png?v=20260815",
-    shortcut: "/otimizia-app-icon-2026.png?v=20260815",
+    icon: "/otimizia-mark-2026.png?v=20260815-transparent",
+    shortcut: "/otimizia-mark-2026.png?v=20260815-transparent",
     apple: "/otimizia-app-icon-2026.png?v=20260815",
   },
   appleWebApp: {
