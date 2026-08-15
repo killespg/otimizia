@@ -166,7 +166,8 @@ describe("frontend route parity", () => {
     expect(logo).not.toMatch(/className=\{[^}]*mix-blend-screen/);
     expect(manifest).toContain('src: "/otimizia-app-icon-2026.png"');
     expect(manifest).toContain('src: "/otimizia-app-icon-2026-maskable.png"');
-    expect(rootLayout).toContain('icon: "/otimizia-app-icon-2026.png"');
+    expect(rootLayout).toContain('icon: "/otimizia-app-icon-2026.png?v=20260815"');
+    expect(rootLayout).toContain('shortcut: "/otimizia-app-icon-2026.png?v=20260815"');
     expect(serviceWorker).toContain('icon: "/otimizia-app-icon-2026.png"');
 
     const expectedDimensions = new Map<string, [number, number]>([
