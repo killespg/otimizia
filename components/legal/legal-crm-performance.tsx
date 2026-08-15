@@ -142,7 +142,7 @@ function MetricBand({ metrics, canManageFinance }: { metrics: LegalCrmMetrics; c
                 <p className="mt-1 text-xs text-white/64">{metrics.cac.wins} contrato(s) no período</p>
               </>
             ) : metrics.cac.status === "not_configured" ? (
-              <div className="space-y-2">
+              <div className="flex flex-col items-start gap-3">
                 <span className="text-lg font-semibold text-white/78">Não configurado</span>
                 {canManageFinance ? <LegalAcquisitionCostForm /> : null}
               </div>

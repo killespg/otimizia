@@ -98,6 +98,7 @@ describe("LegalCrmPerformance", () => {
     expect(html).toContain("Nenhuma conversa recebida no período");
     expect(html).toContain("Não configurado");
     expect(html).toContain("Informar custos");
+    expect(html).toContain('class="flex flex-col items-start gap-3"');
     expect(html).toContain("01/08/2026");
     expect(html).toContain("Receita por origem indisponível");
     expect(html).not.toContain("0 min");
