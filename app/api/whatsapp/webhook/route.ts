@@ -1,4 +1,10 @@
-import { EvolutionApiError, fetchEvolutionProfilePicture, sendEvolutionText } from "@/lib/whatsapp/evolution";
+import { randomUUID } from "node:crypto";
+import {
+  EvolutionApiError,
+  fetchEvolutionMediaBase64,
+  fetchEvolutionProfilePicture,
+  sendEvolutionText,
+} from "@/lib/whatsapp/evolution";
 import { fetchWhatsappHistory, generateWhatsappReply } from "@/lib/ai/whatsapp-reply";
 import { detectPurchaseIntent } from "@/lib/ai/whatsapp-intent";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
@@ -6,8 +12,15 @@ import { logError } from "@/lib/utils/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createDealIfNeeded, findOrCreateContact } from "@/lib/whatsapp/whatsapp-contacts";
 import { isOptOutKeyword, markWhatsappOptOut, OPT_OUT_CONFIRMATION_TEXT } from "@/lib/whatsapp/whatsapp-opt-out";
-import { extractMessageText, resolveWhatsappPhone } from "@/lib/whatsapp/whatsapp-jid";
+import { extractInboundMedia, extractMessageText, resolveWhatsappPhone } from "@/lib/whatsapp/whatsapp-jid";
 import { verifyEvolutionWebhookAuthorization } from "@/lib/whatsapp/evolution-webhook";
+import {
+  extensionForMediaType,
+  WHATSAPP_ATTACHMENTS_BUCKET,
+  whatsappAttachmentExpiresAt,
+  whatsappAttachmentUrl,
+} from "@/lib/whatsapp/whatsapp-attachments";
+import type { WhatsappMessageType } from "@/lib/supabase/types";
 
 export const runtime = "nodejs";
 const MAX_WEBHOOK_BYTES = 1_000_000;
@@ -97,11 +110,8 @@ export async function POST(request: Request) {
   const pushName = typeof data?.pushName === "string" ? data.pushName : null;
 
   const conversationText = extractMessageText(data?.message);
-  // TODO: mídia (imagem/áudio/documento) não é tratada nesta primeira
-  // versão — fica registrada como "unsupported" pra aparecer no chat, mas
-  // não dispara resposta automática.
-  const messageType = conversationText ? "text" : "unsupported";
-  const content = conversationText ?? "[mensagem de mídia — ainda não suportada]";
+  const inboundMedia = conversationText ? null : extractInboundMedia(data?.message);
+  const dbMessageId = randomUUID();
 
   try {
     const { data: instance } = await admin
@@ -116,6 +126,40 @@ export async function POST(request: Request) {
       return Response.json({ received: true });
     }
     const orgId = instance.org_id as string;
+
+    // Mídia é resolvida antes do resto do fluxo: se a Evolution não
+    // devolver o base64 ou o storage falhar, cai em "unsupported" igual a
+    // hoje — nunca deve travar o webhook por causa de um anexo.
+    let messageType: WhatsappMessageType = conversationText ? "text" : "unsupported";
+    let content: string | null = conversationText ?? "[mensagem de mídia — ainda não suportada]";
+    let mediaUrl: string | null = null;
+    let pendingAttachment: { storagePath: string; mediaType: string } | null = null;
+
+    if (inboundMedia) {
+      try {
+        const base64 = await fetchEvolutionMediaBase64(instanceName, data?.key, data?.message);
+        if (base64) {
+          const extension = extensionForMediaType(inboundMedia.mimetype);
+          const storagePath = `${orgId}/${dbMessageId}/${randomUUID()}.${extension}`;
+          const { error: uploadError } = await admin.storage
+            .from(WHATSAPP_ATTACHMENTS_BUCKET)
+            .upload(storagePath, Buffer.from(base64, "base64"), {
+              contentType: inboundMedia.mimetype,
+              upsert: false,
+            });
+          if (!uploadError) {
+            messageType = inboundMedia.kind;
+            content = inboundMedia.caption;
+            mediaUrl = whatsappAttachmentUrl(dbMessageId);
+            pendingAttachment = { storagePath, mediaType: inboundMedia.mimetype };
+          } else {
+            logError("api/whatsapp/webhook.media-upload-failed", uploadError, { orgId, instanceName });
+          }
+        }
+      } catch (error) {
+        logError("api/whatsapp/webhook.media-fetch-failed", error, { orgId, instanceName });
+      }
+    }
 
     const { data: existingConversation } = await admin
       .from("whatsapp_conversations")
@@ -173,20 +217,37 @@ export async function POST(request: Request) {
     }
 
     await admin.from("whatsapp_messages").insert({
+      id: dbMessageId,
       conversation_id: conversationId,
       org_id: orgId,
       direction: "inbound",
       message_type: messageType,
       content,
+      media_url: mediaUrl,
       sent_by: "contact",
     });
+
+    if (pendingAttachment) {
+      const { error: attachmentError } = await admin.from("whatsapp_attachments").insert({
+        message_id: dbMessageId,
+        org_id: orgId,
+        storage_path: pendingAttachment.storagePath,
+        media_type: pendingAttachment.mediaType,
+        expires_at: whatsappAttachmentExpiresAt().toISOString(),
+      });
+      if (attachmentError) {
+        await admin.storage.from(WHATSAPP_ATTACHMENTS_BUCKET).remove([pendingAttachment.storagePath]);
+        logError("api/whatsapp/webhook.attachment-persist-failed", attachmentError, { orgId, conversationId });
+        // A mensagem já foi salva sem o anexo vinculado — não falha o webhook por isso.
+      }
+    }
 
     // "PARAR"/"SAIR"/"CANCELAR" (etc.) na própria mensagem: marca opt-out
     // permanente e responde confirmando, sem passar pelo resto do fluxo
     // (nem detecção de intenção, nem resposta da IA) — é uma confirmação
     // fixa de compliance, não uma resposta gerada, e vale mais que qualquer
     // outra automação nesta mesma mensagem.
-    if (messageType === "text" && contactId && isOptOutKeyword(content)) {
+    if (messageType === "text" && contactId && isOptOutKeyword(content ?? "")) {
       await markWhatsappOptOut(admin, contactId);
       try {
         await sendEvolutionText(instanceName, phoneNumber, OPT_OUT_CONFIRMATION_TEXT);

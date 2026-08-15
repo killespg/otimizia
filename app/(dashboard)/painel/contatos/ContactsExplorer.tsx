@@ -115,7 +115,7 @@ export function ContactsExplorer({
         </div>
       </header>
 
-      <section className="grid grid-cols-3 border-y border-white/[0.08]">
+      <section className="grid grid-cols-1 border-y border-white/[0.08] sm:grid-cols-3">
         <MetricCard label="Total" value={String(contacts.length)} icon={IconUsers} />
         <MetricCard label="Com WhatsApp" value={String(withPhone)} icon={IconPhone} pink />
         <MetricCard label="Com empresa" value={String(withCompany)} icon={IconMessage} />

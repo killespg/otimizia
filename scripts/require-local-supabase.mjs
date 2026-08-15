@@ -1,8 +1,16 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
+import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 
 try {
-  const output = execSync("npx --no-install supabase status -o json", {
+  const testWorkdir = process.env.SUPABASE_TEST_WORKDIR;
+  const output = execFileSync(process.execPath, [
+    path.resolve(process.cwd(), "node_modules/supabase/dist/supabase.js"),
+    "status",
+    "-o",
+    "json",
+    ...(testWorkdir ? ["--workdir", testWorkdir] : []),
+  ], {
     cwd: process.cwd(),
     encoding: "utf8",
     stdio: ["ignore", "pipe", "ignore"],

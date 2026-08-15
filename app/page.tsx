@@ -44,7 +44,7 @@ function Section({
   return (
     <section
       id={id}
-      className={`relative isolate scroll-mt-16 overflow-hidden ${raised ? "bg-od-muted-surface" : "bg-od-bg"}`}
+      className={`relative isolate scroll-mt-[calc(4rem+env(safe-area-inset-top))] overflow-hidden ${raised ? "bg-od-muted-surface" : "bg-od-bg"}`}
     >
       <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-20 sm:px-8 md:py-24">
         {title || description ? (
@@ -97,7 +97,7 @@ export default async function LandingPage() {
           <FeatureTabs />
         </Section>
 
-        <section id="painel" className="scroll-mt-16 bg-od-bg">
+        <section id="painel" className="scroll-mt-[calc(4rem+env(safe-area-inset-top))] bg-od-bg">
           <ContainerScroll
             titleComponent={
               <>

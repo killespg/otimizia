@@ -111,7 +111,7 @@ export default async function TasksPage() {
         </div>
       </header>
 
-      <section className="grid grid-cols-3 border-y border-white/[0.08]">
+      <section className="grid grid-cols-1 border-y border-white/[0.08] sm:grid-cols-3">
         <MetricCard label="Pendentes" value={String(pending.length)} icon={IconBell} />
         <MetricCard label="Hoje" value={String(todayTasks.length)} icon={IconClock} pink />
         <MetricCard label="Feitas" value={String(done.length)} icon={IconCheckCircle} />

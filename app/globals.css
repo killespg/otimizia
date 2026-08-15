@@ -189,11 +189,11 @@
    translúcido por cima do elemento — o retoque clássico de "isto é uma
    página", nunca visto num app instalado. O feedback de toque real continua
    vindo de :active (.btn, .press). */
-html { min-height: 100%; background: var(--od-bg); font-family: var(--font-inter); scroll-behavior: smooth; scrollbar-gutter: stable; -webkit-tap-highlight-color: transparent; }
+html { min-height: 100%; background: var(--od-bg); font-family: var(--font-inter); scroll-behavior: smooth; scrollbar-gutter: stable; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
 /* Rolagem por toque não "estica" além do topo/fim revelando o branco padrão
    do navegador atrás do body — em vez disso, o próprio plano de fundo já
    escuro aparece, como um scroll de app nativo. */
-body { min-height: 100%; margin: 0; background: var(--od-bg); color: var(--od-text); text-rendering: optimizeLegibility; overscroll-behavior-y: contain; }
+body { min-height: 100%; margin: 0; background: var(--od-bg); color: var(--od-text); text-rendering: optimizeLegibility; overscroll-behavior: none; }
 
 /* Rolagem do produto: o trilho desaparece na superfície e o polegar mantém a
    forma nativa, só mais discreta. Azul entra apenas na interação, como nos

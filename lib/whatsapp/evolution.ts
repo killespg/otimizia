@@ -111,6 +111,27 @@ export async function sendEvolutionMedia(
   });
 }
 
+// POST /chat/getBase64FromMediaMessage/{instance} -> { base64, mimetype, ... }
+// Baixa o conteúdo de uma mídia recebida (Baileys só entrega a mensagem com
+// metadados no webhook, não o arquivo). Best-effort como o resto deste
+// arquivo relacionado a mídia: instância fora do ar ou mídia expirada no
+// WhatsApp não deve derrubar o resto do processamento do webhook.
+export async function fetchEvolutionMediaBase64(
+  instanceName: string,
+  key: unknown,
+  message: unknown
+): Promise<string | null> {
+  try {
+    const data = await evolutionFetch(`/chat/getBase64FromMediaMessage/${instanceName}`, {
+      method: "POST",
+      body: JSON.stringify({ message: { key, message } }),
+    });
+    return typeof data?.base64 === "string" ? data.base64 : null;
+  } catch {
+    return null;
+  }
+}
+
 // POST /chat/fetchProfilePictureUrl/{instance} -> { wuid, profilePictureUrl }
 // Contato sem foto, número que a instância ainda não sincronizou, ou a
 // própria Evolution fora do ar: qualquer um desses casos é normal (nem todo

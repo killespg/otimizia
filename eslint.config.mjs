@@ -1,11 +1,17 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import reactHooks from "eslint-plugin-react-hooks";
+import typescriptEslint from "@typescript-eslint/eslint-plugin";
 
 export default defineConfig([
   ...nextVitals,
   ...nextTs,
   {
+    plugins: {
+      "react-hooks": reactHooks,
+      "@typescript-eslint": typescriptEslint,
+    },
     rules: {
       // React 19's compiler-oriented rules expose legacy patterns that remain
       // runtime-safe. Keep them visible during the gradual component rewrite
@@ -19,8 +25,11 @@ export default defineConfig([
   },
   globalIgnores([
     ".next/**",
+    ".claude/**",
+    ".superpowers/**",
     "out/**",
     "build/**",
+    "otimizia.worktrees/**",
     "supabase/.temp/**",
     "next-env.d.ts",
   ]),

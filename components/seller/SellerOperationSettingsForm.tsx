@@ -39,10 +39,10 @@ export function SellerOperationSettingsForm(props: Props) {
     <form action={formAction} className="space-y-6">
       <section className="border border-white/[0.09] bg-[#1e1d22]/90">
         <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">O que você vende</h2><p className="mt-1 max-w-3xl text-xs leading-relaxed text-od-text-3">Marque tudo que fizer parte da sua operação. Um mesmo negócio pode trabalhar com moda, garantia e encomendas ao mesmo tempo.</p></header>
-        <div className="grid border-l border-white/[0.07] sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-3">
           {SELLER_SALES_MODELS.map((model) => {
             const selected = models.includes(model.value);
-            return <label key={model.value} className={`relative flex min-h-28 cursor-pointer gap-3 border-b border-r border-white/[0.07] p-4 ${selected ? "bg-od-accent/[0.055]" : "hover:bg-white/[0.02]"}`}>
+            return <label key={model.value} className={`relative flex min-h-28 cursor-pointer gap-3 rounded-md border p-4 ${selected ? "border-od-accent bg-od-accent/[0.055]" : "border-white/[0.07] hover:bg-white/[0.02]"}`}>
               <input type="checkbox" name="sales_models" value={model.value} checked={selected} onChange={() => toggleModel(model.value)} disabled={!props.canEdit} className="sr-only" />
               <span className={`mt-0.5 grid size-6 shrink-0 place-items-center border ${selected ? "border-od-accent bg-od-accent text-white" : "border-white/20 text-transparent"}`}><Check size={14} /></span>
               <span><strong className="block text-sm font-semibold text-white/78">{model.label}</strong><span className="mt-1.5 block text-xs leading-relaxed text-od-text-3">{model.description}</span></span>

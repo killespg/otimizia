@@ -12,6 +12,28 @@ function password() {
   return `E2E-${randomBytes(24).toString("base64url")}`;
 }
 
+// Mesmo algoritmo de lib/utils/cpf.ts (isValidCPF) — precisa passar num CPF
+// válido porque profiles.cpf tem índice único (não pode repetir entre as
+// duas contas da fixture) e o middleware só libera /painel/* com CPF
+// preenchido (lib/supabase/middleware.ts). Sem isso, toda conta de e2e cai
+// em /onboarding/cpf em vez da página que o teste espera.
+function randomCpf() {
+  function checkDigit(digits, length) {
+    let sum = 0;
+    for (let i = 0; i < length; i += 1) sum += digits[i] * (length + 1 - i);
+    const remainder = (sum * 10) % 11;
+    return remainder === 10 ? 0 : remainder;
+  }
+
+  for (;;) {
+    const base = Array.from({ length: 9 }, () => Math.floor(Math.random() * 10));
+    if (base.every((digit) => digit === base[0])) continue;
+    const d1 = checkDigit(base, 9);
+    const d2 = checkDigit([...base, d1], 10);
+    return [...base, d1, d2].join("");
+  }
+}
+
 async function createUser(admin, prefix, metadata) {
   const email = `${prefix}-${Date.now()}-${randomBytes(4).toString("hex")}@example.test`;
   const userPassword = password();
@@ -61,11 +83,13 @@ function ensure(error, message) {
 export async function createE2EFixtures(admin, prefix) {
   const seller = await createUser(admin, `${prefix}-seller`, {
     name: "E2E vendedor",
+    cpf: randomCpf(),
     profession_type: "autonomous_seller",
     profession_types: ["autonomous_seller", "real_estate_broker"],
   });
   const restricted = await createUser(admin, `${prefix}-restricted`, {
     name: "E2E acesso restrito",
+    cpf: randomCpf(),
     profession_type: "real_estate_broker",
     profession_types: ["real_estate_broker"],
   });

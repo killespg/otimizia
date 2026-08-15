@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { execFileSync, spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { readFileSync } from "node:fs";
+import path from "node:path";
 import {
   adminClient,
   createTestUser,
@@ -20,7 +21,8 @@ if (!config) {
 type TestUser = Awaited<ReturnType<typeof createTestUser>>;
 
 function localDatabaseContainer() {
-  const configFile = readFileSync("supabase/config.toml", "utf8");
+  const testWorkdir = process.env.SUPABASE_TEST_WORKDIR || process.cwd();
+  const configFile = readFileSync(path.join(testWorkdir, "supabase/config.toml"), "utf8");
   const projectId = configFile.match(/^project_id\s*=\s*"([^"]+)"/m)?.[1];
   if (!projectId) throw new Error("project_id local não encontrado em supabase/config.toml");
   return `supabase_db_${projectId}`;
