@@ -134,7 +134,7 @@ export function MobileAppNav({
               aria-modal="true"
               aria-label="Todas as áreas"
               onKeyDown={trapFocus}
-              className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-[var(--z-sticky)] mx-auto max-h-[66dvh] max-w-md overflow-y-auto rounded-t-[var(--radius-panel)] border border-b-0 border-od-border bg-od-muted-surface md:hidden"
+              className="fixed inset-x-3 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-[var(--z-sticky)] mx-auto max-h-[62dvh] max-w-md overflow-y-auto rounded-[var(--radius-panel)] border border-od-border bg-od-muted-surface shadow-[0_10px_28px_-8px_rgba(0,0,0,0.7)] md:hidden"
               initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12 }}
@@ -196,10 +196,15 @@ export function MobileAppNav({
         ) : null}
       </AnimatePresence>
 
-      <div className="fixed inset-x-0 bottom-0 z-[var(--z-sticky)] border-t border-od-border bg-od-sidebar pb-[env(safe-area-inset-bottom)] md:hidden">
+      {/* Barra solta do fim da tela: o conteúdo corre por baixo dela e ela se
+          apresenta como uma peça do app, não como a borda do navegador. O
+          invólucro não recebe toque (pointer-events-none) para não roubar o
+          clique da faixa vazia ao lado; só a barra recebe. Fundo opaco de
+          propósito — o sistema não usa vidro. */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[var(--z-sticky)] px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] md:hidden">
         <nav
           data-mobile-nav
-          className="mx-auto grid min-h-16 max-w-md grid-cols-5 px-1"
+          className="pointer-events-auto mx-auto grid min-h-16 max-w-md grid-cols-5 rounded-[var(--radius-panel)] border border-od-border bg-od-sidebar px-1 shadow-[0_10px_28px_-8px_rgba(0,0,0,0.7)]"
           aria-label={ariaLabel}
         >
           <BarTab
@@ -351,6 +356,10 @@ function MenuRow({
   );
 }
 
+// O Tim não é mais uma aba entre as outras: as quatro vizinhas são ícones de
+// traço, e ele é a marca em disco cheio, com anel de acento mesmo inativo. É o
+// único ponto da barra onde alguém fala de volta, e a barra precisa dizer isso
+// antes do toque — não só depois, pelo estado ativo.
 function TimTab({
   href,
   active,
@@ -368,19 +377,19 @@ function TimTab({
       aria-current={active ? "page" : undefined}
       aria-label="Falar com o Tim"
       className={`relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-[var(--radius-control)] px-1 text-[10px] font-medium leading-none transition-colors ${
-        active
-          ? "bg-od-accent-tint text-od-text"
-          : "text-od-text-3 hover:text-od-text-2"
+        active ? "bg-od-accent-tint text-od-text" : "text-od-text-2 hover:text-od-text"
       }`}
     >
       <span
-        className={`grid size-6 shrink-0 place-items-center rounded-full ${
-          active ? "bg-od-accent" : "bg-od-surface"
+        className={`grid size-7 shrink-0 place-items-center rounded-full transition-[background-color,box-shadow] duration-150 ${
+          active
+            ? "bg-od-accent shadow-[0_0_0_2px_var(--od-accent-tint),0_0_12px_-2px_var(--od-accent)]"
+            : "bg-od-accent/80 shadow-[0_0_0_1.5px_var(--od-accent-tint)]"
         }`}
       >
-        <LogoMark size={13} />
+        <LogoMark size={14} />
       </span>
-      <span>Tim</span>
+      <span className={active ? "font-semibold" : undefined}>Tim</span>
     </Link>
   );
 }

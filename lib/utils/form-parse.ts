@@ -18,6 +18,24 @@ export function optionalUuid(v: FormDataEntryValue | null): string | null {
   return /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(s) ? s : null;
 }
 
+// Ids que chegam de uma seleção múltipla na interface: vêm como array de
+// argumento (não de FormData), então o que importa aqui é tirar duplicata,
+// recusar lixo e travar o tamanho do lote antes de virar um `in (...)` no banco.
+export function normalizeBulkIds(ids: unknown, limit = 200): string[] {
+  if (!Array.isArray(ids)) throw new Error("Seleção inválida.");
+  const unique = Array.from(
+    new Set(
+      ids.filter(
+        (id): id is string => typeof id === "string" && id.length > 0 && id.length <= 80
+      )
+    )
+  );
+  if (unique.length > limit) {
+    throw new Error(`Selecione no máximo ${limit} itens por vez.`);
+  }
+  return unique;
+}
+
 export function moneyToCentsOrNull(v: FormDataEntryValue | null): number | null {
   const raw = text(v, 32).replace(/R\$|\s/g, "");
   if (!raw) return null;

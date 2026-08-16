@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LegalDeadlineBoard } from "@/components/legal/legal-deadline-board";
 import { Page, PageHeader } from "@/components/ui/surface";
-import { canViewLegal } from "@/lib/law/law-office";
+import { canManageLegal, canViewLegal } from "@/lib/law/law-office";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { LegalCase } from "@/lib/supabase/types";
@@ -86,6 +86,7 @@ export default async function DeadlinesPage() {
         later={later}
         noDeadline={noDeadline}
         memberName={memberName}
+        canManage={canManageLegal(membership?.job_role, isAdmin)}
       />
     </Page>
   );

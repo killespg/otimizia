@@ -36,9 +36,9 @@ export function TimTodayPanel({
 
       {loading ? (
         <div className="space-y-4" aria-label="Carregando resumo do dia">
-          <div className="h-12 animate-pulse rounded bg-white/[0.06] motion-reduce:animate-none" />
-          <div className="h-20 animate-pulse rounded bg-white/[0.06] motion-reduce:animate-none" />
-          <div className="h-20 animate-pulse rounded bg-white/[0.06] motion-reduce:animate-none" />
+          <div className="h-12 animate-pulse rounded-[var(--radius-control)] bg-white/[0.06] motion-reduce:animate-none" />
+          <div className="h-20 animate-pulse rounded-[var(--radius-control)] bg-white/[0.06] motion-reduce:animate-none" />
+          <div className="h-20 animate-pulse rounded-[var(--radius-control)] bg-white/[0.06] motion-reduce:animate-none" />
         </div>
       ) : null}
 
@@ -55,14 +55,14 @@ export function TimTodayPanel({
             title="Atrasados"
             emptyLabel="Nada atrasado. Bom sinal."
             tasks={overdueTasks}
-            accent="text-[#fb7767]"
+            accent="text-danger-700"
           />
 
           <TaskGroup title="Prazo hoje" emptyLabel="Nenhum lembrete pra hoje." tasks={todayTasks} accent="text-od-text-2" />
 
           <Link
             href="/painel/tarefas"
-            className="min-h-11 rounded border border-white/[0.09] px-3 py-2.5 text-center text-[12px] font-semibold text-white/65 hover:bg-white/[0.04] hover:text-white"
+            className="min-h-11 rounded-[var(--radius-control)] border border-od-border px-3 py-2.5 text-center text-[12px] font-semibold text-white/65 hover:bg-white/[0.04] hover:text-white"
           >
             Ver todos os lembretes
           </Link>

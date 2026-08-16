@@ -14,6 +14,7 @@ import {
   type ProfessionType,
 } from "@/lib/people/professions";
 import { isLostPipelineList, stageFromPipelineList } from "@/lib/crm/pipeline-stage";
+import { normalizeBulkIds } from "@/lib/utils/form-parse";
 import { createClient } from "@/lib/supabase/server";
 import { DEAL_STAGES, type DealStage, type LegalLossReasonCode } from "@/lib/supabase/types";
 import { getWorkspaceKey, isWorkspaceEnabled, normalizeWorkspaceKeys } from "@/lib/workspace/workspaces";
@@ -273,6 +274,26 @@ export async function deleteContact(formData: FormData) {
   ensureOk(error, "Não deu para excluir o contato.");
   revalidatePath("/painel/contatos");
   redirect("/painel/contatos");
+}
+
+// Exclusão em lote da carteira de contatos. Interações, tarefas e negociações
+// vinculadas seguem o que o banco define para cada relação — o filtro por org e
+// workspace impede que a seleção alcance contato de outra carteira.
+export async function bulkDeleteContacts(ids: string[]) {
+  const contactIds = normalizeBulkIds(ids);
+  if (contactIds.length === 0) return { deleted: 0 };
+  const { supabase, orgId, workspaceKey } = await requireUserWithPreset();
+  const { error } = await supabase
+    .from("contacts")
+    .delete()
+    .in("id", contactIds)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey);
+  ensureOk(error, "Não deu para excluir os contatos.");
+  revalidatePath("/painel/contatos");
+  revalidatePath("/painel/funil");
+  revalidatePath("/painel");
+  return { deleted: contactIds.length };
 }
 
 // ---------- Interactions ----------
@@ -609,6 +630,96 @@ export async function toggleTask(id: string, done: boolean) {
   revalidatePath("/painel/tarefas");
   revalidatePath("/painel/calendario");
   revalidatePath("/painel");
+}
+
+// Ações em lote da tela de lembretes. Tarefas que exigem aprovação não podem ser
+// concluídas direto pelo responsável: em vez de derrubar o lote inteiro, elas são
+// puladas e devolvidas em `skipped` para a interface avisar.
+export async function bulkToggleTasks(ids: string[], done: boolean) {
+  const taskIds = normalizeTaskIds(ids);
+  if (taskIds.length === 0) return { updated: 0, skipped: 0 };
+  const { supabase, user, orgId, workspaceKey } = await requireActiveUserWithWorkspace();
+
+  const { data: tasks } = await supabase
+    .from("tasks")
+    .select("id,reviewer_id,assignee_id,owner_id,contact_id,deal_id,title,due_at,recurrence,recurrence_spawned")
+    .in("id", taskIds)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey);
+
+  const found = tasks ?? [];
+  const allowed = done
+    ? found.filter((task) => !(task.reviewer_id && task.assignee_id === user.id))
+    : found;
+  if (allowed.length === 0) return { updated: 0, skipped: found.length };
+
+  const { error } = await supabase
+    .from("tasks")
+    .update({ done })
+    .in("id", allowed.map((task) => task.id))
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey);
+  ensureOk(error, "Não deu para atualizar os lembretes.");
+
+  if (done) {
+    const recurring = allowed.filter(
+      (task) => task.recurrence !== "none" && !task.recurrence_spawned
+    );
+    if (recurring.length > 0) {
+      await supabase.from("tasks").insert(
+        recurring.map((task) => ({
+          owner_id: task.owner_id,
+          org_id: orgId,
+          workspace_key: workspaceKey,
+          assignee_id: task.assignee_id,
+          contact_id: task.contact_id,
+          deal_id: task.deal_id,
+          title: task.title,
+          due_at: advanceRecurrence(task.due_at, task.recurrence as "daily" | "weekly" | "monthly"),
+          recurrence: task.recurrence,
+        }))
+      );
+      await supabase
+        .from("tasks")
+        .update({ recurrence_spawned: true })
+        .in("id", recurring.map((task) => task.id));
+    }
+  }
+
+  revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/calendario");
+  revalidatePath("/painel");
+  return { updated: allowed.length, skipped: found.length - allowed.length };
+}
+
+export async function bulkDeleteTasks(ids: string[]) {
+  const taskIds = normalizeTaskIds(ids);
+  if (taskIds.length === 0) return { deleted: 0 };
+  const { supabase, orgId, workspaceKey } = await requireActiveUserWithWorkspace();
+  const { error } = await supabase
+    .from("tasks")
+    .delete()
+    .in("id", taskIds)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey);
+  ensureOk(error, "Não deu para excluir os lembretes.");
+  revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/calendario");
+  revalidatePath("/painel");
+  return { deleted: taskIds.length };
+}
+
+const BULK_TASK_LIMIT = 200;
+
+function normalizeTaskIds(ids: string[]) {
+  if (!Array.isArray(ids)) throw new Error("Seleção inválida.");
+  const unique = Array.from(
+    new Set(ids.filter((id): id is string => typeof id === "string" && id.length > 0 && id.length <= 80))
+  );
+  if (unique.length > BULK_TASK_LIMIT) {
+    throw new Error(`Selecione no máximo ${BULK_TASK_LIMIT} lembretes por vez.`);
+  }
+  return unique;
 }
 
 function recurrenceOrNone(v: FormDataEntryValue | null): "none" | "daily" | "weekly" | "monthly" {

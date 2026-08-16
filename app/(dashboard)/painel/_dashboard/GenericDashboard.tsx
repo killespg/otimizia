@@ -587,10 +587,10 @@ export default async function DashboardPage() {
               <span aria-hidden="true">•</span>
               <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long" }).format(now)}</time>
             </div>
-            <h1 className="mt-2 text-[28px] font-black tracking-[-0.035em] text-od-text sm:text-[2.15rem]">
+            <h1 className="mt-1 text-[20px] font-semibold leading-tight tracking-[-0.02em] text-od-text sm:mt-2 sm:text-[2.15rem] sm:font-black sm:tracking-[-0.035em]">
               Olá, {displayName}!
             </h1>
-            <p className="mt-1 text-sm font-semibold leading-relaxed text-od-text-2 sm:text-base">
+            <p className="mt-1 text-[13px] font-medium leading-5 text-od-text-2 sm:text-base sm:font-semibold sm:leading-relaxed">
               {greeting}
             </p>
           </div>

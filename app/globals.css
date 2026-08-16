@@ -786,8 +786,9 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
 .modal { position: fixed; z-index: var(--z-modal); }
 
 @media (max-width: 767px) {
-  /* Espaço para a barra fixa de 64px não cobrir o fim do conteúdo. */
-  .product-content { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  /* Espaço para a barra flutuante (64px + 8px de folga até a borda) não cobrir
+     o fim do conteúdo. */
+  .product-content { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
 
   /* Conversa aberta no WhatsApp: a tela vira o chat inteiro, como no app —
      topbar e barra de abas somem enquanto ela está aberta (o botão voltar do

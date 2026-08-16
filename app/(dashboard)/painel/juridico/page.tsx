@@ -283,25 +283,28 @@ export default async function LegalDashboardPage({
     <div
       id="carteira"
       data-legal-dashboard="true"
-      className="dashboard-board relative isolate mx-auto w-full max-w-[1640px] space-y-6 text-od-text"
+      className="dashboard-board relative isolate mx-auto w-full max-w-[1640px] space-y-4 text-od-text sm:space-y-6"
     >
-      <header className="flex flex-col gap-5 pb-6 xl:flex-row xl:items-end xl:justify-between">
+      {/* No celular esta é a barra de contexto de um app, não a capa de uma
+          página: data, nome em 20px e as duas ações logo abaixo. O título de
+          28px e o respiro maior só entram a partir de sm. */}
+      <header className="flex flex-col gap-3 pb-1 sm:gap-5 sm:pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div className="min-w-0">
-          <p className="flex items-center gap-2 text-xs font-semibold capitalize text-od-text-3">
+          <p className="flex items-center gap-2 text-xs font-medium capitalize text-od-text-3">
             <CalendarDays size={14} />
             <time dateTime={now.toISOString()}>
               {dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}
             </time>
           </p>
-          <h1 className="mt-3 text-od-title text-white">
+          <h1 className="mt-1 text-[20px] font-semibold leading-tight tracking-[-0.02em] text-white sm:mt-3 sm:text-od-title">
             Bom dia, <span className="text-od-text">{firstName(displayName)}.</span>
           </h1>
           {!hasAnyCase ? (
-            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-white/56">
+            <p className="mt-1.5 max-w-3xl text-[13px] leading-5 text-white/56 sm:mt-2 sm:text-sm sm:leading-relaxed">
               Cadastre o primeiro caso para organizar prazos, movimentações e honorários em um só lugar.
             </p>
           ) : hasSignals ? (
-            <p className="mt-2 flex max-w-3xl flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-relaxed text-white/56">
+            <p className="mt-1.5 flex max-w-3xl flex-wrap items-center gap-x-2 gap-y-1 text-[13px] leading-5 text-white/56 sm:mt-2 sm:text-sm sm:leading-relaxed">
               <span>Seu escritório começa o dia com</span>
               {critical.length > 0 ? (
                 <span className="inline-flex items-center gap-1 font-semibold text-danger-600">
@@ -323,7 +326,7 @@ export default async function LegalDashboardPage({
               ) : null}
             </p>
           ) : (
-            <p className="mt-2 flex max-w-3xl flex-wrap items-center gap-x-1.5 text-sm leading-relaxed text-white/56">
+            <p className="mt-1.5 flex max-w-3xl flex-wrap items-center gap-x-1.5 text-[13px] leading-5 text-white/56 sm:mt-2 sm:text-sm sm:leading-relaxed">
               <span>
                 Sua operação jurídica está em ordem. Há{" "}
                 <strong className="font-semibold text-od-text">
@@ -336,7 +339,7 @@ export default async function LegalDashboardPage({
             </p>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           <Link
             href="/painel/juridico/prazos"
             className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:bg-od-surface-hover hover:text-od-text"

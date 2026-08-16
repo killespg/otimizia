@@ -53,7 +53,7 @@ export function VoicePanel({
         <button
           type="button"
           onClick={voiceStatus === "connecting" ? stopVoice : startVoice}
-          className="min-h-8 shrink-0 rounded border border-white/[0.1] px-2.5 text-xs font-semibold text-white/75 hover:bg-white/[0.06]"
+          className="min-h-11 shrink-0 rounded-[var(--radius-control)] border border-od-border px-2.5 text-xs font-semibold text-white/75 hover:bg-white/[0.06]"
         >
           {voiceStatus === "connecting" ? "Cancelar" : "Tentar de novo"}
         </button>
@@ -71,7 +71,7 @@ export function VoicePanel({
         <button
           type="button"
           onClick={stopVoice}
-          className="min-h-8 rounded border border-red-400/25 bg-red-400/10 px-2.5 text-xs font-semibold text-red-300 hover:bg-red-400/20"
+          className="min-h-11 rounded-[var(--radius-control)] border border-danger-700/30 bg-danger-50 px-2.5 text-xs font-semibold text-danger-700 hover:bg-danger-50/80"
         >
           Encerrar
         </button>

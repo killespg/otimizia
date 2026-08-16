@@ -50,7 +50,7 @@ function periodHref(key: LegalCrmPeriodKey, searchParams?: Record<string, Search
 }
 
 function Unavailable({ children = "Dados indisponíveis neste momento." }: { children?: string }) {
-  return <p className="mt-2 text-sm text-white/64">{children}</p>;
+  return <p className="mt-2 text-[13px] leading-5 text-white/64">{children}</p>;
 }
 
 function ResponseValue({ value }: { value: LegalCrmMetrics["firstResponse"] }) {
@@ -82,7 +82,7 @@ function ResponseValue({ value }: { value: LegalCrmMetrics["firstResponse"] }) {
   }
   return (
     <div>
-      <span className="text-[clamp(1.35rem,2vw,1.8rem)] font-semibold tracking-[-0.03em] text-white">
+      <span className="text-[22px] font-semibold tabular-nums tracking-[-0.03em] text-white sm:text-[28px]">
         {integer(value.medianMinutes)} min
       </span>
       <p className="mt-1 text-xs text-white/64">
@@ -99,7 +99,9 @@ function MetricBand({ metrics, canManageFinance }: { metrics: LegalCrmMetrics; c
   const showFinance = metrics.availability.cac !== "hidden" && metrics.cac.status !== "hidden";
 
   return (
-    <dl className="grid min-w-0 gap-5 rounded-[15px] bg-[#1b1b20] p-5 sm:grid-cols-2 xl:grid-cols-[1.15fr_.85fr_.85fr_1fr] xl:p-6">
+    // Duas colunas já no telefone: as quatro medidas cabem em duas linhas e o
+    // usuário lê o resumo sem rolar, em vez de uma pilha de blocos altos.
+    <dl className="grid min-w-0 grid-cols-2 gap-x-4 gap-y-5 rounded-[15px] bg-[#1b1b20] p-4 sm:gap-5 sm:p-5 xl:grid-cols-[1.15fr_.85fr_.85fr_1fr] xl:p-6">
       <div className="min-w-0">
         <dt className="text-xs font-semibold text-white/64">Tempo de 1ª resposta</dt>
         <dd className="mt-2"><ResponseValue value={metrics.firstResponse} /></dd>
@@ -109,7 +111,7 @@ function MetricBand({ metrics, canManageFinance }: { metrics: LegalCrmMetrics; c
         <dd className="mt-2">
           {metrics.availability.leads === "ready" && metrics.leads ? (
             <>
-              <span className="text-[clamp(1.35rem,2vw,1.8rem)] font-semibold tracking-[-0.03em] text-white">
+              <span className="text-[22px] font-semibold tabular-nums tracking-[-0.03em] text-white sm:text-[28px]">
                 {integer(metrics.leads.qualified)}
               </span>
               <p className="mt-1 text-xs text-white/64">de {integer(metrics.leads.total)} contatos únicos</p>
@@ -122,7 +124,7 @@ function MetricBand({ metrics, canManageFinance }: { metrics: LegalCrmMetrics; c
         <dd className="mt-2">
           {metrics.availability.funnel === "ready" ? (
             <>
-              <span className="text-[clamp(1.35rem,2vw,1.8rem)] font-semibold tracking-[-0.03em] text-white">
+              <span className="text-[22px] font-semibold tabular-nums tracking-[-0.03em] text-white sm:text-[28px]">
                 {percent(finalConversion)}
               </span>
               <p className="mt-1 text-xs text-white/64">contratados sobre negócios recebidos</p>
@@ -136,7 +138,7 @@ function MetricBand({ metrics, canManageFinance }: { metrics: LegalCrmMetrics; c
           <dd className="mt-2">
             {metrics.cac.status === "ready" ? (
               <>
-                <span className="text-[clamp(1.35rem,2vw,1.8rem)] font-semibold tracking-[-0.03em] text-white">
+                <span className="text-[22px] font-semibold tabular-nums tracking-[-0.03em] text-white sm:text-[28px]">
                   {money(metrics.cac.valueCents)}
                 </span>
                 <p className="mt-1 text-xs text-white/64">{metrics.cac.wins} contrato(s) no período</p>
@@ -160,12 +162,12 @@ function Funnel({ metrics }: { metrics: LegalCrmMetrics }) {
   const maximum = Math.max(1, ...(metrics.funnel ?? []).map((item) => item.reached));
   return (
     <section aria-labelledby="legal-crm-funnel-title" className="min-w-0">
-      <h3 id="legal-crm-funnel-title" className="text-base font-semibold text-white">Conversão por etapa</h3>
+      <h3 id="legal-crm-funnel-title" className="text-[15px] font-semibold text-white sm:text-base">Conversão por etapa</h3>
       <p className="mt-1 text-xs leading-5 text-white/64">Negócios recebidos no período e o avanço real de cada etapa.</p>
       {metrics.availability.funnel !== "ready" || !metrics.funnel ? <Unavailable /> : metrics.funnel.length === 0 ? (
         <Unavailable>Nenhum negócio recebido no período.</Unavailable>
       ) : (
-        <ol className="mt-5 space-y-4">
+        <ol className="mt-4 space-y-3.5 sm:mt-5 sm:space-y-4">
           {metrics.funnel.map((item) => (
             <li key={item.stage} className="min-w-0">
               <div className="flex min-w-0 items-baseline justify-between gap-3 text-sm">
@@ -188,12 +190,12 @@ function Funnel({ metrics }: { metrics: LegalCrmMetrics }) {
 function Origins({ metrics }: { metrics: LegalCrmMetrics }) {
   return (
     <section aria-labelledby="legal-crm-origins-title" className="min-w-0">
-      <h3 id="legal-crm-origins-title" className="text-base font-semibold text-white">Origens que mais convertem</h3>
+      <h3 id="legal-crm-origins-title" className="text-[15px] font-semibold text-white sm:text-base">Origens que mais convertem</h3>
       <p className="mt-1 text-xs leading-5 text-white/64">Contatos, qualificados e contratos por canal.</p>
       {metrics.availability.origins !== "ready" || !metrics.origins ? <Unavailable /> : metrics.origins.length === 0 ? (
         <Unavailable>Nenhuma origem registrada no período.</Unavailable>
       ) : (
-        <ol className="mt-4 space-y-4">
+        <ol className="mt-4 space-y-3.5 sm:space-y-4">
           {metrics.origins.slice(0, 6).map((item) => (
             <li key={item.source} className="min-w-0">
               <div className="flex items-start justify-between gap-3">
@@ -221,12 +223,12 @@ function Losses({ metrics }: { metrics: LegalCrmMetrics }) {
   const maximum = Math.max(1, ...(metrics.losses ?? []).map((item) => item.count));
   return (
     <section aria-labelledby="legal-crm-losses-title" className="min-w-0">
-      <h3 id="legal-crm-losses-title" className="text-base font-semibold text-white">Principais motivos de perda</h3>
+      <h3 id="legal-crm-losses-title" className="text-[15px] font-semibold text-white sm:text-base">Principais motivos de perda</h3>
       <p className="mt-1 text-xs leading-5 text-white/64">Razões registradas ao marcar um atendimento como não contratado.</p>
       {metrics.availability.losses !== "ready" || !metrics.losses ? <Unavailable /> : metrics.losses.length === 0 ? (
         <Unavailable>Nenhuma perda registrada no período.</Unavailable>
       ) : (
-        <ol className="mt-5 space-y-3">
+        <ol className="mt-4 space-y-3 sm:mt-5">
           {metrics.losses.slice(0, 6).map((item) => (
             <li key={item.code} className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
               <div className="min-w-0">
@@ -247,10 +249,10 @@ function Losses({ metrics }: { metrics: LegalCrmMetrics }) {
 function Ltv({ metrics }: { metrics: LegalCrmMetrics }) {
   if (!metrics.ltv) return null;
   return (
-    <section aria-labelledby="legal-crm-ltv-title" className="min-w-0 rounded-[15px] bg-[#1b1b20] p-5">
-      <h3 id="legal-crm-ltv-title" className="text-base font-semibold text-white">Valor por cliente</h3>
+    <section aria-labelledby="legal-crm-ltv-title" className="min-w-0 rounded-[15px] bg-[#1b1b20] p-4 sm:p-5">
+      <h3 id="legal-crm-ltv-title" className="text-[15px] font-semibold text-white sm:text-base">Valor por cliente</h3>
       <p className="mt-1 text-xs leading-5 text-white/64">Médias de todo o relacionamento, sem depender do filtro mensal.</p>
-      <dl className="mt-5 grid gap-5 sm:grid-cols-2">
+      <dl className="mt-4 grid grid-cols-2 gap-4 sm:mt-5 sm:gap-5">
         <div>
           <dt className="text-xs font-semibold text-white/64">LTV recebido</dt>
           <dd className="mt-2 text-xl font-semibold tracking-[-0.025em] text-white">
@@ -283,23 +285,33 @@ export function LegalCrmPerformance({
   searchParams?: Record<string, SearchValue>;
 }) {
   return (
-    <section aria-labelledby="legal-crm-title" className="min-w-0 space-y-7 py-2">
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <section aria-labelledby="legal-crm-title" className="min-w-0 space-y-4 sm:space-y-7 sm:py-2">
+      {/* No telefone o bloco se apresenta como uma seção de app: um título de
+          17px e os períodos logo abaixo. A linha descritiva e o tamanho grande
+          do título são de leitura desktop e ficam a partir de sm. */}
+      <header className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold text-blue-300">CRM jurídico</p>
-          <h2 id="legal-crm-title" className="mt-2 text-[clamp(1.35rem,2.4vw,2rem)] font-semibold tracking-[-0.035em] text-white">
+          <h2
+            id="legal-crm-title"
+            className="text-[17px] font-semibold leading-tight tracking-[-0.02em] text-white sm:text-2xl sm:tracking-[-0.035em]"
+          >
             Desempenho comercial jurídico
           </h2>
-          <p className="mt-2 text-sm text-white/64">Atendimento, conversão e retorno financeiro.</p>
+          <p className="mt-2 hidden text-sm text-white/64 sm:block">Atendimento, conversão e retorno financeiro.</p>
         </div>
-        <nav aria-label="Período do desempenho comercial" className="flex max-w-full flex-wrap gap-1 rounded-[11px] bg-white/[0.035] p-1">
+        <nav
+          aria-label="Período do desempenho comercial"
+          className="-mx-1 flex max-w-full gap-1 overflow-x-auto rounded-[11px] px-1 sm:mx-0 sm:flex-wrap sm:bg-white/[0.035] sm:p-1"
+        >
           {PERIODS.map((item) => (
             <Link
               key={item.key}
               href={periodHref(item.key, searchParams)}
               aria-current={metrics.period.key === item.key ? "page" : undefined}
               className={"inline-flex min-h-11 shrink-0 items-center rounded-[9px] px-3 text-xs font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 " + (
-                metrics.period.key === item.key ? "bg-blue-600 text-white" : "text-white/68 hover:bg-white/[0.055] hover:text-white"
+                metrics.period.key === item.key
+                  ? "bg-blue-600 text-white"
+                  : "bg-white/[0.035] text-white/68 hover:bg-white/[0.055] hover:text-white sm:bg-transparent"
               )}
             >
               {item.label}
@@ -309,21 +321,21 @@ export function LegalCrmPerformance({
       </header>
 
       {metrics.coverage?.partial ? (
-        <p role="status" className="rounded-[11px] bg-blue-500/[0.08] px-4 py-3 text-sm leading-6 text-blue-100/72">
+        <p role="status" className="rounded-[11px] bg-blue-500/[0.08] px-3.5 py-2.5 text-[13px] leading-5 text-blue-100/72 sm:px-4 sm:py-3 sm:text-sm sm:leading-6">
           Histórico parcial: transições confiáveis disponíveis desde {shortDate(metrics.coverage.startedAt)}. Dados anteriores não foram estimados.
         </p>
       ) : metrics.availability.coverage === "unavailable" ? (
-        <p role="status" className="rounded-[11px] bg-white/[0.035] px-4 py-3 text-sm leading-6 text-white/68">
+        <p role="status" className="rounded-[11px] bg-white/[0.035] px-3.5 py-2.5 text-[13px] leading-5 text-white/68 sm:px-4 sm:py-3 sm:text-sm sm:leading-6">
           Cobertura histórica indisponível. O painel não estima transições antigas.
         </p>
       ) : null}
 
       <MetricBand metrics={metrics} canManageFinance={canManageFinance} />
-      <div className="grid min-w-0 gap-8 xl:grid-cols-[minmax(0,1.55fr)_minmax(18rem,.8fr)]">
+      <div className="grid min-w-0 gap-6 sm:gap-8 xl:grid-cols-[minmax(0,1.55fr)_minmax(18rem,.8fr)]">
         <Funnel metrics={metrics} />
         <Origins metrics={metrics} />
       </div>
-      <div className="grid min-w-0 gap-8 xl:grid-cols-[minmax(0,1.3fr)_minmax(20rem,1fr)]">
+      <div className="grid min-w-0 gap-6 sm:gap-8 xl:grid-cols-[minmax(0,1.3fr)_minmax(20rem,1fr)]">
         <Losses metrics={metrics} />
         {metrics.availability.ltvReceived !== "hidden" || metrics.availability.ltvContracted !== "hidden"
           ? <Ltv metrics={metrics} />

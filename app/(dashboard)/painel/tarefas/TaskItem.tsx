@@ -35,6 +35,9 @@ export default function TaskItem({
   isAdmin,
   canReviewAll = false,
   returnTo = "/painel/tarefas",
+  selectable = false,
+  selected = false,
+  onSelectedChange,
 }: {
   task: Task;
   overdue: boolean;
@@ -43,6 +46,9 @@ export default function TaskItem({
   isAdmin: boolean;
   canReviewAll?: boolean;
   returnTo?: string;
+  selectable?: boolean;
+  selected?: boolean;
+  onSelectedChange?: (selected: boolean) => void;
 }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -69,6 +75,15 @@ export default function TaskItem({
   return (
     <li className="flex flex-col gap-2 py-3">
       <div className="group flex items-center gap-3">
+        {selectable && (
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={(event) => onSelectedChange?.(event.target.checked)}
+            className="h-[18px] w-[18px] shrink-0 rounded border-line accent-brand-700"
+            aria-label={`Selecionar ${task.title}`}
+          />
+        )}
         <label className={"flex min-w-0 flex-1 items-center gap-3 rounded-lg px-1 py-1 "+(requiresReview?"cursor-default":"cursor-pointer")}>
           <input
             type="checkbox"

@@ -50,13 +50,16 @@ export function ProductShell({
         {trialBanner}
         {dataNotice ? (
           <div
-            className="mx-4 mt-4 rounded-[var(--radius-control)] border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-700 sm:mx-6 lg:mx-8"
+            className="mx-5 mt-4 rounded-[var(--radius-control)] border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-700 sm:mx-6 lg:mx-8"
             role="status"
           >
             {dataNotice}
           </div>
         ) : null}
-        <main className="w-full flex-1 px-4 pb-8 pt-5 sm:px-6 lg:px-8 lg:pt-7">
+        {/* Goteira do conteúdo: 20px no telefone (o título da página encosta
+            aqui), 24 no tablet e 32 no desktop. Quem sangra até a borda usa
+            -mx-5 no mobile para casar com este valor. */}
+        <main className="w-full flex-1 px-5 pb-8 pt-5 sm:px-6 lg:px-8 lg:pt-7">
           {children}
         </main>
       </div>

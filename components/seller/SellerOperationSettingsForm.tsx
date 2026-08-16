@@ -78,7 +78,7 @@ export function SellerOperationSettingsForm(props: Props) {
       </section>
 
       {state.error ? <div role="alert" className="flex items-start gap-3 rounded-[var(--radius-panel)] border border-[#fb7767]/30 bg-[#fb7767]/[0.06] p-4 text-sm text-[#fca79b]"><AlertTriangle size={18} className="mt-0.5 shrink-0" /><div><strong className="font-semibold">A configuração não foi salva.</strong><p className="mt-1 text-[#fca79b]/80">{state.error}</p></div></div> : null}
-      {props.canEdit ? <div className="sticky bottom-[calc(64px+env(safe-area-inset-bottom))] z-[var(--z-sticky)] flex justify-end border-t border-od-border bg-od-bg py-3 md:bottom-0"><PendingButton className="btn" pendingLabel="Salvando configuração"><SlidersHorizontal size={15} /> Salvar configuração</PendingButton></div> : <p className="rounded-[var(--radius-inner)] border border-amber-300/20 bg-amber-300/[0.04] p-4 text-sm text-amber-200">Você pode consultar esta configuração, mas somente a administração pode alterá-la.</p>}
+      {props.canEdit ? <div className="sticky bottom-[calc(80px+env(safe-area-inset-bottom))] z-[var(--z-sticky)] flex justify-end border-t border-od-border bg-od-bg py-3 md:bottom-0"><PendingButton className="btn" pendingLabel="Salvando configuração"><SlidersHorizontal size={15} /> Salvar configuração</PendingButton></div> : <p className="rounded-[var(--radius-inner)] border border-amber-300/20 bg-amber-300/[0.04] p-4 text-sm text-amber-200">Você pode consultar esta configuração, mas somente a administração pode alterá-la.</p>}
     </form>
   );
 }

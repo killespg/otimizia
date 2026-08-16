@@ -331,7 +331,7 @@ export default function Board({
       <div
         ref={boardRef}
         aria-busy={boardBusy}
-        className={flat ? "pipeline-board -mx-4 flex snap-x snap-mandatory gap-0 overflow-x-auto border-y border-white/[0.08] px-4 sm:mx-0 sm:px-0" : "pipeline-board -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:gap-4 sm:px-0"}
+        className={flat ? "pipeline-board -mx-5 flex snap-x snap-mandatory gap-0 overflow-x-auto border-y border-white/[0.08] px-5 sm:mx-0 sm:px-0" : "pipeline-board -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 sm:mx-0 sm:gap-4 sm:px-0"}
       >
         {columns.map((column) => {
           const meta = trelloMeta(column);

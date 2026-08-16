@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { Archive, ChevronRight, Layers3, PackagePlus, Plus, Search, SlidersHorizontal, TriangleAlert } from "lucide-react";
 import { PendingButton } from "@/components/ui/PendingButton";
-import { ProductThumb, SellerEmptyState, SellerPageHeader, SellerStatus, SellerSummaryStrip, money } from "@/components/seller/seller-ui";
+import { ProductCatalogList, type ProductCatalogRow } from "@/components/seller/ProductCatalogList";
+import { SellerEmptyState, SellerPageHeader, SellerStatus, SellerSummaryStrip, money } from "@/components/seller/seller-ui";
 import { SELLER_SALES_MODELS } from "@/lib/seller/seller-operations";
 import { getSellerPageContext, sellerProductImageUrl } from "@/lib/seller/seller-server";
 import type { SellerCollection, SellerModule, SellerProduct, SellerProductMedia, SellerProductVariant } from "@/lib/supabase/types";
@@ -43,6 +44,26 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
   const activeCollections = collections.filter((collection) => collection.status === "active");
   const productColumns = ["minmax(12rem,1.5fr)", ...(usesCollections ? ["minmax(6.5rem,.7fr)"] : []), ...(usesVariants ? ["5rem"] : []), "6.5rem", ...(usesInventory ? ["5.5rem"] : []), "4rem"].join(" ");
   const productGridStyle = { "--seller-product-columns": productColumns } as CSSProperties;
+  const catalogRows: ProductCatalogRow[] = filtered.map((product) => {
+    const stock = availableStock(product);
+    const threshold = product.low_stock_threshold ?? profile.low_stock_threshold;
+    return {
+      id: product.id,
+      name: product.name,
+      sku: product.sku ?? "",
+      imageUrl: sellerProductImageUrl(product.seller_product_media.sort((a, b) => a.position - b.position)[0]?.storage_path),
+      collectionName: (product.collection_id ? collectionMap.get(product.collection_id)?.name : null) ?? "Sem coleção",
+      variantCount: product.seller_product_variants.length,
+      priceLabel: money(product.base_price_cents),
+      stockLabel: product.track_stock ? `${stock} un.` : "Livre",
+      lowStock: product.track_stock && stock <= threshold,
+      variantSummaries: product.seller_product_variants.slice(0, 6).map((variant) => ({
+        id: variant.id,
+        name: variant.name,
+        available: variant.stock_quantity - variant.reserved_quantity,
+      })),
+    };
+  });
   const summaryItems = [
     { label: "Produtos ativos", value: active.length },
     ...(usesCollections ? [{ label: "Coleções ativas", value: activeCollections.length }] : []),
@@ -98,39 +119,13 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
       ) : (
         <div className="grid min-w-0 gap-4 2xl:grid-cols-[minmax(0,1fr)_280px]">
           <section className="min-w-0 overflow-hidden rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90">
-            <div className="seller-product-grid hidden gap-3 border-b border-white/[0.08] px-4 py-2 text-xs font-semibold text-od-text-3 xl:grid" style={productGridStyle}>
-              <span>Produto</span>{usesCollections ? <span>Coleção</span> : null}{usesVariants ? <span>Variações</span> : null}<span>Preço</span>{usesInventory ? <span>Estoque</span> : null}<span className="text-right">Ações</span>
-            </div>
-            {filtered.length === 0 ? <SellerEmptyState title="Nenhum produto encontrado" description="Revise a busca ou remova o filtro de coleção." /> : (
-              <div className="divide-y divide-white/[0.08]">
-                {filtered.map((product) => {
-                  const collection = product.collection_id ? collectionMap.get(product.collection_id) : null;
-                  const image = sellerProductImageUrl(product.seller_product_media.sort((a, b) => a.position - b.position)[0]?.storage_path);
-                  const stock = availableStock(product);
-                  const threshold = product.low_stock_threshold ?? profile.low_stock_threshold;
-                  return (
-                    <article key={product.id} className="group px-4 py-3 hover:bg-white/[0.025]">
-                      <div className="seller-product-grid grid gap-3 xl:items-center" style={productGridStyle}>
-                        <Link href={`/painel/produtos/${product.id}`} className="flex min-w-0 items-center gap-3">
-                          <ProductThumb src={image} name={product.name} />
-                          <span className="min-w-0"><strong className="block truncate text-sm font-semibold text-white/88">{product.name}</strong><span className="mt-1 block truncate text-xs text-od-text-3">SKU: {product.sku || "não informado"}</span></span>
-                        </Link>
-                        {usesCollections ? <span className="text-xs text-white/54"><span className="mb-1 block text-xs font-medium text-od-text-3 xl:hidden">Coleção</span>{collection?.name ?? "Sem coleção"}</span> : null}
-                        {usesVariants ? <span className="text-xs text-white/54"><span className="mb-1 block text-xs font-medium text-od-text-3 xl:hidden">Variações</span>{product.seller_product_variants.length || "—"}</span> : null}
-                        <span className="text-sm font-medium tabular-nums text-white/78"><span className="mb-1 block text-xs font-medium text-od-text-3 xl:hidden">Preço</span>{money(product.base_price_cents)}</span>
-                        {usesInventory ? <span className={`text-sm font-semibold tabular-nums ${product.track_stock && stock <= threshold ? "text-amber-300" : "text-white/70"}`}><span className="mb-1 block text-xs font-medium text-od-text-3 xl:hidden">Estoque</span>{product.track_stock ? `${stock} un.` : "Livre"}</span> : null}
-                        <Link href={`/painel/produtos/${product.id}`} className="flex min-h-11 items-center justify-end text-xs font-semibold text-od-text-2">Detalhes <ChevronRight size={14} /></Link>
-                      </div>
-                      {usesVariants && product.seller_product_variants.length > 0 ? (
-                        <div className="mt-3 hidden border-t border-white/[0.06] pt-2 xl:block">
-                          <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-od-text-3">{product.seller_product_variants.slice(0, 6).map((variant) => <span key={variant.id}>{variant.name}: <strong className="font-semibold text-white/58">{variant.stock_quantity - variant.reserved_quantity} un.</strong></span>)}</div>
-                        </div>
-                      ) : null}
-                    </article>
-                  );
-                })}
-              </div>
-            )}
+            <ProductCatalogList
+              rows={catalogRows}
+              columnsStyle={productGridStyle}
+              usesCollections={usesCollections}
+              usesVariants={usesVariants}
+              usesInventory={usesInventory}
+            />
           </section>
 
           <aside className="space-y-3">

@@ -40,7 +40,7 @@ export function AgentPanel({ userName }: { userName?: string }) {
   }
 
   return (
-    <section id="agente" className="enter flex h-[min(560px,70vh)] flex-col overflow-hidden rounded-lg border border-white/[0.09] bg-[#1e1d22]">
+    <section id="agente" className="enter flex h-[min(560px,70vh)] flex-col overflow-hidden rounded-[var(--radius-panel)] border border-od-border bg-od-surface">
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.08] px-4 py-3">
         <div className="flex min-w-0 items-center gap-2.5">
           <TimAvatar size={30} online />

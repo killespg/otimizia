@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PendingButton } from "@/components/ui/PendingButton";
 import { ActionDrawer } from "@/components/design-system/action-drawer";
+import { LegalCaseList, type LegalCaseRow } from "@/components/legal/legal-case-list";
 import { canManageLegal, canViewLegal, LEGAL_CASE_STATUS } from "@/lib/law/law-office";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
@@ -71,6 +72,17 @@ export default async function LawPage(props: { searchParams?: Promise<{ busca?: 
   const visibleCases = query
     ? allCases.filter((item) => [item.title, item.case_number, item.area, item.court].some((value) => value?.toLocaleLowerCase("pt-BR").includes(query)))
     : allCases;
+  const caseRows: LegalCaseRow[] = visibleCases.map((item) => ({
+    id: item.id,
+    title: item.title,
+    subtitle: `${item.area ?? "Área não informada"}${item.case_number ? ` · ${item.case_number}` : ""}`,
+    statusLabel: LEGAL_CASE_STATUS[item.status],
+    responsibleLabel: item.responsible_id ? memberName.get(item.responsible_id) ?? "Sem responsável" : "Sem responsável",
+    deadlineLabel: item.next_deadline_at
+      ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(item.next_deadline_at))
+      : "Sem prazo",
+    deadlineNear: Boolean(item.next_deadline_at && new Date(item.next_deadline_at) < deadlineThreshold),
+  }));
 
   return (
     <div className="ui-page">
@@ -118,42 +130,7 @@ export default async function LawPage(props: { searchParams?: Promise<{ busca?: 
         {visibleCases.length === 0 ? (
           <EmptyCases />
         ) : (
-          <div>
-            <div className="hidden grid-cols-[minmax(0,1.5fr)_8rem_9rem_10rem] gap-4 border-b border-white/[0.07] px-5 py-2 text-od-label text-od-text-3 sm:grid"><span>Caso</span><span>Situação</span><span>Responsável</span><span>Próximo prazo</span></div>
-            {visibleCases.map((item) => (
-              <Link
-                key={item.id}
-                href={`/painel/juridico/processos/${item.id}`}
-                className="grid gap-3 border-b border-white/[0.06] px-5 py-4 hover:bg-white/[0.025] sm:grid-cols-[minmax(0,1.5fr)_8rem_9rem_10rem] sm:items-center sm:gap-4"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-[13px] font-semibold text-white">{item.title}</p>
-                  <p className="mt-1 truncate text-xs text-od-text-3">
-                    {item.area ?? "Área não informada"}
-                    {item.case_number ? ` · ${item.case_number}` : ""}
-                  </p>
-                </div>
-                <Status status={item.status} />
-                <span className="text-xs text-white/58">
-                  {item.responsible_id ? memberName.get(item.responsible_id) : "Sem responsável"}
-                </span>
-                <span
-                  className={
-                    "text-xs font-semibold " +
-                    (item.next_deadline_at && new Date(item.next_deadline_at) < deadlineThreshold
-                      ? "text-[#fb7767]"
-                      : "text-white/52")
-                  }
-                >
-                  {item.next_deadline_at
-                    ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(
-                        new Date(item.next_deadline_at)
-                      )
-                    : "Sem prazo"}
-                </span>
-              </Link>
-            ))}
-          </div>
+          <LegalCaseList rows={caseRows} canManage={canManageLegal(jobRole, isAdmin)} />
         )}
       </section>
     </div>
@@ -234,10 +211,6 @@ function Metric({
       <div><p className="text-xs font-medium text-od-text-3">{label}</p><p className="mt-1 text-2xl font-bold tracking-[-.02em] text-white">{value}</p></div>
     </article>
   );
-}
-
-function Status({ status }: { status: LegalCase["status"] }) {
-  return <span className="w-fit rounded-[var(--radius-round)] bg-white/[0.06] px-2 py-1 text-xs font-semibold text-od-text">{LEGAL_CASE_STATUS[status]}</span>;
 }
 
 function Field({

@@ -94,7 +94,7 @@ export function AssistantPageClient({
     <div
       ref={shellRef}
       style={{ height: height ?? undefined }}
-      className="assistant-page-shell -mx-4 -mt-4 -mb-6 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden bg-[#1e1d22] md:-mx-8 md:-mt-8 md:-mb-8"
+      className="assistant-page-shell -mx-5 -mt-4 -mb-6 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden bg-od-surface md:-mx-8 md:-mt-8 md:-mb-8"
     >
       <h1 className="sr-only">Tim, seu assistente de negócios</h1>
       <TimHeader status={status} onPersonalize={() => setPersonalizeOpen(true)} />
@@ -116,7 +116,7 @@ export function AssistantPageClient({
 
           <VoicePanel {...voice} />
 
-          <div className="shrink-0 bg-white/[0.03] px-3 pb-[calc(0.625rem+env(safe-area-inset-bottom))] pt-2.5 sm:px-4">
+          <div className="shrink-0 border-t border-od-border bg-white/[0.03] px-3 pb-[calc(0.625rem+env(safe-area-inset-bottom))] pt-2.5 sm:px-4">
             <TimComposer
               value={input}
               onChange={setInput}

@@ -153,14 +153,14 @@ export function SellerDashboard({
     >
       <header className="flex flex-col gap-5 pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="flex items-center gap-2 text-xs font-semibold capitalize text-od-text-3">
+          <p className="flex items-center gap-2 text-xs font-medium capitalize text-od-text-3">
             <CalendarDays size={14} />
             <time dateTime={now.toISOString()}>{dateLabel}</time>
           </p>
-          <h1 className="mt-3 text-od-title text-white">
+          <h1 className="mt-1 text-[20px] font-semibold leading-tight tracking-[-0.02em] text-white sm:mt-3 sm:text-od-title">
             Bom dia, <span className="text-od-text">{displayName}.</span>
           </h1>
-          <p className="mt-2 text-sm leading-relaxed text-white/56">
+          <p className="mt-1.5 text-[13px] leading-5 text-white/56 sm:mt-2 sm:text-sm sm:leading-relaxed">
             {actionableCount > 0 ? (
               <>Você tem <strong className="font-semibold text-[#fca79b]">{actionableCount} {actionableCount === 1 ? "prioridade" : "prioridades"}</strong> para resolver e <strong className="font-semibold text-od-text">{openDeals.length} {openDeals.length === 1 ? "venda em andamento" : "vendas em andamento"}</strong>.</>
             ) : (
@@ -168,7 +168,7 @@ export function SellerDashboard({
             )}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           <Link href="/painel/tarefas#new-task" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-white/[0.1] px-4 text-[13px] font-semibold text-white/68 hover:bg-white/[0.04] hover:text-white">
             <BellRing size={15} /> Novo lembrete
           </Link>

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { ChatMessage } from "@/lib/ai/types";
+import { TimAvatar } from "./TimAvatar";
 import { TimMessageBubble } from "./TimMessageBubble";
 
 const DEFAULT_SUGGESTIONS = [
@@ -62,19 +63,33 @@ export function TimConversation({
       className={`chat-wallpaper min-h-0 flex-1 overflow-y-auto overscroll-contain ${className ?? ""}`}
     >
       {messages.length === 0 ? (
+        // Sala vazia com dono: a marca do Tim abre a conversa e as sugestões
+        // ficam logo acima do campo, na ordem em que o polegar sobe. Continua
+        // ancorado embaixo para servir também ao balão flutuante e ao painel.
         <div className="flex h-full max-w-[560px] flex-col justify-end gap-4 px-1 pb-2">
-          <p className="text-[15px] font-medium leading-snug text-white/85">
-            {firstName ? `Fala, ${firstName}. O que a gente resolve agora?` : "Fala! O que a gente resolve agora?"}
-          </p>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-3">
+            <TimAvatar size={38} online className="ring-2 ring-od-accent-tint" />
+            <div className="min-w-0">
+              <p className="text-[15px] font-semibold leading-tight text-white">
+                {firstName ? `Fala, ${firstName}.` : "Fala!"}
+              </p>
+              <p className="mt-0.5 text-[13px] leading-tight text-od-text-3">
+                O que a gente resolve agora?
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-1.5">
             {suggestions.map((suggestion) => (
               <button
                 key={suggestion}
                 type="button"
                 onClick={() => onSuggestion(suggestion)}
-                className="min-h-11 rounded border border-white/[0.09] bg-white/[0.02] px-3 py-2.5 text-left text-[13px] font-medium text-white/68 hover:bg-white/[0.045] hover:text-white"
+                className="group flex min-h-11 items-center justify-between gap-3 rounded-[var(--radius-control)] border border-white/[0.09] bg-white/[0.02] px-3 py-2.5 text-left text-[13px] font-medium text-white/68 transition-colors hover:border-od-accent/40 hover:bg-white/[0.045] hover:text-white"
               >
-                {suggestion}
+                <span className="min-w-0">{suggestion}</span>
+                <span aria-hidden="true" className="shrink-0 text-od-text-3 transition-colors group-hover:text-od-accent-soft">
+                  ↗
+                </span>
               </button>
             ))}
           </div>
@@ -103,7 +118,7 @@ export function TimConversation({
             <div key={index}>
               {showDaySeparator && dayLabel(message.createdAt) ? (
                 <div className="flex justify-center py-3">
-                  <span className="rounded-md bg-black/35 px-3 py-1 text-xs font-medium uppercase tracking-wide text-white/55">
+                  <span className="rounded-[var(--radius-round)] bg-black/35 px-3 py-1 text-xs font-medium uppercase tracking-wide text-white/55">
                     {dayLabel(message.createdAt)}
                   </span>
                 </div>
@@ -124,7 +139,7 @@ export function TimConversation({
         <div className="flex justify-start">
           <div
             className="flex items-center gap-2 px-3 py-2 shadow-[0_1px_1px_rgba(0,0,0,0.35)]"
-            style={{ backgroundColor: "#26232e", borderRadius: "2px 8px 8px 8px" }}
+            style={{ backgroundColor: "var(--surface-secondary)", borderRadius: "4px var(--radius-control) var(--radius-control) var(--radius-control)" }}
           >
             <span className="flex gap-1">
               {[0, 0.18, 0.36].map((delay) => (

@@ -9,11 +9,16 @@ function formatTime(iso?: string) {
   return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
-// Bolha no mesmo padrão da tela de WhatsApp: usuário à direita (roxo), Tim à
-// esquerda (grafite), rabinho triangular na primeira bolha de cada sequência e
-// a hora ancorada no canto inferior direito, dentro da bolha. O texto reserva
-// espaço pra hora na última linha — sem isso, mensagens curtas quebrariam em
-// várias linhas.
+// Bolha na estrutura de conversa conhecida: usuário à direita, Tim à esquerda,
+// rabinho triangular na primeira bolha de cada sequência e a hora ancorada no
+// canto inferior direito, dentro da bolha. O texto reserva espaço pra hora na
+// última linha — sem isso, mensagens curtas quebrariam em várias linhas.
+//
+// As cores saem dos tokens do produto: a fala do usuário usa a cor de ação
+// (a mesma dos botões primários) e a do Tim a superfície secundária. O roxo
+// que morava aqui não existia em nenhum outro lugar do OtimizIA.
+const BUBBLE_RADIUS = "var(--radius-control)";
+const TAIL_RADIUS = "4px";
 export function TimMessageBubble({
   message,
   isFirstInGroup = true,
@@ -26,7 +31,7 @@ export function TimMessageBubble({
 }) {
   const time = formatTime(message.createdAt);
   const isUser = message.role === "user";
-  const bg = isUser ? "#5b2ec9" : "#26232e";
+  const bg = isUser ? "var(--od-accent)" : "var(--surface-secondary)";
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
@@ -36,7 +41,11 @@ export function TimMessageBubble({
         }`}
         style={{
           backgroundColor: bg,
-          borderRadius: isFirstInGroup ? (isUser ? "8px 2px 8px 8px" : "2px 8px 8px 8px") : "8px",
+          borderRadius: isFirstInGroup
+            ? isUser
+              ? `${BUBBLE_RADIUS} ${TAIL_RADIUS} ${BUBBLE_RADIUS} ${BUBBLE_RADIUS}`
+              : `${TAIL_RADIUS} ${BUBBLE_RADIUS} ${BUBBLE_RADIUS} ${BUBBLE_RADIUS}`
+            : BUBBLE_RADIUS,
         }}
       >
         {isFirstInGroup ? (
@@ -52,7 +61,7 @@ export function TimMessageBubble({
         ) : null}
 
         {message.imageUrl && (
-          <span className="relative mb-1 block h-44 w-full overflow-hidden rounded">
+          <span className="relative mb-1 block h-44 w-full overflow-hidden rounded-[var(--radius-control)]">
             <Image
               src={message.imageUrl}
               alt=""

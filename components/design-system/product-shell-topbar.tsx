@@ -228,7 +228,7 @@ export function ProductShellTopbar({
   }
 
   return (
-    <header className="product-topbar sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-od-border bg-[var(--surface-base)] px-4 md:px-6">
+    <header className="product-topbar sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-od-border bg-[var(--surface-base)] px-5 md:px-6">
       <div className="flex min-w-0 items-center md:hidden">
         <LogoWordmark height={22} />
       </div>

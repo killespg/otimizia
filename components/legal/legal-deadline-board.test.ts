@@ -1,7 +1,19 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { LegalCase } from "@/lib/supabase/types";
+
+// A fila da agenda virou client component (seleção em lote), então o render
+// estático precisa do router e das server actions esbarradas por mock.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
+
+vi.mock("@/app/(dashboard)/painel/juridico/actions", () => ({
+  bulkClearCaseDeadlines: vi.fn(),
+  bulkDeleteLegalCases: vi.fn(),
+}));
+
 import { LegalDeadlineBoard } from "./legal-deadline-board";
 
 const overdueCase: LegalCase = {

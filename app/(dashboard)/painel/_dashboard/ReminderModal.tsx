@@ -36,7 +36,7 @@ export function ReminderModal({ contacts, defaultDueAt }: ReminderModalProps) {
   return (
     <form
       action={createTask}
-      className="reminder-modal fixed inset-x-3 bottom-[calc(6.6rem+env(safe-area-inset-bottom))] z-50 max-h-[min(560px,calc(100dvh-8rem))] overflow-y-auto rounded-[var(--radius-panel)] border border-line bg-od-surface p-5 lg:absolute lg:inset-x-auto lg:bottom-auto lg:top-6 lg:right-6 lg:z-10 lg:max-h-none lg:w-[360px] lg:overflow-visible"
+      className="reminder-modal fixed inset-x-3 bottom-[calc(7.2rem+env(safe-area-inset-bottom))] z-50 max-h-[min(560px,calc(100dvh-8rem))] overflow-y-auto rounded-[var(--radius-panel)] border border-line bg-od-surface p-5 lg:absolute lg:inset-x-auto lg:bottom-auto lg:top-6 lg:right-6 lg:z-10 lg:max-h-none lg:w-[360px] lg:overflow-visible"
     >
       <input type="hidden" name="return_to" value="/painel" />
       <div className="flex items-center justify-between gap-3">
