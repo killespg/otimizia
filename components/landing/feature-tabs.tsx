@@ -280,16 +280,14 @@ export function FeatureTabs() {
       {/* Grupos empilhados em faixa: o rótulo à esquerda nomeia a faixa e os
           itens ocupam a largura em duas colunas. Antes eram quatro blocos de
           alturas diferentes num grid de dois, com a base toda irregular. */}
-      {/* As linhas entre grupos só valem no desktop, onde reforçam a fileira
-          rótulo+conteúdo lado a lado. Empilhado no mobile, o rótulo em
-          maiúsculas de cada grupo já separa visualmente — repetir a régua a
-          cada bloco ficava cansativo, sempre a mesma linha se repetindo. */}
-      <div className="mt-10 md:divide-y md:divide-od-border md:border-y md:border-od-border">
+      {/* Sem régua entre grupos: o rótulo à esquerda nomeia a faixa e a
+          zebra (lp-rows) marca o corte — o mesmo elemento do About. */}
+      <div className="lp-rows mt-10">
         {/* O Tim é a peça central do produto, então não pode dividir peso com
             "Honorários" numa lista de dez. Ganha faixa própria no topo, com
             ícone maior, texto de corpo e ordens reais. Continua sendo faixa,
             não card: o destaque vem de escala e do acento, não de moldura. */}
-        <div className="grid gap-x-8 gap-y-4 py-10 md:grid-cols-[160px_minmax(0,1fr)]">
+        <div className="grid gap-x-8 gap-y-4 px-4 py-8 md:grid-cols-[160px_minmax(0,1fr)] md:px-5">
           <p className="text-od-label text-od-accent-hover">Sócio-assistente</p>
           <div className="min-w-0">
             <div className="flex items-start gap-4">
@@ -309,7 +307,7 @@ export function FeatureTabs() {
               {vertical.tim.examples.map((example) => (
                 <li
                   key={example}
-                  className="rounded border border-od-border bg-od-muted-surface px-3 py-2 text-[13px] leading-relaxed text-od-text-2"
+                  className="rounded bg-od-muted-surface px-3 py-2 text-[13px] leading-relaxed text-od-text-2"
                 >
                   “{example}”
                 </li>
@@ -319,7 +317,7 @@ export function FeatureTabs() {
         </div>
 
         {vertical.groups.map((group) => (
-          <div key={group.label} className="grid gap-x-8 py-5 md:grid-cols-[160px_minmax(0,1fr)]">
+          <div key={group.label} className="grid gap-x-8 px-4 py-7 md:grid-cols-[160px_minmax(0,1fr)] md:px-5">
             <p className="pt-3.5 text-od-label text-od-text-3">{group.label}</p>
             <div className="grid gap-x-8 sm:grid-cols-2 2xl:grid-cols-3">
               {group.features.map((feature, index) => (
@@ -329,7 +327,7 @@ export function FeatureTabs() {
           </div>
         ))}
 
-        <div className="grid gap-x-8 py-5 md:grid-cols-[160px_minmax(0,1fr)]">
+        <div className="grid gap-x-8 px-4 py-7 md:grid-cols-[160px_minmax(0,1fr)] md:px-5">
           <div className="pt-3.5">
             <p className="text-od-label text-od-text-3">Em todas</p>
             <p className="mt-1.5 text-[12px] leading-relaxed text-od-text-3">

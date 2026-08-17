@@ -10,7 +10,7 @@ import { Sparkles } from "lucide-react";
 export function SpotlightCard() {
   return (
     <div
-      className="relative flex flex-col items-start gap-10 border-b border-od-border pb-10 md:flex-row md:items-center"
+      className="relative flex flex-col items-start gap-10 pb-4 md:flex-row md:items-center"
     >
       <div className="relative z-[1] flex-1">
         <h3 className="mb-3 text-[28px] font-extrabold tracking-[-0.01em] text-white">
@@ -22,11 +22,7 @@ export function SpotlightCard() {
             que só sugere é commodity. A descrição da seção (em app/page.tsx)
             já explica o que ele faz; aqui só a lista de ordens reais. */}
       </div>
-      {/* divide-y/border-y só valem a partir de md:, onde a lista fica
-          compacta ao lado do texto. Empilhada no mobile (flex-col), cinco
-          linhas pra separar quatro itens era ruído — o ícone de brilho já
-          marca cada exemplo. */}
-      <ul className="relative z-[1] w-full flex-1 md:divide-y md:divide-od-border md:border-y md:border-od-border">
+      <ul className="relative z-[1] w-full flex-1">
         {[
           "Quem eu preciso chamar hoje?",
           "Cadastra a Carla e abre uma negociação",

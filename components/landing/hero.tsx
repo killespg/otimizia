@@ -3,7 +3,7 @@ import { PhoneMockup } from "./phone-mockup";
 
 export function Hero() {
   return (
-    <section className="border-b border-od-border bg-od-bg pb-16 pt-20 md:pb-20 md:pt-28">
+    <section className="bg-od-bg pb-16 pt-20 md:pb-20 md:pt-28">
       <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Copy */}

@@ -17,6 +17,7 @@ import { ContainerScroll } from "@/components/landing/container-scroll-animation
 import { About } from "@/components/landing/about";
 import { LogoWordmark } from "@/components/design-system/logo";
 import { MobileStickyCta } from "@/components/landing/mobile-sticky-cta";
+import { LandingMark } from "@/components/landing/mark";
 
 /**
  * Faixa de seção de largura total.
@@ -81,6 +82,7 @@ export default async function LandingPage() {
         <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 pt-10 sm:px-8">
           <Hero />
           <div className="-mt-4 pb-20 pt-14">
+            <LandingMark className="mx-auto mb-10" />
             <p className="mb-7 text-center text-od-label text-od-text-3">
               Serve para quem trabalha sozinho e para equipe inteira
             </p>
@@ -130,8 +132,9 @@ export default async function LandingPage() {
           description="Ele não devolve conselho: cria o contato, abre a negociação e agenda o compromisso, por voz ou por escrito."
           raised
         >
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col items-center gap-8">
             <SpotlightCard />
+            <LandingMark />
             <AiComposer />
           </div>
         </Section>

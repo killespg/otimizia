@@ -19,7 +19,7 @@ export function PhoneMockup() {
   return (
     <div className="w-full max-w-[440px] overflow-hidden rounded-lg border border-od-border bg-od-surface p-2 text-left shadow-od-card">
       <div className="rounded bg-od-muted-surface">
-        <div className="flex items-center gap-2 border-b border-od-border px-4 py-3">
+        <div className="flex items-center gap-2 px-4 py-3">
           <Sparkles className="size-3.5 shrink-0 text-od-accent-hover" strokeWidth={2} />
           <p className="text-[13px] font-semibold text-white">Tim</p>
         </div>
