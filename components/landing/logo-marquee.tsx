@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils/utils";
 import { Panel } from "./panel";
 
-const logos = ["Corretores de imóveis", "Escritórios de advocacia", "Consultores", "Prestadores de serviço", "Pequenos comércios"];
+const logos = ["Corretor de imóveis", "Escritório de advocacia", "Vendedor autônomo"];
 
 /**
  * Faixa de público-alvo. Lista as profissões que o produto atende, não logos

@@ -27,7 +27,7 @@ export function Pricing() {
         <p className="text-od-label text-od-text-3">Para começar</p>
         <p className="mt-3 text-od-title text-od-text">Teste grátis</p>
         <p className="mt-2 text-[14px] leading-relaxed text-od-text-2">
-          Sem cartão de crédito. Você cria a conta e já entra no painel da sua profissão,
+          30 dias grátis, sem cartão de crédito. Você cria a conta e já entra no painel da sua profissão,
           com tudo funcionando.
         </p>
         <Link
@@ -47,6 +47,9 @@ export function Pricing() {
         </p>
         <p className="mt-2 text-[14px] leading-relaxed text-od-text-2">
           Mais R$ 10 por pessoa extra na equipe. Cancele quando quiser, sem multa.
+        </p>
+        <p className="mt-1 text-[12px] text-od-text-3">
+          Menos que um café por dia.
         </p>
         <ul className="mt-5 space-y-2.5">
           {INCLUSO.map((item) => (

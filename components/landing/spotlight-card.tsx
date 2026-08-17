@@ -19,11 +19,8 @@ export function SpotlightCard() {
         {/* Ele não só responde: as tools em lib/ai/tools escrevem no banco
             (create_contact, create_deal, move_deal, schedule_property_visit).
             Por isso os exemplos abaixo misturam pergunta e ordem — assistente
-            que só sugere é commodity. */}
-        <p className="max-w-[420px] text-sm leading-relaxed text-od-text-2">
-          Fale por voz ou escreva. Ele executa no painel: cria contato,
-          move negociação e agenda compromisso.
-        </p>
+            que só sugere é commodity. A descrição da seção (em app/page.tsx)
+            já explica o que ele faz; aqui só a lista de ordens reais. */}
       </div>
       {/* divide-y/border-y só valem a partir de md:, onde a lista fica
           compacta ao lado do texto. Empilhada no mobile (flex-col), cinco

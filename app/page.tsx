@@ -199,6 +199,29 @@ export default async function LandingPage() {
               Começar grátis
               <ArrowRight className="size-4" strokeWidth={2} />
             </Link>
+
+            {/* Faixa de fatos verificáveis — não depoimento. Cada item é algo
+                que o produto de fato faz (30 dias sem cartão, IA no WhatsApp,
+                exportação própria, sem multa), não alegação de cliente. Quando
+                houver um depoimento real, trocar por ele (slot abaixo). */}
+            <ul className="mx-auto mt-12 flex max-w-[680px] flex-wrap items-center justify-center gap-x-8 gap-y-3 text-[12px] text-od-text-3">
+              <li>30 dias grátis, sem cartão</li>
+              <li aria-hidden className="text-od-border">·</li>
+              <li>IA atendendo no WhatsApp</li>
+              <li aria-hidden className="text-od-border">·</li>
+              <li>Exporta seus dados quando quiser</li>
+              <li aria-hidden className="text-od-border">·</li>
+              <li>Cancele sem multa</li>
+            </ul>
+
+            {/* SLOT de depoimento real — preencher quando houver um cliente
+                disposto a assinar. Não publicar frase inventada: seria o mesmo
+                vício de "prova social falsa" que tiramos da faixa de logos.
+                Exemplo de estrutura:
+                <figure className="mx-auto mt-14 max-w-[560px]">
+                  <blockquote className="text-[18px] ...">"frase real"</blockquote>
+                  <figcaption>Nome · profissão · cidade</figcaption>
+                </figure> */}
           </div>
         </section>
 

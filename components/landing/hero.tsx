@@ -1,11 +1,12 @@
 import { ArrowRight, Check } from "lucide-react";
+import { PhoneMockup } from "./phone-mockup";
 
 export function Hero() {
   return (
     <section className="border-b border-od-border bg-od-bg pb-16 pt-20 text-center md:pb-20 md:pt-28">
       <div className="mx-auto max-w-[880px]">
         <p className="mb-6 text-od-label text-od-accent-soft">
-          CRM com WhatsApp e IA, sozinho ou com equipe
+          CRM do solo ao time, com WhatsApp e IA
         </p>
         <h1 className="text-balance text-[36px] font-extrabold leading-[1.08] tracking-[-0.035em] text-od-text sm:text-[48px] md:text-[64px]">
           A IA atende seu WhatsApp. <span className="text-od-accent-soft">Você entra quando importa.</span>
@@ -33,6 +34,7 @@ export function Hero() {
             </li>
           ))}
         </ul>
+        <PhoneMockup />
       </div>
     </section>
   );
