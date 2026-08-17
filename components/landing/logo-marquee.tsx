@@ -5,7 +5,10 @@ import { Panel } from "./panel";
 const logos = ["Corretores de imóveis", "Escritórios de advocacia", "Consultores", "Prestadores de serviço", "Pequenos comércios"];
 
 /**
- * Static proof strip. It wraps cleanly without motion or decorative fades.
+ * Faixa de público-alvo. Lista as profissões que o produto atende, não logos
+ * de clientes (ainda não há). Honesto em vez de simular prova social: o
+ * rótulo acima, na landing, já diz "Serve para quem trabalha sozinho e para
+ * equipe inteira", e estes são os grupos concretos.
  */
 export function LogoMarquee({ bare = false }: { bare?: boolean; fadeColor?: string }) {
   const content = (

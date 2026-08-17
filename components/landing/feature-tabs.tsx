@@ -84,7 +84,7 @@ const VERTICALS: Vertical[] = [
     mobileTab: "Vendas",
     headline: "Do primeiro contato ao pós-venda, sem planilha paralela.",
     tim: {
-      line: "Fale por voz ou escreva. Ele não devolve conselho: cria o contato, abre a negociação e move no funil enquanto você está na rua.",
+      line: "Ele não devolve conselho: cria o contato, abre a negociação e move no funil enquanto você está na rua, por voz ou por escrito.",
       examples: [
         "Cadastra o João e abre negociação de R$ 4.200",
         "Move o negócio da Carla pra proposta",
@@ -117,7 +117,7 @@ const VERTICALS: Vertical[] = [
     mobileTab: "Advocacia",
     headline: "Prazo, andamento e honorário no mesmo lugar.",
     tim: {
-      line: "Fale por voz ou escreva. Ele abre o caso, registra o andamento e cria a tarefa do prazo sem você parar o que está fazendo.",
+      line: "Abre o caso, registra o andamento e cria a tarefa do prazo sem você parar o que está fazendo, por voz ou por escrito.",
       examples: [
         "Abre o caso da Ana e registra a audiência",
         "Cria tarefa de prazo pra sexta",
@@ -157,7 +157,7 @@ const VERTICALS: Vertical[] = [
     mobileTab: "Imóveis",
     headline: "Carteira, visita e comissão sob controle.",
     tim: {
-      line: "Fale por voz ou escreva. Ele busca na carteira, monta a vitrine e agenda a visita, inclusive dentro do carro entre um atendimento e outro.",
+      line: "Diga o que precisa: ele busca na carteira, monta a vitrine e agenda a visita, inclusive dentro do carro entre um atendimento e outro.",
       examples: [
         "Quais imóveis batem com o perfil da Carla?",
         "Monta uma vitrine com esses três",

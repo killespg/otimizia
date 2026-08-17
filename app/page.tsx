@@ -82,7 +82,7 @@ export default async function LandingPage() {
           <Hero />
           <div className="-mt-4 pb-20 pt-14">
             <p className="mb-7 text-center text-od-label text-od-text-3">
-              Feito para quem trabalha sozinho e para equipes inteiras
+              Serve para quem trabalha sozinho e para equipe inteira
             </p>
             <LogoMarquee bare fadeColor="var(--od-bg)" />
           </div>
@@ -126,7 +126,7 @@ export default async function LandingPage() {
 
         <Section
           id="ia"
-          title="Tim, o sócio que nunca dorme"
+          title="Tim, o sócio-assistente"
           description="Ele não devolve conselho: cria o contato, abre a negociação e agenda o compromisso, por voz ou por escrito."
           raised
         >
@@ -166,7 +166,7 @@ export default async function LandingPage() {
                 },
                 {
                   q: "Consigo usar no celular?",
-                  a: "Sim. O OtimizIA é instalável direto do navegador, funciona como aplicativo e manda notificação antes dos seus compromissos. Foi pensado para quem usa em trânsito, entre um atendimento e outro.",
+                  a: "Sim. O OtimizIA é instalável direto do navegador, funciona como aplicativo e manda notificação antes dos seus compromissos. Funciona em trânsito, entre um atendimento e outro.",
                 },
                 {
                   q: "Como funciona com a minha equipe?",
@@ -193,7 +193,7 @@ export default async function LandingPage() {
               Pronto pra parar de perder negócio por esquecimento?
             </h2>
             <p className="mx-auto mb-8 max-w-[440px] text-[15px] text-od-text-2">
-              Comece grátis hoje, sem cartão de crédito e sem complicação.
+              Comece grátis hoje, sem cartão de crédito.
             </p>
             <Link href="/signup" className="btn inline-flex items-center gap-2">
               Começar grátis

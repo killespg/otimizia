@@ -21,8 +21,8 @@ export function SpotlightCard() {
             Por isso os exemplos abaixo misturam pergunta e ordem — assistente
             que só sugere é commodity. */}
         <p className="max-w-[420px] text-sm leading-relaxed text-od-text-2">
-          Fale por voz ou escreva. Ele responde e também executa no painel:
-          cria contato, move negociação e agenda compromisso.
+          Fale por voz ou escreva. Ele executa no painel: cria contato,
+          move negociação e agenda compromisso.
         </p>
       </div>
       {/* divide-y/border-y só valem a partir de md:, onde a lista fica
