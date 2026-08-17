@@ -39,7 +39,8 @@ export function Hero() {
             </ul>
           </div>
 
-          {/* Conversa do WhatsApp atendida pelo Tim + o que virou na conta */}
+          {/* Conversa com o Tim: ele diz que já respondeu o WhatsApp;
+              embaixo, o que isso já virou na conta. */}
           <div className="mx-auto flex w-full max-w-[460px] justify-center lg:justify-end">
             <PhoneMockup />
           </div>
