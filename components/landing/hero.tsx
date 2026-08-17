@@ -39,8 +39,8 @@ export function Hero() {
             </ul>
           </div>
 
-          {/* Amostra de conversa: Tim + notificação */}
-          <div className="mx-auto flex w-full max-w-[420px] justify-center lg:justify-end">
+          {/* Conversa do WhatsApp atendida pelo Tim + o que virou na conta */}
+          <div className="mx-auto flex w-full max-w-[460px] justify-center lg:justify-end">
             <PhoneMockup />
           </div>
         </div>
