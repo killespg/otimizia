@@ -96,7 +96,7 @@ export function TimHistoryPanel({ open, onClose }: { open: boolean; onClose: () 
                       }`}
                     >
                       <span
-                        className={`mt-0.5 grid size-8 shrink-0 place-items-center rounded-full ${
+                        className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-full ${
                           active ? "bg-od-accent-tint text-od-accent-soft" : "bg-white/[0.06] text-od-text-2"
                         }`}
                       >

@@ -55,7 +55,7 @@ export function AgentPanel({ userName }: { userName?: string }) {
             onClick={newChat}
             aria-label="Começar um novo chat com o Tim"
             title="Novo chat"
-            className="grid size-8 place-items-center rounded-full text-od-text-3 hover:bg-white/[0.06] hover:text-od-text"
+            className="grid size-11 place-items-center rounded-full text-od-text-3 hover:bg-white/[0.06] hover:text-od-text"
           >
             <IconPlus className="h-3.5 w-3.5" />
           </button>
