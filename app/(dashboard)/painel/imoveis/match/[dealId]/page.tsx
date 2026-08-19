@@ -86,7 +86,7 @@ export default async function MatchPage(props: { params: Promise<{ dealId: strin
       <RealEstatePageHeader eyebrow="Comercial / Atendimento" title={<>Imóveis de {dealRow.title}</>} description="Acompanhe os imóveis sugeridos, enviados, visitados e negociados neste atendimento, com a explicação de cada compatibilidade." />
 
       {!preferences ? (
-        <section className="real-estate-flat-section py-5 sm:py-6">
+        <section className="panel p-5 sm:p-6">
           <p className="text-sm font-bold text-ink">
             Este atendimento ainda não tem preferências de busca definidas.{" "}
             <Link href={`/painel/contatos/${dealRow.contact_id}`} className="nav-item text-brand-700 hover:underline">
@@ -107,7 +107,7 @@ export default async function MatchPage(props: { params: Promise<{ dealId: strin
           )}
 
           {matches.length === 0 ? (
-            <section className="real-estate-flat-section py-5 sm:py-6">
+            <section className="panel p-5 sm:p-6">
               <p className="text-sm font-medium text-ink-muted">
                 Nenhum match calculado ainda. Clique em &quot;Recalcular matches&quot; pra comparar a carteira ativa com as preferências do cliente.
               </p>
@@ -118,7 +118,7 @@ export default async function MatchPage(props: { params: Promise<{ dealId: strin
                 const property = propertyById.get(match.property_id);
                 if (!property) return null;
                 return (
-                  <section key={match.id} className="real-estate-flat-section space-y-3 py-5">
+                  <section key={match.id} className="panel space-y-3 p-5">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
                         <Link href={`/painel/imoveis/${property.id}`} className="nav-item text-sm font-semibold text-brand-700 hover:underline">
@@ -155,7 +155,7 @@ export default async function MatchPage(props: { params: Promise<{ dealId: strin
                           <input type="hidden" name="deal_id" value={params.dealId} />
                           <input type="hidden" name="property_id" value={property.id} />
                           <input type="hidden" name="status" value="selected" />
-                          <PendingButton className="press-sm rounded-md bg-brand-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-800" pendingLabel="...">
+                          <PendingButton className="press-sm min-h-11 rounded-[var(--radius-control)] bg-brand-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-800" pendingLabel="...">
                             <IconCheck className="h-3.5 w-3.5" />
                             Selecionar
                           </PendingButton>
@@ -164,7 +164,7 @@ export default async function MatchPage(props: { params: Promise<{ dealId: strin
                           <input type="hidden" name="deal_id" value={params.dealId} />
                           <input type="hidden" name="property_id" value={property.id} />
                           <input type="hidden" name="status" value="rejected" />
-                          <PendingButton className="press-sm rounded-md border border-line bg-surface px-2.5 py-1 text-xs font-bold text-ink-muted hover:bg-surface-2" pendingLabel="...">
+                          <PendingButton className="press-sm min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-2.5 py-1 text-xs font-bold text-ink-muted hover:bg-surface-2" pendingLabel="...">
                             <IconX className="h-3.5 w-3.5" />
                             Ignorar
                           </PendingButton>
@@ -203,7 +203,7 @@ export default async function MatchPage(props: { params: Promise<{ dealId: strin
       />
 
       {collections.length > 0 && (
-        <section className="real-estate-flat-section py-5 sm:py-6">
+        <section className="panel p-5 sm:p-6">
           <h2 className="mb-3 text-base font-semibold text-ink">Vitrines deste atendimento</h2>
           <ul className="space-y-2">
             {collections.map((collection) => (

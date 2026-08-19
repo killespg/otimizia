@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAssistantChat } from "@/lib/ai/AssistantChatProvider";
 import { usePdfAttachment } from "@/lib/ai/hooks/usePdfAttachment";
 import { useVoiceCall } from "@/lib/ai/hooks/useVoiceCall";
-import { IconArrowRight } from "@/app/(dashboard)/painel/icons";
+import { IconArrowRight, IconPlus } from "@/app/(dashboard)/painel/icons";
 import type { PendingImage } from "./ChatImageAttach";
 import { VoicePanel } from "./VoicePanel";
 import { TimAvatar } from "@/components/tim/TimAvatar";
@@ -24,7 +24,7 @@ const COMPACT_SUGGESTIONS = [
 export function AgentPanel({ userName }: { userName?: string }) {
   const [input, setInput] = useState("");
   const [pendingImage, setPendingImage] = useState<PendingImage | null>(null);
-  const { messages, status, sending, send } = useAssistantChat();
+  const { messages, status, sending, send, newChat } = useAssistantChat();
   const attachment = usePdfAttachment();
   const voice = useVoiceCall();
   const firstName = userName?.trim().split(/\s+/)[0];
@@ -40,7 +40,7 @@ export function AgentPanel({ userName }: { userName?: string }) {
   }
 
   return (
-    <section id="agente" className="enter flex h-[min(560px,70vh)] flex-col overflow-hidden rounded-lg border border-white/[0.09] bg-[#1e1d22]">
+    <section id="agente" className="enter flex h-[min(560px,70vh)] flex-col overflow-hidden rounded-[var(--radius-panel)] border border-od-border bg-od-surface">
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.08] px-4 py-3">
         <div className="flex min-w-0 items-center gap-2.5">
           <TimAvatar size={30} online />
@@ -49,13 +49,24 @@ export function AgentPanel({ userName }: { userName?: string }) {
             <p className="truncate text-xs leading-tight text-od-text-3">{status || "Seu parceiro de negócios"}</p>
           </div>
         </div>
-        <Link
-          href="/painel/assistente"
-          className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text"
-        >
-          Tela cheia
-          <IconArrowRight className="h-3.5 w-3.5" />
-        </Link>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={newChat}
+            aria-label="Começar um novo chat com o Tim"
+            title="Novo chat"
+            className="grid size-11 place-items-center rounded-full text-od-text-3 hover:bg-white/[0.06] hover:text-od-text"
+          >
+            <IconPlus className="h-3.5 w-3.5" />
+          </button>
+          <Link
+            href="/painel/assistente"
+            className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text"
+          >
+            Tela cheia
+            <IconArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
       </div>
 
       <TimConversation

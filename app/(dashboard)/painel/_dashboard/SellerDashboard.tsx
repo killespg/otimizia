@@ -151,16 +151,16 @@ export function SellerDashboard({
       data-dashboard-accent={preferences.accent}
       data-dashboard-metrics={preferences.metrics.join(",")}
     >
-      <header className="flex flex-col gap-5 border-b border-white/[0.08] pb-6 xl:flex-row xl:items-end xl:justify-between">
+      <header className="flex flex-col gap-5 pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="flex items-center gap-2 text-xs font-semibold capitalize text-od-text-3">
+          <p className="flex items-center gap-2 text-xs font-medium capitalize text-od-text-3">
             <CalendarDays size={14} />
             <time dateTime={now.toISOString()}>{dateLabel}</time>
           </p>
-          <h1 className="mt-3 text-od-title text-white">
+          <h1 className="mt-1 text-[20px] font-semibold leading-tight tracking-[-0.02em] text-white sm:mt-3 sm:text-od-title">
             Bom dia, <span className="text-od-text">{displayName}.</span>
           </h1>
-          <p className="mt-2 text-sm leading-relaxed text-white/56">
+          <p className="mt-1.5 text-[13px] leading-5 text-white/56 sm:mt-2 sm:text-sm sm:leading-relaxed">
             {actionableCount > 0 ? (
               <>Você tem <strong className="font-semibold text-[#fca79b]">{actionableCount} {actionableCount === 1 ? "prioridade" : "prioridades"}</strong> para resolver e <strong className="font-semibold text-od-text">{openDeals.length} {openDeals.length === 1 ? "venda em andamento" : "vendas em andamento"}</strong>.</>
             ) : (
@@ -168,11 +168,11 @@ export function SellerDashboard({
             )}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/painel/tarefas#new-task" className="inline-flex min-h-11 items-center gap-2 rounded border border-white/[0.1] px-4 text-[13px] font-semibold text-white/68 hover:bg-white/[0.04] hover:text-white">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+          <Link href="/painel/tarefas#new-task" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-white/[0.1] px-4 text-[13px] font-semibold text-white/68 hover:bg-white/[0.04] hover:text-white">
             <BellRing size={15} /> Novo lembrete
           </Link>
-          <Link href="/painel/funil#new-deal" className="inline-flex min-h-11 items-center gap-2 rounded bg-od-accent px-4 text-[13px] font-semibold text-white shadow-[0_8px_20px_-8px_rgba(92,34,232,.6)] hover:bg-brand-600">
+          <Link href="/painel/funil#new-deal" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover">
             <Plus size={16} /> Nova venda
           </Link>
         </div>
@@ -193,7 +193,7 @@ export function SellerDashboard({
 
       <SellerOperationsPulse operations={operations} />
 
-      <section className="rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] px-4">
+      <section className="panel px-4">
         <Link href="/painel/assistente" className="group flex min-h-14 items-center gap-3 text-sm text-od-text-2 hover:text-od-text">
           <Sparkles size={17} className="text-od-accent" />
           <span className="min-w-0 flex-1">Pergunte ao Tim sobre seus clientes e vendas</span>
@@ -218,7 +218,7 @@ function SellerOperationsPulse({ operations }: { operations: Props["operations"]
   const attentionItems = items.filter((item) => item.value > 0);
   if (attentionItems.length === 0) {
     return (
-      <section className="flex min-h-16 items-center gap-3 rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] px-4" aria-labelledby="seller-operation-title">
+      <section className="flex min-h-16 items-center gap-3 panel px-4" aria-labelledby="seller-operation-title">
         <span className="grid size-8 shrink-0 place-items-center rounded border border-emerald-400/20 bg-emerald-400/[0.07] text-emerald-300"><CheckCircle2 size={16} /></span>
         <div className="min-w-0 flex-1">
           <h2 id="seller-operation-title" className="text-sm font-semibold text-white">Operação em dia</h2>
@@ -230,7 +230,7 @@ function SellerOperationsPulse({ operations }: { operations: Props["operations"]
   }
   const columnClass = attentionItems.length === 1 ? "lg:grid-cols-1" : attentionItems.length === 2 ? "lg:grid-cols-2" : attentionItems.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4";
   return (
-    <section className="overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]" aria-labelledby="seller-operation-title">
+    <section className="overflow-hidden panel lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]" aria-labelledby="seller-operation-title">
       <header className="flex min-h-20 items-center justify-between gap-3 px-4">
         <div><h2 id="seller-operation-title" className="text-sm font-semibold text-white">Pulso da operação</h2><p className="mt-0.5 text-xs text-white/52">O que precisa de atenção depois da venda.</p></div>
         <Link href="/painel/produtos" className="inline-flex min-h-11 shrink-0 items-center px-2 text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir operação</Link>
@@ -273,7 +273,7 @@ function SellerStatistics({
 
 function SellerMetrics({ metrics }: { metrics: SellerMetric[] }) {
   return (
-    <section data-dashboard-card className="grid grid-cols-2 overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] xl:grid-cols-4">
+    <section data-dashboard-card className="grid grid-cols-2 overflow-hidden panel xl:grid-cols-4">
       {metrics.map((metric) => {
         const Icon = metric.icon;
         return (
@@ -307,7 +307,7 @@ function SellerCommercialIndicators({
 }) {
   const closedThisMonth = insights.wonCountThisMonth + insights.lostCountThisMonth;
   return (
-    <section data-dashboard-card data-commercial-insights className="overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)]">
+    <section data-dashboard-card data-commercial-insights className="overflow-hidden panel">
       <header className="flex items-end justify-between gap-4 border-b border-white/[0.08] px-4 py-4 sm:px-5">
         <div>
           <h2 className="text-sm font-semibold text-white">Indicadores comerciais</h2>
@@ -410,7 +410,7 @@ function SellerPriorities({ tasks, overdue, now, contacts }: { tasks: Task[]; ov
   const contactOptions = [...contacts.values()];
   return (
     <section className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)] xl:gap-6">
-      <div data-dashboard-card className="overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)]">
+      <div data-dashboard-card className="overflow-hidden panel">
         <div className="flex items-end justify-between gap-4 border-b border-white/[0.08] px-4 py-4">
           <div>
             <h2 className="text-od-subtitle text-white">Prioridades de hoje</h2>
@@ -445,7 +445,7 @@ function SellerPriorities({ tasks, overdue, now, contacts }: { tasks: Task[]; ov
         )}
       </div>
 
-      <form id="novo-lembrete" action={createTask} data-dashboard-card className="rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] p-4">
+      <form id="novo-lembrete" action={createTask} data-dashboard-card className="panel p-4">
         <input type="hidden" name="return_to" value="/painel" />
         <div className="flex items-start gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><BellRing size={17} /></span>
@@ -465,7 +465,7 @@ function SellerPriorities({ tasks, overdue, now, contacts }: { tasks: Task[]; ov
 function SellerDeals({ deals, contacts, preset }: { deals: Deal[]; contacts: Map<string, ContactOption>; preset: ProfessionPreset }) {
   const recent = deals.slice(0, 6);
   return (
-    <section data-dashboard-card className="h-full overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)]">
+    <section data-dashboard-card className="h-full overflow-hidden panel">
       <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-4 py-4">
         <div><h2 className="text-sm font-semibold text-white">Vendas em acompanhamento</h2><p className="mt-1 text-xs text-od-text-3">Ordenadas pela atividade mais recente</p></div>
         <Link href="/painel/funil" className="-my-3 inline-flex min-h-11 items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text">Ver funil <ArrowRight size={13} /></Link>
@@ -497,7 +497,7 @@ function SellerRevenue({ openValue, wonValue, series, conversionRate, avgTicketC
   const wonShare = totalTracked > 0 ? Math.round((wonValue / totalTracked) * 100) : 0;
   const hasRevenueData = series.some((point) => point.cumulativeCents > 0);
   return (
-    <section data-dashboard-card className="h-full rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] p-4 sm:p-6">
+    <section data-dashboard-card className="h-full panel p-4 sm:p-6">
       <div className="flex items-start justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Resultado comercial</h2><p className="mt-1 text-xs text-od-text-3">Valores reais da sua carteira neste mês</p></div><TrendingUp size={18} className="text-od-text-3" /></div>
       {hasRevenueData ? (
         <>
@@ -506,7 +506,7 @@ function SellerRevenue({ openValue, wonValue, series, conversionRate, avgTicketC
           <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/[0.09]"><span className="block h-full rounded-full bg-od-accent" style={{ width: `${wonShare}%` }} /></div>
           <p className="mt-2 text-xs text-od-text-3">{wonShare}% do volume acompanhado já foi ganho</p>
           <RevenueLineChart series={series} dark />
-          <div className="mt-5 grid divide-y divide-white/[0.08] border-y border-white/[0.08] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <div className="mt-5 grid divide-y divide-white/[0.08] border-t border-white/[0.08] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
             <MiniStat label="Em aberto" value={formatBRL(openValue)} />
             <MiniStat label="Conversão" value={conversionRate === null ? "—" : `${conversionRate}%`} />
             <MiniStat label="Ticket médio" value={avgTicketCents === null ? "—" : formatBRL(avgTicketCents)} />
@@ -521,14 +521,14 @@ function SellerRevenue({ openValue, wonValue, series, conversionRate, avgTicketC
             <p className="mt-2 text-xs text-od-text-3">{wonShare}% do volume acompanhado já foi ganho</p>
           </div>
           <div>
-            <div className="flex flex-col gap-4 border-y border-white/[0.08] py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 border-t border-white/[0.08] pt-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 <span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><TrendingUp size={17} /></span>
                 <div><p className="text-sm font-semibold text-white/76">Seu gráfico começa com a primeira venda ganha.</p><p className="mt-1 text-xs text-od-text-3">Mova uma oportunidade para ganha no funil.</p></div>
               </div>
               <Link href="/painel/funil" className="inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir funil</Link>
             </div>
-            <div className="mt-4 grid divide-y divide-white/[0.08] border-y border-white/[0.08] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            <div className="mt-4 grid divide-y divide-white/[0.08] border-t border-white/[0.08] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
               <MiniStat label="Em aberto" value={formatBRL(openValue)} />
               <MiniStat label="Conversão" value={conversionRate === null ? "—" : `${conversionRate}%`} />
               <MiniStat label="Ticket médio" value={avgTicketCents === null ? "—" : formatBRL(avgTicketCents)} />
@@ -546,7 +546,7 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 
 function SellerAssistantPreview() {
   return (
-    <section data-dashboard-card className="h-full overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)]">
+    <section data-dashboard-card className="h-full overflow-hidden panel">
       <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-4 py-4">
         <div className="flex items-center gap-3">
           <span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2">
@@ -588,7 +588,7 @@ function SellerAssistantPreview() {
 function SellerAgenda({ now, items }: { now: Date; items: CalendarItem[] }) {
   const upcoming = items.filter((item) => item.date >= now || item.tone === "danger").sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 6);
   return (
-    <section data-dashboard-card className="h-full rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] p-4">
+    <section data-dashboard-card className="h-full panel p-4">
       <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Próximos lembretes</h2><p className="mt-1 text-xs text-od-text-3">Quem chamar e quando</p></div><Link href="/painel/calendario" className="-my-1 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Calendário</Link></div>
       {upcoming.length === 0 ? <div className="mt-4 flex flex-col gap-3 border-t border-white/[0.07] pt-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3"><Clock3 size={18} className="shrink-0 text-od-text-3" /><div><p className="text-sm font-medium text-white/62">Sua agenda está livre.</p><p className="mt-1 text-xs text-od-text-3">Crie um lembrete para não perder o próximo retorno.</p></div></div><Link href="#novo-lembrete" className="inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Criar lembrete</Link></div> : <ul className="mt-4 divide-y divide-white/[0.07]">{upcoming.map((item, index) => <li key={`${item.title}-${index}`}><Link href={item.href} className="flex items-center gap-3 py-3 hover:text-white"><span className={`size-2 rounded-full ${item.tone === "danger" ? "bg-[#fb7767]" : item.tone === "warning" ? "bg-amber-300" : "bg-od-text-3"}`} /><span className="min-w-0 flex-1 truncate text-xs font-medium text-white/68">{item.title}</span><span className="text-xs text-od-text-3">{formatDate(item.date.toISOString())}</span></Link></li>)}</ul>}
     </section>
@@ -597,11 +597,11 @@ function SellerAgenda({ now, items }: { now: Date; items: CalendarItem[] }) {
 
 function SellerOpenClaims({ tasks, deals, preset }: { tasks: Task[]; deals: Deal[]; preset: ProfessionPreset }) {
   return (
-    <section data-dashboard-card className="rounded border border-od-accent/25 bg-od-accent/[0.055] p-4 sm:p-6">
-      <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Disponíveis para assumir</h2><p className="mt-1 text-xs text-od-text-3">Itens da equipe ainda sem responsável</p></div><span className="rounded bg-od-accent/15 px-2 py-1 text-xs font-semibold text-od-text">{tasks.length + deals.length}</span></div>
-      <div className="mt-4 divide-y divide-od-accent/12 border-y border-od-accent/12">
-        {tasks.map((task) => <div key={task.id} className="flex min-h-14 items-center gap-3 py-2"><BellRing size={15} className="text-od-text-3" /><span className="min-w-0 flex-1 truncate text-sm font-medium text-white/72">{task.title}</span><form action={claimTask}><input type="hidden" name="task_id" value={task.id} /><input type="hidden" name="return_to" value="/painel" /><PendingButton className="min-h-9 rounded bg-od-accent px-3 text-xs font-semibold text-white" pendingLabel="Assumindo">Assumir</PendingButton></form></div>)}
-        {deals.map((deal) => <div key={deal.id} className="flex min-h-14 items-center gap-3 py-2"><CircleDollarSign size={15} className="text-od-text-3" /><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-white/72">{deal.title}</span><span className="text-xs text-od-text-3">{preset.dealSingular} · {formatBRL(deal.value_cents ?? 0)}</span></span><form action={claimDeal}><input type="hidden" name="deal_id" value={deal.id} /><input type="hidden" name="return_to" value="/painel" /><PendingButton className="min-h-9 rounded bg-od-accent px-3 text-xs font-semibold text-white" pendingLabel="Assumindo">Assumir</PendingButton></form></div>)}
+    <section data-dashboard-card className="rounded-[var(--radius-panel)] border border-od-accent/25 bg-od-accent/[0.055] p-4 sm:p-6">
+      <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Disponíveis para assumir</h2><p className="mt-1 text-xs text-od-text-3">Itens da equipe ainda sem responsável</p></div><span className="rounded-full bg-od-accent/15 px-2 py-1 text-xs font-semibold text-od-text">{tasks.length + deals.length}</span></div>
+      <div className="mt-4 divide-y divide-od-accent/12 border-t border-od-accent/12">
+        {tasks.map((task) => <div key={task.id} className="flex min-h-14 items-center gap-3 py-2"><BellRing size={15} className="text-od-text-3" /><span className="min-w-0 flex-1 truncate text-sm font-medium text-white/72">{task.title}</span><form action={claimTask}><input type="hidden" name="task_id" value={task.id} /><input type="hidden" name="return_to" value="/painel" /><PendingButton className="min-h-11 rounded-[var(--radius-control)] bg-od-accent px-3 text-xs font-semibold text-white" pendingLabel="Assumindo">Assumir</PendingButton></form></div>)}
+        {deals.map((deal) => <div key={deal.id} className="flex min-h-14 items-center gap-3 py-2"><CircleDollarSign size={15} className="text-od-text-3" /><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium text-white/72">{deal.title}</span><span className="text-xs text-od-text-3">{preset.dealSingular} · {formatBRL(deal.value_cents ?? 0)}</span></span><form action={claimDeal}><input type="hidden" name="deal_id" value={deal.id} /><input type="hidden" name="return_to" value="/painel" /><PendingButton className="min-h-11 rounded-[var(--radius-control)] bg-od-accent px-3 text-xs font-semibold text-white" pendingLabel="Assumindo">Assumir</PendingButton></form></div>)}
       </div>
     </section>
   );
@@ -617,8 +617,8 @@ function SellerOnboarding({ preset, isOrgAdmin, done }: NonNullable<Props["onboa
   ];
   if (steps.every((step) => step.done)) return <></>;
   return (
-    <section data-dashboard-card className="rounded border border-od-border bg-od-surface p-4 sm:p-6">
-      <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-semibold text-od-text-3">Primeiros passos</p><h2 className="mt-2 text-od-subtitle text-white">Deixe sua rotina de vendas pronta.</h2></div><form action={dismissChecklist}><PendingButton iconOnly pendingLabel="Fechando" className="grid size-9 place-items-center rounded text-od-text-3 hover:bg-white/[0.05] hover:text-white" aria-label="Fechar primeiros passos">×</PendingButton></form></div>
+    <section data-dashboard-card className="rounded-[var(--radius-panel)] border border-od-border bg-od-surface p-4 sm:p-6">
+      <div className="flex items-start justify-between gap-3"><div><p className="text-xs font-semibold text-od-text-3">Primeiros passos</p><h2 className="mt-2 text-od-subtitle text-white">Deixe sua rotina de vendas pronta.</h2></div><form action={dismissChecklist}><PendingButton iconOnly pendingLabel="Fechando" className="grid size-11 place-items-center rounded-[var(--radius-control)] text-od-text-3 hover:bg-white/[0.05] hover:text-white" aria-label="Fechar primeiros passos">×</PendingButton></form></div>
       <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">{steps.map((step) => { const Icon = step.icon; return <Link key={step.label} href={step.href} className={`flex min-h-16 items-center gap-3 rounded-md border px-3 py-3 hover:bg-white/[0.02] ${step.done ? "border-white/[0.06] text-od-text-3" : "border-white/[0.08] text-white/72"}`}><span className={`grid size-8 place-items-center rounded ${step.done ? "bg-emerald-400/10 text-emerald-300" : "bg-white/[0.06] text-od-text-2"}`}>{step.done ? <Check size={16} /> : <Icon size={16} />}</span><span className={`text-sm font-medium ${step.done ? "line-through" : ""}`}>{step.label}</span></Link>; })}</div>
     </section>
   );

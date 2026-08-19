@@ -46,7 +46,7 @@ export function TimContextPanel({
         role="dialog"
         aria-modal="true"
         aria-label="Personalizar o Tim"
-        className="relative flex h-full w-full max-w-[440px] flex-col overflow-hidden border-l border-white/[0.09] bg-[#1a1820]"
+        className="relative flex h-full w-full max-w-[440px] flex-col overflow-hidden border-l border-od-border bg-od-surface"
       >
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
           <div>
@@ -59,7 +59,7 @@ export function TimContextPanel({
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="grid min-h-11 min-w-11 shrink-0 place-items-center rounded text-lg leading-none text-white/60 hover:bg-white/[0.06] hover:text-white"
+            className="grid min-h-11 min-w-11 shrink-0 place-items-center rounded-[var(--radius-control)] text-lg leading-none text-white/60 hover:bg-white/[0.06] hover:text-white"
           >
             ×
           </button>
@@ -129,7 +129,7 @@ export function TimContextPanel({
             <div className="space-y-3 text-sm font-medium text-white/60">
               <p>O contexto do Tim é definido por um admin da empresa e vale pra todo mundo que conversa com ele.</p>
               {org?.ai_tone ? (
-                <div className="rounded border border-white/[0.08] bg-white/[0.02] px-3 py-2.5">
+                <div className="rounded-[var(--radius-control)] border border-od-border bg-white/[0.02] px-3 py-2.5">
                   <span className="label">Jeito de falar</span>
                   <p className="mt-1 text-[13px] text-white/80">{org.ai_tone}</p>
                 </div>

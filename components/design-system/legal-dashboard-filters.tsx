@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { ChevronDown, Plus } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 type FilterOption = { value: string; label: string };
 
@@ -57,13 +56,6 @@ export function LegalDashboardFilters({
         options={[{ value: "all", label: "Todas as áreas" }, ...areas.map((item) => ({ value: item, label: item }))]}
         onChange={(value) => update("area", value)}
       />
-      <Link
-        href="/painel/juridico/processos?novo=1"
-        className="inline-flex min-h-11 items-center gap-2 rounded-md border border-od-accent/15 bg-[#5f35d4] px-4 text-[13px] font-semibold text-white shadow-none transition-colors hover:bg-[#6a3fe0]"
-      >
-        <Plus size={16} strokeWidth={2.25} />
-        Novo caso
-      </Link>
     </div>
   );
 }
@@ -82,7 +74,7 @@ function FilterSelect({
   const selected = options.find((option) => option.value === value)?.label ?? value;
 
   return (
-    <label className="relative inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.03] px-3 text-[12px] font-medium text-white/65 transition-colors hover:bg-white/[0.06] hover:text-white focus-within:ring-2 focus-within:ring-od-accent/45">
+    <label className="relative inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-[var(--radius-control)] border border-od-border bg-od-surface px-3 text-[12px] font-medium text-od-text-2 transition-colors hover:border-od-border-hover hover:bg-od-surface-hover hover:text-od-text focus-within:border-od-focus focus-within:ring-2 focus-within:ring-od-focus/30">
       <span>{selected}</span>
       <ChevronDown size={12} />
       <span className="sr-only">{label}</span>

@@ -4,11 +4,7 @@ import { FormEvent, useState } from "react";
 import { ArrowUp, Sparkles } from "lucide-react";
 import { useAssistantChat } from "@/lib/ai/AssistantChatProvider";
 
-export function LegalDashboardAssistant({
-  suggestions,
-}: {
-  suggestions: string[];
-}) {
+export function LegalDashboardAssistant() {
   const [value, setValue] = useState("");
   // O provider de chat e global e guarda o historico de qualquer tela. Sem esta
   // trava, a barra exibia messages[length - 1] de uma conversa anterior: uma
@@ -32,8 +28,11 @@ export function LegalDashboardAssistant({
     : "";
 
   return (
-    <section className="border-y border-od-border py-3">
-      <form onSubmit={submit} className="flex min-h-11 items-center gap-3">
+    <section
+      data-legal-assistant="true"
+      className="panel px-4"
+    >
+      <form onSubmit={submit} className="flex min-h-14 items-center gap-3">
         <Sparkles
           size={16}
           className="shrink-0 text-od-accent"
@@ -50,7 +49,7 @@ export function LegalDashboardAssistant({
           type="submit"
           disabled={!value.trim() || sending}
           aria-label="Enviar pergunta"
-          className="flex size-11 shrink-0 items-center justify-center rounded-md bg-od-accent text-white transition-colors hover:bg-brand-600 disabled:opacity-30"
+          className="flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-od-accent text-white transition-colors hover:bg-od-accent-hover disabled:opacity-30"
         >
           <ArrowUp size={14} strokeWidth={2.5} />
         </button>
@@ -63,20 +62,6 @@ export function LegalDashboardAssistant({
           <p className="mt-1 max-w-4xl text-sm leading-6 text-white/70">
             {response}
           </p>
-        </div>
-      ) : null}
-      {suggestions.length ? (
-        <div className="mt-2 flex flex-wrap items-center gap-x-6 border-t border-od-border pt-2">
-          {suggestions.map((suggestion) => (
-            <button
-              key={suggestion}
-              type="button"
-              onClick={() => setValue(suggestion)}
-              className="min-h-11 text-left text-[12px] font-medium text-od-accent-hover hover:text-white sm:min-h-8"
-            >
-              {suggestion}
-            </button>
-          ))}
         </div>
       ) : null}
     </section>

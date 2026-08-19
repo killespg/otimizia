@@ -80,7 +80,8 @@ export default async function PipelinePage() {
   );
   const isSeller = workspaceKey === "autonomous_seller";
   const isRealEstate = workspaceKey === "real_estate_broker";
-  const usesFlatPipeline = isSeller || isRealEstate;
+  const isLegal = workspaceKey === "law_office";
+  const usesFlatPipeline = isSeller || isRealEstate || isLegal;
   const pipelineLists = pipelineListsFor(allDeals, preset.key);
   const contactNames = Object.fromEntries(
     allContacts.map((contact) => [contact.id, contact.name])
@@ -111,13 +112,13 @@ export default async function PipelinePage() {
         </Link>
       </header>
 
-      <section className="grid border-y border-white/[0.08] sm:grid-cols-3">
+      <section className="ui-metric-band sm:grid-cols-3">
         <MetricCard label="Abertas" value={String(openDeals.length)} icon={IconColumns} />
         <MetricCard label={workspaceLabels.value} value={formatBRL(openValue)} icon={IconWallet} />
         <MetricCard label={preset.wonLabel} value={formatBRL(wonValue)} icon={IconUsers} pink />
       </section>
 
-      <form id="new-deal" action={createDeal} className={usesFlatPipeline ? "scroll-mt-24 border-y border-white/[0.08] py-5" : "scroll-mt-24 border border-white/[0.09] bg-[#1e1d22] p-5"}>
+      <form id="new-deal" action={createDeal} className="ui-form-panel scroll-mt-24 p-5">
         <input type="hidden" name="return_to" value="/painel/funil" />
         <input type="hidden" name="pipeline_list" value={pipelineLists[0] ?? "Novo"} />
         {usesFlatPipeline ? <div className="mb-4"><h2 className="text-od-subtitle text-white">{isSeller ? "Nova venda" : "Novo atendimento"}</h2><p className="mt-1 text-xs text-od-text-3">{isSeller ? "Cadastre o essencial e acompanhe no quadro." : "Registre a demanda do cliente e acompanhe cada avanço no funil."}</p></div> : null}
@@ -216,6 +217,7 @@ export default async function PipelinePage() {
         isAdmin={isAdmin}
         isSeller={isSeller}
         isRealEstate={isRealEstate}
+        isLegal={isLegal}
         flat={usesFlatPipeline}
       />
     </div>

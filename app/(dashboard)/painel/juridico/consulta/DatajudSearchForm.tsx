@@ -112,7 +112,7 @@ export function DatajudSearchForm({
 
   return (
     <>
-      <section className={compact ? "" : "border border-white/[0.09] bg-[#1e1d22] p-5"}>
+      <section data-ui={compact ? undefined : "form-panel"} className={compact ? "" : "ui-form-panel p-5"}>
         <form onSubmit={search} className="grid gap-3 sm:grid-cols-[1fr_auto_1fr_auto]">
           <label className="block">
             <span className="label">Tribunal</span>
@@ -136,7 +136,7 @@ export function DatajudSearchForm({
               aria-label={isFavorite ? "Remover dos favoritos" : "Favoritar este tribunal"}
               title={isFavorite ? "Remover dos favoritos" : "Favoritar este tribunal"}
               className={
-                "grid h-11 w-11 shrink-0 place-items-center rounded-md border border-white/[0.1] " +
+                "grid h-11 w-11 shrink-0 place-items-center rounded-[var(--radius-control)] border border-white/[0.1] " +
                 (isFavorite ? "bg-white/[0.06] text-od-text-2" : "bg-transparent text-od-text-3")
               }
             >
@@ -175,7 +175,7 @@ export function DatajudSearchForm({
       </section>
 
       {process && (
-        <section className="overflow-hidden border border-white/[0.09] bg-[#1e1d22]">
+        <section data-ui="data-panel" className="ui-data-panel">
           <div className="border-b border-white/[0.08] p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
@@ -214,7 +214,7 @@ export function DatajudSearchForm({
                 .sort((a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime())
                 .map((movimento, index) => (
                   <article key={`${movimento.codigo}-${movimento.dataHora}-${index}`} className="flex items-start gap-3 border-b border-white/[0.06] px-5 py-4">
-                    <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-md bg-white/[0.06] text-od-text-2">
+                    <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-[var(--radius-control)] bg-white/[0.06] text-od-text-2">
                       <IconClock className="h-4 w-4" />
                     </span>
                     <div className="min-w-0">

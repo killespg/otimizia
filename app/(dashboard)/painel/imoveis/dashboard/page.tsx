@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 import { canManageRealEstate, canViewRealEstate, isRealEstateV2Enabled } from "@/lib/real-estate/real-estate";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
-import { getDashboardPreferences } from "@/lib/workspace/dashboard-preferences";
-import { getProfessionPreset } from "@/lib/people/professions";
 import type {
   RealEstateCommission,
   RealEstateOffer,
@@ -41,12 +39,6 @@ export default async function RealEstateDashboardPage({
     profile?.is_admin,
   );
   if (workspaceKey !== "real_estate_broker") notFound();
-  const dashboardPreferences = getDashboardPreferences(
-    profile?.dashboard_preferences,
-    getProfessionPreset(workspaceKey),
-    workspaceKey,
-  );
-
   const [orgRole, { data: membership }, { data: org }, members] = await Promise.all([
     getOrgRole(supabase, orgId, user!.id),
     supabase.from("organization_members").select("job_role").eq("org_id", orgId).eq("user_id", user!.id).maybeSingle(),
@@ -158,7 +150,6 @@ export default async function RealEstateDashboardPage({
       deals={(dealsForCommission ?? []) as Array<{ id: string; title: string }>}
       properties={(propertiesForCommission ?? []) as Array<{ id: string; title: string }>}
       organization={org}
-      showAnimatedBackground={dashboardPreferences.showAnimatedBackground}
     />
   );
 }

@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ActionDrawer } from "@/components/design-system/action-drawer";
+import { BulkActionBar, BulkSelectAll, BulkSelectCheckbox, useBulkSelection } from "@/components/ui/BulkSelect";
 import type { Contact } from "@/lib/supabase/types";
+import { bulkDeleteContacts } from "../actions";
 import { Avatar } from "../Avatar";
 import { IconArrowRight, IconMessage, IconPhone, IconPlus, IconSearch, IconUsers } from "../icons";
 
@@ -67,6 +69,9 @@ export function ContactsExplorer({
     () => (terms.length === 0 ? contacts : contacts.filter((contact) => contactMatchesTerms(contact, terms))),
     [contacts, terms]
   );
+  // A seleção acompanha o filtro de busca: quem sai do resultado sai do lote.
+  const resultIds = useMemo(() => results.map((contact) => contact.id), [results]);
+  const selection = useBulkSelection(resultIds);
 
   return (
     <>
@@ -115,14 +120,14 @@ export function ContactsExplorer({
         </div>
       </header>
 
-      <section className="grid grid-cols-1 border-y border-white/[0.08] sm:grid-cols-3">
+      <section className="ui-metric-band grid-cols-1 sm:grid-cols-3">
         <MetricCard label="Total" value={String(contacts.length)} icon={IconUsers} />
         <MetricCard label="Com WhatsApp" value={String(withPhone)} icon={IconPhone} pink />
         <MetricCard label="Com empresa" value={String(withCompany)} icon={IconMessage} />
       </section>
 
       <div className="grid gap-5">
-        <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "overflow-hidden border border-white/[0.09] bg-[#1e1d22]"}>
+        <section className="panel overflow-hidden">
           <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
             <div>
               <h2 className="text-base font-semibold text-white">
@@ -138,9 +143,18 @@ export function ContactsExplorer({
                     : `${results.length} ${results.length === 1 ? "contato salvo" : "contatos salvos"}.`}
               </p>
             </div>
-            <span className="text-xs font-semibold text-od-text-3">
-              {String(results.length).padStart(2, "0")}
-            </span>
+            <div className="flex shrink-0 items-center gap-3">
+              <BulkSelectAll
+                allSelected={selection.allSelected}
+                someSelected={selection.selectedCount > 0}
+                onToggleAll={selection.toggleAll}
+                label="Selecionar contatos"
+                dark
+              />
+              <span className="text-xs font-semibold text-od-text-3">
+                {String(results.length).padStart(2, "0")}
+              </span>
+            </div>
           </div>
 
           {results.length === 0 ? (
@@ -167,10 +181,16 @@ export function ContactsExplorer({
           ) : (
             <ul>
               {results.map((contact) => (
-                <li key={contact.id}>
+                <li key={contact.id} className="flex items-center gap-3 border-b border-white/[0.06] pl-5 hover:bg-white/[0.025]">
+                  <BulkSelectCheckbox
+                    checked={selection.selected.includes(contact.id)}
+                    onCheckedChange={(checked) => selection.toggleOne(contact.id, checked)}
+                    label={`Selecionar ${displayContactName(contact)}`}
+                    dark
+                  />
                   <Link
                     href={`/painel/contatos/${contact.id}`}
-                    className="group flex items-center gap-3 border-b border-white/[0.06] px-5 py-4 hover:bg-white/[0.025]"
+                    className="group flex min-w-0 flex-1 items-center gap-3 py-4 pr-5"
                   >
                     <Avatar name={contact.name} />
                     <div className="min-w-0 flex-1">
@@ -198,6 +218,17 @@ export function ContactsExplorer({
               ))}
             </ul>
           )}
+          <BulkActionBar
+            allSelected={selection.allSelected}
+            selectedCount={selection.selectedCount}
+            isPending={selection.isPending}
+            error={selection.error}
+            onToggleAll={selection.toggleAll}
+            onDelete={() => selection.run(bulkDeleteContacts)}
+            nounSingular="contato"
+            nounPlural="contatos"
+            dark
+          />
         </section>
       </div>
     </>

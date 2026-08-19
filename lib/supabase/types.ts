@@ -5,6 +5,14 @@ export type DealStage =
   | "ganho"
   | "perdido";
 
+export type LegalLossReasonCode =
+  | "price"
+  | "competitor"
+  | "no_response"
+  | "timing"
+  | "profile_mismatch"
+  | "other";
+
 export const DEAL_STAGES: { key: DealStage; label: string }[] = [
   { key: "novo", label: "Novo" },
   { key: "em_contato", label: "Em contato" },
@@ -68,6 +76,8 @@ export type Organization = {
   real_estate_v2_enabled: boolean;
   real_estate_public_page_enabled: boolean;
   real_estate_public_page_token: string;
+  task_visibility_locked: boolean;
+  task_visibility_mode: "profile" | "mixed" | "private";
   created_at: string;
 };
 
@@ -76,6 +86,7 @@ export type OrganizationMember = {
   user_id: string;
   role: OrgRole;
   job_role: JobRole;
+  task_visibility: "profile" | "mixed" | "private";
   created_at: string;
 };
 
@@ -666,10 +677,41 @@ export type Deal = {
   title: string;
   value_cents: number | null;
   stage: DealStage;
+  // Optional keeps legacy/partial selects and existing fixture builders valid;
+  // full deal rows from the migrated schema return each field as value or null.
+  loss_reason_code?: LegalLossReasonCode | null;
+  loss_reason_notes?: string | null;
   position: number;
   details: Record<string, string>;
   created_at: string;
   closed_at: string | null;
+};
+
+export type DealStageHistory = {
+  id: string;
+  org_id: string;
+  workspace_key: "law_office";
+  deal_id: string;
+  contact_id: string | null;
+  from_stage: DealStage | null;
+  to_stage: DealStage;
+  actor_id: string | null;
+  is_baseline: boolean;
+  occurred_at: string;
+};
+
+export type LawAcquisitionCost = {
+  id: string;
+  org_id: string;
+  workspace_key: "law_office";
+  month: string;
+  marketing_cents: number;
+  commercial_cents: number;
+  notes: string | null;
+  created_by: string;
+  updated_by: string;
+  created_at: string;
+  updated_at: string;
 };
 
 export type Task = {
@@ -686,9 +728,11 @@ export type Task = {
   review_note: string | null;
   contact_id: string | null;
   deal_id: string | null;
+  case_id: string | null;
   title: string;
   due_at: string | null;
   done: boolean;
+  notes: string | null;
   recurrence: "none" | "daily" | "weekly" | "monthly";
   recurrence_spawned: boolean;
   created_at: string;
@@ -741,6 +785,9 @@ export type WhatsappConversation = {
   contact_name: string | null;
   profile_pic_url: string | null;
   ia_active: boolean;
+  first_inbound_at: string | null;
+  first_response_at: string | null;
+  first_response_sent_by: "ai" | "human" | null;
   last_message_at: string;
   created_at: string;
 };

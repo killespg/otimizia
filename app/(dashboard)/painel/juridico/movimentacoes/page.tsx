@@ -25,17 +25,17 @@ export default async function LegalMovementsPage() {
   const failed = items.filter((item) => item.datajud_sync_failed_count > 0).length;
 
   return (
-    <div className="mx-auto w-full max-w-[1640px] space-y-6">
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
+    <div className="ui-page">
+      <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold text-od-text-2">Jurídico / Movimentações</p>
           <h1 className="mt-2 text-od-title text-od-text">Movimentações processuais</h1>
           <p className="mt-2 max-w-2xl text-sm text-od-text-2">Acompanhe o que mudou nos processos monitorados e registre cada revisão.</p>
         </div>
-        <Link href="/painel/juridico/consulta" className="inline-flex min-h-11 items-center gap-2 self-start rounded-md bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-brand-600 lg:self-auto"><FileSearch size={16} />Consultar DataJud</Link>
+        <Link href="/painel/juridico/consulta" className="inline-flex min-h-11 items-center gap-2 self-start rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-brand-600 lg:self-auto"><FileSearch size={16} />Consultar DataJud</Link>
       </header>
 
-      <section className="grid border-y border-od-border sm:grid-cols-3">
+      <section className="ui-metric-band sm:grid-cols-3">
         <Metric label="Monitorados" value={items.length} />
         <Metric label="Para revisar" value={unread} highlight />
         <Metric label="Sincronizações com alerta" value={failed} danger={failed > 0} />

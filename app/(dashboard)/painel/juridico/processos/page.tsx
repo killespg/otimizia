@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PendingButton } from "@/components/ui/PendingButton";
 import { ActionDrawer } from "@/components/design-system/action-drawer";
+import { LegalCaseList, type LegalCaseRow } from "@/components/legal/legal-case-list";
 import { canManageLegal, canViewLegal, LEGAL_CASE_STATUS } from "@/lib/law/law-office";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
@@ -71,18 +72,29 @@ export default async function LawPage(props: { searchParams?: Promise<{ busca?: 
   const visibleCases = query
     ? allCases.filter((item) => [item.title, item.case_number, item.area, item.court].some((value) => value?.toLocaleLowerCase("pt-BR").includes(query)))
     : allCases;
+  const caseRows: LegalCaseRow[] = visibleCases.map((item) => ({
+    id: item.id,
+    title: item.title,
+    subtitle: `${item.area ?? "Área não informada"}${item.case_number ? ` · ${item.case_number}` : ""}`,
+    statusLabel: LEGAL_CASE_STATUS[item.status],
+    responsibleLabel: item.responsible_id ? memberName.get(item.responsible_id) ?? "Sem responsável" : "Sem responsável",
+    deadlineLabel: item.next_deadline_at
+      ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(item.next_deadline_at))
+      : "Sem prazo",
+    deadlineNear: Boolean(item.next_deadline_at && new Date(item.next_deadline_at) < deadlineThreshold),
+  }));
 
   return (
-    <div className="mx-auto w-full max-w-[1640px] space-y-5">
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
+    <div className="ui-page">
+      <header className="flex flex-col gap-4 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-semibold text-od-text-2">Jurídico / Processos</p>
           <h1 className="mt-2 text-od-title text-white">Carteira de processos</h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/52">Casos ativos, responsáveis, risco e próximo compromisso em uma única fila operacional.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/painel/juridico/consulta" className="inline-flex min-h-11 items-center gap-2 rounded-md border border-white/[0.1] px-4 text-xs font-semibold text-white/65 hover:bg-white/[0.04] hover:text-white"><IconSearch className="h-4 w-4"/>Consulta DataJud</Link>
-          <Link href="/painel/juridico/prazos" className="inline-flex min-h-11 items-center rounded-md border border-white/[0.1] px-4 text-xs font-semibold text-white/65 hover:bg-white/[0.04] hover:text-white">Agenda e prazos</Link>
+          <Link href="/painel/juridico/consulta" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-white/[0.1] px-4 text-xs font-semibold text-white/65 hover:bg-white/[0.04] hover:text-white"><IconSearch className="h-4 w-4"/>Consulta DataJud</Link>
+          <Link href="/painel/juridico/prazos" className="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-white/[0.1] px-4 text-xs font-semibold text-white/65 hover:bg-white/[0.04] hover:text-white">Agenda e prazos</Link>
           {canManageLegal(jobRole, isAdmin) ? (
             <ActionDrawer
               label="Novo caso"
@@ -101,13 +113,13 @@ export default async function LawPage(props: { searchParams?: Promise<{ busca?: 
         </div>
       </header>
 
-      <section className="grid border-y border-white/[0.08] sm:grid-cols-3">
+      <section className="od-band grid sm:grid-cols-3">
         <Metric icon={IconColumns} label="Casos ativos" value={String(activeCases.length)} />
         <Metric icon={IconAlert} label="Prazos nos próximos 7 dias" value={String(deadlines.length)} warning />
         <Metric icon={IconUsers} label="Clientes com caso" value={String(new Set(activeCases.map((item) => item.contact_id).filter(Boolean)).size)} />
       </section>
 
-      <section className="overflow-hidden border border-white/[0.09] bg-[#1e1d22]">
+      <section className="overflow-hidden panel">
         <div className="flex flex-col gap-3 border-b border-white/[0.08] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-base font-semibold text-white">Processos em acompanhamento</h2>
@@ -118,42 +130,7 @@ export default async function LawPage(props: { searchParams?: Promise<{ busca?: 
         {visibleCases.length === 0 ? (
           <EmptyCases />
         ) : (
-          <div>
-            <div className="hidden grid-cols-[minmax(0,1.5fr)_8rem_9rem_10rem] gap-4 border-b border-white/[0.07] px-5 py-2 text-od-label text-od-text-3 sm:grid"><span>Caso</span><span>Situação</span><span>Responsável</span><span>Próximo prazo</span></div>
-            {visibleCases.map((item) => (
-              <Link
-                key={item.id}
-                href={`/painel/juridico/processos/${item.id}`}
-                className="grid gap-3 border-b border-white/[0.06] px-5 py-4 hover:bg-white/[0.025] sm:grid-cols-[minmax(0,1.5fr)_8rem_9rem_10rem] sm:items-center sm:gap-4"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-[13px] font-semibold text-white">{item.title}</p>
-                  <p className="mt-1 truncate text-xs text-od-text-3">
-                    {item.area ?? "Área não informada"}
-                    {item.case_number ? ` · ${item.case_number}` : ""}
-                  </p>
-                </div>
-                <Status status={item.status} />
-                <span className="text-xs text-white/58">
-                  {item.responsible_id ? memberName.get(item.responsible_id) : "Sem responsável"}
-                </span>
-                <span
-                  className={
-                    "text-xs font-semibold " +
-                    (item.next_deadline_at && new Date(item.next_deadline_at) < deadlineThreshold
-                      ? "text-[#fb7767]"
-                      : "text-white/52")
-                  }
-                >
-                  {item.next_deadline_at
-                    ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(
-                        new Date(item.next_deadline_at)
-                      )
-                    : "Sem prazo"}
-                </span>
-              </Link>
-            ))}
-          </div>
+          <LegalCaseList rows={caseRows} canManage={canManageLegal(jobRole, isAdmin)} />
         )}
       </section>
     </div>
@@ -234,10 +211,6 @@ function Metric({
       <div><p className="text-xs font-medium text-od-text-3">{label}</p><p className="mt-1 text-2xl font-bold tracking-[-.02em] text-white">{value}</p></div>
     </article>
   );
-}
-
-function Status({ status }: { status: LegalCase["status"] }) {
-  return <span className="w-fit rounded-md bg-white/[0.06] px-2 py-1 text-xs font-semibold text-od-text">{LEGAL_CASE_STATUS[status]}</span>;
 }
 
 function Field({

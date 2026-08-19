@@ -4,6 +4,10 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PendingButton } from "@/components/ui/PendingButton";
+import {
+  LegalLossReasonDialog,
+  type LegalLossReason,
+} from "@/components/legal/legal-loss-reason-dialog";
 import type { FieldSpec } from "@/lib/people/professions";
 import type { Deal, DealStage } from "@/lib/supabase/types";
 import {
@@ -12,7 +16,9 @@ import {
   formatDealValue,
   getCommissionPercent,
 } from "@/lib/crm/deals";
+import { isLostPipelineList, stageFromPipelineList } from "@/lib/crm/pipeline-stage";
 import { formatBRL } from "@/lib/utils/format";
+import { pipelineMetaFromList } from "./pipeline-meta";
 import {
   acceptDealHandoff,
   adminReassignDeal,
@@ -29,6 +35,13 @@ import { IconCheck, IconChevronRight, IconGrip, IconPlus, IconTrash } from "../i
 
 type Member = { user_id: string; name: string | null };
 
+type PendingLegalLoss = {
+  dealId: string;
+  targetList: string;
+  previousStage: DealStage;
+  previousDetails: Record<string, string>;
+} | null;
+
 function firstDetail(details: Record<string, string> | undefined, fields: FieldSpec[]) {
   if (!details) return null;
   for (const field of fields) {
@@ -37,37 +50,6 @@ function firstDetail(details: Record<string, string> | undefined, fields: FieldS
   }
   return null;
 }
-
-const STAGE_META: Record<
-  DealStage,
-  { dot: string; chip: string; empty: string }
-> = {
-  novo: {
-    dot: "bg-sky-500",
-    chip: "bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-200",
-    empty: "Novos cards entram aqui.",
-  },
-  em_contato: {
-    dot: "bg-brand-500",
-    chip: "bg-brand-50 text-brand-700",
-    empty: "Sem cards nesta lista.",
-  },
-  negociacao: {
-    dot: "bg-warning-500",
-    chip: "bg-warning-50 text-warning-700",
-    empty: "Nenhum card agora.",
-  },
-  ganho: {
-    dot: "bg-success-500",
-    chip: "bg-success-50 text-success-700 dark:bg-[#062d1c] dark:text-[#9ff0c5]",
-    empty: "Nenhum card fechado.",
-  },
-  perdido: {
-    dot: "bg-danger-500",
-    chip: "bg-danger-50 text-danger-700 dark:bg-[#3a0b08] dark:text-[#ffb4ac]",
-    empty: "Sem cards perdidos.",
-  },
-};
 
 export default function Board({
   initialDeals,
@@ -79,6 +61,7 @@ export default function Board({
   isAdmin = false,
   isSeller = false,
   isRealEstate = false,
+  isLegal = false,
   flat = false,
 }: {
   initialDeals: Deal[];
@@ -91,6 +74,7 @@ export default function Board({
   isAdmin?: boolean;
   isSeller?: boolean;
   isRealEstate?: boolean;
+  isLegal?: boolean;
   flat?: boolean;
 }) {
   const [deals, setDeals] = useState(initialDeals);
@@ -99,6 +83,8 @@ export default function Board({
   const [savingId, setSavingId] = useState<string | null>(null);
   const [menuId, setMenuId] = useState<string | null>(null);
   const [handoffId, setHandoffId] = useState<string | null>(null);
+  const [pendingLegalLoss, setPendingLegalLoss] = useState<PendingLegalLoss>(null);
+  const [legalLossReturnFocus, setLegalLossReturnFocus] = useState<HTMLElement | null>(null);
   const nameById = new Map(members.map((m) => [m.user_id, m.name]));
   const [canDrag, setCanDrag] = useState(true);
   const [search, setSearch] = useState("");
@@ -156,7 +142,7 @@ export default function Board({
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
-  function commitMove(id: string, targetList: string) {
+  function commitMove(id: string, targetList: string, lossReason?: LegalLossReason) {
     if (boardBusy) return;
     const deal = deals.find((item) => item.id === id);
     if (!deal) return;
@@ -168,8 +154,22 @@ export default function Board({
     // No workspace de produtos, "Ganho" não é só uma coluna: precisa virar
     // pedido com itens, estoque e garantias. A confirmação é transacional e
     // só ela fecha a negociação de fato.
-    if (isSeller && stageFromList(targetList) === "ganho") {
+    if (isSeller && stageFromPipelineList(targetList) === "ganho") {
       router.push(`/painel/vendas/${id}/confirmar`);
+      return;
+    }
+
+    if (isLegal && isLostPipelineList(targetList) && !lossReason) {
+      const activeElement = document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+      setLegalLossReturnFocus(activeElement?.closest<HTMLElement>("[data-deal-card]") ?? activeElement);
+      setPendingLegalLoss({
+        dealId: id,
+        targetList,
+        previousStage,
+        previousDetails,
+      });
       return;
     }
 
@@ -178,7 +178,7 @@ export default function Board({
         item.id === id
           ? {
               ...item,
-              stage: stageFromList(targetList),
+              stage: stageFromPipelineList(targetList),
               details: { ...(item.details ?? {}), pipeline_list: targetList },
             }
           : item
@@ -187,7 +187,7 @@ export default function Board({
     setSavingId(id);
 
     startTransition(() => {
-      void moveDealToList(id, targetList)
+      void moveDealToList(id, targetList, lossReason)
         .catch(() => {
           setDeals((prev) =>
             prev.map((item) =>
@@ -200,6 +200,11 @@ export default function Board({
           router.refresh();
         });
     });
+  }
+
+  function confirmLegalLoss(pending: NonNullable<PendingLegalLoss>, lossReason: LegalLossReason) {
+    setPendingLegalLoss(null);
+    commitMove(pending.dealId, pending.targetList, lossReason);
   }
 
   function onDrop(targetList: string) {
@@ -219,7 +224,15 @@ export default function Board({
 
   return (
     <div className={flat ? "space-y-5" : "space-y-4"}>
-      <form action={createPipelineList} className={flat ? "flex flex-col gap-3 border-y border-white/[0.08] py-4 sm:flex-row sm:items-end" : "panel flex flex-col gap-3 p-4 sm:flex-row sm:items-end"}>
+      {pendingLegalLoss ? (
+        <LegalLossReasonDialog
+          dealTitle={deals.find((deal) => deal.id === pendingLegalLoss.dealId)?.title ?? "Atendimento"}
+          onCancel={() => setPendingLegalLoss(null)}
+          onConfirm={(lossReason) => confirmLegalLoss(pendingLegalLoss, lossReason)}
+          returnFocusTo={legalLossReturnFocus}
+        />
+      ) : null}
+      <form action={createPipelineList} className="panel flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
         <input type="hidden" name="return_to" value="/painel/funil" />
         <div className="min-w-0 flex-1">
           <label className="label" htmlFor="pipeline-list-name">
@@ -234,13 +247,13 @@ export default function Board({
             className="field mt-1.5"
           />
         </div>
-        <PendingButton className="btn h-[42px]" pendingLabel="Criando">
+        <PendingButton className="btn h-11" pendingLabel="Criando">
           <IconPlus className="h-4 w-4" />
           Criar lista
         </PendingButton>
       </form>
 
-      <section className={flat ? "grid gap-3 border-y border-white/[0.08] py-4 md:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto] md:items-end" : "panel grid gap-3 p-4 md:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto] md:items-end"}>
+      <section className="panel grid gap-3 p-4 md:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto] md:items-end">
         <label className="block min-w-0">
           <span className="label">Buscar no quadro</span>
           <input
@@ -280,7 +293,7 @@ export default function Board({
             ))}
           </select>
         </label>
-        <label className={flat ? "flex min-h-[42px] items-center gap-2 px-1 text-sm font-semibold text-white/60" : "flex min-h-[42px] items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-bold text-ink-soft"}>
+        <label className={flat ? "flex min-h-11 items-center gap-2 px-1 text-sm font-semibold text-white/60" : "flex min-h-11 items-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-bold text-ink-soft"}>
           <input
             type="checkbox"
             checked={hideEmpty}
@@ -292,7 +305,7 @@ export default function Board({
       </section>
 
       {columns.length > 1 && (
-        <div className={flat ? "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 border-y border-white/[0.08] bg-[#151419] py-2 sm:hidden" : "sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 rounded-xl border border-line bg-surface/92 p-1.5 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] backdrop-blur-xl sm:hidden"}>
+        <div className="sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 rounded-[var(--radius-inner)] border border-od-border bg-od-surface p-1.5 sm:hidden">
           <button
             type="button"
             onClick={() => scrollBoard("previous")}
@@ -318,7 +331,7 @@ export default function Board({
       <div
         ref={boardRef}
         aria-busy={boardBusy}
-        className={flat ? "pipeline-board -mx-4 flex snap-x snap-mandatory gap-0 overflow-x-auto border-y border-white/[0.08] px-4 sm:mx-0 sm:px-0" : "pipeline-board -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:gap-4 sm:px-0"}
+        className={flat ? "pipeline-board -mx-5 flex snap-x snap-mandatory gap-0 overflow-x-auto border-y border-white/[0.08] px-5 sm:mx-0 sm:px-0" : "pipeline-board -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 sm:mx-0 sm:gap-4 sm:px-0"}
       >
         {columns.map((column) => {
           const meta = trelloMeta(column);
@@ -381,6 +394,8 @@ export default function Board({
                     return (
                       <article
                         key={deal.id}
+                        data-deal-card
+                        tabIndex={0}
                         draggable={canDrag && !boardBusy}
                         onDragStart={() => setDragId(deal.id)}
                         onDragEnd={() => {
@@ -471,14 +486,14 @@ export default function Board({
                             {isSeller && deal.details?.seller_order_id ? (
                               <Link
                                 href={`/painel/pedidos/${deal.details.seller_order_id}`}
-                                className="flex min-h-11 items-center justify-center border border-od-accent/25 bg-od-accent/[0.06] px-3 text-xs font-semibold text-od-text hover:bg-white/[0.04]"
+                                className="flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-od-accent/25 bg-od-accent/[0.06] px-3 text-xs font-semibold text-od-text hover:bg-white/[0.04]"
                               >
                                 Abrir pedido confirmado
                               </Link>
                             ) : isSeller && deal.stage !== "perdido" ? (
                               <Link
                                 href={`/painel/vendas/${deal.id}/confirmar`}
-                                className="flex min-h-11 items-center justify-center border border-od-accent/25 bg-od-accent/[0.06] px-3 text-xs font-semibold text-od-text hover:bg-white/[0.04]"
+                                className="flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-od-accent/25 bg-od-accent/[0.06] px-3 text-xs font-semibold text-od-text hover:bg-white/[0.04]"
                               >
                                 Confirmar venda e criar pedido
                               </Link>
@@ -509,7 +524,7 @@ export default function Board({
                                   defaultValue={deal.details?.labels ?? ""}
                                   placeholder="Ex: quente, urgente"
                                   maxLength={240}
-                                  className="field mt-1 h-9 text-xs"
+                                  className="field mt-1 h-11 text-xs"
                                 />
                               </label>
                               <label className="block">
@@ -519,7 +534,7 @@ export default function Board({
                                   defaultValue={deal.details?.external_url ?? ""}
                                   placeholder="https://..."
                                   maxLength={300}
-                                  className="field mt-1 h-9 text-xs"
+                                  className="field mt-1 h-11 text-xs"
                                 />
                               </label>
                               <label className="block">
@@ -533,7 +548,7 @@ export default function Board({
                                   inputMode="decimal"
                                   defaultValue={deal.details?.commission_percent ?? ""}
                                   placeholder="Ex: 6"
-                                  className="field mt-1 h-9 text-xs"
+                                  className="field mt-1 h-11 text-xs"
                                 />
                               </label>
                               {deal.stage === "perdido" ? (
@@ -544,12 +559,12 @@ export default function Board({
                                     defaultValue={deal.details?.loss_reason ?? ""}
                                     placeholder="Ex: preço, prazo, concorrente"
                                     maxLength={120}
-                                    className="field mt-1 h-9 text-xs"
+                                    className="field mt-1 h-11 text-xs"
                                   />
                                 </label>
                               ) : null}
                               <PendingButton
-                                className="min-h-9 rounded-md bg-brand-700 px-3 py-1.5 text-xs font-black text-white hover:bg-brand-800"
+                                className="min-h-11 rounded-[var(--radius-control)] bg-brand-700 px-3 py-1.5 text-xs font-black text-white hover:bg-brand-800"
                                 pendingLabel="Salvando"
                               >
                                 Salvar opções
@@ -565,11 +580,11 @@ export default function Board({
                                   name="photo"
                                   type="file"
                                   accept="image/*"
-                                  className="mt-1 block w-full text-xs font-bold text-ink-soft file:mr-3 file:min-h-9 file:rounded-md file:border-0 file:bg-surface-2 file:px-3 file:text-xs file:font-black file:text-ink-soft hover:file:bg-brand-50 hover:file:text-brand-700"
+                                  className="mt-1 block w-full text-xs font-bold text-ink-soft file:mr-3 file:min-h-11 file:rounded-[var(--radius-control)] file:border-0 file:bg-surface-2 file:px-3 file:text-xs file:font-black file:text-ink-soft hover:file:bg-brand-50 hover:file:text-brand-700"
                                 />
                               </label>
                               <PendingButton
-                                className="min-h-9 rounded-md border border-line bg-white px-3 py-1.5 text-xs font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                                className="min-h-11 rounded-[var(--radius-control)] border border-line bg-white px-3 py-1.5 text-xs font-black text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
                                 pendingLabel="Anexando"
                               >
                                 Anexar foto
@@ -665,7 +680,7 @@ export default function Board({
           );
         })}
         {columns.length === 0 && (
-          <div className={flat ? "flex min-h-48 min-w-full items-center justify-center border-y border-white/[0.08] p-8 text-center" : "panel flex min-h-48 min-w-full items-center justify-center p-8 text-center"}>
+          <div className="panel flex min-h-48 min-w-full items-center justify-center p-8 text-center">
             <p className="text-sm font-bold text-ink-muted">{isSeller ? "Nenhuma venda bate com os filtros." : isRealEstate ? "Nenhum atendimento bate com os filtros." : "Nenhum card bate com os filtros."}</p>
           </div>
         )}
@@ -773,7 +788,7 @@ function DealAssignee({
           <select
             name={isAdmin ? "assignee_id" : "target_user_id"}
             required
-            className="field h-9 py-0 text-xs"
+            className="field h-11 py-0 text-xs"
             defaultValue=""
           >
             <option value="" disabled>
@@ -890,52 +905,5 @@ function formatPercent(value: number | null) {
 }
 
 function trelloMeta(list: string) {
-  const normalized = list
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-  if (normalized.includes("perdido") || normalized.includes("perda")) return STAGE_META.perdido;
-  if (
-    normalized.includes("fechado") ||
-    normalized.includes("vendidos") ||
-    normalized.includes("vendas") ||
-    normalized.includes("ganho")
-  ) {
-    return STAGE_META.ganho;
-  }
-  if (normalized.includes("visita") || normalized.includes("proposta") || normalized.includes("negociacao")) {
-    return STAGE_META.negociacao;
-  }
-  if (normalized.includes("analise") || normalized.includes("contato")) return STAGE_META.em_contato;
-  return STAGE_META.novo;
-}
-
-function stageFromList(list: string): DealStage {
-  const normalized = list
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-  if (normalized.includes("perdido") || normalized.includes("perda") || normalized.includes("lost")) {
-    return "perdido";
-  }
-  if (
-    normalized.includes("fechado") ||
-    normalized.includes("vendido") ||
-    normalized.includes("vendas") ||
-    normalized.includes("ganho") ||
-    normalized.includes("won")
-  ) {
-    return "ganho";
-  }
-  if (
-    normalized.includes("proposta") ||
-    normalized.includes("negociacao") ||
-    normalized.includes("visita")
-  ) {
-    return "negociacao";
-  }
-  if (normalized.includes("analise") || normalized.includes("contato") || normalized.includes("follow")) {
-    return "em_contato";
-  }
-  return "novo";
+  return pipelineMetaFromList(list);
 }

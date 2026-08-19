@@ -65,7 +65,7 @@ export default async function PipelineReportPage(
 
   return (
     <div className={usesFlatSurface ? "w-full max-w-[1640px] space-y-6" : "max-w-5xl space-y-4 sm:space-y-5"}>
-      <header className={usesFlatSurface ? "flex flex-col gap-5 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between" : "enter flex flex-col gap-4 rounded-lg border border-line bg-surface p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between"}>
+      <header className={usesFlatSurface ? "flex flex-col gap-5 pb-5 lg:flex-row lg:items-end lg:justify-between" : "enter flex flex-col gap-4 rounded-lg border border-line bg-surface p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between"}>
         <div>
           <Link
             href="/painel/funil"
@@ -113,7 +113,7 @@ export default async function PipelineReportPage(
         </div>
       </header>
 
-      <section className={usesFlatSurface ? "grid border-y border-white/[0.08] sm:grid-cols-4" : "grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"}>
+      <section className={usesFlatSurface ? "od-band grid sm:grid-cols-4" : "grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"}>
         <MetricCard label={isRealEstate ? "Atendimentos iniciados" : "Negócios criados"} value={String(totals.created)} flat={usesFlatSurface} />
         <MetricCard label={isRealEstate ? "Fechados" : "Ganhos"} value={String(totals.won)} flat={usesFlatSurface} />
         <MetricCard label={isRealEstate ? "Valor fechado" : "Valor ganho"} value={formatBRL(totals.wonValueCents)} flat={usesFlatSurface} />
@@ -124,7 +124,7 @@ export default async function PipelineReportPage(
         />
       </section>
 
-      <section className={usesFlatSurface ? "overflow-x-auto border-y border-white/[0.08]" : "panel overflow-x-auto p-5 sm:p-6"}>
+      <section className={usesFlatSurface ? "overflow-x-auto border-t border-white/[0.08]" : "panel overflow-x-auto p-5 sm:p-6"}>
         <table className={usesFlatSurface ? "w-full min-w-[680px] border-collapse text-sm" : "w-full min-w-[560px] border-collapse text-sm"}>
           <thead>
             <tr className={usesFlatSurface ? "text-left text-xs font-semibold uppercase tracking-[0.04em] text-od-text-3" : "text-left text-xs font-bold uppercase tracking-wide text-ink-muted"}>
@@ -136,15 +136,15 @@ export default async function PipelineReportPage(
               <th className={usesFlatSurface ? "border-b border-white/[0.08] px-4 py-3" : "border-b border-line pb-2"}>Conversão</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="od-rows">
             {stats.map((m) => (
               <tr key={m.monthKey}>
-                <td className={usesFlatSurface ? "border-b border-white/[0.07] px-4 py-3 font-semibold text-white/86" : "border-b border-line py-2 font-bold text-ink"}>{m.monthLabel}</td>
-                <td className={usesFlatSurface ? "border-b border-white/[0.07] px-4 py-3 text-white/54" : "border-b border-line py-2 text-ink-soft"}>{m.created}</td>
-                <td className={usesFlatSurface ? "border-b border-white/[0.07] px-4 py-3 text-white/54" : "border-b border-line py-2 text-ink-soft"}>{m.won}</td>
-                <td className={usesFlatSurface ? "border-b border-white/[0.07] px-4 py-3 text-white/54" : "border-b border-line py-2 text-ink-soft"}>{m.lost}</td>
-                <td className={usesFlatSurface ? "border-b border-white/[0.07] px-4 py-3 text-white/54" : "border-b border-line py-2 text-ink-soft"}>{formatBRL(m.wonValueCents)}</td>
-                <td className={usesFlatSurface ? "border-b border-white/[0.07] px-4 py-3 text-white/54" : "border-b border-line py-2 text-ink-soft"}>
+                <td className={usesFlatSurface ? "px-4 py-3 font-semibold text-white/86" : "py-2 font-bold text-ink"}>{m.monthLabel}</td>
+                <td className={usesFlatSurface ? "px-4 py-3 text-white/54" : "py-2 text-ink-soft"}>{m.created}</td>
+                <td className={usesFlatSurface ? "px-4 py-3 text-white/54" : "py-2 text-ink-soft"}>{m.won}</td>
+                <td className={usesFlatSurface ? "px-4 py-3 text-white/54" : "py-2 text-ink-soft"}>{m.lost}</td>
+                <td className={usesFlatSurface ? "px-4 py-3 text-white/54" : "py-2 text-ink-soft"}>{formatBRL(m.wonValueCents)}</td>
+                <td className={usesFlatSurface ? "px-4 py-3 text-white/54" : "py-2 text-ink-soft"}>
                   {m.conversionRate !== null ? `${m.conversionRate}%` : "—"}
                 </td>
               </tr>

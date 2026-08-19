@@ -9,6 +9,7 @@ export type OrgMember = {
   job_role: JobRole;
   name: string | null;
   profession_type: string;
+  task_visibility: "profile" | "mixed" | "private";
 };
 
 // Resolve a organização ativa do usuário: usa profiles.active_org_id se ele
@@ -74,7 +75,7 @@ export async function getOrgMembers(
 ): Promise<OrgMember[]> {
   const { data: members } = await supabase
     .from("organization_members")
-    .select("user_id, role, job_role, created_at")
+    .select("user_id, role, job_role, task_visibility, created_at")
     .eq("org_id", orgId)
     .order("created_at", { ascending: true });
 
@@ -97,5 +98,7 @@ export async function getOrgMembers(
     job_role: (m.job_role as JobRole | null) ?? "staff",
     name: profileById.get(m.user_id as string)?.name ?? null,
     profession_type: profileById.get(m.user_id as string)?.profession_type ?? "autonomous_seller",
+    task_visibility:
+      m.task_visibility === "mixed" || m.task_visibility === "private" ? m.task_visibility : "profile",
   }));
 }

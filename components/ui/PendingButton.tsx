@@ -1,9 +1,10 @@
 "use client";
 
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useFormStatus } from "react-dom";
+import { Button, type ButtonProps } from "@/components/ui/button";
 
-type PendingButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+type PendingButtonProps = ButtonProps & {
   pendingLabel?: string;
   iconOnly?: boolean;
   pendingChildren?: ReactNode;
@@ -23,7 +24,7 @@ export function PendingButton({
   const isDisabled = disabled || pending;
 
   return (
-    <button
+    <Button
       {...props}
       type={type}
       disabled={isDisabled}
@@ -57,6 +58,6 @@ export function PendingButton({
           </>
         )}
       </span>
-    </button>
+    </Button>
   );
 }

@@ -35,6 +35,9 @@ export default function TaskItem({
   isAdmin,
   canReviewAll = false,
   returnTo = "/painel/tarefas",
+  selectable = false,
+  selected = false,
+  onSelectedChange,
 }: {
   task: Task;
   overdue: boolean;
@@ -43,6 +46,9 @@ export default function TaskItem({
   isAdmin: boolean;
   canReviewAll?: boolean;
   returnTo?: string;
+  selectable?: boolean;
+  selected?: boolean;
+  onSelectedChange?: (selected: boolean) => void;
 }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -69,6 +75,15 @@ export default function TaskItem({
   return (
     <li className="flex flex-col gap-2 py-3">
       <div className="group flex items-center gap-3">
+        {selectable && (
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={(event) => onSelectedChange?.(event.target.checked)}
+            className="h-[18px] w-[18px] shrink-0 rounded border-line accent-brand-700"
+            aria-label={`Selecionar ${task.title}`}
+          />
+        )}
         <label className={"flex min-w-0 flex-1 items-center gap-3 rounded-lg px-1 py-1 "+(requiresReview?"cursor-default":"cursor-pointer")}>
           <input
             type="checkbox"
@@ -148,9 +163,9 @@ export default function TaskItem({
       {canReview && (
         <form action={reviewTaskCompletion} className="ml-1 grid gap-2 rounded-lg border border-line bg-surface-2 p-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
           <input type="hidden" name="task_id" value={task.id}/><input type="hidden" name="return_to" value={returnTo}/>
-          <div><label className="label" htmlFor={`review-${task.id}`}>Orientação se devolver</label><input id={`review-${task.id}`} name="review_note" className="field mt-1.5 h-10" placeholder="Ex.: corrigir os documentos anexados"/></div>
-          <PendingButton name="decision" value="changes" className="min-h-10 rounded-md border border-line bg-white px-3 text-xs font-black text-ink-soft hover:bg-warning-50" pendingLabel="Devolvendo">Devolver</PendingButton>
-          <PendingButton name="decision" value="approve" className="min-h-10 rounded-md bg-brand-700 px-3 text-xs font-black text-white hover:bg-brand-800" pendingLabel="Aprovando">Aprovar</PendingButton>
+          <div><label className="label" htmlFor={`review-${task.id}`}>Orientação se devolver</label><input id={`review-${task.id}`} name="review_note" className="field mt-1.5 h-11" placeholder="Ex.: corrigir os documentos anexados"/></div>
+          <PendingButton name="decision" value="changes" className="min-h-11 rounded-[var(--radius-control)] border border-line bg-white px-3 text-xs font-black text-ink-soft hover:bg-warning-50" pendingLabel="Devolvendo">Devolver</PendingButton>
+          <PendingButton name="decision" value="approve" className="min-h-11 rounded-[var(--radius-control)] bg-brand-700 px-3 text-xs font-black text-white hover:bg-brand-800" pendingLabel="Aprovando">Aprovar</PendingButton>
         </form>
       )}
 
@@ -224,7 +239,7 @@ export default function TaskItem({
           <select
             name={isAdmin ? "assignee_id" : "target_user_id"}
             required
-            className="field h-9 py-0 text-xs"
+            className="field h-11 py-0 text-xs"
             defaultValue=""
           >
             <option value="" disabled>
@@ -247,4 +262,3 @@ export default function TaskItem({
     </li>
   );
 }
-

@@ -34,7 +34,7 @@ export function SendForSignature({
         defaultValue={defaultName}
         required
         placeholder="Nome do signatário"
-        className="field min-h-9 text-xs"
+        className="field min-h-11 text-xs"
       />
       <input
         name="signer_email"
@@ -42,10 +42,10 @@ export function SendForSignature({
         defaultValue={defaultEmail}
         required
         placeholder="E-mail do signatário"
-        className="field min-h-9 text-xs"
+        className="field min-h-11 text-xs"
       />
       <div className="flex items-center gap-2">
-        <PendingButton className="btn min-h-9 flex-1 text-xs" pendingLabel="Enviando">
+        <PendingButton className="btn min-h-11 flex-1 text-xs" pendingLabel="Enviando">
           Enviar
         </PendingButton>
         <button type="button" onClick={() => setOpen(false)} className="text-xs font-bold text-ink-muted">

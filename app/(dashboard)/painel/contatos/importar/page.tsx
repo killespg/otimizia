@@ -24,11 +24,10 @@ export default async function ImportContactsPage() {
   );
   const preset = getProfessionPreset(workspaceKey);
   const workspaceLabels = getWorkspaceLabels(preset, org?.workspace_preferences, workspaceKey);
-  const usesFlatSurface = workspaceKey === "autonomous_seller" || workspaceKey === "real_estate_broker";
 
   return (
     <div className="max-w-3xl space-y-4 sm:space-y-5">
-      <header className={usesFlatSurface ? "border-b border-white/[0.08] pb-5" : "enter rounded-lg border border-line bg-surface p-5 sm:p-6"}>
+      <header className="pb-5">
         <Link
           href="/painel/contatos"
           className="inline-flex items-center gap-1 text-sm font-bold text-ink-muted hover:text-ink"
@@ -45,7 +44,7 @@ export default async function ImportContactsPage() {
         </p>
       </header>
 
-      <ContactsCsvImporter flat={usesFlatSurface} />
+      <ContactsCsvImporter />
     </div>
   );
 }

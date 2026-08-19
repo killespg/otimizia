@@ -63,6 +63,10 @@ export function canViewFinance(role: JobRole | null | undefined, isAdmin = false
   return isAdmin || ["owner", "managing_partner", "finance"].includes(role ?? "");
 }
 
+export function canManageFinance(role: JobRole | null | undefined, isAdmin = false) {
+  return isAdmin || ["owner", "managing_partner", "finance"].includes(role ?? "");
+}
+
 export function outstandingCents(receivable: Pick<Receivable, "original_cents" | "paid_cents">) {
   return Math.max(0, receivable.original_cents - receivable.paid_cents);
 }

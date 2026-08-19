@@ -8,6 +8,7 @@ import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getWorkspaceKey } from "@/lib/workspace/workspaces";
+import { normalizeBulkIds } from "@/lib/utils/form-parse";
 import type { JobRole, LegalCaseStatus } from "@/lib/supabase/types";
 import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/law/datajud-tribunals";
 import { normalizeProcessNumber } from "@/lib/law/datajud";
@@ -123,6 +124,91 @@ export async function updateLegalCaseStatus(formData: FormData) {
   revalidateLaw();
 }
 
+// Exclusão em lote da carteira de casos. Prazos, eventos, documentos e links de
+// compartilhamento cascateiam junto no banco; os arquivos em storage não, então
+// os caminhos são coletados antes e removidos depois do delete confirmado.
+export async function bulkDeleteLegalCases(ids: string[]) {
+  const caseIds = normalizeBulkIds(ids);
+  if (caseIds.length === 0) return { deleted: 0 };
+  const { supabase, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode excluir casos jurídicos.");
+
+  const { data: owned } = await supabase
+    .from("legal_cases")
+    .select("id")
+    .in("id", caseIds)
+    .eq("org_id", orgId);
+  const ownedIds = (owned ?? []).map((item) => item.id as string);
+  if (ownedIds.length === 0) return { deleted: 0 };
+
+  const { data: documents } = await supabase
+    .from("legal_documents")
+    .select("storage_path")
+    .in("case_id", ownedIds)
+    .eq("org_id", orgId);
+  const paths = (documents ?? [])
+    .map((document) => document.storage_path as string | null)
+    .filter((path): path is string => Boolean(path));
+
+  const { error } = await supabase.from("legal_cases").delete().in("id", ownedIds).eq("org_id", orgId);
+  if (error) throw new Error("Não foi possível excluir os casos selecionados.");
+
+  if (paths.length > 0) {
+    await createAdminClient().storage.from("legal-documents").remove(paths);
+  }
+
+  revalidateLaw();
+  return { deleted: ownedIds.length };
+}
+
+// Tira o compromisso denormalizado do caso sem destruir o processo. A agenda de
+// /painel/juridico/prazos usa prazos reais e só cai neste campo quando o caso
+// ainda não tem um legal_deadline no mesmo dia.
+export async function bulkClearCaseDeadlines(ids: string[]) {
+  const caseIds = normalizeBulkIds(ids);
+  if (caseIds.length === 0) return { cleared: 0 };
+  const { supabase, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode alterar prazos.");
+
+  const { error } = await supabase
+    .from("legal_cases")
+    .update({ next_deadline_at: null })
+    .in("id", caseIds)
+    .eq("org_id", orgId);
+  if (error) throw new Error("Não foi possível tirar os casos da agenda.");
+
+  revalidateLaw();
+  return { cleared: caseIds.length };
+}
+
+// Exclusão em lote de prazos de um caso. Aqui o alvo é a própria tabela de
+// prazos: o caso e o restante do histórico continuam intactos.
+export async function bulkDeleteLegalDeadlines(ids: string[]) {
+  const deadlineIds = normalizeBulkIds(ids);
+  if (deadlineIds.length === 0) return { deleted: 0 };
+  const { supabase, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode excluir prazos.");
+
+  const { data: owned } = await supabase
+    .from("legal_deadlines")
+    .select("case_id")
+    .in("id", deadlineIds)
+    .eq("org_id", orgId);
+  const caseIds = Array.from(new Set((owned ?? []).map((item) => item.case_id as string)));
+  if (caseIds.length === 0) return { deleted: 0 };
+
+  const { error } = await supabase
+    .from("legal_deadlines")
+    .delete()
+    .in("id", deadlineIds)
+    .eq("org_id", orgId);
+  if (error) throw new Error("Não foi possível excluir os prazos selecionados.");
+
+  for (const caseId of caseIds) revalidatePath(`/painel/juridico/processos/${caseId}`);
+  revalidateLaw();
+  return { deleted: deadlineIds.length };
+}
+
 export async function createLegalDeadline(formData: FormData) {
   const { supabase, user, orgId, jobRole, isAdmin } = await requireLawOffice();
   if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode criar prazos.");
@@ -141,6 +227,7 @@ export async function createLegalDeadline(formData: FormData) {
   });
   if (error) throw new Error("Não foi possível criar o prazo.");
   revalidateLaw(); revalidatePath(`/painel/juridico/processos/${caseId}`);
+  if (text(formData.get("return_to"), 24) === "agenda") redirect("/painel/juridico/prazos");
 }
 
 export async function completeLegalDeadline(formData: FormData) {
@@ -257,6 +344,44 @@ export async function uploadLegalDocument(formData: FormData) {
     throw new Error("Não foi possível adicionar o documento.");
   }
   revalidatePath(`/painel/juridico/processos/${caseId}`);
+}
+
+// Exclusão em lote de documentos. Só o que tem storage_path deixa arquivo para
+// trás; links externos e minutas geradas vivem só na linha do banco.
+export async function bulkDeleteLegalDocuments(ids: string[]) {
+  const documentIds = normalizeBulkIds(ids);
+  if (documentIds.length === 0) return { deleted: 0 };
+  const { supabase, orgId, jobRole, isAdmin } = await requireLawOffice();
+  if (!canManageLegal(jobRole, isAdmin)) throw new Error("Seu cargo não pode excluir documentos.");
+
+  const { data: owned } = await supabase
+    .from("legal_documents")
+    .select("id,case_id,storage_path")
+    .in("id", documentIds)
+    .eq("org_id", orgId);
+  const rows = owned ?? [];
+  if (rows.length === 0) return { deleted: 0 };
+  const paths = rows
+    .map((row) => row.storage_path as string | null)
+    .filter((path): path is string => Boolean(path));
+
+  const { error } = await supabase
+    .from("legal_documents")
+    .delete()
+    .in("id", rows.map((row) => row.id as string))
+    .eq("org_id", orgId);
+  if (error) throw new Error("Não foi possível excluir os documentos selecionados.");
+
+  if (paths.length > 0) {
+    await createAdminClient().storage.from("legal-documents").remove(paths);
+  }
+
+  for (const caseId of new Set(rows.map((row) => row.case_id as string))) {
+    revalidatePath(`/painel/juridico/processos/${caseId}`);
+  }
+  revalidatePath("/painel/juridico/documentos");
+  revalidateLaw();
+  return { deleted: rows.length };
 }
 
 // Confere o acesso pelo client normal do usuário (a RLS/can_access_legal_case

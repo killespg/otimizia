@@ -8,7 +8,7 @@ import { LogoMarquee } from "@/components/landing/logo-marquee";
 import { FeatureTabs } from "@/components/landing/feature-tabs";
 import { DashboardPreview } from "@/components/landing/dashboard-preview";
 import { Pricing } from "@/components/landing/pricing";
-import { Glow, Reveal } from "@/components/landing/reveal";
+import { Reveal } from "@/components/landing/reveal";
 import { FaqAccordion } from "@/components/landing/FaqAccordion";
 import { CookiePreferencesLink } from "@/components/site/CookieConsent";
 import { SpotlightCard } from "@/components/landing/spotlight-card";
@@ -17,6 +17,7 @@ import { ContainerScroll } from "@/components/landing/container-scroll-animation
 import { About } from "@/components/landing/about";
 import { LogoWordmark } from "@/components/design-system/logo";
 import { MobileStickyCta } from "@/components/landing/mobile-sticky-cta";
+import { LandingMark } from "@/components/landing/mark";
 
 /**
  * Faixa de seção de largura total.
@@ -44,9 +45,8 @@ function Section({
   return (
     <section
       id={id}
-      className={`relative isolate scroll-mt-[calc(4rem+env(safe-area-inset-top))] overflow-hidden border-t border-od-border ${raised ? "bg-od-muted-surface" : "bg-od-bg"}`}
+      className={`relative isolate scroll-mt-[calc(4rem+env(safe-area-inset-top))] overflow-hidden ${raised ? "bg-od-muted-surface" : "bg-od-bg"}`}
     >
-      <Glow className="-top-40 left-1/2 -translate-x-1/2" size={640} intensity={0.1} pulse />
       <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-20 sm:px-8 md:py-24">
         {title || description ? (
           <Reveal className="mx-auto mb-12 max-w-[560px] text-center">
@@ -74,32 +74,17 @@ export default async function LandingPage() {
   return (
     <div className="landing-page dark relative bg-od-bg">
 
-      {/* Glow de fundo único, atravessando hero → features → dashboard, pra costurar
-          as seções em vez de cada uma "recomeçar" visualmente do zero. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[1400px]"
-        style={{
-          background:
-            "radial-gradient(ellipse 70% 45% at 50% 0%, rgba(92,34,232,0.22), transparent 65%)",
-        }}
-      />
-
       <LandingNav />
       <MobileStickyCta />
       <main className="relative overflow-hidden">
-        {/* O hero quebra o container padrão e ocupa a largura inteira da tela
-            — o fundo/glow vai de ponta a ponta em vez de ficar preso dentro
-            de uma faixa com respiro nas laterais (o texto continua com seu
-            próprio recuo, só o pano de fundo é que estica). A prova social
-            volta pro container padrão logo abaixo, colada (sem régua) no
-            rodapé do hero — hero e prova social continuam sendo um bloco de
-            entrada só, não duas categorias. */}
-        <Hero animated />
-        <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 sm:px-8">
+        {/* Abertura: hero e prova social continuam emendados, sem regua entre
+            eles — sao um bloco de entrada, nao duas categorias. */}
+        <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 pt-10 sm:px-8">
+          <Hero />
           <div className="-mt-4 pb-20 pt-14">
+            <LandingMark className="mx-auto mb-10" />
             <p className="mb-7 text-center text-od-label text-od-text-3">
-              Feito para quem trabalha sozinho e para equipes inteiras
+              Serve para quem trabalha sozinho e para equipe inteira
             </p>
             <LogoMarquee bare fadeColor="var(--od-bg)" />
           </div>
@@ -114,7 +99,7 @@ export default async function LandingPage() {
           <FeatureTabs />
         </Section>
 
-        <section id="painel" className="scroll-mt-[calc(4rem+env(safe-area-inset-top))] border-t border-od-border bg-od-bg">
+        <section id="painel" className="scroll-mt-[calc(4rem+env(safe-area-inset-top))] bg-od-bg">
           <ContainerScroll
             titleComponent={
               <>
@@ -143,12 +128,13 @@ export default async function LandingPage() {
 
         <Section
           id="ia"
-          title="Tim, o sócio que nunca dorme"
+          title="Tim, o sócio-assistente"
           description="Ele não devolve conselho: cria o contato, abre a negociação e agenda o compromisso, por voz ou por escrito."
           raised
         >
-          <div className="flex flex-col gap-3">
-            <SpotlightCard localSpotlight={false} />
+          <div className="flex flex-col items-center gap-8">
+            <SpotlightCard />
+            <LandingMark />
             <AiComposer />
           </div>
         </Section>
@@ -183,7 +169,7 @@ export default async function LandingPage() {
                 },
                 {
                   q: "Consigo usar no celular?",
-                  a: "Sim. O OtimizIA é instalável direto do navegador, funciona como aplicativo e manda notificação antes dos seus compromissos. Foi pensado para quem usa em trânsito, entre um atendimento e outro.",
+                  a: "Sim. O OtimizIA é instalável direto do navegador, funciona como aplicativo e manda notificação antes dos seus compromissos. Funciona em trânsito, entre um atendimento e outro.",
                 },
                 {
                   q: "Como funciona com a minha equipe?",
@@ -204,22 +190,45 @@ export default async function LandingPage() {
           <About />
         </Section>
 
-        <section id="cta-final" className="border-t border-od-border bg-od-muted-surface">
+        <section id="cta-final" className="bg-od-muted-surface">
           <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-24 text-center sm:px-8">
             <h2 className="mx-auto mb-4 max-w-[520px] text-od-title text-od-text">
               Pronto pra parar de perder negócio por esquecimento?
             </h2>
             <p className="mx-auto mb-8 max-w-[440px] text-[15px] text-od-text-2">
-              Comece grátis hoje, sem cartão de crédito e sem complicação.
+              Comece grátis hoje, sem cartão de crédito.
             </p>
             <Link href="/signup" className="btn inline-flex items-center gap-2">
               Começar grátis
               <ArrowRight className="size-4" strokeWidth={2} />
             </Link>
+
+            {/* Faixa de fatos verificáveis — não depoimento. Cada item é algo
+                que o produto de fato faz (30 dias sem cartão, IA no WhatsApp,
+                exportação própria, sem multa), não alegação de cliente. Quando
+                houver um depoimento real, trocar por ele (slot abaixo). */}
+            <ul className="mx-auto mt-12 flex max-w-[680px] flex-wrap items-center justify-center gap-x-8 gap-y-3 text-[12px] text-od-text-3">
+              <li>30 dias grátis, sem cartão</li>
+              <li aria-hidden className="text-od-border">·</li>
+              <li>IA atendendo no WhatsApp</li>
+              <li aria-hidden className="text-od-border">·</li>
+              <li>Exporta seus dados quando quiser</li>
+              <li aria-hidden className="text-od-border">·</li>
+              <li>Cancele sem multa</li>
+            </ul>
+
+            {/* SLOT de depoimento real — preencher quando houver um cliente
+                disposto a assinar. Não publicar frase inventada: seria o mesmo
+                vício de "prova social falsa" que tiramos da faixa de logos.
+                Exemplo de estrutura:
+                <figure className="mx-auto mt-14 max-w-[560px]">
+                  <blockquote className="text-[18px] ...">"frase real"</blockquote>
+                  <figcaption>Nome · profissão · cidade</figcaption>
+                </figure> */}
           </div>
         </section>
 
-        <footer className="border-t border-od-border bg-od-bg">
+        <footer className="bg-od-bg">
           <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-12 sm:px-8">
             <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
               <div className="max-w-[320px]">

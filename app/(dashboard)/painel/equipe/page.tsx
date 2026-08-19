@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PendingButton } from "@/components/ui/PendingButton";
 import { jobRoleLabel } from "@/lib/law/law-office";
@@ -9,7 +10,8 @@ import type { Organization } from "@/lib/supabase/types";
 import { normalizeProfession } from "@/lib/people/professions";
 import type { JobRole } from "@/lib/supabase/types";
 import { IconPlus, IconTrash, IconUsers } from "../icons";
-import { inviteMember, removeMember, revokeInvitation, updateMemberJobRole, updateMemberRole, updateOrganizationContext } from "./actions";
+import { inviteMember, removeMember, revokeInvitation, updateMemberJobRole, updateMemberRole, updateOrganizationContext, updateOrgTaskVisibility } from "./actions";
+import { TASK_VISIBILITY_OPTIONS, canAssignLegalTasks, orgTaskVisibilityPolicy } from "@/lib/law/task-visibility";
 
 function memberJobRoleLabel(role: JobRole, professionType: string) {
   return normalizeProfession(professionType) === "real_estate_broker"
@@ -48,14 +50,15 @@ export default async function TeamPage(
   const adminCount = members.filter((m) => m.role === "admin").length;
   const isSolo = members.length <= 1;
   const selfMember = members.find((m) => m.user_id === user.id);
+  const canLockVisibility = canAssignLegalTasks(selfMember?.job_role, isAdmin);
+  const visibilityPolicy = orgTaskVisibilityPolicy(org ?? {});
   const isSeller = normalizeProfession(selfMember?.profession_type) === "autonomous_seller";
   const isRealEstate = normalizeProfession(selfMember?.profession_type) === "real_estate_broker";
-  const usesFlatSurface = isSeller || isRealEstate;
   const inviteJobRoles = jobRolesFor(normalizeProfession(selfMember?.profession_type));
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
-      <header className="border-b border-white/[0.08] pb-5">
+      <header className="pb-5">
         <p className="text-xs font-semibold text-od-text-2">{isSeller ? "Vendas / Meu negócio" : isRealEstate ? "Imobiliário / Equipe" : "Escritório / Equipe"}</p>
         <h1 className="mt-2 text-od-title text-white">
           {org?.name ?? "Sua empresa"}
@@ -75,10 +78,47 @@ export default async function TeamPage(
         </div>
       )}
 
+      {canLockVisibility ? (
+        <section className="ui-form-panel">
+          <header className="ui-form-panel__header">
+            <div className="ui-form-panel__copy">
+              <h2 className="ui-form-panel__title">Visibilidade de tarefas e lembretes</h2>
+              <p className="ui-form-panel__description">
+                Sem travar, cada membro escolhe no próprio perfil ou em Configurações. Se definir para a organização, a
+                opção fica bloqueada para todo mundo, com o aviso de que a escolha foi da organização.
+              </p>
+            </div>
+          </header>
+          <form action={updateOrgTaskVisibility} className="ui-form-panel__body grid gap-4">
+            <label className="flex min-h-11 items-center gap-3 text-sm text-white">
+              <input type="checkbox" name="task_visibility_locked" defaultChecked={visibilityPolicy.locked} />
+              Definir para toda a organização
+            </label>
+            <div className="grid gap-3">
+              {TASK_VISIBILITY_OPTIONS.map((option, index) => (
+                <label key={option.value} className="flex min-h-11 items-start gap-3 rounded-[var(--radius-inner)] border border-od-border px-4 py-3">
+                  <input type="radio" name="task_visibility_mode" value={option.value} defaultChecked={visibilityPolicy.mode === option.value} className="mt-1" />
+                  <span>
+                    <span className="block text-sm font-semibold text-white">
+                      {index + 1}. {option.label}
+                    </span>
+                    <span className="mt-1 block text-xs leading-5 text-od-text-3">{option.description}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+            <div className="flex justify-end">
+              <PendingButton className="btn" pendingLabel="Salvando">
+                Salvar política
+              </PendingButton>
+            </div>
+          </form>
+        </section>
+      ) : null}
+
       <SectionCard
         title={isSeller ? "Seu negócio" : isRealEstate ? "Imobiliária e assistente" : "Empresa e IA"}
         description={isSeller ? "Informações comerciais que orientam o assistente e mantêm sua operação coerente." : isRealEstate ? "Contexto da operação imobiliária usado pelo assistente e compartilhado com a equipe." : "Nome, contexto e preferências que a IA usa pra te ajudar — vale mesmo se for só você."}
-        flat={usesFlatSurface}
       >
         {isAdmin ? (
           <form action={updateOrganizationContext} className="space-y-3">
@@ -178,7 +218,7 @@ export default async function TeamPage(
       </SectionCard>
 
       {isAdmin && (
-        <section className={usesFlatSurface ? "space-y-3 border-y border-white/[0.08] py-5" : "space-y-3 border border-white/[0.09] bg-[#1e1d22] p-5"}>
+        <section className="panel space-y-3 p-5">
           <div>
             <h2 className="text-base font-semibold text-white">
               Convidar
@@ -239,7 +279,7 @@ export default async function TeamPage(
         </section>
       )}
 
-      <section className={usesFlatSurface ? "overflow-hidden border-y border-white/[0.08]" : "overflow-hidden border border-white/[0.09] bg-[#1e1d22]"}>
+      <section className="panel overflow-hidden">
         <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-5 py-4">
           <h2 className="text-base font-semibold text-white">
             Membros
@@ -249,20 +289,20 @@ export default async function TeamPage(
           </span>
         </div>
 
-        <ul className="px-5">
+        <ul className="od-rows px-5">
           {members.map((member) => {
             const isSelf = member.user_id === user.id;
             const isLastAdmin = member.role === "admin" && adminCount <= 1;
             return (
-              <li key={member.user_id} className="flex items-center gap-3 border-b border-white/[0.06] py-4">
+              <li key={member.user_id} className="flex items-center gap-3 py-4">
                 <span className="grid size-9 shrink-0 place-items-center rounded-full bg-white/[0.07] text-od-text-2">
                   <IconUsers className="h-4 w-4" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13px] font-semibold text-white">
+                  <Link href={`/painel/equipe/${member.user_id}`} className="truncate text-[13px] font-semibold text-white hover:text-od-accent-soft">
                     {member.name || "Sem nome"}
                     {isSelf && <span className="ml-1.5 font-medium text-ink-muted">(você)</span>}
-                  </p>
+                  </Link>
                   <p className="mt-1 text-xs text-od-text-3">
                     {memberJobRoleLabel(member.job_role, member.profession_type)}
                     {member.role === "admin" ? " - Admin da organização" : ""}
@@ -347,15 +387,13 @@ function SectionCard({
   title,
   description,
   children,
-  flat = false,
 }: {
   title: string;
   description: string;
   children: React.ReactNode;
-  flat?: boolean;
 }) {
   return (
-    <section className={flat ? "space-y-4 border-y border-white/[0.08] py-5" : "space-y-4 border border-white/[0.09] bg-[#1e1d22] p-5"}>
+    <section className="panel space-y-4 p-5">
       <div>
         <h2 className="text-base font-semibold text-white">
           {title}

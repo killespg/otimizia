@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
+import { LandingMark } from "./mark";
 
 /**
  * Planos.
@@ -8,8 +9,8 @@ import { ArrowRight, Check } from "lucide-react";
  * R$ 10 por pessoa extra — e não de um valor de vitrine. O teste grátis é o
  * mesmo que o cadastro entrega hoje, sem pedir cartão.
  *
- * Duas colunas divididas por régua, sem card em volta: é comparação, não dois
- * recipientes concorrendo.
+ * Duas colunas, sem card: o traço curto (LandingMark) pontua a comparação
+ * no lugar da régua de ponta a ponta.
  */
 const INCLUSO = [
   "Contatos, funil e lembretes sem limite",
@@ -22,12 +23,12 @@ const INCLUSO = [
 
 export function Pricing() {
   return (
-    <div className="grid divide-y divide-od-border border-y border-od-border md:grid-cols-2 md:divide-x md:divide-y-0">
-      <div className="px-0 py-8 md:pr-10">
+    <div className="grid items-center gap-10 md:grid-cols-[1fr_auto_1fr] md:gap-12">
+      <div className="px-0">
         <p className="text-od-label text-od-text-3">Para começar</p>
         <p className="mt-3 text-od-title text-od-text">Teste grátis</p>
         <p className="mt-2 text-[14px] leading-relaxed text-od-text-2">
-          Sem cartão de crédito. Você cria a conta e já entra no painel da sua profissão,
+          30 dias grátis, sem cartão de crédito. Você cria a conta e já entra no painel da sua profissão,
           com tudo funcionando.
         </p>
         <Link
@@ -39,7 +40,10 @@ export function Pricing() {
         </Link>
       </div>
 
-      <div className="px-0 py-8 md:pl-10">
+      <LandingMark className="mx-auto md:hidden" />
+      <LandingMark orientation="vertical" className="hidden justify-self-center md:block" />
+
+      <div className="px-0">
         <p className="text-od-label text-od-text-3">Depois do teste</p>
         <p className="mt-3 flex items-baseline gap-2">
           <span className="text-od-title text-od-text">R$ 39,90</span>
@@ -47,6 +51,9 @@ export function Pricing() {
         </p>
         <p className="mt-2 text-[14px] leading-relaxed text-od-text-2">
           Mais R$ 10 por pessoa extra na equipe. Cancele quando quiser, sem multa.
+        </p>
+        <p className="mt-1 text-[12px] text-od-text-3">
+          Menos que um café por dia.
         </p>
         <ul className="mt-5 space-y-2.5">
           {INCLUSO.map((item) => (

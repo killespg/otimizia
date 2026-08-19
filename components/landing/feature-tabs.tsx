@@ -84,7 +84,7 @@ const VERTICALS: Vertical[] = [
     mobileTab: "Vendas",
     headline: "Do primeiro contato ao pós-venda, sem planilha paralela.",
     tim: {
-      line: "Fale por voz ou escreva. Ele não devolve conselho: cria o contato, abre a negociação e move no funil enquanto você está na rua.",
+      line: "Ele não devolve conselho: cria o contato, abre a negociação e move no funil enquanto você está na rua, por voz ou por escrito.",
       examples: [
         "Cadastra o João e abre negociação de R$ 4.200",
         "Move o negócio da Carla pra proposta",
@@ -117,7 +117,7 @@ const VERTICALS: Vertical[] = [
     mobileTab: "Advocacia",
     headline: "Prazo, andamento e honorário no mesmo lugar.",
     tim: {
-      line: "Fale por voz ou escreva. Ele abre o caso, registra o andamento e cria a tarefa do prazo sem você parar o que está fazendo.",
+      line: "Abre o caso, registra o andamento e cria a tarefa do prazo sem você parar o que está fazendo, por voz ou por escrito.",
       examples: [
         "Abre o caso da Ana e registra a audiência",
         "Cria tarefa de prazo pra sexta",
@@ -157,7 +157,7 @@ const VERTICALS: Vertical[] = [
     mobileTab: "Imóveis",
     headline: "Carteira, visita e comissão sob controle.",
     tim: {
-      line: "Fale por voz ou escreva. Ele busca na carteira, monta a vitrine e agenda a visita, inclusive dentro do carro entre um atendimento e outro.",
+      line: "Diga o que precisa: ele busca na carteira, monta a vitrine e agenda a visita, inclusive dentro do carro entre um atendimento e outro.",
       examples: [
         "Quais imóveis batem com o perfil da Carla?",
         "Monta uma vitrine com esses três",
@@ -218,6 +218,20 @@ function FeatureRow({ feature, index }: { feature: Feature; index: number }) {
 export function FeatureTabs() {
   const [activeKey, setActiveKey] = React.useState(VERTICALS[2].key);
   const vertical = VERTICALS.find((item) => item.key === activeKey) ?? VERTICALS[2];
+  const tabsRef = React.useRef<Array<HTMLButtonElement | null>>([]);
+
+  function handleTabKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number) {
+    const keys = ["ArrowRight", "ArrowLeft", "Home", "End"];
+    if (!keys.includes(event.key)) return;
+    event.preventDefault();
+    const nextIndex = event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? VERTICALS.length - 1
+        : (index + (event.key === "ArrowRight" ? 1 : -1) + VERTICALS.length) % VERTICALS.length;
+    setActiveKey(VERTICALS[nextIndex].key);
+    tabsRef.current[nextIndex]?.focus();
+  }
 
   return (
     <div>
@@ -228,15 +242,20 @@ export function FeatureTabs() {
         aria-label="Escolha a profissão"
         className="mx-auto flex max-w-[620px] gap-1 rounded-lg border border-od-border bg-od-muted-surface p-1"
       >
-        {VERTICALS.map((item) => {
+        {VERTICALS.map((item, index) => {
           const selected = item.key === vertical.key;
           return (
             <button
               key={item.key}
               type="button"
               role="tab"
+              id={`profession-tab-${item.key}`}
+              aria-controls="profession-tabpanel"
               aria-label={item.tab}
               aria-selected={selected}
+              tabIndex={selected ? 0 : -1}
+              ref={(node) => { tabsRef.current[index] = node; }}
+              onKeyDown={(event) => handleTabKeyDown(event, index)}
               onClick={() => setActiveKey(item.key)}
               className={`flex min-h-11 min-w-0 flex-1 items-center justify-center rounded px-2 text-[13px] font-semibold transition-colors sm:px-3 ${
                 selected ? "bg-od-surface text-od-text" : "text-od-text-3 hover:text-od-text-2"
@@ -249,21 +268,26 @@ export function FeatureTabs() {
         })}
       </div>
 
+      <div
+        id="profession-tabpanel"
+        role="tabpanel"
+        aria-labelledby={`profession-tab-${vertical.key}`}
+        tabIndex={0}
+        className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-od-focus"
+      >
       <p className="mx-auto mt-8 max-w-[560px] text-center text-od-subtitle text-od-text">{vertical.headline}</p>
 
       {/* Grupos empilhados em faixa: o rótulo à esquerda nomeia a faixa e os
           itens ocupam a largura em duas colunas. Antes eram quatro blocos de
           alturas diferentes num grid de dois, com a base toda irregular. */}
-      {/* As linhas entre grupos só valem no desktop, onde reforçam a fileira
-          rótulo+conteúdo lado a lado. Empilhado no mobile, o rótulo em
-          maiúsculas de cada grupo já separa visualmente — repetir a régua a
-          cada bloco ficava cansativo, sempre a mesma linha se repetindo. */}
-      <div className="mt-10 md:divide-y md:divide-od-border md:border-y md:border-od-border">
+      {/* Sem régua entre grupos: o rótulo à esquerda nomeia a faixa e a
+          zebra (lp-rows) marca o corte — o mesmo elemento do About. */}
+      <div className="lp-rows mt-10">
         {/* O Tim é a peça central do produto, então não pode dividir peso com
             "Honorários" numa lista de dez. Ganha faixa própria no topo, com
             ícone maior, texto de corpo e ordens reais. Continua sendo faixa,
             não card: o destaque vem de escala e do acento, não de moldura. */}
-        <div className="grid gap-x-8 gap-y-4 py-10 md:grid-cols-[160px_minmax(0,1fr)]">
+        <div className="grid gap-x-8 gap-y-4 px-4 py-8 md:grid-cols-[160px_minmax(0,1fr)] md:px-5">
           <p className="text-od-label text-od-accent-hover">Sócio-assistente</p>
           <div className="min-w-0">
             <div className="flex items-start gap-4">
@@ -283,7 +307,7 @@ export function FeatureTabs() {
               {vertical.tim.examples.map((example) => (
                 <li
                   key={example}
-                  className="rounded border border-od-border bg-od-muted-surface px-3 py-2 text-[13px] leading-relaxed text-od-text-2"
+                  className="rounded bg-od-muted-surface px-3 py-2 text-[13px] leading-relaxed text-od-text-2"
                 >
                   “{example}”
                 </li>
@@ -293,7 +317,7 @@ export function FeatureTabs() {
         </div>
 
         {vertical.groups.map((group) => (
-          <div key={group.label} className="grid gap-x-8 py-5 md:grid-cols-[160px_minmax(0,1fr)]">
+          <div key={group.label} className="grid gap-x-8 px-4 py-7 md:grid-cols-[160px_minmax(0,1fr)] md:px-5">
             <p className="pt-3.5 text-od-label text-od-text-3">{group.label}</p>
             <div className="grid gap-x-8 sm:grid-cols-2 2xl:grid-cols-3">
               {group.features.map((feature, index) => (
@@ -303,7 +327,7 @@ export function FeatureTabs() {
           </div>
         ))}
 
-        <div className="grid gap-x-8 py-5 md:grid-cols-[160px_minmax(0,1fr)]">
+        <div className="grid gap-x-8 px-4 py-7 md:grid-cols-[160px_minmax(0,1fr)] md:px-5">
           <div className="pt-3.5">
             <p className="text-od-label text-od-text-3">Em todas</p>
             <p className="mt-1.5 text-[12px] leading-relaxed text-od-text-3">
@@ -316,6 +340,7 @@ export function FeatureTabs() {
             ))}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

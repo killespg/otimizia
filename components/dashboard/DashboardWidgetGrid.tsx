@@ -74,7 +74,7 @@ export function DashboardWidgetGrid({
     formData.set("dashboard_accent", preferences.accent);
     formData.set(
       "dashboard_animated_background",
-      preferences.showAnimatedBackground ? "1" : "0",
+      "0",
     );
     preferences.metrics.forEach((metric) => formData.append("dashboard_metrics", metric));
     Object.entries(preferences.metricLabels).forEach(([key, label]) => {

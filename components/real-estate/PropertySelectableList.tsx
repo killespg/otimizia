@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
+import { bulkDeleteProperties } from "@/app/(dashboard)/painel/imoveis/actions";
+import { BulkActionBar, BulkSelectAll, BulkSelectCheckbox, useBulkSelection } from "@/components/ui/BulkSelect";
 
 export type PropertyListRow = {
   id: string;
@@ -15,29 +17,29 @@ export type PropertyListRow = {
 };
 
 export function PropertySelectableList({ rows, selectable = true }: { rows: PropertyListRow[]; selectable?: boolean }) {
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-
-  function toggle(id: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
+  const ids = useMemo(() => rows.map((row) => row.id), [rows]);
+  const selection = useBulkSelection(ids);
 
   return (
     <div>
+      {selectable && (
+        <div className="flex items-center gap-3.5 border-b border-line bg-surface-2 px-5 py-2 text-xs font-bold text-ink-muted">
+          <BulkSelectAll
+            allSelected={selection.allSelected}
+            someSelected={selection.selectedCount > 0}
+            onToggleAll={selection.toggleAll}
+          />
+          Selecionar imóveis
+        </div>
+      )}
       <div>
         {rows.map((row) => (
           <div key={row.id} className="flex items-center gap-3.5 px-5 py-4 hover:bg-brand-50">
             {selectable && (
-              <input
-                type="checkbox"
-                checked={selected.has(row.id)}
-                onChange={() => toggle(row.id)}
-                aria-label={`Selecionar ${row.title}`}
-                className="h-4 w-4 shrink-0"
+              <BulkSelectCheckbox
+                checked={selection.selected.includes(row.id)}
+                onCheckedChange={(checked) => selection.toggleOne(row.id, checked)}
+                label={`Selecionar ${row.title}`}
               />
             )}
             <Link
@@ -47,9 +49,9 @@ export function PropertySelectableList({ rows, selectable = true }: { rows: Prop
               <div className="flex min-w-0 flex-1 items-center gap-3.5">
                 {row.coverUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element -- thumbnail vem de storage público
-                  <img src={row.coverUrl} alt={`Foto de capa de ${row.title}`} className="h-14 w-14 shrink-0 rounded-lg border border-line object-cover" />
+                  <img src={row.coverUrl} alt={`Foto de capa de ${row.title}`} className="h-14 w-14 shrink-0 rounded-[var(--radius-inner)] border border-line object-cover" />
                 ) : (
-                  <span className="grid h-14 w-14 shrink-0 place-items-center rounded-lg border border-line bg-surface-2 text-ink-muted/60">
+                  <span className="grid h-14 w-14 shrink-0 place-items-center rounded-[var(--radius-inner)] border border-line bg-surface-2 text-ink-muted/60">
                     <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden fill="none">
                       <rect x="5" y="3.5" width="10" height="17" rx="1.4" stroke="currentColor" strokeWidth="1.6" />
                       <path d="M15 9.5h4.5v11H15" stroke="currentColor" strokeWidth="1.6" />
@@ -70,18 +72,24 @@ export function PropertySelectableList({ rows, selectable = true }: { rows: Prop
           </div>
         ))}
       </div>
-      {selectable && selected.size > 0 && (
-        <div className="sticky bottom-[calc(4.9rem+env(safe-area-inset-bottom))] z-10 flex items-center justify-between gap-3 border-t border-line bg-surface/95 px-5 py-3 backdrop-blur-xl sm:bottom-0">
-          <span className="text-xs font-bold text-ink-muted">{selected.size} imóvel(is) selecionado(s)</span>
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={() => setSelected(new Set())} className="text-xs font-bold text-ink-muted hover:text-ink">
-              Limpar
-            </button>
-            <Link href={`/painel/imoveis/colecoes/nova?ids=${Array.from(selected).join(",")}`} className="btn-secondary shrink-0 text-xs">
-              Criar vitrine com selecionados
-            </Link>
-          </div>
-        </div>
+      {selectable && (
+        <BulkActionBar
+          allSelected={selection.allSelected}
+          selectedCount={selection.selectedCount}
+          isPending={selection.isPending}
+          error={selection.error}
+          onToggleAll={selection.toggleAll}
+          onDelete={() => selection.run(bulkDeleteProperties)}
+          nounSingular="imóvel"
+          nounPlural="imóveis"
+        >
+          <Link
+            href={`/painel/imoveis/colecoes/nova?ids=${selection.selected.join(",")}`}
+            className="min-h-11 shrink-0 content-center text-xs font-semibold text-brand-700 hover:text-brand-900"
+          >
+            Criar vitrine
+          </Link>
+        </BulkActionBar>
       )}
     </div>
   );

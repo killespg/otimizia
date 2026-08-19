@@ -32,7 +32,7 @@ export const PERSONAL_EXPORT_DATASETS: PersonalExportDataset[] = [
     table: "tasks",
     userColumn: "owner_id",
     select:
-      "id,owner_id,org_id,workspace_key,contact_id,deal_id,title,due_at,done,assignee_id,pending_assignee_id,reviewer_id,review_status,submitted_at,reviewed_at,review_note,recurrence,recurrence_spawned,created_at",
+      "id,owner_id,org_id,workspace_key,contact_id,deal_id,case_id,title,due_at,done,notes,assignee_id,pending_assignee_id,reviewer_id,review_status,submitted_at,reviewed_at,review_note,recurrence,recurrence_spawned,created_at",
   },
   {
     key: "interactions",

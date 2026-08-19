@@ -46,7 +46,7 @@ export default async function SellerAfterSalesPage({ searchParams }: { searchPar
 
       {warranties.length === 0 ? <SellerEmptyState title="Nenhuma garantia emitida" description="Ao confirmar uma venda com prazo de garantia, o sistema criará automaticamente uma garantia ligada ao item e ao cliente." action={<Link href="/painel/funil" className="btn">Confirmar uma venda</Link>} icon="box" /> : (
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,.65fr)]">
-          <section className="overflow-hidden border border-white/[0.09] bg-[#1e1d22]/90">
+          <section className="overflow-hidden rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90">
             <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">Garantias emitidas</h2><p className="mt-1 text-xs text-od-text-3">O vencimento é calculado pela data, sem depender de um status que pode ficar desatualizado.</p></header>
             <div className="hidden grid-cols-[minmax(13rem,1.3fr)_minmax(10rem,1fr)_8rem_8rem_3rem] border-b border-white/[0.08] px-4 py-2 text-xs font-semibold text-od-text-3 lg:grid"><span>Produto</span><span>Cliente</span><span>Validade</span><span>Chamados</span><span /></div>
             <div className="divide-y divide-white/[0.08]">{filteredWarranties.map((warranty) => {
@@ -64,7 +64,7 @@ export default async function SellerAfterSalesPage({ searchParams }: { searchPar
             })}</div>
           </section>
 
-          <section id="novo-chamado" className="scroll-mt-24 border border-od-accent/20 bg-[#1e1d22]/90">
+          <section id="novo-chamado" className="scroll-mt-24 rounded-[var(--radius-panel)] border border-od-accent/20 bg-[#1e1d22]/90">
             <header className="border-b border-od-accent/15 px-4 py-4"><div className="flex items-center gap-3"><Wrench size={18} className="text-od-text-2" /><div><h2 className="text-sm font-semibold text-white">Abrir atendimento</h2><p className="mt-1 text-xs text-od-text-3">Registre o problema e acompanhe até a solução.</p></div></div></header>
             <form action={createSellerWarrantyClaim} className="space-y-3 p-4">
               <label><span className="label">Garantia</span><select name="warranty_id" defaultValue={selectedWarranty?.id ?? ""} required className="field mt-1.5"><option value="" disabled>Selecione a garantia</option>{warranties.map((warranty) => { const item = items.get(warranty.order_item_id); const contact = warranty.contact_id ? contacts.get(warranty.contact_id) : null; return <option key={warranty.id} value={warranty.id}>{item?.product_name_snapshot ?? "Produto"} · {contact?.name ?? "Sem cliente"} · {date(warranty.expires_on)}</option>; })}</select></label>
@@ -76,7 +76,7 @@ export default async function SellerAfterSalesPage({ searchParams }: { searchPar
         </div>
       )}
 
-      <section className="border border-white/[0.09] bg-[#1e1d22]/90">
+      <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90">
         <header className="flex flex-col gap-3 border-b border-white/[0.08] px-4 py-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="text-sm font-semibold text-white">Atendimentos</h2><p className="mt-1 text-xs text-od-text-3">Fila operacional de análise, assistência, troca e reembolso.</p></div><form className="flex gap-2">{params.warranties ? <input type="hidden" name="warranties" value={params.warranties} /> : null}<select name="status" defaultValue={params.claims === "open" ? "open" : selectedStatus} className="field min-w-52 text-sm" aria-label="Filtrar atendimentos"><option value="">Todos os status</option><option value="open">Abertos</option><option value="analysis">Em análise</option><option value="assistance">Na assistência</option><option value="replacement_approved">Troca aprovada</option><option value="refund_approved">Reembolso aprovado</option><option value="resolved">Resolvidos</option><option value="cancelled">Cancelados</option></select><button type="submit" className="btn-secondary">Filtrar</button></form></header>
         {claims.length === 0 ? <SellerEmptyState title="Nenhum atendimento aberto" description="Quando um cliente relatar um problema, abra o chamado usando a garantia correspondente." /> : <div className="divide-y divide-white/[0.08]">{filteredClaims.map((claim) => {
           const warranty = warranties.find((item) => item.id === claim.warranty_id);

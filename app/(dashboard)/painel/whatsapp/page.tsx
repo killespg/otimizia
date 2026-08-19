@@ -107,7 +107,7 @@ export default async function WhatsappPage() {
 // altura da conversa — a mesma correção feita na tela do Tim.
 function WhatsappFrame({ children }: { children: React.ReactNode; isSeller: boolean; isRealEstate: boolean }) {
   return (
-    <div className="-mx-4 -mb-6 -mt-4 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden bg-[#1e1d22] md:-mx-8 md:-mb-8 md:-mt-8">
+    <div className="-mx-5 -mb-6 -mt-4 flex h-[calc(100dvh-3.5rem)] flex-col overflow-hidden bg-[#1e1d22] md:-mx-8 md:-mb-8 md:-mt-8">
       {children}
     </div>
   );

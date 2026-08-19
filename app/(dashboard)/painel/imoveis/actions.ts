@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { canManageRealEstate } from "@/lib/real-estate/real-estate";
-import { decimalOrNull, intOrNull, moneyToCentsOrNull, optionalUuid, requiredText, signedDecimalOrNull, text } from "@/lib/utils/form-parse";
+import { decimalOrNull, intOrNull, moneyToCentsOrNull, normalizeBulkIds, optionalUuid, requiredText, signedDecimalOrNull, text } from "@/lib/utils/form-parse";
 import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { advancePropertiesToSent } from "@/lib/real-estate/real-estate-deal-properties";
 import { createClient } from "@/lib/supabase/server";
@@ -168,6 +168,45 @@ export async function deleteProperty(formData: FormData) {
   if (error) throw new Error("Não foi possível excluir o imóvel.");
   revalidateImoveis();
   redirect("/painel/imoveis");
+}
+
+// Exclusão em lote da carteira. Só apaga o que é da org (o `in` sozinho não
+// basta: um id de outra org viria no array e a RLS silenciaria a linha, mas o
+// arquivo do storage já teria ido embora) — por isso o select de conferência
+// antes de remover as fotos.
+export async function bulkDeleteProperties(ids: string[]) {
+  const propertyIds = normalizeBulkIds(ids);
+  if (propertyIds.length === 0) return { deleted: 0 };
+  const { supabase, orgId } = await requireRealEstate();
+
+  const { data: owned } = await supabase
+    .from("real_estate_properties")
+    .select("id")
+    .in("id", propertyIds)
+    .eq("org_id", orgId);
+  const ownedIds = (owned ?? []).map((property) => property.id as string);
+  if (ownedIds.length === 0) return { deleted: 0 };
+
+  const { data: media } = await supabase
+    .from("real_estate_property_media")
+    .select("storage_path")
+    .in("property_id", ownedIds);
+  const paths = (media ?? []).map((item) => item.storage_path as string);
+
+  const { error } = await supabase
+    .from("real_estate_properties")
+    .delete()
+    .in("id", ownedIds)
+    .eq("org_id", orgId);
+  if (error) throw new Error("Não foi possível excluir os imóveis selecionados.");
+
+  if (paths.length > 0) {
+    const admin = createAdminClient();
+    await admin.storage.from(PROPERTY_PHOTOS_BUCKET).remove(paths);
+  }
+
+  revalidateImoveis();
+  return { deleted: ownedIds.length };
 }
 
 const PHOTO_MIME_EXTENSIONS: Record<string, string> = {

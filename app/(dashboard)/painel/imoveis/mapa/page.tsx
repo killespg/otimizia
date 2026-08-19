@@ -83,6 +83,7 @@ export default async function ImoveisMapaPage() {
       priceLabel: cents != null ? (isRent ? `${money(cents)}/mês` : money(cents)) : "Sob consulta",
       neighborhood: (p.address_neighborhood as string | null) ?? "Localização não informada",
       typeLabel: TYPE_LABEL[p.property_type as string] ?? "Imóvel",
+      statusKey: (p.status as string) ?? "",
       statusLabel: STATUS_LABEL[p.status as string] ?? "",
       facts,
       href: `/painel/imoveis/${p.id}`,

@@ -126,9 +126,9 @@ export function ProductNavGroups({ namespace, groups, collapsed, pathname, defau
         prefetch={true}
         title={item.label}
         aria-current={active ? "page" : undefined}
-        className={`group mx-auto flex size-9 min-h-8 items-center justify-center rounded-xl text-[13px] transition-colors ${active ? "bg-white/[0.075] font-semibold text-white" : "text-white/58 hover:bg-white/[0.045] hover:text-white"}`}
+        className={`group mx-auto flex size-11 items-center justify-center rounded-[var(--radius-control)] text-[13px] transition-colors ${active ? "bg-od-accent-tint font-semibold text-od-text" : "text-od-text-3 hover:bg-[var(--surface-hover)] hover:text-od-text"}`}
       >
-        <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/55 group-hover:text-white/75"} />
+        <Icon size={17} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-accent-soft" : "text-od-text-3 group-hover:text-od-text-2"} />
       </Link>;
     }
 
@@ -139,14 +139,14 @@ export function ProductNavGroups({ namespace, groups, collapsed, pathname, defau
 
     // O realce mora no contêiner e link, contador e alfinete ficam dentro dele:
     // um retângulo só, e nenhum elemento clicável aninhado dentro do link.
-    return <div className={`group flex min-h-8 items-center rounded-xl pr-1 transition-colors ${active ? "bg-white/[0.075]" : "hover:bg-white/[0.045]"}`}>
+    return <div data-active={active || undefined} className="product-nav-row group mx-1 flex min-h-11 items-center rounded-[var(--radius-control)] pr-1">
       <Link
         href={item.href}
         prefetch={true}
         aria-current={active ? "page" : undefined}
-        className={`flex min-w-0 flex-1 items-center gap-2 px-2.5 text-[13px] ${active ? "font-semibold text-white" : "text-white/58 group-hover:text-white"}`}
+        className={`flex min-h-11 min-w-0 flex-1 self-stretch items-center gap-2 px-3 text-[13px] ${active ? "font-semibold text-od-text" : "text-od-text-3 group-hover:text-od-text"}`}
       >
-        <Icon size={16} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-text-2" : "text-white/55 group-hover:text-white/75"} />
+        <Icon size={17} strokeWidth={active ? 2.2 : 1.8} className={active ? "text-od-accent-soft" : "text-od-text-3 group-hover:text-od-text-2"} />
         <span className="min-w-0 flex-1 truncate">{item.label}</span>
       </Link>
       {showDisclosure ? (
@@ -156,7 +156,7 @@ export function ProductNavGroups({ namespace, groups, collapsed, pathname, defau
           aria-expanded={submenuOpen}
           aria-controls={`nav-sub-${namespace}`}
           title={submenuOpen ? "Recolher" : "Expandir"}
-          className="grid size-6 shrink-0 place-items-center text-od-text-3 transition-colors hover:text-white"
+          className="grid size-11 shrink-0 place-items-center rounded-[var(--radius-control)] text-od-text-3 transition-colors hover:text-od-text"
         >
           <ChevronRight size={13} className={`transition-transform duration-150 ${submenuOpen ? "rotate-90" : ""}`} />
         </button>
@@ -165,9 +165,9 @@ export function ProductNavGroups({ namespace, groups, collapsed, pathname, defau
           separadas o alfinete roubava 24px fixos e truncava rótulos longos
           mesmo sem ninguém passar o mouse. */}
       {canPin || hasBadge ? (
-        <span className="relative grid min-w-6 shrink-0 place-items-center px-1">
+        <span className="relative grid size-11 shrink-0 place-items-center">
           {hasBadge ? (
-            <span className={`text-xs font-semibold tabular-nums transition-opacity ${canPin ? "group-hover:opacity-0" : ""} ${item.danger ? "text-[#fb7767]" : "text-white/65"}`}>{item.badge}</span>
+            <span className={`text-xs font-semibold tabular-nums transition-opacity ${canPin ? "group-hover:opacity-0" : ""} ${item.danger ? "text-danger-300" : "text-od-text-2"}`}>{item.badge}</span>
           ) : null}
           {canPin ? (
             <button
@@ -175,7 +175,7 @@ export function ProductNavGroups({ namespace, groups, collapsed, pathname, defau
               onClick={() => togglePin(item.href)}
               aria-pressed={isPinned}
               title={isPinned ? "Desafixar do topo" : "Fixar no topo"}
-              className={`absolute inset-0 grid place-items-center text-od-text-3 transition-opacity hover:text-white ${isPinned ? "" : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"}`}
+              className={`absolute inset-0 grid place-items-center text-od-text-3 transition-opacity hover:text-od-text ${isPinned ? "" : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"}`}
             >
               <Pin size={12} className={isPinned ? "fill-current" : ""} />
             </button>
@@ -191,14 +191,14 @@ export function ProductNavGroups({ namespace, groups, collapsed, pathname, defau
       // Recolhido em ícones não há rótulo pra clicar, então lá o grupo é sempre
       // mostrado — senão itens sumiriam sem controle visível.
       const hidden = closed && !collapsed && group.label !== "";
-      return <section key={group.label || "__anchor"} className="mb-0 p-2">
+      return <section key={group.label || "__anchor"} className={collapsed ? "mb-0 py-1" : "mb-0 px-0 py-1"}>
         {!collapsed && group.label ? (
           <button
             type="button"
             onClick={() => toggleGroup(group.label)}
             aria-expanded={!closed}
             aria-controls={`nav-grupo-${group.label}`}
-            className="flex h-7 w-full items-center gap-1.5 px-2 text-xs font-medium text-od-text-3 transition-colors hover:text-white/60"
+            className="flex min-h-11 w-full items-center gap-1.5 px-4 text-xs font-medium text-od-text-3 transition-colors hover:text-od-text-2"
           >
             <ChevronRight size={11} className={`shrink-0 transition-transform duration-150 ${closed ? "" : "rotate-90"}`} />
             <span className="min-w-0 flex-1 truncate text-left">{group.label}</span>
@@ -215,12 +215,12 @@ export function ProductNavGroups({ namespace, groups, collapsed, pathname, defau
             {group.items.map((item) => <Fragment key={item.href + item.label}>
               <Item item={item} />
               {submenu && submenu.parentHref === item.href && !collapsed && submenuOpen ? (
-                <div id={`nav-sub-${namespace}`} className="mx-3.5 flex translate-x-px flex-col gap-1 border-l border-white/[0.08] px-2.5 py-0.5">
+                <div id={`nav-sub-${namespace}`} className="mx-3.5 flex translate-x-px flex-col gap-1 border-l border-od-border px-2.5 py-0.5">
                   {submenu.items.map((sub) => (
                     <Link
                       key={sub.href}
                       href={sub.href}
-                      className={`flex h-7 -translate-x-px items-center rounded-xl px-2 text-[12px] ${pathname === sub.href ? "bg-white/[0.055] font-medium text-white" : "text-od-text-3 hover:text-white"}`}
+                      className={`flex min-h-11 -translate-x-px items-center rounded-[var(--radius-control)] px-2 text-[12px] ${pathname === sub.href ? "bg-od-accent-tint font-medium text-od-text" : "text-od-text-3 hover:bg-[var(--surface-hover)] hover:text-od-text"}`}
                     >
                       {sub.label}
                     </Link>

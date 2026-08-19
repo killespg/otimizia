@@ -587,10 +587,10 @@ export default async function DashboardPage() {
               <span aria-hidden="true">•</span>
               <time dateTime={now.toISOString()}>{new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long" }).format(now)}</time>
             </div>
-            <h1 className="mt-2 text-[28px] font-black tracking-[-0.035em] text-od-text sm:text-[2.15rem]">
+            <h1 className="mt-1 text-[20px] font-semibold leading-tight tracking-[-0.02em] text-od-text sm:mt-2 sm:text-[2.15rem] sm:font-black sm:tracking-[-0.035em]">
               Olá, {displayName}!
             </h1>
-            <p className="mt-1 text-sm font-semibold leading-relaxed text-od-text-2 sm:text-base">
+            <p className="mt-1 text-[13px] font-medium leading-5 text-od-text-2 sm:text-base sm:font-semibold sm:leading-relaxed">
               {greeting}
             </p>
           </div>
@@ -598,7 +598,7 @@ export default async function DashboardPage() {
           <div className="flex shrink-0 items-center gap-2 sm:hidden">
             <Link
               href="/painel/tarefas"
-              className="nav-item relative grid h-11 w-11 place-items-center rounded-md border border-od-border bg-od-surface text-od-text-2 hover:text-brand-700"
+              className="nav-item relative grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-od-border bg-od-surface text-od-text-2 hover:text-brand-700"
               aria-label="Ver lembretes"
             >
               <IconBell className="h-[18px] w-[18px]" />
@@ -615,7 +615,7 @@ export default async function DashboardPage() {
 
         <form
           action="/painel/contatos"
-          className="flex h-11 w-full min-w-0 items-center gap-2 rounded-md border border-od-border bg-od-surface px-3 text-sm sm:hidden"
+          className="flex h-11 w-full min-w-0 items-center gap-2 rounded-[var(--radius-inner)] border border-od-border bg-od-surface px-3 text-sm sm:hidden"
         >
           <IconSearch className="h-5 w-5 shrink-0 text-od-text-3" />
           <label className="sr-only" htmlFor="dashboard-contact-search-mobile">
@@ -633,7 +633,7 @@ export default async function DashboardPage() {
         <div className="hidden flex-col gap-3 sm:flex sm:flex-row sm:items-center">
           <form
             action="/painel/contatos"
-            className="flex h-11 w-full min-w-0 items-center gap-2 rounded-md border border-od-border bg-od-surface px-3 text-sm sm:w-[430px]"
+            className="flex h-11 w-full min-w-0 items-center gap-2 rounded-[var(--radius-inner)] border border-od-border bg-od-surface px-3 text-sm sm:w-[430px]"
           >
             <IconSearch className="h-5 w-5 shrink-0 text-od-text-3" />
             <label className="sr-only" htmlFor="dashboard-contact-search">
@@ -648,7 +648,7 @@ export default async function DashboardPage() {
             />
             <button
               type="submit"
-              className="rounded-md bg-od-muted-surface px-2 py-1 text-xs font-bold text-od-text-3 hover:bg-brand-50 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-600"
+              className="min-h-11 self-stretch rounded-[var(--radius-control)] bg-od-muted-surface px-3 text-xs font-bold text-od-text-3 hover:bg-brand-50 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-600"
             >
               Buscar
             </button>
@@ -657,7 +657,7 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/painel/tarefas"
-              className="nav-item relative grid h-11 w-11 place-items-center rounded-md border border-od-border bg-od-surface text-od-text-2 hover:text-brand-700"
+              className="nav-item relative grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-od-border bg-od-surface text-od-text-2 hover:text-brand-700"
               aria-label="Ver lembretes"
             >
               <IconBell className="h-5 w-5" />
@@ -912,7 +912,7 @@ function OpenClaimsPanel({
               <input type="hidden" name="task_id" value={task.id} />
               <input type="hidden" name="return_to" value="/painel" />
               <PendingButton
-                className="shrink-0 rounded-md bg-brand-700 px-3 py-1.5 text-xs font-black text-white hover:bg-brand-800"
+                className="min-h-11 shrink-0 rounded-[var(--radius-control)] bg-brand-700 px-3 text-xs font-black text-white hover:bg-brand-800"
                 pendingLabel="Pegando"
               >
                 Pegar
@@ -935,7 +935,7 @@ function OpenClaimsPanel({
               <input type="hidden" name="deal_id" value={deal.id} />
               <input type="hidden" name="return_to" value="/painel" />
               <PendingButton
-                className="shrink-0 rounded-md bg-brand-700 px-3 py-1.5 text-xs font-black text-white hover:bg-brand-800"
+                className="min-h-11 shrink-0 rounded-[var(--radius-control)] bg-brand-700 px-3 text-xs font-black text-white hover:bg-brand-800"
                 pendingLabel="Pegando"
               >
                 Pegar
@@ -1376,7 +1376,7 @@ function OnboardingChecklist({
     <section className="enter relative rounded-md border border-brand-200 bg-brand-50 p-5">
       <form action={dismissChecklist} className="absolute right-3 top-3">
         <PendingButton
-          className="nav-item grid h-8 w-8 place-items-center rounded-md text-od-text-3 hover:bg-od-surface/60 hover:text-od-text"
+          className="nav-item grid size-11 place-items-center rounded-[var(--radius-control)] text-od-text-3 hover:bg-od-surface/60 hover:text-od-text"
           aria-label="Fechar painel de primeiros passos"
           iconOnly
           pendingLabel="Fechando"
@@ -1447,7 +1447,7 @@ function RealEstateV2IntroCard() {
     <section className="enter relative rounded-md border border-brand-200 bg-brand-50 p-5">
       <form action={dismissRealEstateV2Intro} className="absolute right-3 top-3">
         <PendingButton
-          className="nav-item grid h-8 w-8 place-items-center rounded-md text-od-text-3 hover:bg-od-surface/60 hover:text-od-text"
+          className="nav-item grid size-11 place-items-center rounded-[var(--radius-control)] text-od-text-3 hover:bg-od-surface/60 hover:text-od-text"
           aria-label="Fechar novidades da carteira de imóveis"
           iconOnly
           pendingLabel="Fechando"

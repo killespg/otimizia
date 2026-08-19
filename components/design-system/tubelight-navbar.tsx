@@ -205,6 +205,7 @@ export function NavBar({ items, className, brand, actions, mobileActions }: NavB
               transition={reduceMotion ? { duration: 0 } : { duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="mx-auto mt-2.5 h-1 w-9 shrink-0 rounded-full bg-od-border" aria-hidden="true" />
+              <nav aria-label="Menu principal">
               <ul className="space-y-2 p-3">
                 {items.map((item) => {
                   const Icon = item.icon;
@@ -234,6 +235,7 @@ export function NavBar({ items, className, brand, actions, mobileActions }: NavB
                   {mobileActions}
                 </div>
               ) : null}
+              </nav>
             </motion.section>
           </>
         ) : null}

@@ -25,7 +25,6 @@ import type {
 } from "@/lib/supabase/types";
 import { regeneratePublicPageToken, togglePublicPage } from "../advanced-actions";
 import { createCommission, createTarget, recordCommissionPayment } from "../commission-actions";
-import { updateDashboardBackgroundVisibility } from "../../_dashboard/actions";
 
 type DashboardOrganization = {
   real_estate_public_page_enabled: boolean;
@@ -50,7 +49,6 @@ type Props = {
   deals: Array<{ id: string; title: string }>;
   properties: Array<{ id: string; title: string }>;
   organization: DashboardOrganization | null;
-  showAnimatedBackground: boolean;
 };
 
 type DashboardMetric = {
@@ -79,7 +77,6 @@ export function RealEstateDashboard({
   deals,
   properties,
   organization,
-  showAnimatedBackground,
 }: Props) {
   const dateLabel = new Intl.DateTimeFormat("pt-BR", {
     weekday: "long",
@@ -131,16 +128,16 @@ export function RealEstateDashboard({
 
   return (
     <div className="dashboard-board relative isolate mx-auto w-full max-w-[1640px] space-y-6">
-      <header className="flex flex-col gap-5 border-b border-white/[0.08] pb-6 xl:flex-row xl:items-end xl:justify-between">
+      <header className="flex flex-col gap-5 pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="flex items-center gap-2 text-xs font-semibold capitalize text-od-text-3">
+          <p className="flex items-center gap-2 text-xs font-medium capitalize text-od-text-3">
             <CalendarDays size={14} />
             <time dateTime={now.toISOString()}>{dateLabel}</time>
           </p>
-          <h1 className="mt-3 text-od-title text-white">
+          <h1 className="mt-1 text-[20px] font-semibold leading-tight tracking-[-0.02em] text-white sm:mt-3 sm:text-od-title">
             Bom dia, <span className="text-od-text">{firstName}.</span>
           </h1>
-          <p className="mt-2 text-sm leading-relaxed text-white/56">
+          <p className="mt-1.5 text-[13px] leading-5 text-white/56 sm:mt-2 sm:text-sm sm:leading-relaxed">
             {attentionCount > 0 ? (
               <>
                 Sua operação tem <strong className="font-semibold text-[#fca79b]">{attentionCount} {attentionCount === 1 ? "ponto" : "pontos"} de atenção</strong> e <strong className="font-semibold text-od-text">{activePropertyCount} {activePropertyCount === 1 ? "imóvel ativo" : "imóveis ativos"}</strong> na carteira.
@@ -152,17 +149,17 @@ export function RealEstateDashboard({
             )}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/painel/imoveis/visitas" className="inline-flex min-h-11 items-center gap-2 rounded border border-white/[0.1] px-4 text-[13px] font-semibold text-white/68 hover:bg-white/[0.04] hover:text-white">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+          <Link href="/painel/imoveis/visitas" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text">
             <CalendarDays size={15} /> Agenda de visitas
           </Link>
-          <Link href="/painel/imoveis/novo" className="inline-flex min-h-11 items-center gap-2 rounded bg-od-accent px-4 text-[13px] font-semibold text-white shadow-[0_8px_20px_-8px_rgba(92,34,232,.6)] hover:bg-brand-600">
+          <Link href="/painel/imoveis/novo" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover">
             <HousePlus size={16} /> Novo imóvel
           </Link>
         </div>
       </header>
 
-      <section className="rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] px-4">
+      <section className="panel px-4">
         <Link href="/painel/assistente" className="group flex min-h-14 items-center gap-3 text-sm text-white/52 hover:text-white/80">
           <Sparkles size={17} className="text-od-accent" />
           <span className="min-w-0 flex-1 truncate">Pergunte ao Tim sobre sua carteira, clientes e negociações</span>
@@ -180,7 +177,6 @@ export function RealEstateDashboard({
           to={to}
           brokerFilter={brokerFilter}
           members={members}
-          showAnimatedBackground={showAnimatedBackground}
         />
       </section>
 
@@ -225,14 +221,13 @@ function DashboardFilters({
   to,
   brokerFilter,
   members,
-  showAnimatedBackground,
-}: Pick<Props, "from" | "to" | "brokerFilter" | "members" | "showAnimatedBackground">) {
+}: Pick<Props, "from" | "to" | "brokerFilter" | "members">) {
   return (
     <details className="group relative self-start sm:self-auto">
-      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded border border-od-border px-3 text-xs font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-[var(--radius-control)] border border-od-border px-3 text-xs font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text">
         <Settings2 size={15} /> Personalizar painel
       </summary>
-      <div className="absolute right-0 top-12 z-30 w-[min(38rem,calc(100vw-2rem))] rounded border border-white/[0.1] bg-[#1b191f] p-4 shadow-lg">
+      <div className="absolute right-0 top-12 z-30 w-[min(38rem,calc(100vw-2rem))] rounded-[var(--radius-panel)] border border-od-border bg-od-surface p-4 shadow-lg">
         <div className="mb-4">
           <h3 className="text-sm font-semibold text-white">Período e corretor</h3>
           <p className="mt-1 text-xs text-od-text-3">Ajuste quais dados aparecem na visão geral.</p>
@@ -257,28 +252,6 @@ function DashboardFilters({
             <button type="submit" className="btn">Aplicar filtros</button>
           </div>
         </form>
-        <form
-          action={updateDashboardBackgroundVisibility}
-          className="mt-4 flex flex-col gap-3 border-t border-white/[0.08] pt-4 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <input
-            type="hidden"
-            name="dashboard_animated_background"
-            value={showAnimatedBackground ? "0" : "1"}
-          />
-          <div>
-            <p className="text-xs font-semibold text-white/78">Fundo animado</p>
-            <p className="mt-1 text-xs text-od-text-3">
-              {showAnimatedBackground ? "Ativado na visão geral." : "Desativado na visão geral."}
-            </p>
-          </div>
-          <PendingButton
-            className="inline-flex min-h-10 items-center justify-center rounded border border-white/[0.1] px-3 text-xs font-semibold text-white/68 hover:bg-white/[0.04] hover:text-white"
-            pendingLabel="Salvando"
-          >
-            {showAnimatedBackground ? "Desativar fundo" : "Ativar fundo"}
-          </PendingButton>
-        </form>
       </div>
     </details>
   );
@@ -286,12 +259,12 @@ function DashboardFilters({
 
 function RealEstateMetrics({ metrics }: { metrics: DashboardMetric[] }) {
   return (
-    <section data-dashboard-card className="grid grid-cols-2 overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] xl:grid-cols-4">
+    <section data-dashboard-card className="grid grid-cols-2 overflow-hidden panel xl:grid-cols-4">
       {metrics.map((metric) => {
         const Icon = metric.icon;
         return (
           <Link href={metric.href} key={metric.label} aria-label={`Abrir ${metric.label.toLowerCase()}`} className="group flex min-h-24 items-start gap-3 border-b border-r border-white/[0.08] px-4 py-4 transition-colors hover:bg-white/[0.025] focus-visible:z-10 even:border-r-0 [&:nth-last-child(-n+2)]:border-b-0 xl:min-h-28 xl:border-b-0 xl:border-r xl:even:border-r xl:last:border-r-0 xl:px-5">
-            <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><Icon className="size-4" /></span>
+            <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-[var(--radius-inner)] bg-white/[0.06] text-od-text-2"><Icon className="size-4" /></span>
             <div className="min-w-0">
               <p className="text-xs font-medium text-od-text-3">{metric.label}</p>
               <p className="mt-2 truncate text-2xl font-bold tracking-[-0.03em] text-white">{metric.value}</p>
@@ -332,15 +305,15 @@ function RealEstateCommercialIndicators({
   overdueCount: number;
 }) {
   return (
-    <section data-dashboard-card className="overflow-hidden rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)]">
-      <header className="flex items-end justify-between gap-4 border-b border-white/[0.08] px-4 py-4 sm:px-5">
+    <section data-dashboard-card className="overflow-hidden panel">
+      <header className="flex items-end justify-between gap-4 px-4 py-4 sm:px-5">
         <div>
           <h2 className="text-sm font-semibold text-white">Indicadores imobiliários</h2>
           <p className="mt-1 text-xs text-od-text-3">Carteira, eficiência comercial e resultado financeiro.</p>
         </div>
         <a href="/api/reports/real-estate-commissions" download className="shrink-0 text-xs font-semibold text-od-text-2 hover:text-od-text">Baixar relatório</a>
       </header>
-      <div className="grid divide-y divide-white/[0.08] lg:grid-cols-3 lg:divide-x lg:divide-y-0">
+      <div className="grid gap-2 pb-2 lg:grid-cols-3">
         <IndicatorGroup title="Conversão e carteira" items={[
           { label: "Taxa de aceitação", value: acceptanceRate === null ? "—" : `${acceptanceRate}%`, note: totalOffers > 0 ? `${acceptedOffers} de ${totalOffers} propostas aceitas` : "Sem propostas no período", href: "/painel/funil" },
           { label: "Visitas concluídas", value: totalVisits > 0 ? `${completedVisits}/${totalVisits}` : "—", note: totalVisits > 0 ? "visitas realizadas no período" : "Nenhuma visita agendada", href: "/painel/imoveis/visitas" },
@@ -365,9 +338,9 @@ function IndicatorGroup({ title, items }: { title: string; items: Array<{ label:
   return (
     <div className="min-w-0 px-4 py-4 sm:px-5">
       <h3 className="text-xs font-semibold text-white/68">{title}</h3>
-      <div className="mt-3 divide-y divide-white/[0.07]">
+      <div className="mt-3 space-y-1">
         {items.map((item) => (
-          <Link href={item.href} key={item.label} className="group grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1 py-3 transition-colors hover:bg-white/[0.02] focus-visible:z-10 first:pt-0 last:pb-0" aria-label={`Abrir ${item.label.toLowerCase()}`}>
+          <Link href={item.href} key={item.label} className="group grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1 rounded-[var(--radius-inner)] px-2 py-3 transition-colors hover:bg-white/[0.02] focus-visible:z-10" aria-label={`Abrir ${item.label.toLowerCase()}`}>
             <span className="text-xs text-od-text-3 transition-colors group-hover:text-white/64">{item.label}</span>
             <span className="max-w-44 truncate text-right text-sm font-semibold text-white/82 group-hover:text-od-text" title={item.value}>{item.value}</span>
             <span className="col-span-2 text-xs leading-relaxed text-od-text-3 transition-colors group-hover:text-od-text-3">{item.note}</span>
@@ -442,8 +415,8 @@ export function TargetsPanel({ targets, members, canManage, from, to }: Pick<Pro
 
 function PublicPagePanel({ organization }: { organization: DashboardOrganization }) {
   return (
-    <section className="flex flex-col gap-4 rounded border border-white/[0.09] bg-[rgba(30,29,34,0.94)] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-      <div className="flex min-w-0 items-center gap-3"><span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><CircleDollarSign size={17} /></span><div><h2 className="text-sm font-semibold text-white">Página pública do corretor</h2><p className="mt-1 text-xs text-od-text-3">Vitrine permanente com todos os imóveis ativos.</p></div></div>
+    <section className="panel flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+      <div className="flex min-w-0 items-center gap-3"><span className="grid size-9 shrink-0 place-items-center rounded-[var(--radius-inner)] bg-white/[0.06] text-od-text-2"><CircleDollarSign size={17} /></span><div><h2 className="text-sm font-semibold text-white">Página pública do corretor</h2><p className="mt-1 text-xs text-od-text-3">Vitrine permanente com todos os imóveis ativos.</p></div></div>
       <div className="flex flex-wrap items-center gap-2">
         <form action={togglePublicPage}><input type="hidden" name="enabled" value={organization.real_estate_public_page_enabled ? "" : "on"} /><PendingButton className="btn-secondary" pendingLabel="...">{organization.real_estate_public_page_enabled ? "Desativar" : "Ativar"}</PendingButton></form>
         {organization.real_estate_public_page_enabled ? <><Link href={`/share/corretor/${organization.real_estate_public_page_token}`} target="_blank" className="btn">Ver página</Link><form action={regeneratePublicPageToken}><PendingButton className="btn-secondary" pendingLabel="...">Gerar novo link</PendingButton></form></> : null}

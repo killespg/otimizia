@@ -14,6 +14,7 @@ import {
   Download,
   Gauge,
   GripVertical,
+  History,
   Image as ImageIcon,
   LogOut,
   MessageCircle,
@@ -67,6 +68,7 @@ export const IconChevronRight = icon(ChevronRight);
 export const IconLogout = icon(LogOut);
 export const IconGrip = icon(GripVertical);
 export const IconCalendar = icon(CalendarDays);
+export const IconHistory = icon(History);
 export const IconBuilding = icon(Building2);
 export const IconImage = icon(ImageIcon);
 

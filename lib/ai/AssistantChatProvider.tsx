@@ -10,9 +10,10 @@ import {
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import type { ChatMessage } from "@/lib/ai/types";
+import type { ChatMessage, ConversationSummary } from "@/lib/ai/types";
+import { NIL_CONVERSATION_UUID } from "@/lib/ai/types";
 
-export type { ChatMessage };
+export type { ChatMessage, ConversationSummary };
 
 export type PendingChatImage = { dataUrl: string; mediaType: string; base64: string };
 
@@ -66,10 +67,39 @@ type AssistantChatValue = {
   messages: ChatMessage[];
   status: string | null;
   sending: boolean;
+  conversationId: string | null;
+  conversations: ConversationSummary[];
   send: (text: string, image?: PendingChatImage, file?: File | null) => Promise<void>;
+  newChat: () => void;
+  refreshConversations: () => Promise<void>;
+  switchConversation: (id: string | null) => Promise<void>;
 };
 
 const AssistantChatContext = createContext<AssistantChatValue | null>(null);
+
+// A conversa ativa do Tim fica guardada no localStorage do navegador para
+// sobreviver a reloads e navegações: "novo chat" gera um uuid novo, e o
+// histórico é sempre carregado da conversa que estava aberta.
+const ACTIVE_CONVERSATION_KEY = "tim:active-conversation";
+
+function readActiveConversation(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(ACTIVE_CONVERSATION_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function persistActiveConversation(id: string | null) {
+  if (typeof window === "undefined") return;
+  try {
+    if (id) window.localStorage.setItem(ACTIVE_CONVERSATION_KEY, id);
+    else window.localStorage.removeItem(ACTIVE_CONVERSATION_KEY);
+  } catch {
+    // localStorage indisponível (modo privado etc.) não quebra o chat.
+  }
+}
 
 // Estado único do chat com o assistente, compartilhado por todas as
 // superfícies do app (balão flutuante, painel do dashboard e a página
@@ -85,9 +115,12 @@ export function AssistantChatProvider({
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [status, setStatus] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const messagesRef = useRef<ChatMessage[]>(initialMessages);
   const sendingRef = useRef(false);
   const hasLocalActivityRef = useRef(initialMessages.length > 0);
+  const conversationIdRef = useRef<string | null>(null);
 
   const updateMessages = useCallback(
     (updater: (prev: ChatMessage[]) => ChatMessage[]) => {
@@ -100,19 +133,50 @@ export function AssistantChatProvider({
     []
   );
 
+  // Mantém o estado e o ref da conversa ativa em sincronia e guarda a escolha
+  // no localStorage, para a próxima recarga voltar pra mesma conversa.
+  const applyConversation = useCallback((id: string | null) => {
+    conversationIdRef.current = id;
+    setConversationId(id);
+    persistActiveConversation(id);
+  }, []);
+
+  const refreshConversations = useCallback(async () => {
+    try {
+      const res = await fetch("/api/assistant/conversations", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (Array.isArray(data?.conversations)) {
+        setConversations(data.conversations as ConversationSummary[]);
+      }
+    } catch {
+      // A listagem de conversas nunca deve quebrar o chat.
+    }
+  }, []);
+
   useEffect(() => {
     if (initialMessages.length > 0) return;
 
     let cancelled = false;
     async function loadHistory() {
       try {
-        const res = await fetch("/api/assistant/history", { cache: "no-store" });
+        const storedConversation = readActiveConversation();
+        const query = storedConversation
+          ? `?conversation_id=${encodeURIComponent(storedConversation)}`
+          : "";
+        const res = await fetch(`/api/assistant/history${query}`, { cache: "no-store" });
         if (!res.ok) return;
         const data = await res.json();
         const history = Array.isArray(data?.messages) ? (data.messages as ChatMessage[]) : [];
-        if (cancelled || hasLocalActivityRef.current || history.length === 0) return;
+        const serverConversationId =
+          typeof data?.conversation_id === "string" ? data.conversation_id : null;
+        if (cancelled || hasLocalActivityRef.current) return;
         setMessages(history);
         messagesRef.current = history;
+        // A conversa ativa é a que o servidor resolveu (a mais recente ou a
+        // que veio do localStorage). Guarda pra próxima recarga.
+        applyConversation(storedConversation ?? serverConversationId);
+        void refreshConversations();
       } catch {
         // Historico do chat nao deve bloquear nem quebrar a navegacao.
       }
@@ -122,7 +186,7 @@ export function AssistantChatProvider({
     return () => {
       cancelled = true;
     };
-  }, [initialMessages.length]);
+  }, [initialMessages.length, applyConversation, refreshConversations]);
 
   const send = useCallback(
     async (text: string, image?: PendingChatImage, file?: File | null) => {
@@ -183,6 +247,7 @@ export function AssistantChatProvider({
       const priorPayload = priorHistory.map(({ role, content }) => ({ role, content }));
       const requestBody = base64
         ? {
+            conversation_id: conversationIdRef.current ?? null,
             messages: [
               ...priorPayload,
               {
@@ -198,6 +263,7 @@ export function AssistantChatProvider({
             ],
           }
         : {
+            conversation_id: conversationIdRef.current ?? null,
             messages: [
               ...priorPayload,
               { role: "user" as const, content: !trimmed && image ? "(foto)" : trimmed },
@@ -275,13 +341,57 @@ export function AssistantChatProvider({
           prev.filter((m, i) => !(i === prev.length - 1 && m.role === "assistant" && !m.content))
         );
         if (mutated) router.refresh();
+        void refreshConversations();
       }
     },
-    [router, updateMessages]
+    [router, updateMessages, refreshConversations]
+  );
+
+  // Começa uma conversa limpa com o Tim: gera um id novo e zera o histórico
+  // local. As próximas mensagens são salvas na nova conversa; as anteriores
+  // continuam no banco (append-only) como a conversa antiga.
+  const newChat = useCallback(() => {
+    const freshId = crypto.randomUUID();
+    applyConversation(freshId);
+    hasLocalActivityRef.current = true;
+    sendingRef.current = false;
+    setSending(false);
+    setStatus(null);
+    setMessages([]);
+    messagesRef.current = [];
+  }, [applyConversation]);
+
+  // Abre uma conversa antiga do histórico: carrega as mensagens dela do
+  // servidor e a marca como ativa. id === null volta para a conversa
+  // "clássica" (pré-0085) — pedindo explicitamente o sentinel NIL pro
+  // servidor não resolver a conversa mais recente no lugar dela.
+  const switchConversation = useCallback(
+    async (id: string | null) => {
+      if (sendingRef.current) return;
+      hasLocalActivityRef.current = true;
+      applyConversation(id);
+      setSending(false);
+      setStatus(null);
+      try {
+        const query = `?conversation_id=${encodeURIComponent(id ?? NIL_CONVERSATION_UUID)}`;
+        const res = await fetch(`/api/assistant/history${query}`, { cache: "no-store" });
+        const data = res.ok ? await res.json() : null;
+        const history = Array.isArray(data?.messages) ? (data.messages as ChatMessage[]) : [];
+        setMessages(history);
+        messagesRef.current = history;
+      } catch {
+        setMessages([]);
+        messagesRef.current = [];
+      }
+      void refreshConversations();
+    },
+    [applyConversation, refreshConversations]
   );
 
   return (
-    <AssistantChatContext.Provider value={{ messages, status, sending, send }}>
+    <AssistantChatContext.Provider
+      value={{ messages, status, sending, conversationId, conversations, send, newChat, refreshConversations, switchConversation }}
+    >
       {children}
     </AssistantChatContext.Provider>
   );

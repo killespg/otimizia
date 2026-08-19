@@ -19,14 +19,14 @@
   --color-brand-50: var(--od-accent-tint);
   --color-brand-100: color-mix(in oklab, var(--od-accent) 18%, transparent);
   --color-brand-200: color-mix(in oklab, var(--od-accent) 26%, transparent);
-  --color-brand-300: #a78bfa;
-  --color-brand-400: #8b5cf6;
-  --color-brand-500: #7c3aed;
-  --color-brand-600: #7146dc;
-  --color-brand-700: var(--od-accent);
-  --color-brand-800: var(--od-accent-hover);
-  --color-brand-900: #37108f;
-  --color-brand-950: #210959;
+  --color-brand-300: var(--od-accent-soft);
+  --color-brand-400: #6f9dd6;
+  --color-brand-500: var(--od-data-accent);
+  --color-brand-600: var(--od-accent);
+  --color-brand-700: var(--od-accent-hover);
+  --color-brand-800: #214a88;
+  --color-brand-900: #1b3b6c;
+  --color-brand-950: #122844;
 
   --color-success-50: var(--od-success-bg);
   --color-success-100: var(--od-success-bg);
@@ -54,27 +54,35 @@
   --color-od-muted-surface: var(--od-muted-surface);
   --color-od-border: var(--od-border);
   --color-od-border-hover: var(--od-border-hover);
+  --color-od-border-strong: var(--border-strong);
   --color-od-text: var(--od-text);
   --color-od-text-2: var(--od-text-2);
   --color-od-text-3: var(--od-text-3);
   --color-od-accent: var(--od-accent);
   --color-od-accent-hover: var(--od-accent-hover);
+  --color-od-accent-soft: var(--od-accent-soft);
   --color-od-accent-tint: var(--od-accent-tint);
+  --color-od-focus: var(--od-focus-ring);
+  --color-od-surface-hover: var(--surface-hover);
   --color-od-sidebar: var(--od-sidebar);
 
-  --radius-sm: 4px;
-  --radius-md: 4px;
-  --radius-lg: 4px;
-  --radius-xl: 6px;
-  --radius-2xl: 8px;
-  --radius-3xl: 8px;
-  --radius-4xl: 8px;
+  --radius: var(--radius-control);
+  --radius-sm: var(--radius-control);
+  --radius-md: var(--radius-inner);
+  --radius-lg: var(--radius-panel);
+  --radius-xl: var(--radius-panel);
+  --radius-2xl: var(--radius-panel);
+  --radius-3xl: var(--radius-panel);
+  --radius-4xl: var(--radius-panel);
+  --radius-control: 9px;
+  --radius-inner: 11px;
+  --radius-panel: 15px;
 
-  --shadow-focus: 0 0 0 3px color-mix(in oklab, var(--od-accent) 28%, transparent);
-  --shadow-od-primary: 0 8px 20px -8px rgba(92, 34, 232, 0.6);
+  --shadow-focus: 0 0 0 3px color-mix(in oklab, var(--od-focus-ring) 34%, transparent);
+  --shadow-od-primary: 0 8px 20px -10px rgba(47, 111, 204, 0.58);
   /* Elemento que literalmente flutua sobre o conteudo (moldura do preview da
      landing, dock). Sombra em repouso so e permitida nesse caso. */
-  --shadow-od-float: 0 8px 24px -12px rgba(21, 19, 22, 0.45);
+  --shadow-od-float: 0 12px 30px -18px rgba(0, 0, 0, 0.72);
 
   --animate-fade-up: od-fade-up 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-marquee: marquee 30s linear infinite;
@@ -117,37 +125,57 @@
 :root {
   color-scheme: dark;
   --font-inter: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  /* Escada de superfícies com passo de ~0.045 de L em OKLCH (295deg, C 0.010).
-     Antes os quatro planos ficavam em L 0.163 / 0.195 / 0.212 / 0.234 — passos
-     de 0.018 a 0.031, abaixo do que o olho separa, então a estrutura da tela
-     dependia só do matiz roxo. Agora o valor carrega a hierarquia e o acento
-     fica livre pra significar ação. */
-  --od-bg: #151419;
-  --od-surface: #2a292f;
-  --od-muted-surface: #1f1e24;
-  --od-border: #3a3840;
-  --od-border-hover: #515058;
-  /* Rampa recalculada junto com as superfícies: ao clarear os planos, o texto
-     silencioso perdia contraste (od-text-3 caía a 3.61 sobre od-surface, abaixo
-     do AA de 4.5). Agora o pior caso da rampa é 4.53, sobre a superfície mais
-     clara, e a separação entre os três níveis se mantém em ~0.1 de L. */
-  --od-text: #f5f4f7;
-  --od-text-2: #b2b0b7;
-  --od-text-3: #928f98;
-  /* Branco sobre o acento antigo (#8b5cf6) dava 4.23 — o rótulo do CTA é 13px
-     semibold, não conta como texto grande, então o botão primário reprovava em
-     AA. Um passo de L mais escuro leva a 4.51 sem mudar a identidade. */
-  --od-accent: #8757f0;
-  --od-accent-hover: #a78bfa;
-  --od-accent-tint: #241c38;
+  /* Contraste medido sobre --od-surface: 12,7:1 (od-text), 8,4:1 (od-text-2),
+     5,4:1 (od-text-3) — todos acima do AA mesmo no pior caso. */
+  --canvas: #0b0d11;
+  --surface-base: #11151a;
+  --surface-primary: #15191f;
+  --surface-secondary: #1b2027;
+  --surface-hover: #20262e;
+  --border-subtle: #252c35;
+  --border-default: #2d3540;
+  --border-strong: #3b4653;
+  --text-primary: #f5f7fa;
+  --text-secondary: #98a2af;
+  --text-tertiary: #7d8998;
+  --text-disabled: #64748b;
+  --action-primary: #2f6fcc;
+  --action-primary-hover: #285aa5;
+  --accent-default: #4e7fbf;
+  --accent-soft: #91b6e7;
+  --focus-ring: #7da7e0;
+  --accent-tint: #18283e;
+  --radius-control: 9px;
+  --radius-inner: 11px;
+  --radius-panel: 15px;
+  --radius-round: 999px;
+  --scrollbar-thumb: color-mix(in oklab, var(--border-strong) 78%, transparent);
+  --scrollbar-thumb-hover: color-mix(in oklab, var(--accent-default) 72%, var(--border-strong));
+  --scrollbar-thumb-active: var(--action-primary);
+
+  /* Nomes legados apontam para a nova fonte semantica durante a migracao. */
+  --od-bg: var(--canvas);
+  --od-surface: var(--surface-primary);
+  --od-muted-surface: var(--surface-secondary);
+  --od-border: var(--border-default);
+  --od-border-hover: var(--border-strong);
+  --od-text: var(--text-primary);
+  --od-text-2: var(--text-secondary);
+  --od-text-3: var(--text-tertiary);
+  --od-accent: var(--action-primary);
+  --od-accent-hover: var(--action-primary-hover);
+  --od-data-accent: var(--accent-default);
+  --od-accent-soft: var(--accent-soft);
+  --od-focus-ring: var(--focus-ring);
+  --od-accent-tint: var(--accent-tint);
   --od-success-bg: oklch(0.31 0.06 150);
   --od-success-fg: oklch(0.81 0.13 150);
   --od-warning-bg: oklch(0.31 0.05 75);
   --od-warning-fg: oklch(0.82 0.13 75);
   --od-danger-bg: oklch(0.3 0.07 25);
   --od-danger-fg: oklch(0.78 0.15 25);
-  --od-sidebar: #0b0a0f;
-  --od-sidebar-active: rgba(255, 255, 255, 0.07);
+  --od-sidebar: var(--surface-base);
+  --od-sidebar-active: var(--accent-tint);
   --z-dropdown: 50;
   --z-sticky: 60;
   --z-modal-backdrop: 70;
@@ -161,13 +189,60 @@
    translúcido por cima do elemento — o retoque clássico de "isto é uma
    página", nunca visto num app instalado. O feedback de toque real continua
    vindo de :active (.btn, .press). */
-html { min-height: 100%; background: var(--od-bg); font-family: var(--font-inter); scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+html { min-height: 100%; background: var(--od-bg); font-family: var(--font-inter); scroll-behavior: smooth; scrollbar-gutter: stable; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
 /* Rolagem por toque não "estica" além do topo/fim revelando o branco padrão
-   do navegador atrás do body, nem dispara o gesto de atualizar a página —
-   nenhuma tela usa "puxar pra atualizar" de propósito, então zera os dois
-   eixos. `-x: none` também mata o arrastar de lado que volta/avança no
-   histórico do navegador. */
+   do navegador atrás do body — em vez disso, o próprio plano de fundo já
+   escuro aparece, como um scroll de app nativo. */
 body { min-height: 100%; margin: 0; background: var(--od-bg); color: var(--od-text); text-rendering: optimizeLegibility; overscroll-behavior: none; }
+
+/* Rolagem do produto: o trilho desaparece na superfície e o polegar mantém a
+   forma nativa, só mais discreta. Azul entra apenas na interação, como nos
+   demais controles do sistema. */
+html,
+.product-workspace,
+.product-workspace * {
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+  scrollbar-width: thin;
+}
+
+.product-scroll-region {
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+
+html::-webkit-scrollbar,
+.product-workspace ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+html::-webkit-scrollbar-track,
+.product-workspace ::-webkit-scrollbar-track,
+html::-webkit-scrollbar-corner,
+.product-workspace ::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb,
+.product-workspace ::-webkit-scrollbar-thumb {
+  min-height: 48px;
+  border: 3px solid transparent;
+  border-radius: var(--radius-round);
+  background: var(--scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+.product-workspace ::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+
+html::-webkit-scrollbar-thumb:active,
+.product-workspace ::-webkit-scrollbar-thumb:active {
+  background: var(--scrollbar-thumb-active);
+  background-clip: padding-box;
+}
 /* Mesmo motivo do reset de link: fora de @layer, isto vence as utilities. E
    `font` e atalho — reseta tamanho, peso e familia de uma vez. Solto aqui fora,
    toda classe text-[13px]/text-xs/font-semibold aplicada a <button>, <input> ou
@@ -191,9 +266,9 @@ button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: no
 }
 h1, h2, h3 { text-wrap: balance; }
 p { text-wrap: pretty; }
-::selection { background: var(--od-accent); color: var(--od-text); }
+::selection { background: var(--od-accent); color: #fff; }
 
-:focus-visible { outline: 2px solid var(--od-accent-hover); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--od-focus-ring); outline-offset: 3px; }
 
 @keyframes od-fade-up {
   from { opacity: 0; transform: translateY(6px); }
@@ -247,6 +322,41 @@ p { text-wrap: pretty; }
   }
 }
 
+@media print {
+  :root {
+    color-scheme: light;
+    --od-bg: #ffffff;
+    --od-surface: #ffffff;
+    --od-muted-surface: #f3f4f6;
+    --od-border: #d1d5db;
+    --od-border-hover: #9ca3af;
+    --od-text: #111827;
+    --od-text-2: #374151;
+    --od-text-3: #4b5563;
+    --od-accent: #285aa5;
+  }
+
+  html,
+  body,
+  .print-document {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  [data-print-hidden],
+  .print-hidden,
+  nav,
+  aside {
+    display: none !important;
+  }
+
+  .print-document {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}
+
 .workspace-law_office main .text-\[15px\] {
   font-size: 16px;
   line-height: 1.4;
@@ -261,12 +371,8 @@ p { text-wrap: pretty; }
   min-height: 44px;
 }
 
-.workspace-autonomous_seller .seller-settings [data-settings-card] {
-  border-radius: 4px;
-}
-
 .workspace-autonomous_seller .install-app-prompt {
-  border-radius: 4px;
+  border-radius: var(--radius-xl);
 }
 
 #novo-produto[open] + .seller-catalog-empty {
@@ -300,17 +406,17 @@ p { text-wrap: pretty; }
 .workspace-real_estate_broker .real-estate-area .panel,
 .workspace-real_estate_broker .real-estate-area .card,
 .workspace-real_estate_broker .real-estate-area .bg-surface {
-  background: rgba(30, 29, 34, .94) !important;
+  background: var(--od-surface) !important;
   box-shadow: none !important;
 }
 
 .workspace-real_estate_broker .real-estate-area .bg-surface-2 {
-  background: rgba(255, 255, 255, .035) !important;
+  background: var(--od-muted-surface) !important;
 }
 
 .workspace-real_estate_broker .real-estate-area .panel {
-  border-color: rgba(255, 255, 255, .09);
-  border-radius: 4px;
+  border-color: var(--od-border);
+  border-radius: var(--radius-panel);
 }
 
 .workspace-real_estate_broker main button:not([aria-label]),
@@ -325,36 +431,168 @@ p { text-wrap: pretty; }
   color: var(--od-text-2);
 }
 
-.real-estate-flat-section {
-  border-top: 1px solid rgba(255, 255, 255, .08);
-  border-bottom: 1px solid rgba(255, 255, 255, .08);
+/* Bloco que se descola do que está ao redor por plano (fundo levemente
+   claro), não por régua — mesmo raio da camada de conteúdo pra ficar
+   alinhado a `.panel`/`.card` quando encostam. */
+.od-band {
+  background-color: var(--surface-secondary);
+  border-radius: var(--radius-inner);
+}
+
+/* Alternância de linha sem traço de 1px: o olho registra a faixa, o
+   contraste do texto não muda. Só a partir de `sm` — no celular a linha
+   ocupa a largura toda e não há coluna distante pra seguir. */
+@media (min-width: 640px) {
+  .od-rows > *:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.022);
+  }
+}
+
+/* Mesma alternância, sem o guard de `sm`: usada só nas duas listas da
+   landing que mantêm duas colunas (ou um chevron à direita) em qualquer
+   largura, então a régua nunca fazia falta ali no celular. */
+.lp-rows > *:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.022);
+}
+
+/* Configurações é uma coluna de seções, não uma pilha de cards: o título e
+   o espaço entre seções já dizem onde uma termina e a outra começa, sem
+   régua. Vale pra todo workspace — a página é a mesma em qualquer área. */
+.settings-hub [data-settings-card],
+.settings-hub [data-preferences-panel],
+.assistant-page-shell {
+  border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
 }
 
-.workspace-real_estate_broker .settings-hub [data-settings-card] {
-  border-right: 0;
-  border-left: 0;
-  border-radius: 0;
-  background: transparent;
+.settings-hub [data-settings-card],
+.settings-hub [data-preferences-panel] {
   padding-right: 0;
   padding-left: 0;
-  box-shadow: none;
 }
 
-.workspace-real_estate_broker .settings-hub [data-preferences-panel],
-.workspace-real_estate_broker .assistant-page-shell {
-  border-right: 0;
-  border-left: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+/* Única seção que precisa se destacar do resto da coluna. */
+.settings-hub [data-settings-card].settings-danger {
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--od-danger-fg) 8%, transparent);
+  padding: 16px;
 }
 
-.workspace-real_estate_broker .settings-hub [data-preferences-panel] {
-  padding-right: 0;
-  padding-left: 0;
+/* Primitivas novas: semântica única para web e adaptável por tokens. */
+.ui-button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, transform 100ms ease;
+}
+.ui-button:active { transform: translateY(1px); }
+.ui-button--primary { background: var(--action-primary); color: #fff; }
+.ui-button--primary:hover { background: var(--action-primary-hover); }
+.ui-button--secondary { border-color: var(--border-default); background: var(--surface-primary); color: var(--text-primary); }
+.ui-button--secondary:hover { border-color: var(--border-strong); background: var(--surface-hover); }
+.ui-button--quiet { background: transparent; color: var(--text-secondary); }
+.ui-button--quiet:hover { background: var(--surface-hover); color: var(--text-primary); }
+.ui-button--danger { border-color: color-mix(in oklab, var(--od-danger-fg) 38%, transparent); background: var(--od-danger-bg); color: var(--od-danger-fg); }
+.ui-button--sm { min-height: 44px; padding-inline: 12px; font-size: 13px; }
+.ui-button--lg { min-height: 48px; padding-inline: 20px; font-size: 15px; }
+.ui-icon-button { width: 44px; padding: 0; }
+
+.ui-field { display: grid; gap: 8px; }
+.ui-field__label { color: var(--text-primary); font-size: 14px; font-weight: 650; }
+.ui-field__description { margin: 0; color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
+.ui-field__error { margin: 0; color: var(--od-danger-fg); font-size: 13px; line-height: 1.5; }
+.ui-control { width: 100%; min-height: 44px; border: 1px solid var(--border-default); border-radius: var(--radius-control); background: var(--surface-primary); color: var(--text-primary); padding: 9px 12px; }
+.ui-control:hover { border-color: var(--border-strong); }
+.ui-control:focus { border-color: var(--focus-ring); box-shadow: var(--shadow-focus); outline: none; }
+.ui-control[aria-invalid="true"] { border-color: var(--od-danger-fg); }
+.ui-control--textarea { min-height: 112px; resize: vertical; }
+
+.ui-surface { border: 1px solid var(--border-default); border-radius: var(--radius-panel); box-shadow: none; }
+.ui-surface--primary { background: var(--surface-primary); }
+.ui-surface--secondary { background: var(--surface-secondary); }
+.ui-surface--raised { background: var(--surface-primary); box-shadow: var(--shadow-od-float); }
+.ui-page { display: grid; width: 100%; max-width: 1640px; margin-inline: auto; gap: 24px; }
+.ui-page__zone { display: grid; gap: 16px; }
+.ui-page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+.ui-page-header__copy { min-width: 0; }
+.ui-page-header__eyebrow { margin: 0; color: var(--text-secondary); font-size: 12px; font-weight: 650; }
+.ui-page-header__title { margin: 8px 0 0; color: var(--text-primary); font-size: 28px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
+.ui-page-header__description { max-width: 70ch; margin: 8px 0 0; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+.ui-page-header__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+
+.ui-data-panel,
+.ui-form-panel {
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-panel);
+  background: var(--surface-primary);
+  box-shadow: none;
+}
+.ui-data-panel__header,
+.ui-form-panel__header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); }
+.ui-data-panel__copy,
+.ui-form-panel__copy { min-width: 0; }
+.ui-data-panel__title,
+.ui-form-panel__title { margin: 0; color: var(--text-primary); font-size: 16px; font-weight: 700; }
+.ui-data-panel__description,
+.ui-form-panel__description { margin: 4px 0 0; color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
+.ui-data-panel__count,
+.ui-form-panel__count { flex: none; color: var(--text-tertiary); font-size: 12px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.ui-data-panel__actions,
+.ui-form-panel__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.ui-data-panel__body { min-width: 0; }
+.ui-form-panel__body { min-width: 0; padding: 20px; }
+.ui-inset-group { border-radius: var(--radius-inner); background: var(--surface-secondary); }
+.ui-section { display: grid; gap: 16px; }
+.ui-section__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.ui-section__title { margin: 0; color: var(--text-primary); font-size: 20px; font-weight: 700; letter-spacing: -0.015em; }
+.ui-section__description { margin: 4px 0 0; color: var(--text-secondary); font-size: 14px; line-height: 1.55; }
+.ui-section__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.ui-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+
+.ui-metric-band { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin: 0; overflow: hidden; border: 1px solid var(--border-default); border-radius: var(--radius-inner); background: var(--surface-primary); }
+.ui-metric { min-width: 0; padding: 16px; }
+.ui-metric + .ui-metric { border-left: 1px solid var(--border-subtle); }
+.ui-metric__label { color: var(--text-secondary); font-size: 13px; }
+.ui-metric__value { margin: 4px 0 0; color: var(--text-primary); font-size: 24px; font-weight: 740; font-variant-numeric: tabular-nums; letter-spacing: -0.025em; }
+.ui-metric__detail { margin: 4px 0 0; color: var(--accent-soft); font-size: 12px; }
+
+.ui-status { display: inline-flex; align-items: center; gap: 8px; width: fit-content; border-radius: var(--radius-round); padding: 4px 8px; font-size: 12px; font-weight: 650; }
+.ui-status__marker { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.ui-status--neutral { background: var(--surface-secondary); color: var(--text-secondary); }
+.ui-status--info { background: var(--accent-tint); color: var(--accent-soft); }
+.ui-status--success { background: var(--od-success-bg); color: var(--od-success-fg); }
+.ui-status--warning { background: var(--od-warning-bg); color: var(--od-warning-fg); }
+.ui-status--danger { background: var(--od-danger-bg); color: var(--od-danger-fg); }
+
+.ui-feedback { display: grid; justify-items: start; gap: 8px; padding: 24px; border: 1px solid var(--border-default); border-radius: var(--radius-panel); background: var(--surface-primary); }
+.ui-feedback h3, .ui-feedback p { margin: 0; }
+.ui-feedback p { color: var(--text-secondary); line-height: 1.55; }
+.ui-feedback--error { border-color: color-mix(in oklab, var(--od-danger-fg) 38%, var(--border-default)); }
+
+@media (max-width: 639px) {
+  .ui-page { gap: 24px; }
+  .ui-page-header { align-items: stretch; flex-direction: column; gap: 16px; }
+  .ui-page-header__actions { justify-content: flex-start; }
+  .ui-data-panel__header,
+  .ui-form-panel__header { align-items: flex-start; padding: 16px; }
+  .ui-form-panel__body { padding: 16px; }
+  .ui-section__header { align-items: stretch; flex-direction: column; }
+  .ui-section__actions { justify-content: flex-start; }
+  .ui-metric-band { grid-template-columns: 1fr 1fr; }
+  .ui-metric + .ui-metric { border-left: 0; }
+  .ui-metric:nth-child(n + 3) { border-top: 1px solid var(--border-subtle); }
+  .ui-metric:nth-child(even) { border-left: 1px solid var(--border-subtle); }
 }
 
 .panel,
@@ -368,7 +606,7 @@ p { text-wrap: pretty; }
 .dashboard-customize-panel,
 .mobile-create-menu {
   border: 1px solid var(--od-border);
-  border-radius: 6px;
+  border-radius: var(--radius-panel);
   background: var(--od-surface);
   box-shadow: none;
 }
@@ -388,8 +626,8 @@ textarea {
   width: 100%;
   min-height: 44px;
   border: 1px solid var(--od-border);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.025);
+  border-radius: var(--radius-control);
+  background: var(--surface-primary);
   color: var(--od-text);
   padding: 9px 12px;
   outline: none;
@@ -399,7 +637,7 @@ textarea {
 textarea { min-height: 96px; resize: vertical; }
 .field::placeholder, .glass-input::placeholder, input::placeholder, textarea::placeholder { color: var(--od-text-3); opacity: 1; }
 .field:hover, .glass-input:hover, input:hover, select:hover, textarea:hover { border-color: var(--od-border-hover); }
-.field:focus, .glass-input:focus, input:focus, select:focus, textarea:focus { border-color: var(--od-accent); box-shadow: var(--shadow-focus); }
+.field:focus, .glass-input:focus, input:focus, select:focus, textarea:focus { border-color: var(--od-focus-ring); box-shadow: var(--shadow-focus); }
 select option { background: var(--od-muted-surface); color: var(--od-text); }
 
 .label {
@@ -407,8 +645,7 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
   color: var(--od-text-2);
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: .04em;
-  text-transform: uppercase;
+  letter-spacing: 0;
 }
 
 .btn,
@@ -420,7 +657,7 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
   justify-content: center;
   gap: 8px;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--radius-control);
   background: var(--od-accent);
   color: #fff;
   padding: 0 18px;
@@ -439,14 +676,14 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
   justify-content: center;
   gap: 8px;
   border: 1px solid var(--od-border);
-  border-radius: 4px;
-  background: transparent;
+  border-radius: var(--radius-control);
+  background: var(--surface-primary);
   color: var(--od-text);
   padding: 0 18px;
   font-size: 14px;
   font-weight: 600;
 }
-.btn-secondary:hover { border-color: var(--od-border-hover); background: rgba(255,255,255,.04); }
+.btn-secondary:hover { border-color: var(--od-border-hover); background: var(--surface-hover); }
 
 /* Tela de autenticação é o primeiro contato com o produto — o botão de ação
    principal ganha um alvo maior, cantos mais arredondados e a sombra de
@@ -455,18 +692,42 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
    o .btn compacto usado no restante do painel. */
 .btn-lg {
   min-height: 52px;
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-control);
   padding: 0 24px;
   font-size: 16px;
   box-shadow: var(--shadow-od-primary);
 }
 .btn-lg:active { box-shadow: none; }
 
+/* Ação secundária preenchida (Configurações, exportar, imprimir) — sem
+   regra própria ela renderizava como texto solto, sem cara de clicável. */
+.btn-soft {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--od-border);
+  border-radius: var(--radius-control);
+  background: var(--od-muted-surface);
+  color: var(--od-text);
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+.btn-soft:hover {
+  border-color: var(--od-border-hover);
+  background: var(--surface-hover);
+}
+.btn-soft:active { transform: translateY(1px); }
+.btn-soft:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
 .tag {
   display: inline-flex;
   align-items: center;
   border: 1px solid var(--od-border);
-  border-radius: 4px;
+  border-radius: var(--radius-round);
   background: transparent;
   color: var(--od-text-2);
   padding: 4px 8px;
@@ -475,6 +736,18 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
 }
 
 .nav-item { transition: color 180ms cubic-bezier(0.16, 1, 0.3, 1), background-color 180ms cubic-bezier(0.16, 1, 0.3, 1); }
+.product-nav-row { position: relative; isolation: isolate; }
+.product-nav-row::before {
+  position: absolute;
+  z-index: -1;
+  inset: 4px;
+  border-radius: var(--radius-control);
+  background: transparent;
+  content: "";
+  transition: background-color 140ms ease;
+}
+.product-nav-row[data-active="true"]::before { background: var(--od-accent-tint); }
+.product-nav-row:not([data-active="true"]):hover::before { background: var(--surface-hover); }
 .press:active, .press-sm:active { transform: translateY(1px); }
 .enter { animation: od-fade-up 180ms cubic-bezier(0.16, 1, 0.3, 1) both; }
 .text-safe { overflow-wrap: anywhere; }
@@ -484,22 +757,45 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
 .dashboard-widget-shell[data-drop-target="true"] { outline: 2px solid var(--od-accent); outline-offset: 3px; }
 .dashboard-widget-dragging { opacity: .55; }
 .dashboard-widget-drag-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--od-border); padding: 8px 12px; }
-.dashboard-widget-order-actions { display: flex; gap: 4px; }
-.dashboard-widget-order-actions button { min-height: 32px; min-width: 32px; border-radius: 4px; color: var(--od-text-2); }
+.dashboard-widget-grip {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--od-border);
+  border-radius: var(--radius-control);
+  background: var(--od-muted-surface);
+  color: var(--od-text-2);
+  touch-action: none;
+}
+.dashboard-widget-grip:hover { border-color: var(--od-border-hover); color: var(--od-text); }
+.dashboard-widget-drag-label { min-width: 0; flex: 1; color: var(--od-text-2); font-size: 12px; font-weight: 600; }
+.dashboard-widget-order-actions { display: flex; gap: 8px; }
+.dashboard-widget-order-actions button { min-height: 44px; min-width: 44px; border-radius: var(--radius-control); border: 1px solid var(--od-border); background: var(--od-muted-surface); color: var(--od-text-2); padding-inline: 12px; font-size: 12px; font-weight: 600; }
+.dashboard-widget-order-actions button:hover:not(:disabled) { border-color: var(--od-border-hover); background: var(--surface-hover); color: var(--od-text); }
 
 /* Papel de parede das conversas (WhatsApp e Tim usam o mesmo): padrão sutil
    repetido num data URI pequeno, sem depender de imagem externa. */
 .chat-wallpaper {
-  background-color: #191720;
+  background-color: var(--surface-base);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.028' stroke-width='1.4'%3E%3Ccircle cx='18' cy='22' r='6'/%3E%3Cpath d='M46 14h12v12H46z'/%3E%3Cpath d='M78 30l7-9 7 9z'/%3E%3Cpath d='M14 62c4-6 10-6 14 0s10 6 14 0'/%3E%3Ccircle cx='96' cy='66' r='8'/%3E%3Cpath d='M58 54v14M51 61h14'/%3E%3Cpath d='M24 96h14v10H24z'/%3E%3Cpath d='M62 98l6-8 6 8z'/%3E%3Ccircle cx='102' cy='104' r='5'/%3E%3Cpath d='M86 12c3 3 3 7 0 10'/%3E%3C/g%3E%3C/svg%3E");
 }
 
-.modal-backdrop { position: fixed; inset: 0; z-index: var(--z-modal-backdrop); background: rgba(9, 7, 12, .72); }
+/* O fundo do Tim fica um degrau abaixo do resto das superfícies: a conversa
+   é a sala do assistente e lê melhor um pouco mais fechada, sem deixar de
+   pertencer ao mesmo sistema de tokens. O WhatsApp continua no tom padrão. */
+.chat-wallpaper-tim {
+  background-color: #0e1216;
+}
+
+.modal-backdrop { position: fixed; inset: 0; z-index: var(--z-modal-backdrop); background: rgba(3, 5, 8, .78); }
 .modal { position: fixed; z-index: var(--z-modal); }
 
 @media (max-width: 767px) {
-  /* Espaço para a barra fixa de 64px não cobrir o fim do conteúdo. */
-  .product-content { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  /* Espaço para a barra flutuante (64px + 8px de folga até a borda) não cobrir
+     o fim do conteúdo. */
+  .product-content { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
 
   /* Conversa aberta no WhatsApp: a tela vira o chat inteiro, como no app —
      topbar e barra de abas somem enquanto ela está aberta (o botão voltar do
@@ -509,9 +805,20 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
   body[data-chat-fullscreen] .product-content > header { display: none; }
   body[data-chat-fullscreen] [data-mobile-nav] { display: none; }
 
-  /* No celular a barra de rolagem lateral fica visível o tempo todo em
-     alguns navegadores e parece um "arrastando". Some com ela (a rolagem por
-     toque continua normal) — comportamento de app nativo. */
+   /* No celular a barra de rolagem lateral fica visível o tempo todo em
+      alguns navegadores e parece um "arrastando". Some com ela (a rolagem por
+      toque continua normal) — comportamento de app nativo. */
+   html,
+   .product-workspace,
+   .product-workspace * {
+     scrollbar-width: none;
+   }
+
+   html::-webkit-scrollbar,
+   .product-workspace ::-webkit-scrollbar {
+     width: 0;
+     height: 0;
+   }
 }
 
 @media (min-width: 1280px) {

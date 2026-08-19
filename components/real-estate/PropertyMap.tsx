@@ -3,7 +3,7 @@
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef, useState } from "react";
 import { RefreshCw } from "lucide-react";
-import type { Map as LeafletMap } from "leaflet";
+import type { DivIcon, Map as LeafletMap } from "leaflet";
 
 type MapProperty = {
   id: string;
@@ -14,12 +14,37 @@ type MapProperty = {
   priceLabel: string;
   neighborhood: string;
   typeLabel: string;
+  statusKey: string;
   statusLabel: string;
   facts: string;
   href: string;
 };
 
 const POPUP_STYLE_ID = "pm-popup-style";
+
+export const PROPERTY_MAP_TILE_URL =
+  "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+
+type PropertyMarkerTone = "active" | "completed" | "inactive" | "reserved";
+
+const PROPERTY_MARKER_VISUALS: Record<
+  PropertyMarkerTone,
+  { fill: string; tone: PropertyMarkerTone }
+> = {
+  active: { fill: "#2F6FCC", tone: "active" },
+  reserved: { fill: "#C47D1C", tone: "reserved" },
+  completed: { fill: "#2D8A62", tone: "completed" },
+  inactive: { fill: "#5E6978", tone: "inactive" },
+};
+
+export function propertyMarkerVisual(status: string) {
+  if (status === "ativo") return PROPERTY_MARKER_VISUALS.active;
+  if (status === "reservado") return PROPERTY_MARKER_VISUALS.reserved;
+  if (status === "vendido" || status === "alugado") {
+    return PROPERTY_MARKER_VISUALS.completed;
+  }
+  return PROPERTY_MARKER_VISUALS.inactive;
+}
 
 function esc(value: string) {
   return value.replace(
@@ -32,11 +57,12 @@ function esc(value: string) {
 }
 
 function popupHtml(property: MapProperty) {
+  const markerVisual = propertyMarkerVisual(property.statusKey);
   const cover = property.coverUrl
     ? `<img class="pm-img" src="${esc(property.coverUrl)}" alt="Foto de ${esc(property.title)}" loading="lazy" />`
     : `<div class="pm-img pm-noimg">sem foto</div>`;
   const status = property.statusLabel
-    ? `<span class="pm-status">${esc(property.statusLabel)}</span>`
+    ? `<span class="pm-status" style="--pm-status-color:${markerVisual.fill}">${esc(property.statusLabel)}</span>`
     : "";
   const facts = property.facts
     ? `<div class="pm-facts">${esc(property.facts)}</div>`
@@ -59,29 +85,32 @@ function injectStyle() {
   const style = document.createElement("style");
   style.id = POPUP_STYLE_ID;
   style.textContent = `
-.leaflet-container{background:#151419;font-family:inherit}
-.leaflet-popup-content-wrapper{background:#201f26;color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:8px;box-shadow:0 12px 34px rgba(0,0,0,.55);padding:0;overflow:hidden}
+.leaflet-container{background:#DCE6EC;font-family:inherit}
+.leaflet-popup-content-wrapper{background:#15191F;color:#F5F7FA;border:1px solid #2D3540;border-radius:15px;box-shadow:none;padding:0;overflow:hidden}
 .leaflet-popup-content{margin:0;width:238px!important}
-.leaflet-popup-tip{background:#201f26;border:1px solid rgba(255,255,255,.12)}
-.leaflet-popup-close-button{color:rgba(255,255,255,.55)!important;top:6px!important;right:6px!important}
-.leaflet-container a.leaflet-popup-close-button:hover{color:#fff!important}
+.leaflet-popup-tip{background:#15191F;border:1px solid #2D3540}
+.leaflet-popup-close-button{color:#98A2AF!important;top:6px!important;right:6px!important}
+.leaflet-container a.leaflet-popup-close-button:hover{color:#F5F7FA!important}
 .pm-card{display:block;text-decoration:none;color:inherit}
-.pm-img{display:block;width:100%;height:122px;object-fit:cover;background:#2a2732}
-.pm-noimg{display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(255,255,255,.3)}
+.pm-img{display:block;width:100%;height:122px;object-fit:cover;background:#1B2027}
+.pm-noimg{display:flex;align-items:center;justify-content:center;font-size:12px;color:#7D8998}
 .pm-info{padding:10px 12px 12px}
 .pm-row1{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px}
-.pm-type{font-size:11px;font-weight:600;color:#c4b5fd}
-.pm-status{font-size:10px;font-weight:600;color:rgba(255,255,255,.62);background:rgba(255,255,255,.08);padding:1px 7px;border-radius:4px}
-.pm-title{font-size:13px;font-weight:600;color:#fff;line-height:1.3}
-.pm-neigh{font-size:11px;color:rgba(255,255,255,.5);margin-top:2px}
-.pm-price{font-size:15px;font-weight:700;color:#fff;margin-top:7px}
-.pm-facts{font-size:11px;color:rgba(255,255,255,.55);margin-top:4px}
-.pm-link{display:inline-block;margin-top:9px;font-size:12px;font-weight:600;color:#a78bfa}
-.pm-card:hover .pm-link{color:#c4b5fd}
-.leaflet-bar a{background:#201f26;color:#fff;border-color:rgba(255,255,255,.12)}
-.leaflet-bar a:hover{background:#2a2732}
-.leaflet-control-attribution{background:rgba(21,20,25,.7)!important;color:rgba(255,255,255,.4)!important}
-.leaflet-control-attribution a{color:rgba(255,255,255,.55)!important}
+.pm-type{font-size:11px;font-weight:600;color:#91B6E7}
+.pm-status{font-size:10px;font-weight:700;color:var(--pm-status-color);background:color-mix(in oklab,var(--pm-status-color) 16%,#15191F);border:1px solid color-mix(in oklab,var(--pm-status-color) 42%,#2D3540);padding:2px 7px;border-radius:999px}
+.pm-title{font-size:13px;font-weight:600;color:#F5F7FA;line-height:1.3}
+.pm-neigh{font-size:11px;color:#98A2AF;margin-top:2px}
+.pm-price{font-size:15px;font-weight:700;color:#F5F7FA;margin-top:7px}
+.pm-facts{font-size:11px;color:#98A2AF;margin-top:4px}
+.pm-link{display:inline-block;margin-top:9px;font-size:12px;font-weight:600;color:#91B6E7}
+.pm-card:hover .pm-link{color:#B8D1F1}
+.leaflet-bar a{background:#15191F;color:#F5F7FA;border-color:#2D3540}
+.leaflet-bar a:hover{background:#20262E;color:#F5F7FA}
+.leaflet-control-attribution{background:rgba(245,247,250,.9)!important;color:#465465!important}
+.leaflet-control-attribution a{color:#214A88!important}
+.pm-legend{display:grid;gap:6px;background:#15191F;color:#F5F7FA;border:1px solid #2D3540;border-radius:11px;padding:9px 10px;font:600 11px/1.2 inherit}
+.pm-legend-row{display:flex;align-items:center;gap:7px;white-space:nowrap}
+.pm-legend-dot{width:8px;height:8px;border:1px solid #F5F7FA;border-radius:999px;background:var(--pm-legend-color)}
 `;
   document.head.appendChild(style);
 }
@@ -108,31 +137,48 @@ export function PropertyMap({ properties }: { properties: MapProperty[] }) {
         }).setView([properties[0].latitude, properties[0].longitude], 12);
         map = instance;
 
-        const layer = L.tileLayer(
-          "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-          {
+        const layer = L.tileLayer(PROPERTY_MAP_TILE_URL, {
             attribution: "&copy; OpenStreetMap &copy; CARTO",
             subdomains: "abcd",
             maxZoom: 20,
-          },
-        );
+          });
         layer.once("tileerror", () => {
           if (!cancelled) setStatus("error");
         });
         layer.addTo(instance);
 
-        const icon = L.divIcon({
-          className: "pm-pin",
-          html:
-            '<svg width="26" height="34" viewBox="0 0 26 34" xmlns="http://www.w3.org/2000/svg">' +
-            '<path d="M13 0C5.82 0 0 5.82 0 13c0 9.2 13 21 13 21s13-11.8 13-21C26 5.82 20.18 0 13 0z" fill="#8b5cf6" stroke="#ffffff" stroke-width="1.5"/>' +
-            '<circle cx="13" cy="13" r="4.4" fill="#ffffff"/></svg>',
-          iconSize: [26, 34],
-          iconAnchor: [13, 34],
-          popupAnchor: [0, -30],
-        });
+        const legend = new L.Control({ position: "bottomleft" });
+        legend.onAdd = () => {
+          const element = L.DomUtil.create("div", "pm-legend");
+          element.setAttribute("aria-label", "Legenda dos imóveis");
+          element.innerHTML =
+            '<div class="pm-legend-row"><span class="pm-legend-dot" style="--pm-legend-color:#2F6FCC"></span>Ativo</div>' +
+            '<div class="pm-legend-row"><span class="pm-legend-dot" style="--pm-legend-color:#C47D1C"></span>Reservado</div>' +
+            '<div class="pm-legend-row"><span class="pm-legend-dot" style="--pm-legend-color:#2D8A62"></span>Vendido ou alugado</div>' +
+            '<div class="pm-legend-row"><span class="pm-legend-dot" style="--pm-legend-color:#5E6978"></span>Rascunho ou inativo</div>';
+          return element;
+        };
+        legend.addTo(instance);
+
+        const icons = new Map<PropertyMarkerTone, DivIcon>();
 
         for (const property of properties) {
+          const markerVisual = propertyMarkerVisual(property.statusKey);
+          let icon = icons.get(markerVisual.tone);
+          if (!icon) {
+            icon = L.divIcon({
+              className: "pm-pin",
+              html:
+                '<svg width="26" height="34" viewBox="0 0 26 34" xmlns="http://www.w3.org/2000/svg">' +
+                `<path d="M13 0C5.82 0 0 5.82 0 13c0 9.2 13 21 13 21s13-11.8 13-21C26 5.82 20.18 0 13 0z" fill="${markerVisual.fill}" stroke="#F5F7FA" stroke-width="1.5"/>` +
+                '<circle cx="13" cy="13" r="4.4" fill="#ffffff"/></svg>',
+              iconSize: [26, 34],
+              iconAnchor: [13, 34],
+              popupAnchor: [0, -30],
+            });
+            icons.set(markerVisual.tone, icon);
+          }
+
           L.marker([property.latitude, property.longitude], { icon })
             .addTo(instance)
             .bindPopup(popupHtml(property), {
@@ -168,7 +214,7 @@ export function PropertyMap({ properties }: { properties: MapProperty[] }) {
 
   if (properties.length === 0) {
     return (
-      <div className="rounded-md border border-white/[0.09] bg-white/[0.02] p-8 text-center text-sm font-medium text-ink-muted">
+      <div className="card-quiet p-8 text-center text-sm font-medium text-ink-muted">
         Nenhum imóvel com coordenadas cadastradas ainda.
       </div>
     );
@@ -182,14 +228,14 @@ export function PropertyMap({ properties }: { properties: MapProperty[] }) {
         className="h-[520px] w-full overflow-hidden"
       />
       {status === "loading" ? (
-        <div className="absolute inset-0 grid place-items-center bg-[#151419]/75 text-sm font-medium text-white/62">
+        <div className="absolute inset-0 grid place-items-center bg-[color:var(--od-bg)]/75 text-sm font-medium text-od-text-2">
           Carregando mapa…
         </div>
       ) : null}
       {status === "error" ? (
-        <div className="absolute inset-0 grid place-items-center bg-[#151419]/90 p-6 text-center">
+        <div className="absolute inset-0 grid place-items-center bg-[color:var(--od-bg)]/90 p-6 text-center">
           <div>
-            <p className="text-sm font-semibold text-white">
+            <p className="text-sm font-semibold text-od-text">
               Não foi possível carregar o mapa agora.
             </p>
             <p className="mt-2 text-xs text-od-text-3">

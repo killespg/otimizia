@@ -54,7 +54,7 @@ export function SignupsBarChart({ series }: { series: Point[] }) {
             width={barWidth}
             height={Math.max(0, barHeight(point.count))}
             rx="2"
-            fill={index === hoverIndex ? "#6d28d9" : "#a78bfa"}
+            fill={index === hoverIndex ? "#285AA5" : "#4E7FBF"}
             onPointerEnter={() => setHoverIndex(index)}
             onPointerLeave={() => setHoverIndex((current) => (current === index ? null : current))}
           />

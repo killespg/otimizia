@@ -74,7 +74,7 @@ export function SocialAuthButtons({ next }: { next?: string }) {
         type="button"
         onClick={handleClick}
         disabled={loading}
-        className="flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-2xl border border-od-border bg-white/[0.02] text-base font-semibold text-od-text transition-colors hover:border-od-border-hover hover:bg-white/[0.05] disabled:pointer-events-none disabled:opacity-50"
+        className="flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-[var(--radius-control)] border border-od-border bg-od-muted-surface text-base font-semibold text-od-text transition-colors hover:border-od-border-hover hover:bg-od-surface-hover disabled:pointer-events-none disabled:opacity-50"
       >
         {loading ? (
           <span className="size-[18px] animate-spin rounded-full border-2 border-od-text-3 border-t-transparent" />

@@ -8,6 +8,7 @@ import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { getUserPlanAccess } from "@/lib/billing/plan-access";
 import { SELLER_MODULES, SELLER_SALES_MODELS } from "@/lib/seller/seller-operations";
 import { createClient } from "@/lib/supabase/server";
+import { normalizeBulkIds } from "@/lib/utils/form-parse";
 import type { SellerModule, SellerSalesModel } from "@/lib/supabase/types";
 import { parseWorkspacePreferences } from "@/lib/workspace/workspace-preferences";
 import { getWorkspaceKey } from "@/lib/workspace/workspaces";
@@ -281,6 +282,45 @@ export async function deleteSellerProductPhoto(formData: FormData) {
   await createAdminClient().storage.from(PRODUCT_IMAGE_BUCKET).remove([media.storage_path as string]);
   revalidateSeller();
   redirect(`/painel/produtos/${productId}`);
+}
+
+// Exclusão em lote do catálogo. Itens de pedido apontam pro produto com
+// `on delete set null`, então o histórico de venda sobrevive à exclusão — o que
+// não sobrevive são variações, mídia e movimentações, que cascateiam. As fotos
+// só saem do storage depois do delete confirmado no banco.
+export async function bulkDeleteSellerProducts(ids: string[]) {
+  const productIds = normalizeBulkIds(ids);
+  if (productIds.length === 0) return { deleted: 0 };
+  const { supabase, orgId } = await requireSeller();
+
+  const { data: owned } = await supabase
+    .from("seller_products")
+    .select("id")
+    .in("id", productIds)
+    .eq("org_id", orgId);
+  const ownedIds = (owned ?? []).map((product) => product.id as string);
+  if (ownedIds.length === 0) return { deleted: 0 };
+
+  const { data: media } = await supabase
+    .from("seller_product_media")
+    .select("storage_path")
+    .in("product_id", ownedIds)
+    .eq("org_id", orgId);
+  const paths = (media ?? []).map((item) => item.storage_path as string);
+
+  const { error } = await supabase
+    .from("seller_products")
+    .delete()
+    .in("id", ownedIds)
+    .eq("org_id", orgId);
+  ensure(error, "Não foi possível excluir os produtos selecionados.");
+
+  if (paths.length > 0) {
+    await createAdminClient().storage.from(PRODUCT_IMAGE_BUCKET).remove(paths);
+  }
+
+  revalidateSeller();
+  return { deleted: ownedIds.length };
 }
 
 export type ConfirmSellerSaleState = { error: string | null; orderId: string | null };

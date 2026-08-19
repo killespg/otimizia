@@ -13,9 +13,12 @@ import {
   type FieldSpec,
   type ProfessionType,
 } from "@/lib/people/professions";
+import { isLostPipelineList, stageFromPipelineList } from "@/lib/crm/pipeline-stage";
+import { normalizeBulkIds } from "@/lib/utils/form-parse";
 import { createClient } from "@/lib/supabase/server";
-import { DEAL_STAGES, type DealStage } from "@/lib/supabase/types";
+import { DEAL_STAGES, type DealStage, type LegalLossReasonCode } from "@/lib/supabase/types";
 import { getWorkspaceKey, isWorkspaceEnabled, normalizeWorkspaceKeys } from "@/lib/workspace/workspaces";
+import { canAssignLegalTasks } from "@/lib/law/task-visibility";
 
 const LIMIT = {
   name: 120,
@@ -274,6 +277,26 @@ export async function deleteContact(formData: FormData) {
   redirect("/painel/contatos");
 }
 
+// Exclusão em lote da carteira de contatos. Interações, tarefas e negociações
+// vinculadas seguem o que o banco define para cada relação — o filtro por org e
+// workspace impede que a seleção alcance contato de outra carteira.
+export async function bulkDeleteContacts(ids: string[]) {
+  const contactIds = normalizeBulkIds(ids);
+  if (contactIds.length === 0) return { deleted: 0 };
+  const { supabase, orgId, workspaceKey } = await requireUserWithPreset();
+  const { error } = await supabase
+    .from("contacts")
+    .delete()
+    .in("id", contactIds)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey);
+  ensureOk(error, "Não deu para excluir os contatos.");
+  revalidatePath("/painel/contatos");
+  revalidatePath("/painel/funil");
+  revalidatePath("/painel");
+  return { deleted: contactIds.length };
+}
+
 // ---------- Interactions ----------
 export async function createInteraction(formData: FormData) {
   const { supabase, user, orgId, workspaceKey } = await requireUserWithPreset();
@@ -350,7 +373,11 @@ export async function createPipelineList(formData: FormData) {
   redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
 }
 
-export async function moveDealToList(id: string, listName: string) {
+export async function moveDealToList(
+  id: string,
+  listName: string,
+  lossReason?: { code: LegalLossReasonCode; notes: string },
+) {
   const { supabase, orgId, workspaceKey } = await requireActiveUserWithWorkspace();
   const name = listName.trim().slice(0, LIMIT.title);
   if (!name) throw new Error("Lista inválida.");
@@ -366,12 +393,25 @@ export async function moveDealToList(id: string, listName: string) {
   if (!existing) throw new Error("Venda não encontrada.");
   const stage = stageFromPipelineList(name);
   const closed = stage === "ganho" || stage === "perdido";
+  const legalLoss = workspaceKey === "law_office" && isLostPipelineList(name);
+  if (legalLoss && (!lossReason || !isLegalLossReasonCode(lossReason.code))) {
+    throw new Error("Informe o motivo da perda.");
+  }
+  const lossFields = workspaceKey === "law_office"
+    ? {
+        loss_reason_code: legalLoss ? lossReason!.code : null,
+        loss_reason_notes: legalLoss
+          ? (typeof lossReason!.notes === "string" ? lossReason!.notes : "").trim().slice(0, 500) || null
+          : null,
+      }
+    : {};
 
   const { error } = await supabase
     .from("deals")
     .update({
       stage,
       closed_at: closed ? new Date().toISOString() : null,
+      ...lossFields,
       details: {
         ...(existing.details ?? {}),
         pipeline_list: name,
@@ -383,6 +423,20 @@ export async function moveDealToList(id: string, listName: string) {
   ensureOk(error, "Não deu para mover a venda.");
   revalidatePath("/painel/funil");
   revalidatePath("/painel");
+}
+
+function isLegalLossReasonCode(value: unknown): value is LegalLossReasonCode {
+  switch (value) {
+    case "price":
+    case "competitor":
+    case "no_response":
+    case "timing":
+    case "profile_mismatch":
+    case "other":
+      return true;
+    default:
+      return false;
+  }
 }
 
 export async function moveDeal(id: string, stage: DealStage) {
@@ -516,7 +570,8 @@ export async function uploadDealPhoto(formData: FormData) {
 export async function createTask(formData: FormData) {
   const { supabase, user, orgId, workspaceKey } = await requireUserWithPreset();
   const contactId = await resolveOrCreateContactId(supabase, user.id, orgId, workspaceKey, formData);
-  const assigneeId = await resolveAssigneeId(supabase, orgId, user.id, formData);
+  const assigneeId = await resolveAssigneeId(supabase, orgId, user.id, formData, workspaceKey);
+  const caseId = await visibleCaseIdOrNull(supabase, orgId, formData.get("case_id"));
   const { error } = await supabase.from("tasks").insert({
     owner_id: user.id,
     org_id: orgId,
@@ -525,12 +580,15 @@ export async function createTask(formData: FormData) {
     reviewer_id: assigneeId && assigneeId !== user.id ? user.id : null,
     review_status: assigneeId && assigneeId !== user.id ? "in_progress" : "not_required",
     contact_id: contactId,
+    case_id: caseId,
+    notes: text(formData.get("notes"), LIMIT.notes) || null,
     title: requiredText(formData.get("title"), "Lembrete", LIMIT.title),
     due_at: dateTimeOrNull(formData.get("due_at")),
     recurrence: recurrenceOrNone(formData.get("recurrence")),
   });
   ensureOk(error, "Não deu para salvar o lembrete.");
   revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/juridico/prazos");
   revalidatePath("/painel/calendario");
   revalidatePath("/painel");
   revalidatePath("/painel/contatos");
@@ -575,8 +633,165 @@ export async function toggleTask(id: string, done: boolean) {
   }
 
   revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/juridico/prazos");
   revalidatePath("/painel/calendario");
   revalidatePath("/painel");
+}
+
+export async function completeAgendaTask(formData: FormData) {
+  const id = requiredText(formData.get("id"), "Lembrete", 80);
+  await toggleTask(id, true);
+}
+
+export async function updateAgendaTask(formData: FormData) {
+  const { supabase, user, orgId, workspaceKey } = await requireUserWithPreset();
+  const id = requiredText(formData.get("id"), "Lembrete", 80);
+  const { data: task } = await supabase
+    .from("tasks")
+    .select("id, owner_id, assignee_id, pending_assignee_id")
+    .eq("id", id)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey)
+    .maybeSingle();
+  if (!task) throw new Error("Lembrete não encontrado.");
+
+  const [orgRole, { data: membership }] = await Promise.all([
+    getOrgRole(supabase, orgId, user.id),
+    supabase
+      .from("organization_members")
+      .select("job_role")
+      .eq("org_id", orgId)
+      .eq("user_id", user.id)
+      .maybeSingle(),
+  ]);
+  const canAssign = canAssignLegalTasks(membership?.job_role, orgRole === "admin");
+  const isOwn =
+    task.owner_id === user.id || task.assignee_id === user.id || task.pending_assignee_id === user.id;
+  if (workspaceKey === "law_office" && !canAssign && !isOwn) {
+    throw new Error("Você não pode editar este lembrete.");
+  }
+
+  const contactId = await resolveOrCreateContactId(supabase, user.id, orgId, workspaceKey, formData);
+  const caseId = await visibleCaseIdOrNull(supabase, orgId, formData.get("case_id"));
+  const { error } = await supabase
+    .from("tasks")
+    .update({
+      title: requiredText(formData.get("title"), "Lembrete", LIMIT.title),
+      due_at: dateTimeOrNull(formData.get("due_at")),
+      notes: text(formData.get("notes"), LIMIT.notes) || null,
+      case_id: caseId,
+      contact_id: contactId,
+    })
+    .eq("id", id)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey);
+  ensureOk(error, "Não deu para salvar o lembrete.");
+
+  if (canAssign) {
+    const nextAssignee = (await visibleMemberIdOrNull(supabase, orgId, formData.get("assignee_id"))) ?? task.assignee_id;
+    if (nextAssignee && nextAssignee !== task.assignee_id) {
+      const { error: reassignError } = await supabase.rpc("admin_reassign_task", {
+        p_task_id: id,
+        p_assignee_id: nextAssignee,
+      });
+      ensureOk(reassignError, "O lembrete foi salvo, mas a reatribuição não passou.");
+    }
+  }
+
+  revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/juridico/prazos");
+  revalidatePath("/painel/calendario");
+  revalidatePath("/painel");
+  revalidatePath("/painel/contatos");
+  redirect(safeReturnPath(formData.get("return_to"), "/painel/juridico/prazos"));
+}
+// concluídas direto pelo responsável: em vez de derrubar o lote inteiro, elas são
+// puladas e devolvidas em `skipped` para a interface avisar.
+export async function bulkToggleTasks(ids: string[], done: boolean) {
+  const taskIds = normalizeTaskIds(ids);
+  if (taskIds.length === 0) return { updated: 0, skipped: 0 };
+  const { supabase, user, orgId, workspaceKey } = await requireActiveUserWithWorkspace();
+
+  const { data: tasks } = await supabase
+    .from("tasks")
+    .select("id,reviewer_id,assignee_id,owner_id,contact_id,deal_id,title,due_at,recurrence,recurrence_spawned")
+    .in("id", taskIds)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey);
+
+  const found = tasks ?? [];
+  const allowed = done
+    ? found.filter((task) => !(task.reviewer_id && task.assignee_id === user.id))
+    : found;
+  if (allowed.length === 0) return { updated: 0, skipped: found.length };
+
+  const { error } = await supabase
+    .from("tasks")
+    .update({ done })
+    .in("id", allowed.map((task) => task.id))
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey);
+  ensureOk(error, "Não deu para atualizar os lembretes.");
+
+  if (done) {
+    const recurring = allowed.filter(
+      (task) => task.recurrence !== "none" && !task.recurrence_spawned
+    );
+    if (recurring.length > 0) {
+      await supabase.from("tasks").insert(
+        recurring.map((task) => ({
+          owner_id: task.owner_id,
+          org_id: orgId,
+          workspace_key: workspaceKey,
+          assignee_id: task.assignee_id,
+          contact_id: task.contact_id,
+          deal_id: task.deal_id,
+          title: task.title,
+          due_at: advanceRecurrence(task.due_at, task.recurrence as "daily" | "weekly" | "monthly"),
+          recurrence: task.recurrence,
+        }))
+      );
+      await supabase
+        .from("tasks")
+        .update({ recurrence_spawned: true })
+        .in("id", recurring.map((task) => task.id));
+    }
+  }
+
+  revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/calendario");
+  revalidatePath("/painel");
+  return { updated: allowed.length, skipped: found.length - allowed.length };
+}
+
+export async function bulkDeleteTasks(ids: string[]) {
+  const taskIds = normalizeTaskIds(ids);
+  if (taskIds.length === 0) return { deleted: 0 };
+  const { supabase, orgId, workspaceKey } = await requireActiveUserWithWorkspace();
+  const { error } = await supabase
+    .from("tasks")
+    .delete()
+    .in("id", taskIds)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey);
+  ensureOk(error, "Não deu para excluir os lembretes.");
+  revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/calendario");
+  revalidatePath("/painel");
+  return { deleted: taskIds.length };
+}
+
+const BULK_TASK_LIMIT = 200;
+
+function normalizeTaskIds(ids: string[]) {
+  if (!Array.isArray(ids)) throw new Error("Seleção inválida.");
+  const unique = Array.from(
+    new Set(ids.filter((id): id is string => typeof id === "string" && id.length > 0 && id.length <= 80))
+  );
+  if (unique.length > BULK_TASK_LIMIT) {
+    throw new Error(`Selecione no máximo ${BULK_TASK_LIMIT} lembretes por vez.`);
+  }
+  return unique;
 }
 
 function recurrenceOrNone(v: FormDataEntryValue | null): "none" | "daily" | "weekly" | "monthly" {
@@ -601,6 +816,7 @@ export async function deleteTask(formData: FormData) {
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para excluir o lembrete.");
   revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/juridico/prazos");
   revalidatePath("/painel/calendario");
   revalidatePath("/painel");
   redirect(safeReturnPath(formData.get("return_to"), "/painel/tarefas"));
@@ -642,9 +858,10 @@ export async function requestTaskHandoff(formData: FormData) {
   });
   ensureOk(error, "Não deu para solicitar a transferência.");
   revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/juridico/prazos");
   revalidatePath("/painel/calendario");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/tarefas"));
+  redirect(safeReturnPath(formData.get("return_to"), "/painel/juridico/prazos"));
 }
 
 export async function acceptTaskHandoff(formData: FormData) {
@@ -653,9 +870,10 @@ export async function acceptTaskHandoff(formData: FormData) {
   const { error } = await supabase.rpc("accept_task_handoff", { p_task_id: taskId });
   ensureOk(error, "Não deu para aceitar a transferência.");
   revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/juridico/prazos");
   revalidatePath("/painel/calendario");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/tarefas"));
+  redirect(safeReturnPath(formData.get("return_to"), "/painel/juridico/prazos"));
 }
 
 export async function declineTaskHandoff(formData: FormData) {
@@ -664,9 +882,10 @@ export async function declineTaskHandoff(formData: FormData) {
   const { error } = await supabase.rpc("decline_task_handoff", { p_task_id: taskId });
   ensureOk(error, "Não deu para recusar a transferência.");
   revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/juridico/prazos");
   revalidatePath("/painel/calendario");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/tarefas"));
+  redirect(safeReturnPath(formData.get("return_to"), "/painel/juridico/prazos"));
 }
 
 export async function adminReassignTask(formData: FormData) {
@@ -974,8 +1193,21 @@ async function resolveAssigneeId(
   supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
   orgId: string,
   userId: string,
-  formData: FormData
+  formData: FormData,
+  workspaceKey?: string,
 ): Promise<string | null> {
+  if (workspaceKey === "law_office") {
+    const [orgRole, { data: membership }] = await Promise.all([
+      getOrgRole(supabase, orgId, userId),
+      supabase
+        .from("organization_members")
+        .select("job_role")
+        .eq("org_id", orgId)
+        .eq("user_id", userId)
+        .maybeSingle(),
+    ]);
+    if (!canAssignLegalTasks(membership?.job_role, orgRole === "admin")) return userId;
+  }
   const openAssignment = formData.get("open_assignment") === "on";
   if (openAssignment) {
     const role = await getOrgRole(supabase, orgId, userId);
@@ -983,6 +1215,24 @@ async function resolveAssigneeId(
   }
   const assigneeId = await visibleMemberIdOrNull(supabase, orgId, formData.get("assignee_id"));
   return assigneeId ?? userId;
+}
+
+async function visibleCaseIdOrNull(
+  supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
+  orgId: string,
+  v: FormDataEntryValue | null,
+): Promise<string | null> {
+  const id = emptyToNull(v, 80);
+  if (!id) return null;
+  const { data, error } = await supabase
+    .from("legal_cases")
+    .select("id")
+    .eq("id", id)
+    .eq("org_id", orgId)
+    .maybeSingle();
+  ensureOk(error, "Processo inválido.");
+  if (!data) throw new Error("Processo inválido.");
+  return id;
 }
 
 // Permite criar o lembrete/negócio e o contato juntos, num só envio — evita
@@ -1024,36 +1274,6 @@ async function resolveOrCreateContactId(
 
 function isDealStage(stage: string): stage is DealStage {
   return DEAL_STAGES.some((item) => item.key === stage);
-}
-
-function stageFromPipelineList(listName: string): DealStage {
-  const normalized = listName
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase();
-  if (normalized.includes("perdido") || normalized.includes("perda") || normalized.includes("lost")) {
-    return "perdido";
-  }
-  if (
-    normalized.includes("fechado") ||
-    normalized.includes("vendido") ||
-    normalized.includes("vendas") ||
-    normalized.includes("ganho") ||
-    normalized.includes("won")
-  ) {
-    return "ganho";
-  }
-  if (
-    normalized.includes("proposta") ||
-    normalized.includes("negociacao") ||
-    normalized.includes("visita")
-  ) {
-    return "negociacao";
-  }
-  if (normalized.includes("analise") || normalized.includes("contato") || normalized.includes("follow")) {
-    return "em_contato";
-  }
-  return "novo";
 }
 
 function selectedProfessionTypes(formData: FormData): ProfessionType[] {

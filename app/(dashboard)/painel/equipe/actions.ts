@@ -12,6 +12,7 @@ import { resolveOrigin } from "@/lib/utils/request-origin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { JobRole } from "@/lib/supabase/types";
+import { canAssignLegalTasks, isTaskVisibilityMode } from "@/lib/law/task-visibility";
 
 async function requireOrgAdmin() {
   const supabase = await createClient();
@@ -264,5 +265,71 @@ async function ensureNotLastAdmin(
   if ((count ?? 0) <= 1) {
     throw new Error("A empresa precisa de pelo menos um administrador.");
   }
+}
+
+async function requirePartnerOrAdmin() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const orgId = await getActiveOrgId(supabase, user.id);
+  const [orgRole, { data: membership }] = await Promise.all([
+    getOrgRole(supabase, orgId, user.id),
+    supabase
+      .from("organization_members")
+      .select("job_role")
+      .eq("org_id", orgId)
+      .eq("user_id", user.id)
+      .maybeSingle(),
+  ]);
+  if (!canAssignLegalTasks(membership?.job_role, orgRole === "admin")) {
+    throw new Error("Só dono ou sócio altera a visibilidade da organização.");
+  }
+  return { supabase, user, orgId };
+}
+
+export async function updateMyTaskVisibility(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const orgId = await getActiveOrgId(supabase, user.id);
+  const mode = formData.get("task_visibility");
+  if (!isTaskVisibilityMode(mode)) throw new Error("Escolha uma opção de visibilidade.");
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("task_visibility_locked")
+    .eq("id", orgId)
+    .maybeSingle();
+  if (org?.task_visibility_locked) throw new Error("Essa opção foi definida pela organização.");
+  const { error } = await supabase
+    .from("organization_members")
+    .update({ task_visibility: mode })
+    .eq("org_id", orgId)
+    .eq("user_id", user.id);
+  if (error) throw new Error("Não deu para salvar a visibilidade.");
+  revalidatePath("/painel/equipe");
+  revalidatePath(`/painel/equipe/${user.id}`);
+  revalidatePath("/painel/configuracoes");
+  revalidatePath("/painel/juridico/prazos");
+  revalidatePath("/painel");
+}
+
+export async function updateOrgTaskVisibility(formData: FormData) {
+  const { supabase, orgId } = await requirePartnerOrAdmin();
+  const locked = formData.get("task_visibility_locked") === "on";
+  const mode = formData.get("task_visibility_mode");
+  if (!isTaskVisibilityMode(mode)) throw new Error("Escolha uma opção de visibilidade.");
+  const { error } = await supabase
+    .from("organizations")
+    .update({ task_visibility_locked: locked, task_visibility_mode: mode })
+    .eq("id", orgId);
+  if (error) throw new Error("Não deu para salvar a política da organização.");
+  revalidatePath("/painel/equipe");
+  revalidatePath("/painel/configuracoes");
+  revalidatePath("/painel/juridico/prazos");
+  revalidatePath("/painel");
 }
 

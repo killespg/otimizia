@@ -40,7 +40,7 @@ export function ChatImageAttach({
   return (
     <div className="flex shrink-0 items-center">
       {value ? (
-        <span className="pop-in relative inline-flex h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-line">
+        <span className="pop-in relative inline-flex h-11 w-11 shrink-0 overflow-hidden rounded-[var(--radius-control)] border border-od-border">
           {/* Prévia local (data URL) antes de enviar — não é a imagem final salva. */}
           <Image
             src={value.dataUrl}
@@ -68,7 +68,7 @@ export function ChatImageAttach({
           onClick={() => inputRef.current?.click()}
           aria-label="Anexar foto"
           title="Anexar foto"
-          className="press-sm flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-line bg-od-surface text-ink-muted transition-colors duration-150 ease-out hover:border-brand-300 hover:text-brand-700"
+          className="press-sm flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] border border-od-border bg-od-surface text-od-text-3 transition-colors duration-150 ease-out hover:border-od-border-hover hover:text-od-text"
         >
           <IconImage className="h-5 w-5" />
         </button>

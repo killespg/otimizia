@@ -19,7 +19,6 @@ export function MessageTemplates({
   contactPhone,
   myName,
   contactCompany,
-  flat = false,
 }: Props) {
   const [activeKey, setActiveKey] = useState<string | null>(templates[0]?.key ?? null);
   const [text, setText] = useState(() => fillTemplate(templates[0], {
@@ -57,7 +56,7 @@ export function MessageTemplates({
   }
 
   return (
-    <section className={flat ? "overflow-hidden border-y border-white/[0.08]" : "panel overflow-hidden"}>
+    <section className="panel overflow-hidden">
       <div className="border-b border-line px-5 py-4">
         <h2 className="text-lg font-black tracking-[-0.02em] text-ink">Mensagens prontas</h2>
         <p className="mt-1 text-sm font-medium text-ink-muted">

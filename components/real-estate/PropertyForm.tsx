@@ -140,7 +140,7 @@ export function TransactionAndPriceFields({
                 onClick={() => setTransactionType(option.value)}
                 aria-pressed={active}
                 className={
-                  "press-sm rounded-md border px-3 py-2.5 text-sm font-bold transition-colors " +
+                  "press-sm min-h-11 rounded-[var(--radius-control)] border px-3 py-2.5 text-sm font-bold transition-colors " +
                   (active
                     ? "border-brand-600 bg-brand-50 text-brand-800"
                     : "border-line bg-surface text-ink-soft hover:bg-surface-2")

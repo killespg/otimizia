@@ -33,7 +33,7 @@ export function AiComposer() {
               <div className="w-fit max-w-[80%]">
                 <span className="mb-1 block text-xs font-semibold text-white/50">Tim</span>
                 <p className="rounded bg-white/[0.05] px-3.5 py-2 text-[13px] leading-relaxed text-white/80">
-                  Prontinho — cadastrei a Carla e abri uma negociação nova em Qualificação.
+                  Cadastrei a Carla e abri uma negociação nova em Qualificação.
                 </p>
               </div>
             </div>

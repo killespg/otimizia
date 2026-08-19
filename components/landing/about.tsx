@@ -1,4 +1,5 @@
 import { Check, X } from "lucide-react";
+import { LandingMark } from "./mark";
 
 /**
  * Sobre nós.
@@ -50,12 +51,12 @@ export function About() {
       </h2>
 
       <div className="mx-auto mt-14 max-w-[900px]">
-        <div className="grid grid-cols-2 gap-x-8 border-b border-od-border pb-3">
+        <div className="grid grid-cols-2 gap-x-8 pb-3">
           <p className="text-od-label text-od-text-3">O de sempre</p>
           <p className="text-od-label text-od-accent-hover">No OtimizIA</p>
         </div>
 
-        <div className="divide-y divide-od-border border-b border-od-border">
+        <div className="lp-rows">
           {POSICOES.map((posicao) => (
             <div key={posicao.nosso} className="grid grid-cols-2 gap-x-8 py-5">
               <div className="flex min-w-0 items-start gap-2.5">
@@ -92,11 +93,12 @@ export function About() {
             dá credibilidade aqui é a motivação ser verificável no produto (uma
             ferramenta que não exige a pessoa virar especialista em software),
             não o tamanho da história. */}
-        <div className="mx-auto mt-14 max-w-[52ch] border-t border-od-border pt-8 text-center">
+        <div className="mx-auto mt-14 max-w-[52ch] text-center">
+          <LandingMark className="mx-auto mb-8" />
           <p className="text-[15px] leading-relaxed text-od-text-2">
-            Comecei o OtimizIA no sul do Brasil porque não achava certo a
-            tecnologia andar para a frente deixando gente para trás. O sonho
-            continua o mesmo:{" "}
+            Comecei o OtimizIA no sul do Brasil porque não achava certo que quem
+            abre o próprio negócio tivesse também que aprender a usar software.
+            O sonho continua o mesmo:{" "}
             <span className="font-semibold text-od-text">
               que ninguém precise virar especialista em software para acompanhar
               o próprio tempo.
