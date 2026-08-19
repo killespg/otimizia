@@ -540,11 +540,11 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
     },
   },
 
-  // ---------- Exclusão (exigem confirmação explícita do usuário) ----------
+  // ---------- Exclusão (confirme com o usuário na conversa antes de chamar) ----------
   {
     name: "delete_contact",
     description:
-      "Exclui um contato permanentemente (vendas e lembretes vinculados perdem o vínculo). Só chame depois que o usuário confirmar explicitamente a exclusão na conversa.",
+      "Exclui um contato permanentemente (vendas e lembretes vinculados perdem o vínculo). Só chame depois que o usuário confirmar a exclusão na conversa (ex.: \"pode excluir\", \"exclui\", \"apaga\").",
     input_schema: {
       type: "object",
       properties: {
@@ -556,7 +556,7 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
   {
     name: "delete_deal",
     description:
-      "Exclui uma venda permanentemente. Só chame depois que o usuário confirmar explicitamente a exclusão na conversa.",
+      "Exclui uma venda permanentemente. Só chame depois que o usuário confirmar a exclusão na conversa (ex.: \"pode excluir\", \"exclui\", \"apaga\").",
     input_schema: {
       type: "object",
       properties: {
@@ -568,13 +568,340 @@ export const CRM_TOOLS: Anthropic.Tool[] = [
   {
     name: "delete_task",
     description:
-      "Exclui um lembrete permanentemente. Só chame depois que o usuário confirmar explicitamente a exclusão na conversa.",
+      "Exclui um lembrete permanentemente. Só chame depois que o usuário confirmar a exclusão na conversa (ex.: \"pode excluir\", \"exclui\", \"apaga\").",
     input_schema: {
       type: "object",
       properties: {
         lembrete_id: { type: "string", description: "ID do lembrete" },
       },
       required: ["lembrete_id"],
+    },
+  },
+
+  // ---------- Área jurídica (advocacia) ----------
+  // Disponíveis apenas quando a área ativa no CRM é o jurídico. Permissões
+  // seguem os cargos do escritório: leitura exige acesso ao jurídico e as
+  // escritas exigem gestão (sócio, advogado ou paralegal).
+  {
+    name: "list_legal_cases",
+    description:
+      "Lista os casos da carteira jurídica. Filtre por 'status' (intake, active, waiting, suspended, closed, archived) ou busque por título, número do processo ou parte contrária. Disponíveis apenas no workspace de advocacia.",
+    input_schema: {
+      type: "object",
+      properties: {
+        status: {
+          type: "string",
+          enum: ["intake", "active", "waiting", "suspended", "closed", "archived"],
+          description: "Filtrar por status (opcional)",
+        },
+        busca: { type: "string", description: "Texto para buscar em título, número do processo ou parte contrária (opcional)" },
+        limite: { type: "integer", description: "Máximo de resultados (padrão 20)" },
+      },
+    },
+  },
+  {
+    name: "get_legal_case",
+    description:
+      "Retorna tudo de um caso jurídico: dados do processo, cliente, responsável, equipe, prazos, movimentações, documentos, despesas e links de compartilhamento. Use quando o usuário perguntar sobre um caso específico.",
+    input_schema: {
+      type: "object",
+      properties: {
+        caso_id: { type: "string", description: "ID do caso" },
+      },
+      required: ["caso_id"],
+    },
+  },
+  {
+    name: "list_legal_deadlines",
+    description:
+      "Lista os prazos jurídicos. Filtre por 'status' (pending, completed, cancelled), por caso (caso_id), ou use 'filtro' com 'atrasados' ou 'proximos'. Disponíveis apenas no workspace de advocacia.",
+    input_schema: {
+      type: "object",
+      properties: {
+        caso_id: { type: "string", description: "Filtrar pelos prazos de um caso (opcional)" },
+        status: { type: "string", enum: ["pending", "completed", "cancelled"], description: "Filtrar por status (opcional)" },
+        filtro: { type: "string", enum: ["atrasados", "proximos"], description: "Recorte pré-definido (opcional)" },
+        limite: { type: "integer", description: "Máximo de resultados (padrão 50)" },
+      },
+    },
+  },
+  {
+    name: "list_legal_case_events",
+    description:
+      "Lista as movimentações (eventos) de um caso jurídico — andamentos, decisões, audiências e anotações. Requer 'caso_id'.",
+    input_schema: {
+      type: "object",
+      properties: {
+        caso_id: { type: "string" },
+        limite: { type: "integer", description: "Máximo de resultados (padrão 50)" },
+      },
+      required: ["caso_id"],
+    },
+  },
+  {
+    name: "list_legal_documents",
+    description:
+      "Lista os documentos de um caso jurídico (nome, tipo, status e se foi gerado por IA). Requer 'caso_id'.",
+    input_schema: {
+      type: "object",
+      properties: {
+        caso_id: { type: "string" },
+        limite: { type: "integer", description: "Máximo de resultados (padrão 50)" },
+      },
+      required: ["caso_id"],
+    },
+  },
+  {
+    name: "list_watched_processes",
+    description:
+      "Lista os processos acompanhados de fora da carteira (consultados no DataJud), com a última movimentação conhecida. Filtre por caso (caso_id) quando o processo estiver vinculado.",
+    input_schema: {
+      type: "object",
+      properties: {
+        caso_id: { type: "string", description: "Filtrar pelos processos vinculados a um caso (opcional)" },
+        limite: { type: "integer", description: "Máximo de resultados (padrão 30)" },
+      },
+    },
+  },
+  {
+    name: "search_datajud_process",
+    description:
+      "Consulta um processo público no DataJud (CNJ) por tribunal e número (formato CNJ, 20 dígitos). O processo entra na lista de acompanhamento automaticamente. Use para 'consulta esse processo', 'o que tem de novo nesse processo' etc.",
+    input_schema: {
+      type: "object",
+      properties: {
+        tribunal_alias: {
+          type: "string",
+          description: "Tribunal (ex: tjsp, trf1, trt3, stj, tst). Lista completa: tjac, tjal, tjam, tjap, tjba, tjce, tjdft, tjes, tjgo, tjma, tjmg, tjms, tjmt, tjpa, tjpb, tjpe, tjpi, tjpr, tjrj, tjrn, tjro, tjrr, tjrs, tjsc, tjse, tjsp, tjto, trf1..trf6, trt1..trt24, tst, stj, tse, stm, tre-uf, tjmmg, tjmrs, tjmsp",
+        },
+        numero_processo: { type: "string", description: "Número do processo CNJ (20 dígitos, pode enviar com pontuação)" },
+      },
+      required: ["tribunal_alias", "numero_processo"],
+    },
+  },
+  {
+    name: "get_legal_business_overview",
+    description:
+      "Resumo do escritório: casos por status, prazos pendentes/atrasados, processos acompanhados com movimentação nova, total de contatos e, para quem tem acesso ao financeiro, contas a receber e despesas do mês. Use para perguntas do tipo 'como está o escritório?'.",
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "create_legal_case",
+    description:
+      "Cria um caso jurídico na carteira. Somente 'titulo' é obrigatório; vincule um cliente (contato_id) e um responsável (responsavel_id, membro da organização) quando possível. Status padrão: intake (triagem).",
+    input_schema: {
+      type: "object",
+      properties: {
+        titulo: { type: "string", description: "Nome do caso" },
+        contato_id: { type: "string", description: "ID do cliente vinculado (opcional)" },
+        responsavel_id: { type: "string", description: "ID do membro responsável (padrão: o próprio usuário)" },
+        numero_processo: { type: "string", description: "Número do processo (opcional)" },
+        area: { type: "string", description: "Área do direito (ex: cível, trabalhista)" },
+        vara: { type: "string", description: "Vara/unidade judiciária" },
+        comarca: { type: "string", description: "Comarca/foro" },
+        parte_contraria: { type: "string" },
+        status: { type: "string", enum: ["intake", "active", "waiting", "suspended", "closed", "archived"] },
+        risco: { type: "string", enum: ["low", "standard", "high", "critical"], description: "Padrão: standard" },
+        confidencialidade: { type: "string", enum: ["team", "restricted"], description: "Padrão: restricted" },
+        resumo: { type: "string", description: "Resumo do caso" },
+      },
+      required: ["titulo"],
+    },
+  },
+  {
+    name: "update_legal_case",
+    description:
+      "Edita um caso jurídico: título, status, risco, confidencialidade, número do processo, área, vara, comarca, parte contrária ou resumo. Envie apenas os campos que devem mudar.",
+    input_schema: {
+      type: "object",
+      properties: {
+        caso_id: { type: "string" },
+        titulo: { type: "string" },
+        status: { type: "string", enum: ["intake", "active", "waiting", "suspended", "closed", "archived"] },
+        risco: { type: "string", enum: ["low", "standard", "high", "critical"] },
+        confidencialidade: { type: "string", enum: ["team", "restricted"] },
+        numero_processo: { type: "string", description: "Envie vazio para limpar" },
+        area: { type: "string", description: "Envie vazio para limpar" },
+        vara: { type: "string", description: "Envie vazio para limpar" },
+        comarca: { type: "string", description: "Envie vazio para limpar" },
+        parte_contraria: { type: "string", description: "Envie vazio para limpar" },
+        resumo: { type: "string", description: "Envie vazio para limpar" },
+      },
+      required: ["caso_id"],
+    },
+  },
+  {
+    name: "create_legal_deadline",
+    description:
+      "Cria um prazo jurídico vinculado a um caso. 'vencimento' é obrigatório, em ISO 8601 (ex.: 2026-07-02T14:00:00-03:00). Tipo padrão: procedural (processual).",
+    input_schema: {
+      type: "object",
+      properties: {
+        caso_id: { type: "string", description: "ID do caso" },
+        titulo: { type: "string", description: "O que precisa ser feito" },
+        vencimento: { type: "string", description: "Data/hora limite em ISO 8601" },
+        responsavel_id: { type: "string", description: "ID do membro responsável (padrão: o próprio usuário)" },
+        tipo: { type: "string", enum: ["procedural", "hearing", "internal", "client", "administrative"] },
+        prioridade: { type: "string", enum: ["low", "normal", "high", "critical"] },
+        observacoes: { type: "string" },
+      },
+      required: ["caso_id", "titulo", "vencimento"],
+    },
+  },
+  {
+    name: "update_legal_deadline",
+    description:
+      "Edita um prazo jurídico: título, vencimento, tipo, prioridade, observações, responsável ou status (pending, completed, cancelled). Para concluir o prazo use status 'completed'. Envie apenas os campos que devem mudar.",
+    input_schema: {
+      type: "object",
+      properties: {
+        prazo_id: { type: "string" },
+        titulo: { type: "string" },
+        vencimento: { type: "string", description: "Data/hora em ISO 8601" },
+        tipo: { type: "string", enum: ["procedural", "hearing", "internal", "client", "administrative"] },
+        prioridade: { type: "string", enum: ["low", "normal", "high", "critical"] },
+        status: { type: "string", enum: ["pending", "completed", "cancelled"] },
+        responsavel_id: { type: "string" },
+        observacoes: { type: "string", description: "Envie vazio para limpar" },
+      },
+      required: ["prazo_id"],
+    },
+  },
+  {
+    name: "create_legal_event",
+    description:
+      "Registra uma movimentação manual no caso jurídico (andamento, decisão, audiência, comunicação ou anotação). Use quando o usuário relatar algo ocorrido no processo.",
+    input_schema: {
+      type: "object",
+      properties: {
+        caso_id: { type: "string" },
+        titulo: { type: "string", description: "Resumo do andamento" },
+        tipo: { type: "string", enum: ["update", "filing", "decision", "hearing", "communication", "note"] },
+        descricao: { type: "string" },
+        data_hora: { type: "string", description: "Quando ocorreu, em ISO 8601 (padrão: agora)" },
+      },
+      required: ["caso_id", "titulo"],
+    },
+  },
+  {
+    name: "link_datajud_process",
+    description:
+      "Vincula um número de processo do DataJud a um caso da carteira (tribunal + número CNJ). Depois de vincular, use sync_datajud_process para buscar as movimentações.",
+    input_schema: {
+      type: "object",
+      properties: {
+        caso_id: { type: "string" },
+        tribunal_alias: { type: "string", description: "Alias do tribunal (ex: tjsp, trf3, tst)" },
+        numero_processo: { type: "string", description: "Número CNJ (20 dígitos)" },
+      },
+      required: ["caso_id", "tribunal_alias", "numero_processo"],
+    },
+  },
+  {
+    name: "sync_datajud_process",
+    description:
+      "Sincroniza agora um caso vinculado com o DataJud: grava as movimentações novas como andamentos e cria lembretes de revisão quando uma movimentação parece exigir atenção. Requer que o processo já esteja vinculado ao caso.",
+    input_schema: {
+      type: "object",
+      properties: {
+        caso_id: { type: "string" },
+      },
+      required: ["caso_id"],
+    },
+  },
+  {
+    name: "create_legal_document_link",
+    description:
+      "Adiciona um documento a um caso por link externo (URL). Use para referenciar arquivos que já estão na internet.",
+    input_schema: {
+      type: "object",
+      properties: {
+        caso_id: { type: "string" },
+        nome: { type: "string", description: "Nome do documento" },
+        link: { type: "string", description: "URL externa do documento" },
+        tipo_documento: { type: "string", enum: ["petition", "contract", "evidence", "decision", "power_of_attorney", "client_document", "other"] },
+        observacoes: { type: "string" },
+      },
+      required: ["caso_id", "nome", "link"],
+    },
+  },
+  {
+    name: "update_legal_document",
+    description:
+      "Edita um documento jurídico: nome, tipo, status (draft, review, approved, filed, archived) ou observações. Envie apenas os campos que devem mudar.",
+    input_schema: {
+      type: "object",
+      properties: {
+        documento_id: { type: "string" },
+        nome: { type: "string" },
+        tipo_documento: { type: "string", enum: ["petition", "contract", "evidence", "decision", "power_of_attorney", "client_document", "other"] },
+        status: { type: "string", enum: ["draft", "review", "approved", "filed", "archived"] },
+        observacoes: { type: "string", description: "Envie vazio para limpar" },
+      },
+      required: ["documento_id"],
+    },
+  },
+  {
+    name: "add_legal_case_member",
+    description:
+      "Adiciona um integrante da organização à equipe de um caso, com papel lead (responsável), collaborator ou viewer.",
+    input_schema: {
+      type: "object",
+      properties: {
+        caso_id: { type: "string" },
+        membro_id: { type: "string", description: "ID do usuário (membro da organização)" },
+        papel: { type: "string", enum: ["lead", "collaborator", "viewer"], description: "Padrão: collaborator" },
+      },
+      required: ["caso_id", "membro_id"],
+    },
+  },
+  {
+    name: "remove_legal_case_member",
+    description:
+      "Remove um integrante da equipe de um caso.",
+    input_schema: {
+      type: "object",
+      properties: {
+        caso_id: { type: "string" },
+        membro_id: { type: "string", description: "ID do usuário a remover" },
+      },
+      required: ["caso_id", "membro_id"],
+    },
+  },
+  {
+    name: "delete_legal_case",
+    description:
+      "Exclui um caso jurídico permanentemente (prazos, movimentações e documentos vinculados são apagados junto). Só chame depois que o usuário confirmar a exclusão na conversa.",
+    input_schema: {
+      type: "object",
+      properties: {
+        caso_id: { type: "string" },
+      },
+      required: ["caso_id"],
+    },
+  },
+  {
+    name: "delete_legal_deadline",
+    description:
+      "Exclui um prazo jurídico permanentemente. Só chame depois que o usuário confirmar a exclusão na conversa.",
+    input_schema: {
+      type: "object",
+      properties: {
+        prazo_id: { type: "string" },
+      },
+      required: ["prazo_id"],
+    },
+  },
+  {
+    name: "delete_legal_document",
+    description:
+      "Exclui um documento jurídico permanentemente. Só chame depois que o usuário confirmar a exclusão na conversa.",
+    input_schema: {
+      type: "object",
+      properties: {
+        documento_id: { type: "string" },
+      },
+      required: ["documento_id"],
     },
   },
 ];
@@ -600,8 +927,59 @@ const MUTATING_TOOLS = new Set([
   "delete_contact",
   "delete_deal",
   "delete_task",
+  "create_legal_case",
+  "update_legal_case",
+  "create_legal_deadline",
+  "update_legal_deadline",
+  "create_legal_event",
+  "link_datajud_process",
+  "sync_datajud_process",
+  "create_legal_document_link",
+  "update_legal_document",
+  "add_legal_case_member",
+  "remove_legal_case_member",
+  "delete_legal_case",
+  "delete_legal_deadline",
+  "delete_legal_document",
 ]);
 
 export function isMutatingTool(name: string): boolean {
   return MUTATING_TOOLS.has(name);
+}
+
+// Tools exclusivas do workspace de advocacia (área jurídica + DataJud).
+// Fora do law_office elas são removidas das definições enviadas ao modelo,
+// e um guard no dispatcher bloqueia qualquer tentativa de execução.
+const LEGAL_TOOL_NAMES = new Set([
+  "list_legal_cases",
+  "get_legal_case",
+  "list_legal_deadlines",
+  "list_legal_case_events",
+  "list_legal_documents",
+  "list_watched_processes",
+  "search_datajud_process",
+  "get_legal_business_overview",
+  "create_legal_case",
+  "update_legal_case",
+  "create_legal_deadline",
+  "update_legal_deadline",
+  "create_legal_event",
+  "link_datajud_process",
+  "sync_datajud_process",
+  "create_legal_document_link",
+  "update_legal_document",
+  "add_legal_case_member",
+  "remove_legal_case_member",
+  "delete_legal_case",
+  "delete_legal_deadline",
+  "delete_legal_document",
+]);
+
+export function isLegalTool(name: string): boolean {
+  return LEGAL_TOOL_NAMES.has(name);
+}
+
+export function toolsForWorkspace(workspaceKey: string) {
+  if (workspaceKey === "law_office") return CRM_TOOLS;
+  return CRM_TOOLS.filter((tool) => !LEGAL_TOOL_NAMES.has(tool.name));
 }

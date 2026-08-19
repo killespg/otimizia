@@ -59,48 +59,6 @@ describe("RLS multi-tenancy (contra Supabase local)", () => {
     }
   });
 
-  it("exige e consome uma confirmação de exclusão no servidor", async () => {
-    const { data: contact } = await userA.client
-      .from("contacts")
-      .insert({
-        owner_id: userA.userId,
-        org_id: orgA,
-        workspace_key: "autonomous_seller",
-        name: "Contato para confirmação",
-      })
-      .select("id")
-      .single();
-    const codeHash = "a".repeat(64);
-
-    const request = await userA.client.rpc("request_assistant_deletion_confirmation", {
-      p_org_id: orgA,
-      p_workspace_key: "autonomous_seller",
-      p_entity_table: "contacts",
-      p_entity_id: contact!.id,
-      p_code_hash: codeHash,
-    });
-    expect(request.error).toBeNull();
-
-    const consume = () =>
-      userA.client.rpc("consume_assistant_deletion_confirmation", {
-        p_org_id: orgA,
-        p_workspace_key: "autonomous_seller",
-        p_entity_table: "contacts",
-        p_entity_id: contact!.id,
-      });
-
-    expect((await consume()).data).toBe(false);
-    expect(
-      (
-        await userA.client.rpc("confirm_assistant_deletion", {
-          p_code_hash: codeHash,
-        })
-      ).data,
-    ).toBe(true);
-    expect((await consume()).data).toBe(true);
-    expect((await consume()).data).toBe(false);
-  });
-
   it("impede ler contatos de outra organização", async () => {
     const { data: contact, error: insertError } = await userA.client
       .from("contacts")

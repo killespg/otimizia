@@ -271,9 +271,8 @@ function legal(input: BuildNavigationInput): ProductNavigationContract {
       item("contacts", "/painel/contatos", "Clientes e atendimentos", "contacts"),
       item("pipeline", "/painel/funil", "Atendimentos", "pipeline"),
       item("whatsapp", "/painel/whatsapp", "WhatsApp", "whatsapp"),
-      item("calendar", "/painel/calendario", "Calendário", "calendar"),
-      item("tasks", "/painel/tarefas", "Retornos do dia", "tasks"),
-      item("team", "/painel/equipe", "Equipe", "team"),
+        item("calendar", "/painel/calendario", "Calendário", "calendar"),
+        item("team", "/painel/equipe", "Equipe", "team"),
       item("reports", "/painel/funil/relatorio", "Relatórios", "reports"),
     ],
   });

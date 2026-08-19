@@ -8,7 +8,6 @@ type Props = {
   navigation: ProductNavigationContract;
   workspaceKey: string;
   workspaceOptions: Array<{ value: string; label: string }>;
-  workspaceLabel: string;
   organizationName: string;
   displayName: string;
   initials: string;
@@ -22,7 +21,6 @@ export function ProductShell({
   navigation,
   workspaceKey,
   workspaceOptions,
-  workspaceLabel,
   organizationName,
   displayName,
   initials,
@@ -36,7 +34,6 @@ export function ProductShell({
         navigation={navigation}
         workspaceKey={workspaceKey}
         workspaceOptions={workspaceOptions}
-        workspaceLabel={workspaceLabel}
         organizationName={organizationName}
         displayName={displayName}
       />

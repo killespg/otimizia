@@ -21,7 +21,13 @@ import type {
   LegalDeadline,
   LegalWatchedProcess,
   Receivable,
+  Task,
 } from "@/lib/supabase/types";
+import {
+  effectiveTaskVisibility,
+  filterTasksForSurface,
+  orgTaskVisibilityPolicy,
+} from "@/lib/law/task-visibility";
 import { LegalDashboardAssistant } from "@/components/design-system/legal-dashboard-assistant";
 import { LegalDashboardFilters } from "@/components/design-system/legal-dashboard-filters";
 import { LegalCrmPerformance } from "@/components/legal/legal-crm-performance";
@@ -200,6 +206,36 @@ export default async function LegalDashboardPage({
   const memberNames = new Map(
     members.map((member) => [member.user_id, member.name || "Sem nome"]),
   );
+  const [{ data: orgVisibility }, { data: dashboardTaskRows }] = await Promise.all([
+    supabase
+      .from("organizations")
+      .select("task_visibility_locked, task_visibility_mode")
+      .eq("id", orgId)
+      .maybeSingle(),
+    supabase
+      .from("tasks")
+      .select("id, title, due_at, assignee_id, owner_id, pending_assignee_id, reviewer_id, done")
+      .eq("org_id", orgId)
+      .eq("workspace_key", "law_office")
+      .eq("done", false)
+      .order("due_at", { ascending: true, nullsFirst: false })
+      .limit(40),
+  ]);
+  const visibilityPolicy = orgTaskVisibilityPolicy(orgVisibility ?? {});
+  const ownerModeByUser = new Map(
+    members.map((member) => [member.user_id, effectiveTaskVisibility(member.task_visibility, visibilityPolicy)]),
+  );
+  const viewerMode = effectiveTaskVisibility(
+    members.find((member) => member.user_id === user!.id)?.task_visibility,
+    visibilityPolicy,
+  );
+  const mixedTeamTasks = filterTasksForSurface(
+    (dashboardTaskRows ?? []) as Pick<Task, "id" | "title" | "due_at" | "assignee_id" | "owner_id" | "pending_assignee_id" | "reviewer_id" | "done">[],
+    user!.id,
+    viewerMode,
+    ownerModeByUser,
+    "dashboard",
+  ).filter((task) => task.assignee_id !== user!.id && task.owner_id !== user!.id);
   const caseById = new Map(cases.map((item) => [item.id, item]));
 
   const allActiveCases = cases.filter((item) =>
@@ -358,6 +394,30 @@ export default async function LegalDashboardPage({
       </header>
 
       <LegalDashboardAssistant />
+
+      {viewerMode === "mixed" && mixedTeamTasks.length > 0 ? (
+        <section className="ui-data-panel">
+          <header className="ui-data-panel__header">
+            <div className="ui-data-panel__copy">
+              <h2 className="ui-data-panel__title">Lembretes da equipe</h2>
+              <p className="ui-data-panel__description">Misturados com a sua operação, com o nome de quem é responsável.</p>
+            </div>
+            <Link href="/painel/juridico/prazos" className="text-xs font-semibold text-od-text-2 hover:text-white">
+              Abrir agenda
+            </Link>
+          </header>
+          <ul>
+            {mixedTeamTasks.slice(0, 6).map((task) => (
+              <li key={task.id} className="flex items-center justify-between gap-3 border-b border-white/[0.06] px-5 py-3 last:border-b-0">
+                <p className="min-w-0 truncate text-[13px] font-semibold text-white">{task.title}</p>
+                <span className="shrink-0 rounded-[var(--radius-round)] bg-white/[0.06] px-2 py-1 text-[11px] font-semibold text-od-text-2">
+                  {memberNames.get(task.assignee_id ?? task.owner_id) ?? "Equipe"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <LegalCrmPerformance
         metrics={commercialMetrics}

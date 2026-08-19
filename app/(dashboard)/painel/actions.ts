@@ -18,6 +18,7 @@ import { normalizeBulkIds } from "@/lib/utils/form-parse";
 import { createClient } from "@/lib/supabase/server";
 import { DEAL_STAGES, type DealStage, type LegalLossReasonCode } from "@/lib/supabase/types";
 import { getWorkspaceKey, isWorkspaceEnabled, normalizeWorkspaceKeys } from "@/lib/workspace/workspaces";
+import { canAssignLegalTasks } from "@/lib/law/task-visibility";
 
 const LIMIT = {
   name: 120,
@@ -569,7 +570,8 @@ export async function uploadDealPhoto(formData: FormData) {
 export async function createTask(formData: FormData) {
   const { supabase, user, orgId, workspaceKey } = await requireUserWithPreset();
   const contactId = await resolveOrCreateContactId(supabase, user.id, orgId, workspaceKey, formData);
-  const assigneeId = await resolveAssigneeId(supabase, orgId, user.id, formData);
+  const assigneeId = await resolveAssigneeId(supabase, orgId, user.id, formData, workspaceKey);
+  const caseId = await visibleCaseIdOrNull(supabase, orgId, formData.get("case_id"));
   const { error } = await supabase.from("tasks").insert({
     owner_id: user.id,
     org_id: orgId,
@@ -578,12 +580,15 @@ export async function createTask(formData: FormData) {
     reviewer_id: assigneeId && assigneeId !== user.id ? user.id : null,
     review_status: assigneeId && assigneeId !== user.id ? "in_progress" : "not_required",
     contact_id: contactId,
+    case_id: caseId,
+    notes: text(formData.get("notes"), LIMIT.notes) || null,
     title: requiredText(formData.get("title"), "Lembrete", LIMIT.title),
     due_at: dateTimeOrNull(formData.get("due_at")),
     recurrence: recurrenceOrNone(formData.get("recurrence")),
   });
   ensureOk(error, "Não deu para salvar o lembrete.");
   revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/juridico/prazos");
   revalidatePath("/painel/calendario");
   revalidatePath("/painel");
   revalidatePath("/painel/contatos");
@@ -628,11 +633,78 @@ export async function toggleTask(id: string, done: boolean) {
   }
 
   revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/juridico/prazos");
   revalidatePath("/painel/calendario");
   revalidatePath("/painel");
 }
 
-// Ações em lote da tela de lembretes. Tarefas que exigem aprovação não podem ser
+export async function completeAgendaTask(formData: FormData) {
+  const id = requiredText(formData.get("id"), "Lembrete", 80);
+  await toggleTask(id, true);
+}
+
+export async function updateAgendaTask(formData: FormData) {
+  const { supabase, user, orgId, workspaceKey } = await requireUserWithPreset();
+  const id = requiredText(formData.get("id"), "Lembrete", 80);
+  const { data: task } = await supabase
+    .from("tasks")
+    .select("id, owner_id, assignee_id, pending_assignee_id")
+    .eq("id", id)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey)
+    .maybeSingle();
+  if (!task) throw new Error("Lembrete não encontrado.");
+
+  const [orgRole, { data: membership }] = await Promise.all([
+    getOrgRole(supabase, orgId, user.id),
+    supabase
+      .from("organization_members")
+      .select("job_role")
+      .eq("org_id", orgId)
+      .eq("user_id", user.id)
+      .maybeSingle(),
+  ]);
+  const canAssign = canAssignLegalTasks(membership?.job_role, orgRole === "admin");
+  const isOwn =
+    task.owner_id === user.id || task.assignee_id === user.id || task.pending_assignee_id === user.id;
+  if (workspaceKey === "law_office" && !canAssign && !isOwn) {
+    throw new Error("Você não pode editar este lembrete.");
+  }
+
+  const contactId = await resolveOrCreateContactId(supabase, user.id, orgId, workspaceKey, formData);
+  const caseId = await visibleCaseIdOrNull(supabase, orgId, formData.get("case_id"));
+  const { error } = await supabase
+    .from("tasks")
+    .update({
+      title: requiredText(formData.get("title"), "Lembrete", LIMIT.title),
+      due_at: dateTimeOrNull(formData.get("due_at")),
+      notes: text(formData.get("notes"), LIMIT.notes) || null,
+      case_id: caseId,
+      contact_id: contactId,
+    })
+    .eq("id", id)
+    .eq("org_id", orgId)
+    .eq("workspace_key", workspaceKey);
+  ensureOk(error, "Não deu para salvar o lembrete.");
+
+  if (canAssign) {
+    const nextAssignee = (await visibleMemberIdOrNull(supabase, orgId, formData.get("assignee_id"))) ?? task.assignee_id;
+    if (nextAssignee && nextAssignee !== task.assignee_id) {
+      const { error: reassignError } = await supabase.rpc("admin_reassign_task", {
+        p_task_id: id,
+        p_assignee_id: nextAssignee,
+      });
+      ensureOk(reassignError, "O lembrete foi salvo, mas a reatribuição não passou.");
+    }
+  }
+
+  revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/juridico/prazos");
+  revalidatePath("/painel/calendario");
+  revalidatePath("/painel");
+  revalidatePath("/painel/contatos");
+  redirect(safeReturnPath(formData.get("return_to"), "/painel/juridico/prazos"));
+}
 // concluídas direto pelo responsável: em vez de derrubar o lote inteiro, elas são
 // puladas e devolvidas em `skipped` para a interface avisar.
 export async function bulkToggleTasks(ids: string[], done: boolean) {
@@ -744,6 +816,7 @@ export async function deleteTask(formData: FormData) {
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para excluir o lembrete.");
   revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/juridico/prazos");
   revalidatePath("/painel/calendario");
   revalidatePath("/painel");
   redirect(safeReturnPath(formData.get("return_to"), "/painel/tarefas"));
@@ -785,9 +858,10 @@ export async function requestTaskHandoff(formData: FormData) {
   });
   ensureOk(error, "Não deu para solicitar a transferência.");
   revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/juridico/prazos");
   revalidatePath("/painel/calendario");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/tarefas"));
+  redirect(safeReturnPath(formData.get("return_to"), "/painel/juridico/prazos"));
 }
 
 export async function acceptTaskHandoff(formData: FormData) {
@@ -796,9 +870,10 @@ export async function acceptTaskHandoff(formData: FormData) {
   const { error } = await supabase.rpc("accept_task_handoff", { p_task_id: taskId });
   ensureOk(error, "Não deu para aceitar a transferência.");
   revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/juridico/prazos");
   revalidatePath("/painel/calendario");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/tarefas"));
+  redirect(safeReturnPath(formData.get("return_to"), "/painel/juridico/prazos"));
 }
 
 export async function declineTaskHandoff(formData: FormData) {
@@ -807,9 +882,10 @@ export async function declineTaskHandoff(formData: FormData) {
   const { error } = await supabase.rpc("decline_task_handoff", { p_task_id: taskId });
   ensureOk(error, "Não deu para recusar a transferência.");
   revalidatePath("/painel/tarefas");
+  revalidatePath("/painel/juridico/prazos");
   revalidatePath("/painel/calendario");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/tarefas"));
+  redirect(safeReturnPath(formData.get("return_to"), "/painel/juridico/prazos"));
 }
 
 export async function adminReassignTask(formData: FormData) {
@@ -1117,8 +1193,21 @@ async function resolveAssigneeId(
   supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
   orgId: string,
   userId: string,
-  formData: FormData
+  formData: FormData,
+  workspaceKey?: string,
 ): Promise<string | null> {
+  if (workspaceKey === "law_office") {
+    const [orgRole, { data: membership }] = await Promise.all([
+      getOrgRole(supabase, orgId, userId),
+      supabase
+        .from("organization_members")
+        .select("job_role")
+        .eq("org_id", orgId)
+        .eq("user_id", userId)
+        .maybeSingle(),
+    ]);
+    if (!canAssignLegalTasks(membership?.job_role, orgRole === "admin")) return userId;
+  }
   const openAssignment = formData.get("open_assignment") === "on";
   if (openAssignment) {
     const role = await getOrgRole(supabase, orgId, userId);
@@ -1126,6 +1215,24 @@ async function resolveAssigneeId(
   }
   const assigneeId = await visibleMemberIdOrNull(supabase, orgId, formData.get("assignee_id"));
   return assigneeId ?? userId;
+}
+
+async function visibleCaseIdOrNull(
+  supabase: Awaited<ReturnType<typeof requireUser>>["supabase"],
+  orgId: string,
+  v: FormDataEntryValue | null,
+): Promise<string | null> {
+  const id = emptyToNull(v, 80);
+  if (!id) return null;
+  const { data, error } = await supabase
+    .from("legal_cases")
+    .select("id")
+    .eq("id", id)
+    .eq("org_id", orgId)
+    .maybeSingle();
+  ensureOk(error, "Processo inválido.");
+  if (!data) throw new Error("Processo inválido.");
+  return id;
 }
 
 // Permite criar o lembrete/negócio e o contato juntos, num só envio — evita

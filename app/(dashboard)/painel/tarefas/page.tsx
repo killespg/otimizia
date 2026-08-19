@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { PendingButton } from "@/components/ui/PendingButton";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { getProfessionPreset } from "@/lib/people/professions";
@@ -28,6 +29,7 @@ export default async function TasksPage() {
     user?.user_metadata?.profession_type,
     profile?.is_admin ?? false
   );
+  if (workspaceKey === "law_office") redirect("/painel/juridico/prazos");
   const preset = getProfessionPreset(workspaceKey);
   const [{ data: tasks }, { data: contacts }, { data: org }, members, role] = await Promise.all([
     supabase

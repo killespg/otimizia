@@ -7,7 +7,9 @@ import { PendingButton } from "@/components/ui/PendingButton";
 import { formatCPF } from "@/lib/utils/cpf";
 import { getDashboardPreferences } from "@/lib/workspace/dashboard-preferences";
 import { formatDate } from "@/lib/utils/format";
+import { TaskVisibilityForm } from "@/components/legal/task-visibility-form";
 import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
+import { effectiveTaskVisibility, orgTaskVisibilityPolicy } from "@/lib/law/task-visibility";
 import { getPlanAccess } from "@/lib/billing/plan";
 import { getProfessionPreset, PROFESSION_OPTIONS } from "@/lib/people/professions";
 import { createClient } from "@/lib/supabase/server";
@@ -44,12 +46,19 @@ export default async function SettingsPage(
   if (!user) redirect("/login");
 
   const orgId = await getActiveOrgId(supabase, user.id);
-  const [{ data: profileData }, { data: orgData }, role, { data: notificationPrefsData }] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
-    supabase.from("organizations").select("*").eq("id", orgId).maybeSingle(),
-    getOrgRole(supabase, orgId, user.id),
-    supabase.from("notification_preferences").select("*").eq("user_id", user.id).maybeSingle(),
-  ]);
+  const [{ data: profileData }, { data: orgData }, role, { data: notificationPrefsData }, { data: membership }] =
+    await Promise.all([
+      supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+      supabase.from("organizations").select("*").eq("id", orgId).maybeSingle(),
+      getOrgRole(supabase, orgId, user.id),
+      supabase.from("notification_preferences").select("*").eq("user_id", user.id).maybeSingle(),
+      supabase
+        .from("organization_members")
+        .select("task_visibility")
+        .eq("org_id", orgId)
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ]);
   const profile = profileData as Profile | null;
   const org = orgData as Organization | null;
   const isOrgAdmin = role === "admin";
@@ -78,6 +87,8 @@ export default async function SettingsPage(
   const access = getPlanAccess(org);
   const isSeller = workspaceKey === "autonomous_seller";
   const isRealEstate = workspaceKey === "real_estate_broker";
+  const visibilityPolicy = orgTaskVisibilityPolicy(org ?? {});
+  const taskVisibilityMode = effectiveTaskVisibility(membership?.task_visibility, visibilityPolicy);
 
   return (
     <div className={`settings-hub mx-auto w-full max-w-[1640px] space-y-5 ${isSeller ? "seller-settings" : isRealEstate ? "real-estate-settings" : ""}`}>
@@ -188,6 +199,15 @@ export default async function SettingsPage(
         </div>
 
         <div className="space-y-4">
+      {workspaceKey === "law_office" ? (
+        <SectionCard
+          title="Tarefas e lembretes"
+          description="Quem pode ver sua fila, e como você vê a dos outros. Dono ou sócio pode travar a mesma escolha para toda a equipe em Equipe."
+        >
+          <TaskVisibilityForm currentMode={taskVisibilityMode} locked={visibilityPolicy.locked} />
+        </SectionCard>
+      ) : null}
+
       <SectionCard title="Conta" description="Dados de login e identificação.">
         <form action={updateName} className="od-band space-y-3 p-3">
           <Field name="name" label="Nome" defaultValue={displayName} required maxLength={120} />

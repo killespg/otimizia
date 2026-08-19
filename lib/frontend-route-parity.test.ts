@@ -15,6 +15,7 @@ const painelPages = [
   "app/(dashboard)/painel/contatos/[id]/page.tsx",
   "app/(dashboard)/painel/contatos/importar/page.tsx",
   "app/(dashboard)/painel/equipe/page.tsx",
+  "app/(dashboard)/painel/equipe/[userId]/page.tsx",
   "app/(dashboard)/painel/financeiro/page.tsx",
   "app/(dashboard)/painel/financeiro/importar/page.tsx",
   "app/(dashboard)/painel/funil/page.tsx",

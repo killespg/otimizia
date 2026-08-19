@@ -1,4 +1,4 @@
-import { IconSettings } from "@/app/(dashboard)/painel/icons";
+import { IconHistory, IconPlus, IconSettings } from "@/app/(dashboard)/painel/icons";
 import { TimAvatar } from "./TimAvatar";
 
 // Cabeçalho compacto do Tim — avatar, nome, status. O rótulo de status usa a
@@ -9,12 +9,16 @@ export function TimHeader({
   status,
   onClose,
   onPersonalize,
+  onNewChat,
+  onHistory,
   avatarSize = 34,
   className,
 }: {
   status?: string | null;
   onClose?: () => void;
   onPersonalize?: () => void;
+  onNewChat?: () => void;
+  onHistory?: () => void;
   avatarSize?: number;
   className?: string;
 }) {
@@ -42,6 +46,28 @@ export function TimHeader({
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-1">
+        {onHistory ? (
+          <button
+            type="button"
+            onClick={onHistory}
+            aria-label="Ver conversas antigas com o Tim"
+            title="Histórico de conversas"
+            className="grid size-11 place-items-center rounded-full text-od-text-3 hover:bg-white/[0.06] hover:text-white"
+          >
+            <IconHistory className="h-4 w-4" />
+          </button>
+        ) : null}
+        {onNewChat ? (
+          <button
+            type="button"
+            onClick={onNewChat}
+            aria-label="Começar um novo chat com o Tim"
+            title="Novo chat"
+            className="grid size-11 place-items-center rounded-full text-od-text-3 hover:bg-white/[0.06] hover:text-white"
+          >
+            <IconPlus className="h-4 w-4" />
+          </button>
+        ) : null}
         {onPersonalize ? (
           <button
             type="button"

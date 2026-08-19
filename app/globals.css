@@ -782,6 +782,13 @@ select option { background: var(--od-muted-surface); color: var(--od-text); }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.028' stroke-width='1.4'%3E%3Ccircle cx='18' cy='22' r='6'/%3E%3Cpath d='M46 14h12v12H46z'/%3E%3Cpath d='M78 30l7-9 7 9z'/%3E%3Cpath d='M14 62c4-6 10-6 14 0s10 6 14 0'/%3E%3Ccircle cx='96' cy='66' r='8'/%3E%3Cpath d='M58 54v14M51 61h14'/%3E%3Cpath d='M24 96h14v10H24z'/%3E%3Cpath d='M62 98l6-8 6 8z'/%3E%3Ccircle cx='102' cy='104' r='5'/%3E%3Cpath d='M86 12c3 3 3 7 0 10'/%3E%3C/g%3E%3C/svg%3E");
 }
 
+/* O fundo do Tim fica um degrau abaixo do resto das superfícies: a conversa
+   é a sala do assistente e lê melhor um pouco mais fechada, sem deixar de
+   pertencer ao mesmo sistema de tokens. O WhatsApp continua no tom padrão. */
+.chat-wallpaper-tim {
+  background-color: #0e1216;
+}
+
 .modal-backdrop { position: fixed; inset: 0; z-index: var(--z-modal-backdrop); background: rgba(3, 5, 8, .78); }
 .modal { position: fixed; z-index: var(--z-modal); }
 

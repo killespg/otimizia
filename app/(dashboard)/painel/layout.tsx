@@ -207,7 +207,6 @@ export default async function PainelLayout({
         navigation={navigation}
         workspaceKey={workspaceKey}
         workspaceOptions={workspaceOptions}
-        workspaceLabel={preset.signupLabel}
         organizationName={organizationName}
         displayName={displayName}
         initials={getInitials(displayName)}

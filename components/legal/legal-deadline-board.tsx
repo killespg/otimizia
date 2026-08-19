@@ -1,103 +1,303 @@
-import { LegalDeadlineQueue, type DeadlineRow } from "@/components/legal/legal-deadline-queue";
+import Link from "next/link";
+import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { completeLegalDeadline } from "@/app/(dashboard)/painel/juridico/actions";
+import { completeAgendaTask } from "@/app/(dashboard)/painel/actions";
+import { PendingButton } from "@/components/ui/PendingButton";
 import { MetricBand } from "@/components/ui/data-display";
 import { DataPanel } from "@/components/ui/surface";
-import type { LegalCase } from "@/lib/supabase/types";
+import { buildMonthCells } from "@/lib/utils/calendar-grid";
+import {
+  formatAgendaClock,
+  occupancyByDay,
+  summarizeAgenda,
+  timelineGroups,
+  agendaItemHref,
+  type AgendaEntry,
+} from "@/lib/law/legal-agenda";
 
-type Queue = {
-  label: string;
-  cases: LegalCase[];
-  tone?: "danger" | "muted";
-};
+const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 export function LegalDeadlineBoard({
-  overdue,
-  upcoming,
-  later,
-  noDeadline,
-  memberName,
+  entries,
+  year,
+  month,
+  monthParam,
+  prevMonth,
+  nextMonth,
+  monthTitle,
+  today,
+  selectedDay,
+  casesWithoutDeadline,
   canManage = false,
+  members = [],
+  currentUserId,
 }: {
-  overdue: LegalCase[];
-  upcoming: LegalCase[];
-  later: LegalCase[];
-  noDeadline: LegalCase[];
-  memberName: Map<string, string>;
+  entries: AgendaEntry[];
+  year: number;
+  month: number;
+  monthParam: string;
+  prevMonth: string;
+  nextMonth: string;
+  monthTitle: string;
+  today: string;
+  selectedDay: string | null;
+  casesWithoutDeadline: number;
   canManage?: boolean;
+  members?: Array<{ user_id: string; name: string | null }>;
+  currentUserId?: string;
 }) {
-  const queues: Queue[] = [
-    { label: "Atrasados", cases: overdue, tone: "danger" },
-    { label: "Próximos 7 dias", cases: upcoming },
-    { label: "Mais adiante", cases: later },
-    { label: "Casos sem prazo", cases: noDeadline, tone: "muted" },
-  ];
-  const populated = queues.filter((queue) => queue.cases.length > 0);
-  const emptyLabels = queues.filter((queue) => queue.cases.length === 0).map((queue) => queue.label);
+  const summary = summarizeAgenda(entries, today);
+  const occupancy = occupancyByDay(entries, year, month, today);
+  const groups = timelineGroups(entries, { today, year, month, selectedDay });
+  const cells = buildMonthCells(year, month);
+  const weeks: (number | null)[][] = [];
+  for (let index = 0; index < cells.length; index += 7) weeks.push(cells.slice(index, index + 7));
+  const todayParts = today.split("-");
+  const isCurrentMonth = Number(todayParts[0]) === year && Number(todayParts[1]) === month + 1;
+  const todayDate = Number(todayParts[2]);
+  const hrefFor = (day?: number) => {
+    const params = new URLSearchParams({ month: monthParam });
+    if (day) params.set("dia", String(day));
+    return `/painel/juridico/prazos?${params.toString()}`;
+  };
 
   return (
     <div className="grid gap-6">
       <MetricBand
-        aria-label="Resumo dos prazos"
-        items={queues.map((queue) => ({
-          label: queue.label === "Mais adiante" ? "Depois disso" : queue.label,
-          value: (
-            <span className={queue.tone === "danger" ? "text-[#fb7767]" : queue.tone === "muted" ? "text-od-text-2" : undefined}>
-              {queue.cases.length}
-            </span>
-          ),
-        }))}
+        aria-label="Resumo da agenda"
+        items={[
+          {
+            label: "Atrasados",
+            value: <span className={summary.overdue > 0 ? "text-[#fb7767]" : undefined}>{summary.overdue}</span>,
+          },
+          { label: "Hoje", value: summary.today },
+          { label: "Próximos 7 dias", value: summary.upcoming },
+          { label: "Audiências", value: summary.hearings },
+        ]}
       />
 
-      <DataPanel
-        title="Agenda cronológica"
-        description="Prazos agrupados pela urgência para o escritório agir na ordem certa."
-        count={overdue.length + upcoming.length + later.length + noDeadline.length}
-      >
-        {populated.length > 0 ? (
-          <div className="py-2">
-            {populated.map((queue) => (
-              <LegalDeadlineQueue
-                key={queue.label}
-                label={queue.label}
-                tone={queue.tone}
-                canManage={canManage}
-                rows={queue.cases.map((item) => toRow(item, memberName))}
-              />
-            ))}
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(22rem,.85fr)]">
+        <DataPanel
+          title={monthTitle}
+          description="O mês do escritório. Abra um dia para ver a fila daquela data."
+          actions={
+            <div className="flex gap-2">
+              <Link
+                href={`/painel/juridico/prazos?month=${prevMonth}`}
+                aria-label="Mês anterior"
+                className="grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-white/[0.1] text-white/65 hover:bg-white/[0.04] hover:text-white"
+              >
+                <ChevronLeft size={16} />
+              </Link>
+              <Link
+                href={`/painel/juridico/prazos?month=${nextMonth}`}
+                aria-label="Próximo mês"
+                className="grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-white/[0.1] text-white/65 hover:bg-white/[0.04] hover:text-white"
+              >
+                <ChevronRight size={16} />
+              </Link>
+            </div>
+          }
+        >
+          <table data-ui="deadline-calendar" className="w-full table-fixed border-collapse">
+            <caption className="sr-only">{monthTitle}</caption>
+            <thead>
+              <tr className="border-b border-white/[0.08] text-[11px] font-semibold uppercase tracking-[0.08em] text-od-text-3">
+                {WEEKDAYS.map((label) => (
+                  <th key={label} scope="col" className="px-1 py-2 text-center font-semibold">
+                    {label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {weeks.map((week, weekIndex) => (
+                <tr key={weekIndex}>
+                  {week.map((day, dayIndex) => {
+                    const mark = day ? occupancy.get(day) : undefined;
+                    const isToday = Boolean(day && isCurrentMonth && day === todayDate);
+                    const isSelected = Boolean(day && selectedDay && Number(selectedDay.slice(-2)) === day);
+                    const cellClass = [
+                      "h-14 border-b border-r border-white/[0.06] p-0 align-top sm:h-[4.75rem]",
+                      dayIndex === 0 ? "border-l-0" : "",
+                      day === null ? "bg-white/[0.015]" : "",
+                      isSelected ? "bg-od-accent/16" : isToday ? "bg-white/[0.04]" : "",
+                    ].join(" ");
+                    return (
+                      <td key={`${weekIndex}-${dayIndex}`} className={cellClass}>
+                        {day ? (
+                          <Link
+                            href={isSelected ? `/painel/juridico/prazos?month=${monthParam}` : hrefFor(day)}
+                            aria-current={isSelected ? "true" : isToday ? "date" : undefined}
+                            className="flex h-full min-h-11 flex-col gap-1 px-1.5 py-1.5 hover:bg-white/[0.04]"
+                          >
+                            <span
+                              className={
+                                "text-xs font-semibold tabular-nums " +
+                                (isToday ? "text-od-accent" : "text-white/55")
+                              }
+                            >
+                              {day}
+                            </span>
+                            {mark ? (
+                              <span
+                                className={
+                                  "mt-auto text-[11px] font-semibold tabular-nums " +
+                                  (mark.overdue ? "text-[#fb7767]" : mark.hearing ? "text-od-text" : "text-od-text-2")
+                                }
+                              >
+                                {mark.count}
+                              </span>
+                            ) : null}
+                          </Link>
+                        ) : null}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </DataPanel>
+
+        <DataPanel
+          title={selectedDay ? "Fila do dia" : "Fila cronológica"}
+          description={
+            selectedDay
+              ? "Só o que vence na data escolhida no calendário."
+              : "Atrasados primeiro; depois o que ainda cabe neste mês."
+          }
+          count={groups.reduce((sum, group) => sum + group.items.length, 0)}
+          actions={
+            selectedDay ? (
+              <Link href={`/painel/juridico/prazos?month=${monthParam}`} className="text-xs font-semibold text-od-text-2 hover:text-white">
+                Ver o mês
+              </Link>
+            ) : null
+          }
+        >
+          <div data-ui="deadline-timeline">
+            {groups.length === 0 || groups.every((group) => group.items.length === 0) ? (
+              <p className="px-5 py-8 text-sm text-od-text-2">
+                {selectedDay ? "Nada neste dia." : "Nenhum prazo pendente nesta agenda."}
+              </p>
+            ) : (
+              groups.map((group) => (
+                <TimelineGroup
+                  key={group.key}
+                  group={group}
+                  canManage={canManage}
+                  monthParam={monthParam}
+                  selectedDay={selectedDay}
+                />
+              ))
+            )}
           </div>
-        ) : (
-          <p className="px-5 py-8 text-sm text-od-text-2">Nenhum caso ativo possui prazo nesta agenda.</p>
-        )}
-        {emptyLabels.length > 0 && populated.length > 0 ? (
-          <p className="bg-white/[0.018] px-5 py-3 text-xs leading-5 text-od-text-3">
-            Sem itens em: {joinLabels(emptyLabels)}.
-          </p>
-        ) : null}
-      </DataPanel>
+        </DataPanel>
+      </div>
+
+      {casesWithoutDeadline > 0 ? (
+        <p className="text-xs leading-5 text-od-text-3">
+          {casesWithoutDeadline === 1 ? "1 caso ativo sem prazo cadastrado." : `${casesWithoutDeadline} casos ativos sem prazo cadastrado.`}{" "}
+          <Link href="/painel/juridico/processos" className="font-semibold text-od-text-2 hover:text-white">
+            Abrir carteira
+          </Link>
+        </p>
+      ) : null}
     </div>
   );
 }
 
-function toRow(item: LegalCase, memberName: Map<string, string>): DeadlineRow {
-  return {
-    id: item.id,
-    title: item.title,
-    subtitle: item.area ?? "Área não informada",
-    responsibleLabel: item.responsible_id
-      ? memberName.get(item.responsible_id) ?? "Sem nome"
-      : "Sem responsável",
-    deadlineLabel: item.next_deadline_at ? formatDeadline(item.next_deadline_at) : "Sem prazo definido",
-  };
-}
+function TimelineGroup({
+  group,
+  canManage,
+  monthParam,
+  selectedDay,
+}: {
+  group: ReturnType<typeof timelineGroups>[number];
+  canManage: boolean;
+  monthParam: string;
+  selectedDay: string | null;
+}) {
+  const showDayRail = group.key !== "overdue";
+  const dayNumber = showDayRail ? Number(group.key.slice(-2)) : null;
 
-function formatDeadline(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-    timeZone: "America/Sao_Paulo",
-  }).format(new Date(value));
-}
-
-function joinLabels(labels: string[]) {
-  if (labels.length < 2) return labels[0] ?? "";
-  return `${labels.slice(0, -1).join(", ")} e ${labels.at(-1)}`;
+  return (
+    <section aria-labelledby={`agenda-${group.key}`} className="border-b border-white/[0.06] last:border-b-0">
+      <h3
+        id={`agenda-${group.key}`}
+        className={"px-5 pb-1 pt-4 text-xs font-semibold uppercase tracking-[0.06em] " + (group.tone === "danger" ? "text-[#fb7767]" : "text-od-text-3")}
+      >
+        {group.label}
+      </h3>
+      <ol className="pb-2">
+        {group.items.map((item, index) => (
+          <li key={item.id} className="grid grid-cols-[3.25rem_minmax(0,1fr)] items-start gap-3 px-5 py-3 hover:bg-white/[0.025]">
+            <div className="pt-0.5 text-right">
+              {showDayRail && dayNumber !== null ? (
+                <p className={"text-lg font-bold tabular-nums leading-none tracking-[-0.04em] " + (index === 0 ? "text-white" : "text-transparent")}>
+                  {dayNumber}
+                </p>
+              ) : (
+                <p className={"text-xs font-semibold tabular-nums " + (group.tone === "danger" ? "text-[#fb7767]" : "text-od-text-2")}>
+                  {item.day.slice(-2)}/{item.day.slice(5, 7)}
+                </p>
+              )}
+              <p className="mt-1 text-[11px] tabular-nums text-od-text-3">{formatAgendaClock(item.dueAt)}</p>
+            </div>
+            <div className="flex min-w-0 items-start gap-3">
+              <Link
+              href={agendaItemHref(item, monthParam, selectedDay)}
+              aria-label={item.kind === "task" ? `Editar ${item.title}` : item.title}
+              className="min-w-0 flex-1"
+            >
+                <div className="flex min-w-0 items-center gap-2">
+                  <p className="truncate text-[13px] font-semibold text-white">{item.title}</p>
+                  {item.ownerLabel ? (
+                    <span className="shrink-0 rounded-[var(--radius-round)] bg-white/[0.06] px-2 py-0.5 text-[11px] font-semibold text-od-text-2">
+                      {item.ownerLabel}
+                    </span>
+                  ) : null}
+                </div>
+                <p className="mt-1 truncate text-xs text-od-text-3">
+                  {item.typeLabel}
+                  {item.kind === "deadline" && item.caseTitle ? ` · ${item.caseTitle}` : ""}
+                  {item.kind === "task" && item.caseTitle ? ` · ${item.caseTitle}` : ""}
+                  {item.kind === "task" && item.notes ? ` · ${item.notes}` : ""}
+                  {item.kind === "case" ? ` · ${item.responsibleLabel}` : ""}
+                </p>
+              </Link>
+              {item.kind === "deadline" && canManage ? (
+                <form action={completeLegalDeadline}>
+                  <input type="hidden" name="id" value={item.id} />
+                  <input type="hidden" name="case_id" value={item.caseId} />
+                  <PendingButton
+                    aria-label={`Concluir ${item.title}`}
+                    className="grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-white/[0.1] text-white/55 hover:bg-white/[0.04] hover:text-white"
+                    iconOnly
+                    pendingLabel="Concluindo"
+                  >
+                    <Check size={16} />
+                  </PendingButton>
+                </form>
+              ) : null}
+              {item.kind === "task" ? (
+                <form action={completeAgendaTask}>
+                  <input type="hidden" name="id" value={item.id} />
+                  <PendingButton
+                    aria-label={`Concluir ${item.title}`}
+                    className="grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-white/[0.1] text-white/55 hover:bg-white/[0.04] hover:text-white"
+                    iconOnly
+                    pendingLabel="Concluindo"
+                  >
+                    <Check size={16} />
+                  </PendingButton>
+                </form>
+              ) : null}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
 }

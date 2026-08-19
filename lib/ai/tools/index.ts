@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { CRM_TOOLS, isMutatingTool } from "./definitions";
+import { CRM_TOOLS, isLegalTool, isMutatingTool, toolsForWorkspace } from "./definitions";
 import {
   getBusinessSummary,
   getContact,
@@ -34,8 +34,32 @@ import {
   updateOrganizationContextByAi,
   updateWorkspaceLabelsByAi,
 } from "./write";
+import {
+  addLegalCaseMember,
+  createLegalCase,
+  createLegalDeadline,
+  createLegalDocumentLink,
+  createLegalEvent,
+  deleteLegalCase,
+  deleteLegalDeadline,
+  deleteLegalDocument,
+  getLegalBusinessOverview,
+  getLegalCase,
+  linkDatajudProcess,
+  listLegalCaseEvents,
+  listLegalCases,
+  listLegalDeadlines,
+  listLegalDocuments,
+  listWatchedProcesses,
+  removeLegalCaseMember,
+  searchDatajudProcessTool,
+  syncDatajudProcess,
+  updateLegalCase,
+  updateLegalDeadline,
+  updateLegalDocument,
+} from "./legal";
 
-export { CRM_TOOLS, isMutatingTool };
+export { CRM_TOOLS, isLegalTool, isMutatingTool, toolsForWorkspace };
 
 export async function executeTool(
   supabase: SupabaseClient,
@@ -45,6 +69,9 @@ export async function executeTool(
   name: string,
   rawInput: unknown
 ): Promise<string> {
+  if (isLegalTool(name) && workspaceKey !== "law_office") {
+    throw new Error("Essa ferramenta está disponível apenas no workspace de advocacia.");
+  }
   const input = (rawInput ?? {}) as ToolInput;
 
   switch (name) {
@@ -109,11 +136,55 @@ export async function executeTool(
     case "update_organization_context":
       return updateOrganizationContextByAi(supabase, orgId, input);
     case "delete_contact":
-      return deleteRow(supabase, userId, orgId, workspaceKey, "contacts", str(input.contato_id, "contato_id"), "Contato excluído.");
+      return deleteRow(supabase, orgId, workspaceKey, "contacts", str(input.contato_id, "contato_id"), "Contato excluído.");
     case "delete_deal":
-      return deleteRow(supabase, userId, orgId, workspaceKey, "deals", str(input.venda_id, "venda_id"), "Venda excluída.");
+      return deleteRow(supabase, orgId, workspaceKey, "deals", str(input.venda_id, "venda_id"), "Venda excluída.");
     case "delete_task":
-      return deleteRow(supabase, userId, orgId, workspaceKey, "tasks", str(input.lembrete_id, "lembrete_id"), "Lembrete excluído.");
+      return deleteRow(supabase, orgId, workspaceKey, "tasks", str(input.lembrete_id, "lembrete_id"), "Lembrete excluído.");
+    case "list_legal_cases":
+      return listLegalCases(supabase, orgId, userId, input);
+    case "get_legal_case":
+      return getLegalCase(supabase, orgId, userId, input);
+    case "list_legal_deadlines":
+      return listLegalDeadlines(supabase, orgId, userId, input);
+    case "list_legal_case_events":
+      return listLegalCaseEvents(supabase, orgId, userId, input);
+    case "list_legal_documents":
+      return listLegalDocuments(supabase, orgId, userId, input);
+    case "list_watched_processes":
+      return listWatchedProcesses(supabase, orgId, userId, input);
+    case "search_datajud_process":
+      return searchDatajudProcessTool(supabase, orgId, userId, input);
+    case "get_legal_business_overview":
+      return getLegalBusinessOverview(supabase, orgId, userId);
+    case "create_legal_case":
+      return createLegalCase(supabase, userId, orgId, input);
+    case "update_legal_case":
+      return updateLegalCase(supabase, orgId, userId, input);
+    case "create_legal_deadline":
+      return createLegalDeadline(supabase, userId, orgId, input);
+    case "update_legal_deadline":
+      return updateLegalDeadline(supabase, orgId, userId, input);
+    case "create_legal_event":
+      return createLegalEvent(supabase, userId, orgId, input);
+    case "link_datajud_process":
+      return linkDatajudProcess(supabase, orgId, userId, input);
+    case "sync_datajud_process":
+      return syncDatajudProcess(supabase, orgId, userId, input);
+    case "create_legal_document_link":
+      return createLegalDocumentLink(supabase, userId, orgId, input);
+    case "update_legal_document":
+      return updateLegalDocument(supabase, orgId, userId, input);
+    case "add_legal_case_member":
+      return addLegalCaseMember(supabase, orgId, userId, input);
+    case "remove_legal_case_member":
+      return removeLegalCaseMember(supabase, orgId, userId, input);
+    case "delete_legal_case":
+      return deleteLegalCase(supabase, orgId, userId, input);
+    case "delete_legal_deadline":
+      return deleteLegalDeadline(supabase, orgId, userId, input);
+    case "delete_legal_document":
+      return deleteLegalDocument(supabase, orgId, userId, input);
     default:
       throw new Error(`Ferramenta desconhecida: ${name}`);
   }

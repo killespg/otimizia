@@ -161,10 +161,9 @@ export async function bulkDeleteLegalCases(ids: string[]) {
   return { deleted: ownedIds.length };
 }
 
-// Tira casos da agenda cronológica sem destruir nada: a agenda de
-// /painel/juridico/prazos é montada pelo campo next_deadline_at do próprio caso,
-// então zerar o campo remove a linha de lá e mantém processo, prazos internos e
-// histórico intactos.
+// Tira o compromisso denormalizado do caso sem destruir o processo. A agenda de
+// /painel/juridico/prazos usa prazos reais e só cai neste campo quando o caso
+// ainda não tem um legal_deadline no mesmo dia.
 export async function bulkClearCaseDeadlines(ids: string[]) {
   const caseIds = normalizeBulkIds(ids);
   if (caseIds.length === 0) return { cleared: 0 };
@@ -228,6 +227,7 @@ export async function createLegalDeadline(formData: FormData) {
   });
   if (error) throw new Error("Não foi possível criar o prazo.");
   revalidateLaw(); revalidatePath(`/painel/juridico/processos/${caseId}`);
+  if (text(formData.get("return_to"), 24) === "agenda") redirect("/painel/juridico/prazos");
 }
 
 export async function completeLegalDeadline(formData: FormData) {

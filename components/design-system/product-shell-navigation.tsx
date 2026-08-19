@@ -100,7 +100,6 @@ type Props = {
   navigation: ProductNavigationContract;
   workspaceKey: string;
   workspaceOptions: Array<{ value: string; label: string }>;
-  workspaceLabel: string;
   organizationName: string;
   displayName: string;
 };
@@ -109,7 +108,6 @@ export function ProductShellNavigation({
   navigation,
   workspaceKey,
   workspaceOptions,
-  workspaceLabel,
   organizationName,
   displayName,
 }: Props) {
@@ -182,7 +180,7 @@ export function ProductShellNavigation({
         data-sidebar-state={collapsed ? "collapsed" : "expanded"}
       >
         <div
-          className={`flex h-16 items-center border-b border-od-border ${collapsed ? "justify-center px-2" : "justify-between px-3"}`}
+          className={`flex h-16 items-center border-b border-od-border ${collapsed ? "justify-center px-2" : "justify-between px-4"}`}
         >
           <Link
             href="/painel"
@@ -203,24 +201,7 @@ export function ProductShellNavigation({
           ) : null}
         </div>
 
-        {!collapsed ? (
-          <div className="border-b border-od-border px-3 py-3">
-            <p className="truncate text-[13px] font-semibold text-od-text">
-              {organizationName}
-            </p>
-            <p className="truncate text-xs text-od-text-3">{workspaceLabel}</p>
-            {workspaceOptions.length > 1 ? (
-              <div className="mt-3">
-                <WorkspaceSwitcher
-                  options={workspaceOptions}
-                  value={workspaceKey}
-                />
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-
-        <nav className={`product-scroll-region min-h-0 flex-1 overflow-y-auto py-1 ${collapsed ? "px-1" : "px-2"}`}>
+        <nav className={`product-scroll-region min-h-0 flex-1 overflow-y-auto py-1 ${collapsed ? "px-1" : "px-0"}`}>
           <ProductNavGroups
             namespace={navigation.namespace}
             groups={groups}
@@ -231,20 +212,36 @@ export function ProductShellNavigation({
           />
         </nav>
 
-        <div className="border-t border-od-border p-2">
-          <div
-            className={`flex items-center py-2 ${collapsed ? "justify-center" : "gap-3 px-2"}`}
+        <div className="border-t border-od-border py-2">
+          <Link
+            href="/painel/configuracoes"
+            aria-label={`Abrir configurações da conta de ${displayName}`}
+            title={collapsed ? "Configurações da conta" : undefined}
+            className={`mx-1 flex min-h-11 items-center rounded-[var(--radius-control)] transition-colors ${collapsed ? "justify-center" : "gap-3 px-3"} text-od-text-2 hover:bg-[var(--surface-hover)] hover:text-od-text`}
           >
             <span className="grid size-9 shrink-0 place-items-center rounded-full bg-od-accent-tint text-xs font-semibold text-od-accent-soft">
               {initials(displayName)}
             </span>
             {!collapsed ? (
-              <p className="min-w-0 flex-1 truncate text-xs font-semibold text-od-text-2">
-                {displayName}
-              </p>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-xs font-semibold text-od-text-2">
+                  {displayName}
+                </span>
+                <span className="block truncate text-[11px] text-od-text-3">
+                  {organizationName}
+                </span>
+              </span>
             ) : null}
-          </div>
-          <form action={logout} className={collapsed ? undefined : "px-4"}>
+          </Link>
+          {!collapsed && workspaceOptions.length > 1 ? (
+            <div className="mx-1 px-3 pb-1">
+              <WorkspaceSwitcher
+                options={workspaceOptions}
+                value={workspaceKey}
+              />
+            </div>
+          ) : null}
+          <form action={logout} className="mx-1">
             <PendingButton
               intent="quiet"
               iconOnly={collapsed}
@@ -260,7 +257,7 @@ export function ProductShellNavigation({
               type="button"
               onClick={toggleCollapsed}
               aria-label="Expandir menu lateral"
-              className="mt-1 grid min-h-11 w-full place-items-center rounded-[var(--radius-control)] text-od-text-3 hover:bg-[var(--surface-hover)] hover:text-od-text"
+              className="mx-1 mt-1 grid min-h-11 w-full place-items-center rounded-[var(--radius-control)] text-od-text-3 hover:bg-[var(--surface-hover)] hover:text-od-text"
             >
               <ChevronRight size={17} />
             </button>

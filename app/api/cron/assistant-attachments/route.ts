@@ -45,14 +45,6 @@ export async function GET(request: Request) {
     }
   }
 
-  const { error: confirmationDeleteError } = await admin
-    .from("assistant_deletion_confirmations")
-    .delete()
-    .lte("expires_at", new Date().toISOString());
-  if (confirmationDeleteError) {
-    return Response.json({ error: confirmationDeleteError.message }, { status: 500 });
-  }
-
   const { data: expiredWhatsapp, error: whatsappExpiryError } = await admin
     .from("whatsapp_attachments")
     .select("id, message_id, storage_path")

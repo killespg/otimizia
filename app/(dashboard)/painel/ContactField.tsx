@@ -27,9 +27,11 @@ const styles = {
 export function ContactField({
   contacts,
   variant = "default",
+  defaultContactId = "",
 }: {
   contacts: ContactOption[];
   variant?: "default" | "compact";
+  defaultContactId?: string;
 }) {
   const [creating, setCreating] = useState(false);
   const selectId = useId();
@@ -80,7 +82,7 @@ export function ContactField({
           + Novo contato
         </button>
       </div>
-      <select id={selectId} name="contact_id" defaultValue="" className={s.control}>
+      <select id={selectId} name="contact_id" defaultValue={defaultContactId} className={s.control}>
         <option value="">Sem contato</option>
         {contacts.map((contact) => (
           <option key={contact.id} value={contact.id}>

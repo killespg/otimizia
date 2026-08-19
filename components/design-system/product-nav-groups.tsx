@@ -191,14 +191,14 @@ export function ProductNavGroups({ namespace, groups, collapsed, pathname, defau
       // Recolhido em ícones não há rótulo pra clicar, então lá o grupo é sempre
       // mostrado — senão itens sumiriam sem controle visível.
       const hidden = closed && !collapsed && group.label !== "";
-      return <section key={group.label || "__anchor"} className={collapsed ? "mb-0 py-1" : "mb-0 p-2"}>
+      return <section key={group.label || "__anchor"} className={collapsed ? "mb-0 py-1" : "mb-0 px-0 py-1"}>
         {!collapsed && group.label ? (
           <button
             type="button"
             onClick={() => toggleGroup(group.label)}
             aria-expanded={!closed}
             aria-controls={`nav-grupo-${group.label}`}
-            className="flex min-h-11 w-full items-center gap-1.5 px-2 text-xs font-medium text-od-text-3 transition-colors hover:text-od-text-2"
+            className="flex min-h-11 w-full items-center gap-1.5 px-4 text-xs font-medium text-od-text-3 transition-colors hover:text-od-text-2"
           >
             <ChevronRight size={11} className={`shrink-0 transition-transform duration-150 ${closed ? "" : "rotate-90"}`} />
             <span className="min-w-0 flex-1 truncate text-left">{group.label}</span>

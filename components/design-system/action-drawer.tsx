@@ -12,6 +12,8 @@ type ActionDrawerProps = {
   children: React.ReactNode;
   triggerClassName?: string;
   initialOpen?: boolean;
+  hideTrigger?: boolean;
+  onClose?: () => void;
 };
 
 export function ActionDrawer({
@@ -22,11 +24,25 @@ export function ActionDrawer({
   children,
   triggerClassName,
   initialOpen = false,
+  hideTrigger = false,
+  onClose,
 }: ActionDrawerProps) {
-  const [open, setOpen] = useState(initialOpen);
+  const [open, setOpen] = useState(false);
   const dialogId = useId();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    if (initialOpen) setOpen(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const close = () => {
+    setOpen(false);
+    onCloseRef.current?.();
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -37,7 +53,10 @@ export function ActionDrawer({
     closeButtonRef.current?.focus();
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+        onCloseRef.current?.();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
 
@@ -46,10 +65,11 @@ export function ActionDrawer({
       window.removeEventListener("keydown", onKeyDown);
       trigger?.focus();
     };
-  }, [open]);
+  }, [open, initialOpen]);
 
   return (
     <>
+      {hideTrigger ? null : (
       <button
         ref={triggerRef}
         type="button"
@@ -64,6 +84,7 @@ export function ActionDrawer({
         {icon}
         {label}
       </button>
+      )}
 
       {open && typeof document !== "undefined"
         ? createPortal(
@@ -72,7 +93,7 @@ export function ActionDrawer({
             type="button"
             aria-label="Fechar painel"
             className="absolute inset-0 cursor-default bg-black/70"
-            onClick={() => setOpen(false)}
+            onClick={close}
           />
           <section
             role="dialog"
@@ -90,7 +111,7 @@ export function ActionDrawer({
               <button
                 ref={closeButtonRef}
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={close}
                 className="grid size-9 shrink-0 place-items-center rounded-md border border-od-border text-od-text-2 transition-colors hover:border-od-border-hover hover:text-od-text"
                 aria-label="Fechar"
               >

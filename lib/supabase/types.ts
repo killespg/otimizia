@@ -76,6 +76,8 @@ export type Organization = {
   real_estate_v2_enabled: boolean;
   real_estate_public_page_enabled: boolean;
   real_estate_public_page_token: string;
+  task_visibility_locked: boolean;
+  task_visibility_mode: "profile" | "mixed" | "private";
   created_at: string;
 };
 
@@ -84,6 +86,7 @@ export type OrganizationMember = {
   user_id: string;
   role: OrgRole;
   job_role: JobRole;
+  task_visibility: "profile" | "mixed" | "private";
   created_at: string;
 };
 
@@ -725,9 +728,11 @@ export type Task = {
   review_note: string | null;
   contact_id: string | null;
   deal_id: string | null;
+  case_id: string | null;
   title: string;
   due_at: string | null;
   done: boolean;
+  notes: string | null;
   recurrence: "none" | "daily" | "weekly" | "monthly";
   recurrence_spawned: boolean;
   created_at: string;

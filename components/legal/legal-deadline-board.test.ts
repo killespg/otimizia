@@ -1,65 +1,104 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import type { LegalCase } from "@/lib/supabase/types";
-
-// A fila da agenda virou client component (seleção em lote), então o render
-// estático precisa do router e das server actions esbarradas por mock.
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: vi.fn() }),
-}));
+import type { AgendaEntry } from "@/lib/law/legal-agenda";
 
 vi.mock("@/app/(dashboard)/painel/juridico/actions", () => ({
-  bulkClearCaseDeadlines: vi.fn(),
-  bulkDeleteLegalCases: vi.fn(),
+  completeLegalDeadline: vi.fn(),
+}));
+
+vi.mock("@/app/(dashboard)/painel/actions", () => ({
+  completeAgendaTask: vi.fn(),
 }));
 
 import { LegalDeadlineBoard } from "./legal-deadline-board";
 
-const overdueCase: LegalCase = {
-  id: "case-1",
-  org_id: "org-1",
-  workspace_key: "law_office",
-  contact_id: null,
-  deal_id: null,
-  responsible_id: "user-1",
-  created_by: "user-1",
-  title: "Execução de título extrajudicial",
-  case_number: "5010420-89.2025.8.21.0018",
-  area: "Cível",
-  court: null,
-  jurisdiction: null,
-  opposing_party: null,
-  status: "active",
-  risk_level: "standard",
-  confidentiality: "team",
-  next_deadline_at: "2026-08-13T15:00:00.000Z",
-  summary: null,
-  datajud_tribunal_alias: null,
-  datajud_last_synced_at: null,
-  datajud_sync_failed_count: 0,
-  datajud_next_sync_after: null,
-  created_at: "2026-08-01T12:00:00.000Z",
-  updated_at: "2026-08-01T12:00:00.000Z",
+const hearing: AgendaEntry = {
+  id: "dl-1",
+  kind: "deadline",
+  title: "Audiência de conciliação",
+  caseId: "case-1",
+  caseTitle: "Silva vs Banco",
+  typeLabel: "Audiência",
+  dueAt: "2026-08-18T12:00:00.000Z",
+  day: "2026-08-18",
+  responsibleLabel: "Mariana Costa",
+  isHearing: true,
+};
+
+const overdue: AgendaEntry = {
+  id: "dl-2",
+  kind: "deadline",
+  title: "Apresentar réplica",
+  caseId: "case-2",
+  caseTitle: "Execução de título extrajudicial",
+  typeLabel: "Processual",
+  dueAt: "2026-08-13T15:00:00.000Z",
+  day: "2026-08-13",
+  responsibleLabel: "Mariana Costa",
+  isHearing: false,
 };
 
 describe("LegalDeadlineBoard", () => {
-  it("uses one chronological panel and compacts empty queues", () => {
+  it("renders a month calendar and a chronological timeline instead of a case table", () => {
     const html = renderToStaticMarkup(
       createElement(LegalDeadlineBoard, {
-        overdue: [overdueCase],
-        upcoming: [],
-        later: [],
-        noDeadline: [],
-        memberName: new Map([["user-1", "Mariana Costa"]]),
+        entries: [overdue, hearing],
+        year: 2026,
+        month: 7,
+        monthParam: "2026-08",
+        prevMonth: "2026-07",
+        nextMonth: "2026-09",
+        monthTitle: "agosto de 2026",
+        today: "2026-08-18",
+        selectedDay: null,
+        casesWithoutDeadline: 2,
+        canManage: true,
       }),
     );
 
-    expect(html.match(/data-ui="data-panel"/g)).toHaveLength(1);
-    expect(html).toContain('class="ui-metric-band');
-    expect(html).toContain("Execução de título extrajudicial");
-    expect(html).toContain("Mariana Costa");
-    expect(html).toContain("Sem itens em: Próximos 7 dias, Mais adiante e Casos sem prazo.");
-    expect(html).not.toContain("Nada nesta fila");
+    expect(html.match(/data-ui="data-panel"/g)).toHaveLength(2);
+    expect(html).toContain('data-ui="deadline-calendar"');
+    expect(html).toContain('data-ui="deadline-timeline"');
+    expect(html).toContain("Audiência de conciliação");
+    expect(html).toContain("/painel/juridico/processos/case-1");
+    expect(html).toContain("Apresentar réplica");
+    expect(html).toContain("Atrasados");
+    expect(html).toContain("2 casos ativos sem prazo cadastrado.");
+    expect(html).not.toContain("Casos sem prazo");
+    expect(html).not.toContain("Processos em acompanhamento");
+    expect(html).not.toContain("Situação");
+  });
+
+  it("shows a name tag on someone else's reminder", () => {
+    const html = renderToStaticMarkup(
+      createElement(LegalDeadlineBoard, {
+        entries: [
+          {
+            ...hearing,
+            id: "task-1",
+            kind: "task",
+            title: "Ligar para a testemunha",
+            ownerLabel: "Ana Souza",
+            typeLabel: "Lembrete",
+            isHearing: false,
+          },
+        ],
+        year: 2026,
+        month: 7,
+        monthParam: "2026-08",
+        prevMonth: "2026-07",
+        nextMonth: "2026-09",
+        monthTitle: "agosto de 2026",
+        today: "2026-08-18",
+        selectedDay: null,
+        casesWithoutDeadline: 0,
+      }),
+    );
+
+    expect(html).toContain("Ligar para a testemunha");
+    expect(html).toContain("Ana Souza");
+    expect(html).toContain("/painel/juridico/prazos?month=2026-08&amp;editar=task-1");
+    expect(html).not.toContain("/painel/juridico/processos/case-1");
   });
 });

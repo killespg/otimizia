@@ -7,15 +7,15 @@ import { getActiveOrgId } from "@/lib/workspace/org";
 import { getUserPlanAccess } from "@/lib/billing/plan-access";
 import { getProfessionPreset, type ProfessionPreset } from "@/lib/people/professions";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
-import { confirmDeletionFromUserMessage } from "@/lib/ai/deletion-confirmation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { CRM_TOOLS, executeTool, isMutatingTool } from "@/lib/ai/tools";
+import { executeTool, isMutatingTool, toolsForWorkspace } from "@/lib/ai/tools";
 import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import {
   friendlyOpenAIError,
   resolveAiProvider,
   runOpenAIAssistant,
+  toOpenAITools,
 } from "@/lib/ai/openai-assistant";
 
 export const runtime = "nodejs";
@@ -129,10 +129,18 @@ export async function POST(req: Request) {
 
   let history: Anthropic.MessageParam[];
   let image: IncomingImage | null;
+  let conversationId: string | null = null;
   try {
     const body = await req.json();
     history = sanitizeHistory(body?.messages);
     image = sanitizeImage(body?.image);
+    const rawConversationId = body?.conversation_id;
+    if (typeof rawConversationId === "string") {
+      const candidate = rawConversationId.trim();
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(candidate)) {
+        conversationId = candidate;
+      }
+    }
   } catch {
     return Response.json({ error: "Requisição inválida." }, { status: 400 });
   }
@@ -146,7 +154,6 @@ export async function POST(req: Request) {
   let uploadedImageUrl: string | null = null;
   let uploadedImagePath: string | null = null;
   if (lastIncoming.role === "user" && typeof lastIncoming.content === "string") {
-    await confirmDeletionFromUserMessage(supabase, lastIncoming.content);
     if (image) {
       try {
         const uploaded = await uploadChatImage(orgId, user.id, image);
@@ -162,7 +169,7 @@ export async function POST(req: Request) {
     ]
       .filter(Boolean)
       .join("\n\n");
-    await saveAssistantMessage(supabase, user.id, orgId, "user", textForHistory);
+    await saveAssistantMessage(supabase, user.id, orgId, "user", textForHistory, conversationId);
   }
 
   const [{ data: profile }, { data: organization }] = await Promise.all([
@@ -209,6 +216,7 @@ export async function POST(req: Request) {
             systemPrompt: buildSystemPrompt(user, preset, organization),
             maxToolTurns: MAX_TOOL_TURNS,
             send,
+            tools: toOpenAITools(toolsForWorkspace(workspaceKey)),
           });
           assistantText = result.assistantText;
           mutated = result.mutated;
@@ -232,7 +240,7 @@ export async function POST(req: Request) {
               max_tokens: 64000,
               thinking: { type: "adaptive" },
               system: buildSystemPrompt(user, preset, organization),
-              tools: CRM_TOOLS,
+              tools: toolsForWorkspace(workspaceKey),
               messages,
             });
 
@@ -298,7 +306,7 @@ export async function POST(req: Request) {
         assistantText += (assistantText ? "\n" : "") + message;
         send({ type: "error", message, mutated });
       } finally {
-        await saveAssistantMessage(supabase, user.id, orgId, "assistant", assistantText);
+        await saveAssistantMessage(supabase, user.id, orgId, "assistant", assistantText, conversationId);
         controller.close();
       }
     },
@@ -391,11 +399,14 @@ Como conversar:
 Como agir:
 - Se o usuário anexar um PDF (contrato, proposta, nota fiscal etc.), leia o conteúdo direto do documento e responda com base nele — não peça pra ele colar o texto.
 - Use as ferramentas para tudo que envolver dados reais. Nunca invente contatos, valores ou datas — consulte antes de afirmar.
-- Você tem permissão para operar o CRM como o próprio usuário: criar, editar, mover, concluir, reorganizar painel, trocar widgets, renomear métricas e atualizar contexto da empresa quando ele pedir. Faça direto, sem tratar isso como sugestão.
+- Você tem acesso à área autenticada inteira do OtimizIA, com os mesmos poderes do usuário: pode ver, criar, modificar e excluir qualquer registro da organização — contatos, vendas/processos, lembretes, imóveis, preferências, painel, rótulos e contexto da empresa. Quando ele pedir uma ação, execute direto, sem tratar como sugestão nem pedir permissão além do pedido.
+- No workspace de advocacia, você também cobre a área jurídica inteira: carteira de casos, prazos, andamentos, documentos, equipe dos casos, despesas e processos públicos consultados no DataJud (CNJ). Pode consultar qualquer processo público pelo número (search_datajud_process), vincular processos a casos (link_datajud_process), sincronizar movimentações (sync_datajud_process) e ler o resumo do escritório (get_legal_business_overview). Ao falar de um processo, use o número CNJ que ele citar e, se souber, o tribunal; se não souber o tribunal, pergunte.
+- Exclusões também podem ser executadas quando ele pedir ou confirmar na conversa (ex.: "pode excluir", "exclui", "apaga"). Se ele não tiver pedido a exclusão nem respondido a sua confirmação, pergunte uma vez antes de excluir.
+- Quando o usuário escrever errado, abreviado ou com pouca informação (nome errado, pedido incompleto, frase truncada), interprete a intenção em vez de travar: corrija erros óbvios de digitação, deduza o que faltou pelo contexto e siga em frente. Só faça uma pergunta objetiva se o dado que falta mudar a ação (ex.: existe mais de um contato com aquele nome).
 - Quando o usuário citar uma pessoa pelo nome, localize-a com list_contacts antes de agir. Se houver mais de um resultado possível, pergunte qual é.
 - Etapas do funil: ${stageLine}.
 - Valores em reais (R$ 1.234,56). Datas em formato brasileiro na resposta; em ISO 8601 nas ferramentas.
-- Ações de criação e edição pedidas explicitamente podem ser executadas direto. Exclusões: confirme antes de chamar a ferramenta de exclusão.
+- Ações de criação, edição e exclusão pedidas ou confirmadas pelo usuário podem ser executadas direto, sem exigir código ou confirmação extra além da conversa.
 - Se uma ferramenta der erro, explique em linguagem simples e sugira o próximo passo — sem citar mensagens técnicas.
 - Combine ferramentas em sequência quando o pedido implicar isso (ex.: achar o contato, criar a venda e já deixar um lembrete de follow-up).
 - Depois de agir, confirme em uma frase curta e natural, como quem avisa o sócio que já resolveu.

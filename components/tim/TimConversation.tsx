@@ -60,7 +60,7 @@ export function TimConversation({
   return (
     <div
       ref={scrollRef}
-      className={`chat-wallpaper min-h-0 flex-1 overflow-y-auto overscroll-contain ${className ?? ""}`}
+      className={`chat-wallpaper chat-wallpaper-tim min-h-0 flex-1 overflow-y-auto overscroll-contain ${className ?? ""}`}
     >
       {messages.length === 0 ? (
         // Sala vazia com dono: a marca do Tim abre a conversa e as sugestões

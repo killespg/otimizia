@@ -28,15 +28,20 @@ type RunOpenAIAssistantOptions = {
   systemPrompt: string;
   maxToolTurns: number;
   send: (event: StreamEvent) => void;
+  tools?: FunctionTool[];
 };
 
-const OPENAI_TOOLS: FunctionTool[] = CRM_TOOLS.map((tool) => ({
-  type: "function",
-  name: tool.name,
-  description: tool.description,
-  parameters: tool.input_schema as Record<string, unknown>,
-  strict: false,
-}));
+export function toOpenAITools(tools: typeof CRM_TOOLS): FunctionTool[] {
+  return tools.map((tool) => ({
+    type: "function",
+    name: tool.name,
+    description: tool.description,
+    parameters: tool.input_schema as Record<string, unknown>,
+    strict: false,
+  }));
+}
+
+const OPENAI_TOOLS: FunctionTool[] = toOpenAITools(CRM_TOOLS);
 
 export function resolveAiProvider(
   env: Partial<
@@ -65,6 +70,7 @@ export async function runOpenAIAssistant({
   systemPrompt,
   maxToolTurns,
   send,
+  tools,
 }: RunOpenAIAssistantOptions): Promise<{ assistantText: string; mutated: boolean }> {
   const client = new OpenAI();
   const input = toOpenAIInput(history, uploadedImageUrl);
@@ -77,7 +83,7 @@ export async function runOpenAIAssistant({
       model: OPENAI_ASSISTANT_MODEL,
       instructions: systemPrompt,
       input,
-      tools: OPENAI_TOOLS,
+      tools: tools ?? OPENAI_TOOLS,
       reasoning: { effort: "low" },
       text: { verbosity: "low" },
       safety_identifier: userId,

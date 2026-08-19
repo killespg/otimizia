@@ -24,6 +24,10 @@ describe("legal workspace surface contract", () => {
     const source = [deadlines, datajud, processes, documents, movements].join("\n");
 
     expect(deadlines).toContain("<LegalDeadlineBoard");
+    expect(deadlines).toContain('from("legal_deadlines")');
+    expect(deadlines).toContain('from("tasks")');
+    expect(deadlines).toContain("<TaskForm");
+    expect(deadlines).not.toContain("<LegalCaseList");
     expect(legalUi).toContain('from "@/components/ui/surface"');
     expect(source).not.toContain('border border-white/[0.09] bg-[#1e1d22]');
     expect(compactControls).not.toMatch(/(?:min-h|\bh)-(?:8|9|10)(?=[" ])/);
