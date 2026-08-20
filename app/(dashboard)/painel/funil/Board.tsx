@@ -63,6 +63,7 @@ export default function Board({
   isRealEstate = false,
   isLegal = false,
   flat = false,
+  returnTo = "/painel/funil",
 }: {
   initialDeals: Deal[];
   contactNames: Record<string, string>;
@@ -76,6 +77,7 @@ export default function Board({
   isRealEstate?: boolean;
   isLegal?: boolean;
   flat?: boolean;
+  returnTo?: string;
 }) {
   const [deals, setDeals] = useState(initialDeals);
   const [dragId, setDragId] = useState<string | null>(null);
@@ -233,7 +235,7 @@ export default function Board({
         />
       ) : null}
       <form action={createPipelineList} className="panel flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
-        <input type="hidden" name="return_to" value="/painel/funil" />
+        <input type="hidden" name="return_to" value={returnTo} />
         <div className="min-w-0 flex-1">
           <label className="label" htmlFor="pipeline-list-name">
             Nova lista
@@ -467,7 +469,7 @@ export default function Board({
                             </button>
                             <form action={deleteDeal} className="shrink-0">
                               <input type="hidden" name="id" value={deal.id} />
-                              <input type="hidden" name="return_to" value="/painel/funil" />
+                              <input type="hidden" name="return_to" value={returnTo} />
                               <PendingButton
                                 className="icon-button grid h-11 w-11 place-items-center rounded-md text-ink-muted/50 opacity-100 hover:bg-danger-50 hover:text-danger-600 sm:opacity-0 sm:group-hover:opacity-100"
                                 title="Excluir"
@@ -495,7 +497,7 @@ export default function Board({
                                 href={`/painel/vendas/${deal.id}/confirmar`}
                                 className="flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-od-accent/25 bg-od-accent/[0.06] px-3 text-xs font-semibold text-od-text hover:bg-white/[0.04]"
                               >
-                                Confirmar venda e criar pedido
+                                Fechar venda
                               </Link>
                             ) : null}
                             <div className="flex flex-wrap gap-1.5">
@@ -516,7 +518,7 @@ export default function Board({
 
                             <form action={updateDealOptions} className={flat ? "space-y-2 border-t border-white/[0.08] pt-3" : "space-y-2 rounded-lg border border-line bg-[#f8fbff] p-3"}>
                               <input type="hidden" name="id" value={deal.id} />
-                              <input type="hidden" name="return_to" value="/painel/funil" />
+                              <input type="hidden" name="return_to" value={returnTo} />
                               <label className="block">
                                 <span className="text-xs font-black text-ink-soft">Etiquetas</span>
                                 <input
@@ -573,7 +575,7 @@ export default function Board({
 
                             <form action={uploadDealPhoto} className={flat ? "space-y-2 border-t border-white/[0.08] pt-3" : "space-y-2 rounded-lg border border-line bg-white p-3"}>
                               <input type="hidden" name="id" value={deal.id} />
-                              <input type="hidden" name="return_to" value="/painel/funil" />
+                              <input type="hidden" name="return_to" value={returnTo} />
                               <label className="block">
                                 <span className="text-xs font-black text-ink-soft">Foto</span>
                                 <input
@@ -639,6 +641,7 @@ export default function Board({
                             nameById={nameById}
                             currentUserId={currentUserId}
                             isAdmin={isAdmin}
+                            returnTo={returnTo}
                             open={handoffId === deal.id}
                             onToggle={() =>
                               setHandoffId((current) => (current === deal.id ? null : deal.id))
@@ -695,6 +698,7 @@ function DealAssignee({
   nameById,
   currentUserId,
   isAdmin,
+  returnTo,
   open,
   onToggle,
 }: {
@@ -703,6 +707,7 @@ function DealAssignee({
   nameById: Map<string, string | null>;
   currentUserId: string;
   isAdmin: boolean;
+  returnTo: string;
   open: boolean;
   onToggle: () => void;
 }) {
@@ -726,7 +731,7 @@ function DealAssignee({
           <span className="tag bg-warning-50 text-warning-700">Em aberto</span>
           <form action={claimDeal}>
             <input type="hidden" name="deal_id" value={deal.id} />
-            <input type="hidden" name="return_to" value="/painel/funil" />
+            <input type="hidden" name="return_to" value={returnTo} />
             <PendingButton
               className="rounded-md bg-brand-700 px-2 py-1 text-xs font-black text-white hover:bg-brand-800"
               pendingLabel="Pegando"
@@ -743,7 +748,7 @@ function DealAssignee({
             <span className="tag bg-warning-50 text-warning-700">Pediram para você pegar</span>
             <form action={acceptDealHandoff}>
               <input type="hidden" name="deal_id" value={deal.id} />
-              <input type="hidden" name="return_to" value="/painel/funil" />
+              <input type="hidden" name="return_to" value={returnTo} />
               <PendingButton
                 className="rounded-md bg-brand-700 px-2 py-1 text-xs font-black text-white hover:bg-brand-800"
                 pendingLabel="Aceitando"
@@ -753,7 +758,7 @@ function DealAssignee({
             </form>
             <form action={declineDealHandoff}>
               <input type="hidden" name="deal_id" value={deal.id} />
-              <input type="hidden" name="return_to" value="/painel/funil" />
+              <input type="hidden" name="return_to" value={returnTo} />
               <PendingButton
                 className="rounded-md border border-line bg-white px-2 py-1 text-xs font-black text-ink-soft hover:bg-surface-2"
                 pendingLabel="Recusando"
@@ -784,7 +789,7 @@ function DealAssignee({
           className="mt-1 flex w-full flex-wrap items-center gap-2"
         >
           <input type="hidden" name="deal_id" value={deal.id} />
-          <input type="hidden" name="return_to" value="/painel/funil" />
+          <input type="hidden" name="return_to" value={returnTo} />
           <select
             name={isAdmin ? "assignee_id" : "target_user_id"}
             required

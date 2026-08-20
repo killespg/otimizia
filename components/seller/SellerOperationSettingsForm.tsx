@@ -38,7 +38,7 @@ export function SellerOperationSettingsForm(props: Props) {
   return (
     <form action={formAction} className="space-y-6">
       <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90">
-        <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">O que você vende</h2><p className="mt-1 max-w-3xl text-xs leading-relaxed text-od-text-3">Marque tudo que fizer parte da sua operação. Um mesmo negócio pode trabalhar com moda, garantia e encomendas ao mesmo tempo.</p></header>
+        <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">O que você vende</h2><p className="mt-1 max-w-3xl text-xs leading-relaxed text-od-text-3">Marque tudo que fizer parte do que você vende. Um mesmo negócio pode trabalhar com moda, garantia e encomendas ao mesmo tempo.</p></header>
         <div className="grid gap-2 p-3 sm:grid-cols-2 xl:grid-cols-3">
           {SELLER_SALES_MODELS.map((model) => {
             const selected = models.includes(model.value);
@@ -52,7 +52,7 @@ export function SellerOperationSettingsForm(props: Props) {
       </section>
 
       <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90">
-        <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">Ferramentas da operação</h2><p className="mt-1 text-xs text-od-text-3">As opções sugeridas foram ativadas conforme os tipos de venda selecionados. Você pode ajustar.</p></header>
+        <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">Controles extras</h2><p className="mt-1 text-xs text-od-text-3">As opções sugeridas foram ativadas conforme os tipos de venda. Elas só ligam controles dentro de Produtos e Vendas — nunca um item novo no menu.</p></header>
         <div className="divide-y divide-white/[0.07]">
           {SELLER_MODULES.map((module) => {
             const selected = modules.includes(module.value);

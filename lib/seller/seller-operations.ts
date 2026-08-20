@@ -18,6 +18,8 @@ export const SELLER_SALES_MODELS: Array<{
   { value: "commercial_representative", label: "Representação comercial", description: "Marcas, tabelas e comissões por produto.", defaultModules: ["catalog", "orders", "commissions", "delivery"] },
 ];
 
+// Extra modules only unlock controls inside Produtos/Vendas. They never add
+// a new root menu item — navigation stays Hoje, Clientes, Vendas, Produtos.
 export const SELLER_MODULES: Array<{ value: SellerModule; label: string; description: string }> = [
   { value: "catalog", label: "Catálogo", description: "Produtos, preços e categorias." },
   { value: "collections", label: "Coleções", description: "Trocas de coleção sem perder o histórico." },

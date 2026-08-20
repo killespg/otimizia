@@ -43,7 +43,7 @@ type Profession = {
   primaryAction: string;
   timPrompt: string;
   workspaceLabel: string;
-  /** Item de lista da vertical: carteira, processos ou funil. */
+  /** Item de lista da vertical: carteira, processos ou vendas. */
   userName: string;
   listNav: string;
   listLabel: string;
@@ -193,9 +193,9 @@ const PROFESSIONS: Profession[] = [
     secondaryAction: "Novo lembrete",
     primaryAction: "Nova venda",
     timPrompt: "Pergunte ao Tim sobre seus clientes e vendas",
-    workspaceLabel: "Visão geral do negócio",
-    listNav: "Funil de vendas",
-    listLabel: "Negócios em aberto",
+    workspaceLabel: "Hoje",
+    listNav: "Vendas",
+    listLabel: "Vendas em conversa",
     metrics: [
       { icon: MessageCircle, label: "Conversas", value: "87", note: "+12% desde ontem" },
       { icon: TrendingUp, label: "Vendas ganhas", value: "34", note: "+8% desde ontem" },
@@ -224,11 +224,10 @@ const PROFESSIONS: Profession[] = [
       { group: "Relacionamento", rows: [["Contatos", "142", "na base"], ["Sem retorno", "18", "há mais de 7 dias"], ["Lembretes hoje", "5", "2 atrasados"]] },
     ],
     groups: [
-      { label: "CRM", items: [{ label: "Contatos", badge: 142 }, { label: "Funil de vendas", badge: 23 }, { label: "Lembretes", badge: 5, danger: true }, { label: "Calendário" }] },
-      { label: "Operação", items: [{ label: "Produtos" }, { label: "Pedidos" }, { label: "Pós-venda" }] },
-      { label: "Gestão", items: [{ label: "Financeiro" }, { label: "Equipe" }, { label: "Relatórios" }] },
+      { label: "", items: [{ label: "Hoje" }, { label: "Clientes", badge: 142 }, { label: "Vendas", badge: 23 }, { label: "Produtos" }, { label: "WhatsApp" }] },
+      { label: "Mais", items: [{ label: "Tim" }, { label: "Lembretes", badge: 5, danger: true }, { label: "Equipe" }, { label: "Configurações" }] },
     ],
-    subItems: ["Minha operação", "Relatórios"],
+    subItems: [],
   },
 ];
 
@@ -238,7 +237,7 @@ const TIM_TROCA = [
   { de: "voce", texto: "Escreve uma mensagem pra Carla" },
 ];
 
-const TIM_SUGESTOES = ["Resuma minha semana", "Quem está travado no funil?", "Quanto fechei no mês?"];
+const TIM_SUGESTOES = ["Resuma minha semana", "Quem está travado nas vendas?", "Quanto fechei no mês?"];
 
 const CONVERSAS = [
   { nome: "Carla Nogueira", previa: "Consigo fechar até sexta?", hora: "09:12", naoLidas: 2 },

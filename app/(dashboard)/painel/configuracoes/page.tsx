@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { SellerOperationSettingsForm } from "@/components/seller/SellerOperationSettingsForm";
+import { sellerProfileWithDefaults } from "@/lib/seller/seller-operations";
 import { BrandName } from "@/components/design-system/BrandName";
 import { DashboardPreferencesForm } from "@/components/dashboard/DashboardPreferencesForm";
 import { InstallAppPrompt } from "@/components/site/InstallAppPrompt";
@@ -14,7 +16,7 @@ import { getPlanAccess } from "@/lib/billing/plan";
 import { getProfessionPreset, PROFESSION_OPTIONS } from "@/lib/people/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Organization, Profile } from "@/lib/supabase/types";
-import { getWorkspaceLabels } from "@/lib/workspace/workspace-preferences";
+import { getWorkspaceLabels, parseWorkspacePreferences } from "@/lib/workspace/workspace-preferences";
 import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import type { NotificationPreferences } from "@/lib/supabase/types";
 import { updateProfessionTypes } from "../actions";
@@ -35,7 +37,7 @@ import {
 
 export default async function SettingsPage(
   props: {
-    searchParams: Promise<{ checkout?: string }>;
+    searchParams: Promise<{ checkout?: string; salvo?: string }>;
   }
 ) {
   const searchParams = await props.searchParams;
@@ -89,6 +91,9 @@ export default async function SettingsPage(
   const isRealEstate = workspaceKey === "real_estate_broker";
   const visibilityPolicy = orgTaskVisibilityPolicy(org ?? {});
   const taskVisibilityMode = effectiveTaskVisibility(membership?.task_visibility, visibilityPolicy);
+  const sellerOperation = isSeller
+    ? sellerProfileWithDefaults(parseWorkspacePreferences(org?.workspace_preferences).autonomous_seller?.sellerOperation)
+    : null;
 
   return (
     <div className={`settings-hub mx-auto w-full max-w-[1640px] space-y-5 ${isSeller ? "seller-settings" : isRealEstate ? "real-estate-settings" : ""}`}>
@@ -98,7 +103,7 @@ export default async function SettingsPage(
           {isSeller ? "Configurações do negócio" : isRealEstate ? "Configurações da operação imobiliária" : "Seu espaço de trabalho"}
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/52">
-          {isSeller ? "Painel, alertas, nomes do CRM, conta, segurança e plano." : isRealEstate ? "Painel, alertas, nomes do atendimento, conta, segurança e plano." : "Painel, alertas, vocabulário do escritório, conta, segurança e plano."}
+          {isSeller ? "Painel, alertas, o que você vende, conta, segurança e plano." : isRealEstate ? "Painel, alertas, nomes do atendimento, conta, segurança e plano." : "Painel, alertas, vocabulário do escritório, conta, segurança e plano."}
         </p>
       </header>
 
@@ -132,7 +137,7 @@ export default async function SettingsPage(
 
           {isOrgAdmin && (
             <SectionCard
-              title="Vocabulário do CRM"
+            title={isSeller ? "Vocabulário das vendas" : "Vocabulário do CRM"}
               description="Renomeie o workspace atual para combinar com a rotina da sua equipe."
             >
               <form action={updateWorkspaceLabels} className="space-y-3">
@@ -153,11 +158,36 @@ export default async function SettingsPage(
             </SectionCard>
           )}
 
+          {isSeller && sellerOperation ? (
+            <section id="operacao" className="panel scroll-mt-24 space-y-4 p-5" data-settings-card>
+              <div>
+                <h2 className="text-[14px] font-semibold text-white">O que você vende</h2>
+                <p className="mt-1 text-xs leading-5 text-od-text-3">
+                  Escolha os controles que correspondem ao catálogo. Eles só aparecem dentro de Produtos e Vendas.
+                </p>
+              </div>
+              {searchParams.salvo === "1" ? (
+                <div role="status" className="flex min-h-12 items-center gap-3 rounded-[var(--radius-panel)] border border-emerald-400/25 bg-emerald-400/[0.06] px-4 text-sm text-emerald-300">
+                  <IconCheck className="h-4 w-4 shrink-0" />
+                  <span>Configuração salva. Os controles extras já foram atualizados.</span>
+                </div>
+              ) : null}
+              <SellerOperationSettingsForm
+                salesModels={sellerOperation.sales_models}
+                enabledModules={sellerOperation.enabled_modules}
+                defaultWarrantyDays={sellerOperation.default_warranty_days}
+                lowStockThreshold={sellerOperation.low_stock_threshold}
+                allowNegativeStock={sellerOperation.allow_negative_stock}
+                canEdit={isOrgAdmin}
+              />
+            </section>
+          ) : null}
+
           <Link
             href="/painel/equipe"
             className="row-link od-band flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-od-text-2 transition-colors hover:text-white"
           >
-            {isSeller ? "Dados do negócio e contexto do assistente ficam em Meu negócio" : "Nome da empresa, contexto e preferências da IA ficam em Equipe"}
+            {isSeller ? "Dados do negócio e contexto do assistente ficam em Equipe" : "Nome da empresa, contexto e preferências da IA ficam em Equipe"}
             <span aria-hidden="true">→</span>
           </Link>
 

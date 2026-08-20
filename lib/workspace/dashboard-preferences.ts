@@ -38,6 +38,17 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetKey, string> = {
   onboarding: "Primeiros passos",
 };
 
+export const SELLER_DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetKey, string> = {
+  metrics: "Mais números",
+  calendar: "Agenda",
+  chart: "Vendido no mês",
+  deals: "Vendas em conversa",
+  tasks: "Lembretes",
+  assistant: "Tim",
+  open_claims: "Disponíveis pra pegar",
+  onboarding: "Primeiros passos",
+};
+
 export const DASHBOARD_STYLES = ["glow", "clean", "compact", "executive"] as const;
 
 export type DashboardStyle = (typeof DASHBOARD_STYLES)[number];

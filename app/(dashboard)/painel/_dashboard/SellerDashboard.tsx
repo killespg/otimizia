@@ -125,11 +125,6 @@ export function SellerDashboard({
 
   const widgetNodes: Partial<Record<DashboardWidgetKey, ReactElement>> = {
     metrics: <SellerStatistics metrics={metrics} insights={commercialInsights} avgTicketCents={avgTicketCents} conversionRate={conversionRate} />,
-    open_claims: unclaimedTasks.length || unclaimedDeals.length ? (
-      <SellerOpenClaims tasks={unclaimedTasks} deals={unclaimedDeals} preset={preset} />
-    ) : undefined,
-    tasks: <SellerPriorities tasks={taskQueue} overdue={overdue} now={now} contacts={contactMap} />,
-    deals: <SellerDeals deals={openDeals} contacts={contactMap} preset={preset} />,
     chart: (
       <SellerRevenue
         openValue={openValue}
@@ -141,7 +136,6 @@ export function SellerDashboard({
     ),
     calendar: <SellerAgenda now={now} items={calendarItems} />,
     assistant: <SellerAssistantPreview />,
-    onboarding: onboarding ? <SellerOnboarding preset={preset} {...onboarding} /> : undefined,
   };
 
   return (
@@ -162,9 +156,9 @@ export function SellerDashboard({
           </h1>
           <p className="mt-1.5 text-[13px] leading-5 text-white/56 sm:mt-2 sm:text-sm sm:leading-relaxed">
             {actionableCount > 0 ? (
-              <>Você tem <strong className="font-semibold text-[#fca79b]">{actionableCount} {actionableCount === 1 ? "prioridade" : "prioridades"}</strong> para resolver e <strong className="font-semibold text-od-text">{openDeals.length} {openDeals.length === 1 ? "venda em andamento" : "vendas em andamento"}</strong>.</>
+              <>Você tem <strong className="font-semibold text-[#fca79b]">{actionableCount} {actionableCount === 1 ? "prioridade" : "prioridades"}</strong> para resolver e <strong className="font-semibold text-od-text">{openDeals.length} {openDeals.length === 1 ? "venda em conversa" : "vendas em conversa"}</strong>.</>
             ) : (
-              <>Seu dia está em ordem. Há <strong className="font-semibold text-od-text">{openDeals.length} {openDeals.length === 1 ? "venda em andamento" : "vendas em andamento"}</strong> na carteira.</>
+              <>Seu dia está em ordem. Há <strong className="font-semibold text-od-text">{openDeals.length} {openDeals.length === 1 ? "venda em conversa" : "vendas em conversa"}</strong>.</>
             )}
           </p>
         </div>
@@ -172,24 +166,32 @@ export function SellerDashboard({
           <Link href="/painel/tarefas#new-task" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-white/[0.1] px-4 text-[13px] font-semibold text-white/68 hover:bg-white/[0.04] hover:text-white">
             <BellRing size={15} /> Novo lembrete
           </Link>
-          <Link href="/painel/funil#new-deal" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover">
+          <Link href="/painel/vendas#new-deal" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover">
             <Plus size={16} /> Nova venda
           </Link>
         </div>
       </header>
 
-      <DashboardWidgetGrid
-        preferences={preferences}
-        action={updateDashboardPreferences}
-        layout="balanced"
-        items={Object.entries(widgetNodes)
-          .map(([widgetKey, node]) => ({
-            id: widgetKey as DashboardWidgetKey,
-            className: sellerWidgetShellClass(widgetKey as DashboardWidgetKey),
-            node,
-          }))
-          .filter((item): item is { id: DashboardWidgetKey; className: string; node: ReactElement } => Boolean(item.node))}
-      />
+      <section className="ui-metric-band sm:grid-cols-2">
+        <article className="border-b border-white/[0.08] p-4 sm:border-b-0 sm:border-r">
+          <p className="text-xs text-od-text-3">Vendido no mês</p>
+          <p className="mt-1 text-2xl font-bold tracking-[-0.02em] text-white">{formatBRL(wonValue)}</p>
+        </article>
+        <article className="p-4">
+          <p className="text-xs text-od-text-3">Em aberto</p>
+          <p className="mt-1 text-2xl font-bold tracking-[-0.02em] text-white">{formatBRL(openValue)}</p>
+        </article>
+      </section>
+
+      {unclaimedTasks.length || unclaimedDeals.length ? (
+        <SellerOpenClaims tasks={unclaimedTasks} deals={unclaimedDeals} preset={preset} />
+      ) : null}
+
+      {onboarding ? <SellerOnboarding preset={preset} {...onboarding} /> : null}
+
+      <SellerPriorities tasks={taskQueue} overdue={overdue} now={now} contacts={contactMap} />
+
+      <SellerDeals deals={openDeals} contacts={contactMap} preset={preset} />
 
       <SellerOperationsPulse operations={operations} />
 
@@ -201,9 +203,37 @@ export function SellerDashboard({
         </Link>
       </section>
 
+      <details className="panel p-4">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-white">
+          Mais números
+          <span className="text-xs font-medium text-od-text-3">CAC, LTV, gráfico e conversão</span>
+        </summary>
+        <div className="mt-4 space-y-4 border-t border-white/[0.08] pt-4">
+          <DashboardWidgetGrid
+            preferences={preferences}
+            action={updateDashboardPreferences}
+            layout="balanced"
+            items={Object.entries(widgetNodes)
+              .map(([widgetKey, node]) => ({
+                id: widgetKey as DashboardWidgetKey,
+                className: sellerWidgetShellClass(widgetKey as DashboardWidgetKey),
+                node,
+              }))
+              .filter((item): item is { id: DashboardWidgetKey; className: string; node: ReactElement } => Boolean(item.node))}
+          />
+        </div>
+      </details>
+
       {founderMetrics ? <SellerFounderMetrics metrics={founderMetrics} /> : null}
 
-      <DashboardCustomizePanel preferences={preferences} preset={preset} action={updateDashboardPreferences} />
+      <details className="panel p-4">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center text-sm font-semibold text-od-text-2 hover:text-white">
+          Personalizar painel
+        </summary>
+        <div className="mt-4 border-t border-white/[0.08] pt-4">
+          <DashboardCustomizePanel preferences={preferences} preset={preset} action={updateDashboardPreferences} />
+        </div>
+      </details>
     </div>
   );
 }
@@ -211,9 +241,9 @@ export function SellerDashboard({
 function SellerOperationsPulse({ operations }: { operations: Props["operations"] }) {
   const items = [
     { label: "Estoque baixo", value: operations.lowStockProducts, note: "produtos para repor", href: "/painel/produtos?stock=baixo", icon: PackageSearch, alert: operations.lowStockProducts > 0, enabled: operations.enabledModules.includes("inventory") },
-    { label: "Pedidos a preparar", value: operations.ordersToFulfill, note: "confirmados ou em separação", href: "/painel/pedidos?status=open", icon: Truck, alert: operations.ordersToFulfill > 0, enabled: true },
-    { label: "Garantias próximas", value: operations.expiringWarranties, note: "vencem em até 30 dias", href: "/painel/pos-venda?warranties=expiring", icon: ShieldAlert, alert: false, enabled: operations.enabledModules.includes("warranties") },
-    { label: "Trocas e chamados", value: operations.openWarrantyClaims, note: "aguardando conclusão", href: "/painel/pos-venda?claims=open", icon: RotateCcw, alert: operations.openWarrantyClaims > 0, enabled: operations.enabledModules.includes("warranties") },
+    { label: "Pedidos a preparar", value: operations.ordersToFulfill, note: "confirmados ou em separação", href: "/painel/vendas?tab=confirmadas&status=open", icon: Truck, alert: operations.ordersToFulfill > 0, enabled: true },
+    { label: "Garantias próximas", value: operations.expiringWarranties, note: "vencem em até 30 dias", href: "/painel/vendas?tab=pos-venda&warranties=expiring", icon: ShieldAlert, alert: false, enabled: operations.enabledModules.includes("warranties") },
+    { label: "Trocas e chamados", value: operations.openWarrantyClaims, note: "aguardando conclusão", href: "/painel/vendas?tab=pos-venda&claims=open", icon: RotateCcw, alert: operations.openWarrantyClaims > 0, enabled: operations.enabledModules.includes("warranties") },
   ].filter((item) => item.enabled);
   const attentionItems = items.filter((item) => item.value > 0);
   if (attentionItems.length === 0) {
@@ -221,10 +251,10 @@ function SellerOperationsPulse({ operations }: { operations: Props["operations"]
       <section className="flex min-h-16 items-center gap-3 panel px-4" aria-labelledby="seller-operation-title">
         <span className="grid size-8 shrink-0 place-items-center rounded border border-emerald-400/20 bg-emerald-400/[0.07] text-emerald-300"><CheckCircle2 size={16} /></span>
         <div className="min-w-0 flex-1">
-          <h2 id="seller-operation-title" className="text-sm font-semibold text-white">Operação em dia</h2>
-          <p className="mt-0.5 truncate text-xs text-white/52">Nenhuma pendência operacional agora.</p>
+          <h2 id="seller-operation-title" className="text-sm font-semibold text-white">Entregas em dia</h2>
+          <p className="mt-0.5 truncate text-xs text-white/52">Nenhum pedido ou estoque pedindo atenção agora.</p>
         </div>
-        <Link href="/painel/produtos" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir operação <ArrowRight size={14} /></Link>
+        <Link href="/painel/produtos" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir produtos <ArrowRight size={14} /></Link>
       </section>
     );
   }
@@ -232,8 +262,8 @@ function SellerOperationsPulse({ operations }: { operations: Props["operations"]
   return (
     <section className="overflow-hidden panel lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]" aria-labelledby="seller-operation-title">
       <header className="flex min-h-20 items-center justify-between gap-3 px-4">
-        <div><h2 id="seller-operation-title" className="text-sm font-semibold text-white">Pulso da operação</h2><p className="mt-0.5 text-xs text-white/52">O que precisa de atenção depois da venda.</p></div>
-        <Link href="/painel/produtos" className="inline-flex min-h-11 shrink-0 items-center px-2 text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir operação</Link>
+        <div><h2 id="seller-operation-title" className="text-sm font-semibold text-white">Entregas e estoque</h2><p className="mt-0.5 text-xs text-white/52">O que precisa de atenção depois da venda.</p></div>
+        <Link href="/painel/produtos" className="inline-flex min-h-11 shrink-0 items-center px-2 text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir produtos</Link>
       </header>
       <div className={`grid sm:grid-cols-2 ${columnClass}`}>
         {attentionItems.map((item) => { const Icon = item.icon; return (
@@ -311,9 +341,9 @@ function SellerCommercialIndicators({
       <header className="flex items-end justify-between gap-4 border-b border-white/[0.08] px-4 py-4 sm:px-5">
         <div>
           <h2 className="text-sm font-semibold text-white">Indicadores comerciais</h2>
-          <p className="mt-1 text-xs text-od-text-3">Conversão, eficiência financeira e esforço da operação.</p>
+          <p className="mt-1 text-xs text-od-text-3">Conversão, ticket e o que está travando as vendas.</p>
         </div>
-        <Link href="/painel/funil/relatorio" className="-my-3 inline-flex min-h-11 shrink-0 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Ver relatório</Link>
+        <Link href="/painel/vendas?tab=numeros" className="-my-3 inline-flex min-h-11 shrink-0 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Ver números</Link>
       </header>
       <div className="grid divide-y divide-white/[0.08] lg:grid-cols-3 lg:divide-x lg:divide-y-0">
         <InsightGroup
@@ -467,18 +497,18 @@ function SellerDeals({ deals, contacts, preset }: { deals: Deal[]; contacts: Map
   return (
     <section data-dashboard-card className="h-full overflow-hidden panel">
       <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-4 py-4">
-        <div><h2 className="text-sm font-semibold text-white">Vendas em acompanhamento</h2><p className="mt-1 text-xs text-od-text-3">Ordenadas pela atividade mais recente</p></div>
-        <Link href="/painel/funil" className="-my-3 inline-flex min-h-11 items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text">Ver funil <ArrowRight size={13} /></Link>
+        <div><h2 className="text-sm font-semibold text-white">Vendas em conversa</h2><p className="mt-1 text-xs text-od-text-3">Quem ainda precisa de um próximo passo</p></div>
+        <Link href="/painel/vendas" className="-my-3 inline-flex min-h-11 items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text">Ver vendas <ArrowRight size={13} /></Link>
       </div>
       {recent.length === 0 ? (
-        <div className="px-4 py-8 text-center"><Handshake size={24} className="mx-auto text-od-text-3" /><p className="mt-3 text-sm font-semibold text-white">Nenhuma venda aberta ainda.</p><Link href="/painel/funil#new-deal" className="mt-2 inline-flex min-h-11 items-center text-xs font-semibold text-od-accent-hover">Criar primeira venda</Link></div>
+        <div className="px-4 py-8 text-center"><Handshake size={24} className="mx-auto text-od-text-3" /><p className="mt-3 text-sm font-semibold text-white">Nenhuma venda aberta ainda.</p><Link href="/painel/vendas#new-deal" className="mt-2 inline-flex min-h-11 items-center text-xs font-semibold text-od-accent-hover">Criar primeira venda</Link></div>
       ) : (
         <div>
           <div className="hidden grid-cols-[minmax(0,1.2fr)_9rem_8rem_8rem] gap-3 border-b border-white/[0.07] px-5 py-2 text-xs font-semibold uppercase tracking-[0.04em] text-od-text-3 sm:grid"><span>Cliente / venda</span><span>Etapa</span><span>Valor</span><span>Entrada</span></div>
           {recent.map((deal) => {
             const contact = deal.contact_id ? contacts.get(deal.contact_id) : undefined;
             return (
-              <Link href="/painel/funil" key={deal.id} className="grid gap-2 border-b border-white/[0.07] px-5 py-4 last:border-b-0 hover:bg-white/[0.025] sm:grid-cols-[minmax(0,1.2fr)_9rem_8rem_8rem] sm:items-center sm:gap-3">
+              <Link href="/painel/vendas" key={deal.id} className="grid gap-2 border-b border-white/[0.07] px-5 py-4 last:border-b-0 hover:bg-white/[0.025] sm:grid-cols-[minmax(0,1.2fr)_9rem_8rem_8rem] sm:items-center sm:gap-3">
                 <div className="min-w-0"><p className="truncate text-sm font-semibold text-white/88">{deal.title}</p><p className="mt-1 truncate text-xs text-od-text-3">{contact?.company || contact?.name || "Sem cliente vinculado"}</p></div>
                 <span className="w-fit rounded bg-white/[0.06] px-2 py-1 text-xs font-semibold text-od-text-2">{stageLabel(deal.stage, preset)}</span>
                 <span className="text-sm font-semibold tabular-nums text-white/72">{formatBRL(deal.value_cents ?? 0)}</span>
@@ -524,9 +554,9 @@ function SellerRevenue({ openValue, wonValue, series, conversionRate, avgTicketC
             <div className="flex flex-col gap-4 border-t border-white/[0.08] pt-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 <span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><TrendingUp size={17} /></span>
-                <div><p className="text-sm font-semibold text-white/76">Seu gráfico começa com a primeira venda ganha.</p><p className="mt-1 text-xs text-od-text-3">Mova uma oportunidade para ganha no funil.</p></div>
+                <div><p className="text-sm font-semibold text-white/76">Seu gráfico começa com a primeira venda fechada.</p><p className="mt-1 text-xs text-od-text-3">Feche uma venda em conversa para registrar o pedido.</p></div>
               </div>
-              <Link href="/painel/funil" className="inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir funil</Link>
+              <Link href="/painel/vendas" className="inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir vendas</Link>
             </div>
             <div className="mt-4 grid divide-y divide-white/[0.08] border-t border-white/[0.08] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
               <MiniStat label="Em aberto" value={formatBRL(openValue)} />
@@ -589,7 +619,7 @@ function SellerAgenda({ now, items }: { now: Date; items: CalendarItem[] }) {
   const upcoming = items.filter((item) => item.date >= now || item.tone === "danger").sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 6);
   return (
     <section data-dashboard-card className="h-full panel p-4">
-      <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Próximos lembretes</h2><p className="mt-1 text-xs text-od-text-3">Quem chamar e quando</p></div><Link href="/painel/calendario" className="-my-1 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Calendário</Link></div>
+      <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Próximos lembretes</h2><p className="mt-1 text-xs text-od-text-3">Quem chamar e quando</p></div><Link href="/painel/tarefas?view=agenda" className="-my-1 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Agenda</Link></div>
       {upcoming.length === 0 ? <div className="mt-4 flex flex-col gap-3 border-t border-white/[0.07] pt-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3"><Clock3 size={18} className="shrink-0 text-od-text-3" /><div><p className="text-sm font-medium text-white/62">Sua agenda está livre.</p><p className="mt-1 text-xs text-od-text-3">Crie um lembrete para não perder o próximo retorno.</p></div></div><Link href="#novo-lembrete" className="inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Criar lembrete</Link></div> : <ul className="mt-4 divide-y divide-white/[0.07]">{upcoming.map((item, index) => <li key={`${item.title}-${index}`}><Link href={item.href} className="flex items-center gap-3 py-3 hover:text-white"><span className={`size-2 rounded-full ${item.tone === "danger" ? "bg-[#fb7767]" : item.tone === "warning" ? "bg-amber-300" : "bg-od-text-3"}`} /><span className="min-w-0 flex-1 truncate text-xs font-medium text-white/68">{item.title}</span><span className="text-xs text-od-text-3">{formatDate(item.date.toISOString())}</span></Link></li>)}</ul>}
     </section>
   );
@@ -610,7 +640,7 @@ function SellerOpenClaims({ tasks, deals, preset }: { tasks: Task[]; deals: Deal
 function SellerOnboarding({ preset, isOrgAdmin, done }: NonNullable<Props["onboarding"]> & { preset: ProfessionPreset }) {
   const steps = [
     { label: preset.firstSteps[0], href: "/painel/contatos", done: done.contact, icon: UserRound },
-    { label: preset.firstSteps[1], href: "/painel/funil", done: done.deal, icon: Handshake },
+    { label: preset.firstSteps[1], href: "/painel/vendas", done: done.deal, icon: Handshake },
     { label: preset.firstSteps[2], href: "/painel/tarefas", done: done.task, icon: BellRing },
     { label: "Conversar com o assistente", href: "/painel/assistente", done: done.assistant, icon: MessageCircle },
     ...(isOrgAdmin ? [{ label: "Configurar o negócio", href: "/painel/equipe", done: done.businessContext, icon: Sparkles }, { label: "Convidar a equipe", href: "/painel/equipe", done: done.team, icon: UserRound }] : []),

@@ -103,6 +103,7 @@ export async function updateProfession(formData: FormData) {
   revalidatePath("/painel");
   revalidatePath("/painel/contatos");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel/tarefas");
   revalidatePath("/painel/calendario");
   redirect(safeReturnPath(formData.get("return_to"), "/painel"));
@@ -139,6 +140,7 @@ export async function updateProfessionTypes(formData: FormData) {
   revalidatePath("/painel");
   revalidatePath("/painel/contatos");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel/tarefas");
   revalidatePath("/painel/calendario");
   revalidatePath("/painel/configuracoes");
@@ -165,6 +167,7 @@ export async function createContact(formData: FormData) {
   revalidatePath("/painel/contatos");
   revalidatePath("/painel");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel/tarefas");
   revalidatePath("/painel/calendario");
   redirect(safeReturnPath(formData.get("return_to"), "/painel/contatos"));
@@ -259,6 +262,7 @@ export async function updateContact(formData: FormData) {
   revalidatePath(`/painel/contatos/${id}`);
   revalidatePath("/painel");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel/tarefas");
   revalidatePath("/painel/calendario");
 }
@@ -293,6 +297,7 @@ export async function bulkDeleteContacts(ids: string[]) {
   ensureOk(error, "Não deu para excluir os contatos.");
   revalidatePath("/painel/contatos");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel");
   return { deleted: contactIds.length };
 }
@@ -346,6 +351,7 @@ export async function createDeal(formData: FormData) {
   });
   ensureOk(error, "Não deu para salvar a venda.");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel");
   revalidatePath("/painel/contatos");
   redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
@@ -369,6 +375,7 @@ export async function createPipelineList(formData: FormData) {
   });
   ensureOk(error, "Não deu para criar a lista.");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel");
   redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
 }
@@ -422,6 +429,7 @@ export async function moveDealToList(
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para mover a venda.");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel");
 }
 
@@ -452,6 +460,7 @@ export async function moveDeal(id: string, stage: DealStage) {
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para mover a venda.");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel");
 }
 
@@ -465,6 +474,7 @@ export async function deleteDeal(formData: FormData) {
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para excluir a venda.");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel");
   redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
 }
@@ -504,6 +514,7 @@ export async function updateDealOptions(formData: FormData) {
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para atualizar as opções.");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel");
   redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
 }
@@ -562,6 +573,7 @@ export async function uploadDealPhoto(formData: FormData) {
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para salvar a foto no card.");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel");
   redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
 }
@@ -917,6 +929,7 @@ export async function requestDealHandoff(formData: FormData) {
   });
   ensureOk(error, "Não deu para solicitar a transferência.");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel");
   redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
 }
@@ -927,6 +940,7 @@ export async function acceptDealHandoff(formData: FormData) {
   const { error } = await supabase.rpc("accept_deal_handoff", { p_deal_id: dealId });
   ensureOk(error, "Não deu para aceitar a transferência.");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel");
   redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
 }
@@ -937,6 +951,7 @@ export async function declineDealHandoff(formData: FormData) {
   const { error } = await supabase.rpc("decline_deal_handoff", { p_deal_id: dealId });
   ensureOk(error, "Não deu para recusar a transferência.");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel");
   redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
 }
@@ -952,6 +967,7 @@ export async function adminReassignDeal(formData: FormData) {
   });
   ensureOk(error, "Não deu para reatribuir o negócio.");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel");
   redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
 }
@@ -976,6 +992,7 @@ export async function claimDeal(formData: FormData) {
   const { error } = await supabase.rpc("claim_deal", { p_deal_id: dealId });
   ensureOk(error, "Esse negócio já foi pego por alguém.");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel");
   redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
 }
