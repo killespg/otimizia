@@ -3,7 +3,8 @@ import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { completeLegalDeadline } from "@/app/(dashboard)/painel/juridico/actions";
 import { completeAgendaTask } from "@/app/(dashboard)/painel/actions";
 import { PendingButton } from "@/components/ui/PendingButton";
-import { MetricBand } from "@/components/ui/data-display";
+import { MetricBand, Status } from "@/components/ui/data-display";
+import { EmptyState } from "@/components/ui/feedback";
 import { DataPanel } from "@/components/ui/surface";
 import { buildMonthCells } from "@/lib/utils/calendar-grid";
 import {
@@ -16,6 +17,8 @@ import {
 } from "@/lib/law/legal-agenda";
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const QUEUE_RULE =
+  "Processos só entram perto do vencimento ou com movimentação nova no DataJud.";
 
 export function LegalDeadlineBoard({
   entries,
@@ -29,8 +32,6 @@ export function LegalDeadlineBoard({
   selectedDay,
   casesWithoutDeadline,
   canManage = false,
-  members = [],
-  currentUserId,
 }: {
   entries: AgendaEntry[];
   year: number;
@@ -43,8 +44,6 @@ export function LegalDeadlineBoard({
   selectedDay: string | null;
   casesWithoutDeadline: number;
   canManage?: boolean;
-  members?: Array<{ user_id: string; name: string | null }>;
-  currentUserId?: string;
 }) {
   const summary = summarizeAgenda(entries, today);
   const occupancy = occupancyByDay(entries, year, month, today);
@@ -55,6 +54,12 @@ export function LegalDeadlineBoard({
   const todayParts = today.split("-");
   const isCurrentMonth = Number(todayParts[0]) === year && Number(todayParts[1]) === month + 1;
   const todayDate = Number(todayParts[2]);
+  const todayMonthParam = today.slice(0, 7);
+  const todayIsSelected = selectedDay === today;
+  const todayHref = todayIsSelected
+    ? `/painel/juridico/prazos?month=${todayMonthParam}`
+    : `/painel/juridico/prazos?month=${todayMonthParam}&dia=${todayDate}`;
+  const monthHref = `/painel/juridico/prazos?month=${monthParam}`;
   const hrefFor = (day?: number) => {
     const params = new URLSearchParams({ month: monthParam });
     if (day) params.set("dia", String(day));
@@ -68,10 +73,20 @@ export function LegalDeadlineBoard({
         items={[
           {
             label: "Atrasados",
-            value: <span className={summary.overdue > 0 ? "text-[#fb7767]" : undefined}>{summary.overdue}</span>,
+            value: summary.overdue,
+            tone: "danger",
           },
-          { label: "Hoje", value: summary.today },
-          { label: "Próximos 7 dias", value: summary.upcoming },
+          {
+            label: "Hoje",
+            value: summary.today,
+            href: todayHref,
+            current: todayIsSelected,
+          },
+          {
+            label: "Próximos 7 dias",
+            value: summary.upcoming,
+            tone: summary.upcoming > 0 ? "warning" : undefined,
+          },
           { label: "Audiências", value: summary.hearings },
         ]}
       />
@@ -85,14 +100,14 @@ export function LegalDeadlineBoard({
               <Link
                 href={`/painel/juridico/prazos?month=${prevMonth}`}
                 aria-label="Mês anterior"
-                className="grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-white/[0.1] text-white/65 hover:bg-white/[0.04] hover:text-white"
+                className="ui-button ui-button--secondary ui-icon-button"
               >
                 <ChevronLeft size={16} />
               </Link>
               <Link
                 href={`/painel/juridico/prazos?month=${nextMonth}`}
                 aria-label="Próximo mês"
-                className="grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-white/[0.1] text-white/65 hover:bg-white/[0.04] hover:text-white"
+                className="ui-button ui-button--secondary ui-icon-button"
               >
                 <ChevronRight size={16} />
               </Link>
@@ -127,7 +142,7 @@ export function LegalDeadlineBoard({
                       <td key={`${weekIndex}-${dayIndex}`} className={cellClass}>
                         {day ? (
                           <Link
-                            href={isSelected ? `/painel/juridico/prazos?month=${monthParam}` : hrefFor(day)}
+                            href={isSelected ? monthHref : hrefFor(day)}
                             aria-current={isSelected ? "true" : isToday ? "date" : undefined}
                             className="flex h-full min-h-11 flex-col gap-1 px-1.5 py-1.5 hover:bg-white/[0.04]"
                           >
@@ -143,7 +158,11 @@ export function LegalDeadlineBoard({
                               <span
                                 className={
                                   "mt-auto text-[11px] font-semibold tabular-nums " +
-                                  (mark.overdue ? "text-[#fb7767]" : mark.hearing ? "text-od-text" : "text-od-text-2")
+                                  (mark.overdue
+                                    ? "text-[var(--od-danger-fg)]"
+                                    : mark.hearing
+                                      ? "text-od-text"
+                                      : "text-od-text-2")
                                 }
                               >
                                 {mark.count}
@@ -164,13 +183,13 @@ export function LegalDeadlineBoard({
           title={selectedDay ? "Fila do dia" : "Fila cronológica"}
           description={
             selectedDay
-              ? "Só o que vence na data escolhida no calendário."
-              : "Atrasados primeiro; depois o que ainda cabe neste mês."
+              ? `Só o que vence na data escolhida no calendário. ${QUEUE_RULE}`
+              : `Atrasados primeiro; depois o que ainda cabe neste mês. ${QUEUE_RULE}`
           }
           count={groups.reduce((sum, group) => sum + group.items.length, 0)}
           actions={
             selectedDay ? (
-              <Link href={`/painel/juridico/prazos?month=${monthParam}`} className="text-xs font-semibold text-od-text-2 hover:text-white">
+              <Link href={monthHref} className="ui-button ui-button--quiet ui-button--sm">
                 Ver o mês
               </Link>
             ) : null
@@ -178,9 +197,19 @@ export function LegalDeadlineBoard({
         >
           <div data-ui="deadline-timeline">
             {groups.length === 0 || groups.every((group) => group.items.length === 0) ? (
-              <p className="px-5 py-8 text-sm text-od-text-2">
-                {selectedDay ? "Nada neste dia." : "Nenhum prazo pendente nesta agenda."}
-              </p>
+              selectedDay ? (
+                <EmptyState
+                  inset
+                  title="Nada neste dia."
+                  action={
+                    <Link href={monthHref} className="ui-button ui-button--quiet ui-button--sm">
+                      Ver o mês
+                    </Link>
+                  }
+                />
+              ) : (
+                <EmptyState inset title="Nenhum prazo pendente nesta agenda." />
+              )
             ) : (
               groups.map((group) => (
                 <TimelineGroup
@@ -226,7 +255,10 @@ function TimelineGroup({
     <section aria-labelledby={`agenda-${group.key}`} className="border-b border-white/[0.06] last:border-b-0">
       <h3
         id={`agenda-${group.key}`}
-        className={"px-5 pb-1 pt-4 text-xs font-semibold uppercase tracking-[0.06em] " + (group.tone === "danger" ? "text-[#fb7767]" : "text-od-text-3")}
+        className={
+          "px-5 pb-1 pt-4 text-xs font-semibold uppercase tracking-[0.06em] " +
+          (group.tone === "danger" ? "text-[var(--od-danger-fg)]" : "text-od-text-3")
+        }
       >
         {group.label}
       </h3>
@@ -239,7 +271,12 @@ function TimelineGroup({
                   {dayNumber}
                 </p>
               ) : (
-                <p className={"text-xs font-semibold tabular-nums " + (group.tone === "danger" ? "text-[#fb7767]" : "text-od-text-2")}>
+                <p
+                  className={
+                    "text-xs font-semibold tabular-nums " +
+                    (group.tone === "danger" ? "text-[var(--od-danger-fg)]" : "text-od-text-2")
+                  }
+                >
                   {item.day.slice(-2)}/{item.day.slice(5, 7)}
                 </p>
               )}
@@ -247,17 +284,13 @@ function TimelineGroup({
             </div>
             <div className="flex min-w-0 items-start gap-3">
               <Link
-              href={agendaItemHref(item, monthParam, selectedDay)}
-              aria-label={item.kind === "task" ? `Editar ${item.title}` : item.title}
-              className="min-w-0 flex-1"
-            >
+                href={agendaItemHref(item, monthParam, selectedDay)}
+                aria-label={item.kind === "task" ? `Editar ${item.title}` : item.title}
+                className="min-w-0 flex-1"
+              >
                 <div className="flex min-w-0 items-center gap-2">
                   <p className="truncate text-[13px] font-semibold text-white">{item.title}</p>
-                  {item.ownerLabel ? (
-                    <span className="shrink-0 rounded-[var(--radius-round)] bg-white/[0.06] px-2 py-0.5 text-[11px] font-semibold text-od-text-2">
-                      {item.ownerLabel}
-                    </span>
-                  ) : null}
+                  {item.ownerLabel ? <Status intent="neutral">{item.ownerLabel}</Status> : null}
                 </div>
                 <p className="mt-1 truncate text-xs text-od-text-3">
                   {item.typeLabel}
@@ -273,7 +306,8 @@ function TimelineGroup({
                   <input type="hidden" name="case_id" value={item.caseId} />
                   <PendingButton
                     aria-label={`Concluir ${item.title}`}
-                    className="grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-white/[0.1] text-white/55 hover:bg-white/[0.04] hover:text-white"
+                    intent="quiet"
+                    className="ui-icon-button"
                     iconOnly
                     pendingLabel="Concluindo"
                   >
@@ -286,7 +320,8 @@ function TimelineGroup({
                   <input type="hidden" name="id" value={item.id} />
                   <PendingButton
                     aria-label={`Concluir ${item.title}`}
-                    className="grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-white/[0.1] text-white/55 hover:bg-white/[0.04] hover:text-white"
+                    intent="quiet"
+                    className="ui-icon-button"
                     iconOnly
                     pendingLabel="Concluindo"
                   >

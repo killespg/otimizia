@@ -45,19 +45,27 @@ export function PageHeader({
   ...props
 }: Omit<HTMLAttributes<HTMLElement>, "title"> & {
   eyebrow?: ReactNode;
-  title: ReactNode;
+  title?: ReactNode;
   description?: ReactNode;
   actions?: ReactNode;
 }) {
+  const compact = title === undefined;
   return (
     <header
       {...props}
       data-ui="page-header"
-      className={`ui-page-header ${className}`.trim()}
+      data-compact={compact ? "true" : undefined}
+      className={`ui-page-header${compact ? " ui-page-header--compact" : ""} ${className}`.trim()}
     >
       <div className="ui-page-header__copy">
-        {eyebrow ? <p className="ui-page-header__eyebrow">{eyebrow}</p> : null}
-        <h1 className="ui-page-header__title">{title}</h1>
+        {compact ? (
+          eyebrow ? <h1 className="ui-page-header__eyebrow">{eyebrow}</h1> : <h1 className="sr-only">Página</h1>
+        ) : (
+          <>
+            {eyebrow ? <p className="ui-page-header__eyebrow">{eyebrow}</p> : null}
+            <h1 className="ui-page-header__title">{title}</h1>
+          </>
+        )}
         {description ? <p className="ui-page-header__description">{description}</p> : null}
       </div>
       {actions ? <div className="ui-page-header__actions">{actions}</div> : null}

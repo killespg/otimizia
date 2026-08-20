@@ -4,6 +4,7 @@ import { AgendaEditDrawer } from "@/components/legal/agenda-edit-drawer";
 import { DeadlineFormCalculator } from "@/components/legal/deadline-form-calculator";
 import { LegalDeadlineBoard } from "@/components/legal/legal-deadline-board";
 import { PendingButton } from "@/components/ui/PendingButton";
+import { PermissionState } from "@/components/ui/feedback";
 import { Page, PageHeader } from "@/components/ui/surface";
 import { createLegalDeadline } from "../actions";
 import { createTask, deleteTask, updateAgendaTask } from "../../actions";
@@ -11,11 +12,13 @@ import { IconPlus, IconTrash } from "../../icons";
 import { ContactField } from "../../ContactField";
 import { canManageLegal, canViewLegal } from "@/lib/law/law-office";
 import {
+  agendaHeadline,
   buildAgendaEntries,
   buildTaskAgendaEntries,
   civilDate,
   filterAgendaProcessSignals,
   selectedCivilDay,
+  summarizeAgenda,
   toDatetimeLocalValue,
 } from "@/lib/law/legal-agenda";
 import {
@@ -146,6 +149,7 @@ export default async function DeadlinesPage(props: {
   const agendaReturn = selectedDay
     ? `/painel/juridico/prazos?month=${monthValue}&dia=${Number(selectedDay.slice(-2))}`
     : `/painel/juridico/prazos?month=${monthValue}`;
+  const headline = agendaHeadline(summarizeAgenda(entries, today));
   const editingTask = visibleTasks.find((task) => task.id === searchParams?.editar);
   const canEditTask = Boolean(
     editingTask &&
@@ -159,20 +163,13 @@ export default async function DeadlinesPage(props: {
     <Page>
       <PageHeader
         eyebrow="Jurídico / Agenda e prazos"
-        title="Agenda e prazos"
-        description="Sua fila de lembretes. Processos só entram aqui perto do vencimento ou com movimentação nova no DataJud."
+        description={headline}
         actions={
           <>
-            <Link
-              href="/painel/juridico/prazos/calculadora"
-              className="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-od-border px-4 text-xs font-semibold text-od-text-2 hover:border-od-border-hover hover:bg-od-surface-hover hover:text-white"
-            >
+            <Link href="/painel/juridico/prazos/calculadora" className="ui-button ui-button--quiet ui-button--sm">
               Calculadora
             </Link>
-            <Link
-              href="/painel/juridico/processos"
-              className="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-od-border px-4 text-xs font-semibold text-od-text-2 hover:border-od-border-hover hover:bg-od-surface-hover hover:text-white"
-            >
+            <Link href="/painel/juridico/processos" className="ui-button ui-button--quiet ui-button--sm">
               Carteira de casos
             </Link>
             {canManage ? (
@@ -182,7 +179,7 @@ export default async function DeadlinesPage(props: {
                 description="Prazo processual vinculado a um caso da carteira."
                 icon={<IconPlus className="h-4 w-4" />}
                 initialOpen={searchParams?.novo === "prazo"}
-                triggerClassName="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-od-border px-4 text-xs font-semibold text-od-text-2 hover:border-od-border-hover hover:bg-od-surface-hover hover:text-white"
+                triggerClassName="ui-button ui-button--secondary ui-button--sm"
               >
                 <NewDeadlineForm userId={user!.id} caseOptions={caseOptions} memberOptions={memberOptions} />
               </ActionDrawer>
@@ -193,7 +190,7 @@ export default async function DeadlinesPage(props: {
               description="Organiza o trabalho do dia. Pode vincular a um processo, a um contato ou a uma empresa."
               icon={<IconPlus className="h-4 w-4" />}
               initialOpen={searchParams?.novo === "lembrete" || searchParams?.novo === "1"}
-              triggerClassName="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover"
+              triggerClassName="ui-button ui-button--primary"
             >
               <TaskForm
                 userId={user!.id}
@@ -272,7 +269,7 @@ function TaskForm({
       {task ? <input type="hidden" name="id" value={task.id} /> : null}
       <input type="hidden" name="return_to" value={returnTo} />
       <label className="block">
-        <span className="label">Lembrete<span className="ml-1 text-brand-700">*</span></span>
+        <span className="label">Lembrete<span className="ml-1" aria-hidden="true">*</span></span>
         <input
           name="title"
           required
@@ -348,7 +345,7 @@ function TaskForm({
       ) : null}
       <div className="flex items-center justify-between gap-3 border-t border-od-border pt-5">
         {editing && canEdit ? (
-          <PendingButton formAction={deleteTask} className="btn-soft" pendingLabel="Excluindo">
+          <PendingButton formAction={deleteTask} intent="secondary" pendingLabel="Excluindo">
             <IconTrash className="h-4 w-4" />
             Excluir
           </PendingButton>
@@ -356,7 +353,7 @@ function TaskForm({
           <span />
         )}
         {readOnly ? null : (
-          <PendingButton className="btn" pendingLabel="Salvando">
+          <PendingButton intent="primary" pendingLabel="Salvando">
             {editing ? null : <IconPlus className="h-4 w-4" />}
             {editing ? "Salvar alterações" : "Salvar lembrete"}
           </PendingButton>
@@ -390,7 +387,7 @@ function NewDeadlineForm({
     <form action={createLegalDeadline} className="grid gap-4">
       <input type="hidden" name="return_to" value="agenda" />
       <label className="block">
-        <span className="label">Caso<span className="ml-1 text-brand-700">*</span></span>
+        <span className="label">Caso<span className="ml-1" aria-hidden="true">*</span></span>
         <select name="case_id" required className="field mt-1.5">
           <option value="">Selecione</option>
           {caseOptions.map((option) => (
@@ -401,7 +398,7 @@ function NewDeadlineForm({
         </select>
       </label>
       <label className="block">
-        <span className="label">Prazo<span className="ml-1 text-brand-700">*</span></span>
+        <span className="label">Prazo<span className="ml-1" aria-hidden="true">*</span></span>
         <input name="title" required maxLength={180} placeholder="Ex.: Apresentar réplica" className="field mt-1.5" />
       </label>
       <DeadlineFormCalculator />
@@ -437,7 +434,7 @@ function NewDeadlineForm({
         </label>
       </div>
       <div className="flex justify-end border-t border-od-border pt-5">
-        <PendingButton className="btn" pendingLabel="Cadastrando">
+        <PendingButton intent="primary" pendingLabel="Cadastrando">
           <IconPlus className="h-4 w-4" />
           Cadastrar prazo
         </PendingButton>
@@ -448,20 +445,26 @@ function NewDeadlineForm({
 
 function AccessDenied() {
   return (
-    <section className="panel max-w-xl p-6">
-      <p className="text-sm font-black text-brand-700">Acesso restrito</p>
-      <h1 className="mt-2 text-2xl font-black text-ink">Seu cargo não acessa prazos jurídicos.</h1>
-    </section>
+    <Page>
+      <PermissionState
+        title="Acesso restrito"
+        description="Seu cargo não acessa prazos jurídicos."
+      />
+    </Page>
   );
 }
 
 function NotLawOffice() {
   return (
-    <section className="panel max-w-xl p-6">
-      <h1 className="text-2xl font-black text-ink">Prazos jurídicos disponíveis no workspace de advocacia.</h1>
-      <Link href="/painel" className="btn mt-4">
-        Voltar ao painel
-      </Link>
-    </section>
+    <Page>
+      <PermissionState
+        title="Prazos jurídicos disponíveis no workspace de advocacia."
+        action={
+          <Link href="/painel" className="ui-button ui-button--primary">
+            Voltar ao painel
+          </Link>
+        }
+      />
+    </Page>
   );
 }

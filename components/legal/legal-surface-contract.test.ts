@@ -27,7 +27,14 @@ describe("legal workspace surface contract", () => {
     expect(deadlines).toContain('from("legal_deadlines")');
     expect(deadlines).toContain('from("tasks")');
     expect(deadlines).toContain("<TaskForm");
+    expect(deadlines).toContain("agendaHeadline");
+    expect(deadlines).toContain("PermissionState");
+    expect(deadlines).not.toContain('title="Agenda e prazos"');
     expect(deadlines).not.toContain("<LegalCaseList");
+    expect(deadlines).not.toContain("text-brand-700");
+    expect(deadlines).not.toContain("font-black");
+    expect(read("components/legal/legal-deadline-board.tsx")).not.toContain("currentUserId");
+    expect(read("components/legal/legal-deadline-board.tsx")).not.toContain("#fb7767");
     expect(legalUi).toContain('from "@/components/ui/surface"');
     expect(source).not.toContain('border border-white/[0.09] bg-[#1e1d22]');
     expect(compactControls).not.toMatch(/(?:min-h|\bh)-(?:8|9|10)(?=[" ])/);

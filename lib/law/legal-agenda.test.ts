@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  agendaHeadline,
   agendaItemHref,
   buildAgendaEntries,
   occupancyByDay,
@@ -104,6 +105,17 @@ describe("summarizeAgenda", () => {
       upcoming: 1,
       hearings: 1,
     });
+  });
+});
+
+describe("agendaHeadline", () => {
+  it("renders the live queue line with Portuguese pluralization", () => {
+    expect(agendaHeadline({ overdue: 3, today: 2, upcoming: 5, hearings: 1 })).toBe(
+      "3 atrasados · 2 compromissos hoje · 5 nos próximos 7 dias",
+    );
+    expect(agendaHeadline({ overdue: 1, today: 1, upcoming: 0, hearings: 0 })).toBe(
+      "1 atrasado · 1 compromisso hoje · 0 nos próximos 7 dias",
+    );
   });
 });
 

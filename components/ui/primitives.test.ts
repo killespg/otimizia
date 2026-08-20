@@ -49,7 +49,11 @@ describe("accessible UI primitives", () => {
     );
     const metrics = renderToStaticMarkup(
       createElement(MetricBand, {
-        items: [{ label: "Conversão", value: "24,8%", detail: "+3,1 pontos" }],
+        items: [
+          { label: "Conversão", value: "24,8%", detail: "+3,1 pontos" },
+          { label: "Atrasados", value: 3, tone: "danger" },
+          { label: "Hoje", value: 2, href: "/painel/juridico/prazos?month=2026-08&dia=18", current: true },
+        ],
       }),
     );
     const status = renderToStaticMarkup(
@@ -60,6 +64,10 @@ describe("accessible UI primitives", () => {
     expect(surface).toContain('data-ui="surface"');
     expect(metrics).toContain("<dl");
     expect(metrics).toContain("24,8%");
+    expect(metrics).toContain("ui-metric--danger");
+    expect(metrics).toContain("ui-metric--current");
+    expect(metrics).toContain('aria-current="true"');
+    expect(metrics).toContain("/painel/juridico/prazos?month=2026-08&amp;dia=18");
     expect(status).toContain("ui-status--success");
     expect(status).toContain("Concluído");
   });
@@ -86,9 +94,21 @@ describe("accessible UI primitives", () => {
       createElement(InsetGroup, null, "Filtros"),
     );
 
+    const compactHeader = renderToStaticMarkup(
+      createElement(PageHeader, {
+        eyebrow: "Jurídico / Agenda e prazos",
+        description: "3 atrasados · 2 compromissos hoje · 5 nos próximos 7 dias",
+      }),
+    );
+
     expect(page).toContain('data-ui="page"');
     expect(header).toContain('data-ui="page-header"');
     expect(header).toContain("Fila cronológica do escritório.");
+    expect(header).toContain("ui-page-header__title");
+    expect(compactHeader).toContain('data-compact="true"');
+    expect(compactHeader).toContain("<h1");
+    expect(compactHeader).toContain("Jurídico / Agenda e prazos");
+    expect(compactHeader).not.toContain("ui-page-header__title");
     expect(dataPanel).toContain('data-ui="data-panel"');
     expect(dataPanel).toContain("Atrasados");
     expect(dataPanel).toContain('data-count="1"');
