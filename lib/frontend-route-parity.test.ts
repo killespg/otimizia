@@ -20,6 +20,7 @@ const painelPages = [
   "app/(dashboard)/painel/financeiro/importar/page.tsx",
   "app/(dashboard)/painel/funil/page.tsx",
   "app/(dashboard)/painel/funil/relatorio/page.tsx",
+  "app/(dashboard)/painel/vendas/page.tsx",
   "app/(dashboard)/painel/produtos/page.tsx",
   "app/(dashboard)/painel/pedidos/page.tsx",
   "app/(dashboard)/painel/colecoes/page.tsx",
@@ -127,6 +128,7 @@ describe("frontend route parity", () => {
     for (const route of [
       "/painel/contatos",
       "/painel/funil",
+      "/painel/vendas",
       "/painel/tarefas",
       "/painel/whatsapp",
       "/painel/produtos",

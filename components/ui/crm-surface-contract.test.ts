@@ -7,7 +7,10 @@ const read = (file: string) => readFileSync(resolve(process.cwd(), file), "utf8"
 describe("CRM surface contract", () => {
   it("keeps top-level CRM content in the same panel vocabulary across workspaces", () => {
     const finance = read("app/(dashboard)/painel/financeiro/page.tsx");
-    const pipeline = read("app/(dashboard)/painel/funil/page.tsx");
+    const pipeline = [
+      read("app/(dashboard)/painel/funil/page.tsx"),
+      read("app/(dashboard)/painel/funil/PipelineWorkspace.tsx"),
+    ].join("\n");
     const contacts = read("app/(dashboard)/painel/contatos/ContactsExplorer.tsx");
     const tasks = read("app/(dashboard)/painel/tarefas/page.tsx");
     const team = read("app/(dashboard)/painel/equipe/page.tsx");

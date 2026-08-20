@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { PendingButton } from "@/components/ui/PendingButton";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { getProfessionPreset } from "@/lib/people/professions";
@@ -6,13 +7,20 @@ import { createClient } from "@/lib/supabase/server";
 import type { Contact, Task } from "@/lib/supabase/types";
 import { getWorkspaceLabels } from "@/lib/workspace/workspace-preferences";
 import { getWorkspaceKey } from "@/lib/workspace/workspaces";
+import { formatDate } from "@/lib/utils/format";
 import { createTask } from "../actions";
 import { ContactField } from "../ContactField";
 import { IconBell, IconCheckCircle, IconClock, IconPlus } from "../icons";
 import TaskGroup, { type Tone } from "./TaskGroup";
 import TaskItem from "./TaskItem";
 
-export default async function TasksPage() {
+export default async function TasksPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  const params = await searchParams;
+  const view = params.view === "agenda" ? "agenda" : "lista";
   const supabase = await createClient();
   const [
     {
@@ -110,6 +118,24 @@ export default async function TasksPage() {
             Escolha dia e hora. O que atrasar sobe para o topo da fila.
           </p>
         </div>
+        {isSeller ? (
+          <nav aria-label="Visão dos lembretes" className="flex gap-1 self-start">
+            <Link
+              href="/painel/tarefas"
+              aria-current={view === "lista" ? "page" : undefined}
+              className={`inline-flex min-h-11 items-center px-3 text-sm font-semibold ${view === "lista" ? "border-b-2 border-od-accent text-white" : "text-od-text-3 hover:text-od-text"}`}
+            >
+              Lista
+            </Link>
+            <Link
+              href="/painel/tarefas?view=agenda"
+              aria-current={view === "agenda" ? "page" : undefined}
+              className={`inline-flex min-h-11 items-center px-3 text-sm font-semibold ${view === "agenda" ? "border-b-2 border-od-accent text-white" : "text-od-text-3 hover:text-od-text"}`}
+            >
+              Agenda
+            </Link>
+          </nav>
+        ) : null}
       </header>
 
       <section className="ui-metric-band grid-cols-1 sm:grid-cols-3">
@@ -230,12 +256,83 @@ export default async function TasksPage() {
         <section className="panel overflow-hidden"><div className="border-b border-line px-5 py-4"><h2 className="text-lg font-black text-ink">Aguardando aprovação</h2><p className="mt-1 text-sm font-medium text-ink-muted">Tarefas que você já entregou ao responsável.</p></div><ul className="divide-y divide-line px-5">{submittedByMe.map((task)=><TaskItem key={task.id} task={task} overdue={false} members={members} currentUserId={user!.id} isAdmin={isAdmin} canReviewAll={canReviewAll}/>)}</ul></section>
       )}
 
+      {isSeller && view === "agenda" ? (
+        <SellerAgenda
+          tasks={pending}
+          overdue={overdue}
+          members={members}
+          currentUserId={user!.id}
+          isAdmin={isAdmin}
+          canReviewAll={canReviewAll}
+          now={now}
+        />
+      ) : (
       <div className="grid gap-5 xl:grid-cols-2">
         {groups.map((group) => (
           <TaskGroup key={group.title} {...group} members={members} currentUserId={user!.id} isAdmin={isAdmin} canReviewAll={canReviewAll} isSeller={isSeller} />
         ))}
       </div>
+      )}
     </div>
+  );
+}
+
+function SellerAgenda({
+  tasks,
+  overdue,
+  members,
+  currentUserId,
+  isAdmin,
+  canReviewAll,
+  now,
+}: {
+  tasks: Task[];
+  overdue: Task[];
+  members: Array<{ user_id: string; name: string | null }>;
+  currentUserId: string;
+  isAdmin: boolean;
+  canReviewAll: boolean;
+  now: Date;
+}) {
+  const overdueIds = new Set(overdue.map((task) => task.id));
+  const grouped = new Map<string, Task[]>();
+  for (const task of tasks) {
+    const key = task.due_at ? formatDate(task.due_at) : "Sem data";
+    grouped.set(key, [...(grouped.get(key) ?? []), task]);
+  }
+  const days = [...grouped.entries()];
+  return (
+    <section className="panel overflow-hidden">
+      <header className="border-b border-white/[0.08] px-4 py-4">
+        <h2 className="text-sm font-semibold text-white">Agenda</h2>
+        <p className="mt-1 text-xs text-od-text-3">Lembretes agrupados pelo dia combinado.</p>
+      </header>
+      {days.length === 0 ? (
+        <p className="px-4 py-8 text-sm text-od-text-3">Nenhum lembrete agendado.</p>
+      ) : (
+        <div className="divide-y divide-white/[0.08]">
+          {days.map(([label, items]) => (
+            <div key={label}>
+              <h3 className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.04em] text-od-text-3">{label}</h3>
+              <ul className="divide-y divide-white/[0.07] px-4">
+                {items.map((task) => (
+                  <TaskItem
+                    key={task.id}
+                    task={task}
+                    overdue={overdueIds.has(task.id) || Boolean(task.due_at && new Date(task.due_at) < now)}
+                    members={members}
+                    currentUserId={currentUserId}
+                    isAdmin={isAdmin}
+                    canReviewAll={canReviewAll}
+                    returnTo="/painel/tarefas?view=agenda"
+                  />
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 

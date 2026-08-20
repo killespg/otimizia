@@ -29,7 +29,7 @@ export default async function SellerOrderDetailPage({ params }: { params: Promis
 
   return (
     <div className="mx-auto w-full max-w-[1450px] space-y-5">
-      <Link href="/painel/pedidos" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-white/52 hover:text-white"><ArrowLeft size={15} /> Voltar aos pedidos</Link>
+      <Link href="/painel/vendas?tab=confirmadas" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-white/52 hover:text-white"><ArrowLeft size={15} /> Voltar às vendas</Link>
       <SellerPageHeader title={order.order_number} description={`Confirmado em ${date(order.confirmed_at || order.created_at)} · ${contact?.name ?? "Cliente não vinculado"}`} actions={<><SellerStatus tone={order.payment_status === "paid" ? "success" : order.payment_status === "partial" ? "warning" : "neutral"}>{sellerPaymentStatusLabel(order.payment_status)}</SellerStatus><SellerStatus tone={order.status === "completed" ? "success" : order.status === "cancelled" ? "danger" : order.status === "ready" ? "violet" : "neutral"}>{sellerOrderStatusLabel(order.status)}</SellerStatus></>} />
 
       <section className="overflow-hidden rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90">

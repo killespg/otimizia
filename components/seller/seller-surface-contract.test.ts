@@ -8,12 +8,16 @@ const sellerFiles = [
   "components/seller/seller-ui.tsx",
   "components/seller/SellerOperationSettingsForm.tsx",
   "components/seller/SellerSaleConfirmation.tsx",
+  "components/seller/SellerOrdersPanel.tsx",
+  "components/seller/SellerAfterSalesPanel.tsx",
+  "components/seller/SellerSalesTabs.tsx",
   "app/(dashboard)/painel/produtos/page.tsx",
   "app/(dashboard)/painel/produtos/[id]/page.tsx",
   "app/(dashboard)/painel/colecoes/page.tsx",
   "app/(dashboard)/painel/pedidos/page.tsx",
   "app/(dashboard)/painel/pedidos/[id]/page.tsx",
   "app/(dashboard)/painel/pos-venda/page.tsx",
+  "app/(dashboard)/painel/vendas/page.tsx",
   "app/(dashboard)/painel/operacao/configuracoes/page.tsx",
 ];
 

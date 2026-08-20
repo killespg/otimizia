@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { PendingButton } from "@/components/ui/PendingButton";
 import { buildMonthCells, monthParam, parseMonthParam } from "@/lib/utils/calendar-grid";
 import { canManageLegal } from "@/lib/law/law-office";
@@ -40,7 +41,9 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
     user?.user_metadata?.profession_type,
     profile?.is_admin ?? false
   );
-  const isSeller = workspaceKey === "autonomous_seller";
+  if (workspaceKey === "autonomous_seller") {
+    redirect("/painel/tarefas?view=agenda");
+  }
   const isRealEstate = workspaceKey === "real_estate_broker";
   const [orgRole, members, { data: taskRows }, { data: contactRows }] = await Promise.all([
     getOrgRole(supabase, orgId, user!.id),
@@ -130,7 +133,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
       <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-semibold text-od-text-2">{isSeller ? "Vendas / Agenda" : isRealEstate ? "Imobiliário / Agenda" : "Jurídico / Agenda"}</p>
+          <p className="text-xs font-semibold text-od-text-2">{isRealEstate ? "Imobiliário / Agenda" : "Jurídico / Agenda"}</p>
           <h1 className="mt-2 text-od-title text-white">
             Calendário
           </h1>

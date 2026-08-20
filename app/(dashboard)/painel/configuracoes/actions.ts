@@ -121,6 +121,7 @@ export async function updateWorkspaceLabels(formData: FormData) {
   revalidatePath("/painel/configuracoes");
   revalidatePath("/painel/contatos");
   revalidatePath("/painel/funil");
+  revalidatePath("/painel/vendas");
   revalidatePath("/painel/tarefas");
 }
 

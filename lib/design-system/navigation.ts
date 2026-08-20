@@ -112,69 +112,39 @@ function withSettings(groups: NavigationGroup[]) {
 function seller(input: BuildNavigationInput): ProductNavigationContract {
   const counts = input.counts ?? {};
   const modules = input.enabledSellerModules ?? ["catalog", "orders"];
-  const overview = item("overview", "/painel", "Visão geral", "overview", {
+  const overview = item("overview", "/painel", "Hoje", "overview", {
     exact: true,
   });
-  const tasks = item("tasks", "/painel/tarefas", "Lembretes", "tasks", {
-    badge: counts.reminders,
-    danger: (counts.reminders ?? 0) > 0,
+  const sales = item("pipeline", "/painel/vendas", "Vendas", "pipeline", {
+    badge: counts.deals,
   });
   const whatsapp = item("whatsapp", "/painel/whatsapp", "WhatsApp", "whatsapp");
   const groups = withSettings([
     {
-      key: "overview",
+      key: "work",
       label: "",
       items: [
         overview,
-        item("assistant", "/painel/assistente", "Tim", "assistant"),
-      ],
-    },
-    {
-      key: "crm",
-      label: "CRM",
-      items: [
         item("contacts", "/painel/contatos", "Clientes", "contacts", {
           badge: counts.contacts,
         }),
-        item("pipeline", "/painel/funil", "Funil de vendas", "pipeline", {
-          badge: counts.deals,
-          exact: true,
-        }),
-        tasks,
-        whatsapp,
-        item("calendar", "/painel/calendario", "Calendário", "calendar"),
-      ],
-    },
-    {
-      key: "operation",
-      label: "Operação",
-      items: [
+        sales,
         ...(modules.includes("catalog")
           ? [item("products", "/painel/produtos", "Produtos", "products")]
           : []),
-        ...(modules.includes("collections")
-          ? [item("collections", "/painel/colecoes", "Coleções", "collections")]
-          : []),
-        ...(modules.includes("orders")
-          ? [item("orders", "/painel/pedidos", "Pedidos", "orders")]
-          : []),
-        ...(modules.includes("warranties")
-          ? [item("warranty", "/painel/pos-venda", "Pós-venda", "warranty")]
-          : []),
+        whatsapp,
       ],
     },
     {
-      key: "management",
-      label: "Gestão",
+      key: "more",
+      label: "Mais",
       items: [
-        item("team", "/painel/equipe", "Meu negócio", "team"),
-        item(
-          "operation-settings",
-          "/painel/operacao/configuracoes",
-          "Configurar operação",
-          "settings",
-        ),
-        item("reports", "/painel/funil/relatorio", "Relatórios", "reports"),
+        item("assistant", "/painel/assistente", "Tim", "assistant"),
+        item("tasks", "/painel/tarefas", "Lembretes", "tasks", {
+          badge: counts.reminders,
+          danger: (counts.reminders ?? 0) > 0,
+        }),
+        item("team", "/painel/equipe", "Equipe", "team"),
       ],
     },
   ]);
@@ -182,19 +152,12 @@ function seller(input: BuildNavigationInput): ProductNavigationContract {
   return {
     namespace: "seller",
     groups,
-    bottomTabs: [overview, tasks, whatsapp],
+    bottomTabs: [overview, sales, whatsapp],
     assistantHref: "/painel/assistente",
     quickActions: [
-      item("sale-create", "/painel/funil#new-deal", "Nova venda", "create"),
+      item("sale-create", "/painel/vendas#new-deal", "Nova venda", "create"),
       item("task-create", "/painel/tarefas#new-task", "Novo lembrete", "tasks"),
     ],
-    submenu: {
-      parentKey: "overview",
-      items: [
-        { key: "my-operation", href: "/painel", label: "Minha operação" },
-        { key: "reports", href: "/painel/funil/relatorio", label: "Relatórios" },
-      ],
-    },
   };
 }
 
@@ -469,6 +432,16 @@ function generic(input: BuildNavigationInput): ProductNavigationContract {
     quickActions: [],
   };
 }
+
+/** Seller URLs kept for deep links and redirects — never as root menu items. */
+export const SELLER_DEEP_LINKS = {
+  pipeline: "/painel/funil",
+  orders: "/painel/pedidos",
+  collections: "/painel/colecoes",
+  afterSales: "/painel/pos-venda",
+  operationSettings: "/painel/operacao/configuracoes",
+  report: "/painel/funil/relatorio",
+} as const;
 
 export function buildProductNavigation(
   input: BuildNavigationInput,

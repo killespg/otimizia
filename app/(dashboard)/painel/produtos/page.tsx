@@ -78,7 +78,7 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
         title="Produtos"
         description="Catálogo, variações, estoque, coleções e garantias que alimentam seus pedidos."
         actions={<>
-          <Link href="/painel/operacao/configuracoes" className="btn-secondary"><SlidersHorizontal size={15} /> Configurar operação</Link>
+          <Link href="/painel/configuracoes#operacao" className="btn-secondary"><SlidersHorizontal size={15} /> Configurar produtos</Link>
           <Link href="#novo-produto" className="btn"><Plus size={16} /> Novo produto</Link>
         </>}
       />
@@ -128,7 +128,7 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
             />
           </section>
 
-          <aside className="space-y-3">
+          <aside id="colecoes" className="scroll-mt-24 space-y-3">
             {usesCollections ? <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90 p-4">
               <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-semibold text-white">Coleções ativas</h2><Layers3 size={16} className="text-od-text-3" /></div>
               {activeCollections.length ? <ul className="mt-3 divide-y divide-white/[0.07]">{activeCollections.map((collection) => <li key={collection.id}><Link href={`/painel/colecoes#${collection.id}`} className="flex min-h-12 items-center justify-between gap-3 text-xs text-white/66"><span className="truncate">{collection.name}</span><SellerStatus tone="success">Ativa</SellerStatus></Link></li>)}</ul> : <p className="mt-3 text-xs leading-relaxed text-od-text-3">Nenhuma coleção ativa. Use coleções para organizar lançamentos sem apagar o histórico.</p>}
@@ -156,7 +156,7 @@ function ProductFormFields({ collections, defaultWarrantyDays, enabledModules }:
   return <>
     <label><span className="label">Nome do produto</span><input name="name" required maxLength={160} placeholder="Ex: Camiseta Linho" className="field mt-1.5" /></label>
     <label><span className="label">SKU</span><input name="sku" maxLength={80} placeholder="Ex: CAM-LIN-001" className="field mt-1.5" /></label>
-    <label><span className="label">Tipo de operação</span><select name="kind" defaultValue="general" className="field mt-1.5">{SELLER_SALES_MODELS.map((model) => <option key={model.value} value={model.value}>{model.label}</option>)}</select></label>
+    <label><span className="label">Tipo de produto</span><select name="kind" defaultValue="general" className="field mt-1.5">{SELLER_SALES_MODELS.map((model) => <option key={model.value} value={model.value}>{model.label}</option>)}</select></label>
     <label><span className="label">Categoria</span><input name="category" maxLength={80} placeholder="Ex: Camisetas" className="field mt-1.5" /></label>
     <label><span className="label">Marca</span><input name="brand" maxLength={120} placeholder="Ex: Marca representada" className="field mt-1.5" /></label>
     <label><span className="label">Preço de venda</span><input name="base_price" inputMode="decimal" placeholder="0,00" className="field mt-1.5" /></label>

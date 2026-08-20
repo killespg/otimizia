@@ -17,15 +17,28 @@ describe("product navigation contract", () => {
       expect.arrayContaining([
         "/painel",
         "/painel/contatos",
-        "/painel/funil",
+        "/painel/vendas",
         "/painel/produtos",
-        "/painel/pedidos",
-        "/painel/pos-venda",
+        "/painel/tarefas",
         "/painel/configuracoes",
       ]),
     );
     expect(destinations(navigation)).not.toContain("/painel/colecoes");
-    expect(navigation.bottomTabs).toHaveLength(3);
+    expect(destinations(navigation)).not.toContain("/painel/pos-venda");
+    expect(destinations(navigation)).not.toContain("/painel/pedidos");
+    expect(destinations(navigation)).not.toContain("/painel/calendario");
+    expect(destinations(navigation)).not.toContain("/painel/operacao/configuracoes");
+    expect(destinations(navigation)).not.toContain("/painel/funil");
+    expect(navigation.groups.map((group) => group.label)).not.toEqual(
+      expect.arrayContaining(["CRM", "Operação", "Gestão"]),
+    );
+    expect(navigation.bottomTabs.map((tab) => tab.label)).toEqual([
+      "Hoje",
+      "Vendas",
+      "WhatsApp",
+    ]);
+    expect(navigation.quickActions[0]?.href).toBe("/painel/vendas#new-deal");
+    expect(navigation.submenu).toBeUndefined();
   });
 
   it("filters legal finance destinations by permission", () => {

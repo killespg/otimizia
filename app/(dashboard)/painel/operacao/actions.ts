@@ -87,7 +87,7 @@ export async function updateSellerBusinessProfile(
     ...sellerOperation,
   }, { onConflict: "org_id,workspace_key" });
   revalidateSeller();
-  redirect("/painel/operacao/configuracoes?salvo=1");
+  redirect("/painel/configuracoes?salvo=1#operacao");
 }
 
 export async function createSellerCollection(formData: FormData) {
@@ -421,7 +421,7 @@ export async function updateSellerCustomerProfile(formData: FormData) {
 }
 
 function revalidateSeller() {
-  ["/painel", "/painel/funil", "/painel/produtos", "/painel/colecoes", "/painel/pedidos", "/painel/pos-venda", "/painel/operacao/configuracoes"]
+  ["/painel", "/painel/vendas", "/painel/funil", "/painel/produtos", "/painel/colecoes", "/painel/pedidos", "/painel/pos-venda", "/painel/configuracoes", "/painel/operacao/configuracoes"]
     .forEach((path) => revalidatePath(path));
 }
 
