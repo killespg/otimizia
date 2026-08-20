@@ -15,6 +15,23 @@ if (!config) {
   );
 }
 
+function randomValidCpf() {
+  function checkDigit(digits: number[], length: number) {
+    let sum = 0;
+    for (let i = 0; i < length; i += 1) sum += digits[i] * (length + 1 - i);
+    const remainder = (sum * 10) % 11;
+    return remainder === 10 ? 0 : remainder;
+  }
+
+  for (;;) {
+    const base = Array.from({ length: 9 }, () => Math.floor(Math.random() * 10));
+    if (base.every((digit) => digit === base[0])) continue;
+    const d1 = checkDigit(base, 9);
+    const d2 = checkDigit([...base, d1], 10);
+    return [...base, d1, d2].join("");
+  }
+}
+
 describe("RLS multi-tenancy (contra Supabase local)", () => {
   let admin: SupabaseClient;
   let userA: Awaited<ReturnType<typeof createTestUser>>;
@@ -948,6 +965,28 @@ describe("Privilégios de RPC e medição de voz (contra Supabase local)", () =>
       p_grace_seconds: -1,
     });
     expect(forgedClose.error).not.toBeNull();
+  });
+
+  it("permite que authenticated complete o perfil OAuth com CPF", async () => {
+    const cpf = randomValidCpf();
+    const completed = await user.client.rpc("complete_oauth_profile", {
+      p_cpf: cpf,
+      p_profession_types: ["law_office"],
+    });
+    expect(completed.error).toBeNull();
+
+    const { data: profile, error } = await user.client
+      .from("profiles")
+      .select("cpf, profession_type, profession_types, terms_accepted_at")
+      .eq("id", user.userId)
+      .single();
+    expect(error).toBeNull();
+    expect(profile).toMatchObject({
+      cpf,
+      profession_type: "law_office",
+      profession_types: ["law_office"],
+    });
+    expect(profile?.terms_accepted_at).toBeTruthy();
   });
 
   it("mantém o fluxo legítimo start/checkpoint disponível", async () => {
