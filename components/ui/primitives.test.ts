@@ -94,9 +94,21 @@ describe("accessible UI primitives", () => {
       createElement(InsetGroup, null, "Filtros"),
     );
 
+    const compactHeader = renderToStaticMarkup(
+      createElement(PageHeader, {
+        eyebrow: "Jurídico / Agenda e prazos",
+        description: "3 atrasados · 2 compromissos hoje · 5 nos próximos 7 dias",
+      }),
+    );
+
     expect(page).toContain('data-ui="page"');
     expect(header).toContain('data-ui="page-header"');
     expect(header).toContain("Fila cronológica do escritório.");
+    expect(header).toContain("ui-page-header__title");
+    expect(compactHeader).toContain('data-compact="true"');
+    expect(compactHeader).toContain("<h1");
+    expect(compactHeader).toContain("Jurídico / Agenda e prazos");
+    expect(compactHeader).not.toContain("ui-page-header__title");
     expect(dataPanel).toContain('data-ui="data-panel"');
     expect(dataPanel).toContain("Atrasados");
     expect(dataPanel).toContain('data-count="1"');

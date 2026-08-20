@@ -29,6 +29,7 @@ describe("legal workspace surface contract", () => {
     expect(deadlines).toContain("<TaskForm");
     expect(deadlines).toContain("agendaHeadline");
     expect(deadlines).toContain("PermissionState");
+    expect(deadlines).not.toContain('title="Agenda e prazos"');
     expect(deadlines).not.toContain("<LegalCaseList");
     expect(deadlines).not.toContain("text-brand-700");
     expect(deadlines).not.toContain("font-black");

@@ -163,7 +163,6 @@ export default async function DeadlinesPage(props: {
     <Page>
       <PageHeader
         eyebrow="Jurídico / Agenda e prazos"
-        title="Agenda e prazos"
         description={headline}
         actions={
           <>
