@@ -4,6 +4,7 @@ type FeedbackProps = {
   title: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
+  inset?: boolean;
 };
 
 function Feedback({
@@ -11,10 +12,11 @@ function Feedback({
   title,
   description,
   action,
+  inset = false,
 }: FeedbackProps & { kind: "empty" | "error" | "permission" }) {
   return (
     <section
-      className={`ui-feedback ui-feedback--${kind}`}
+      className={`ui-feedback ui-feedback--${kind}${inset ? " ui-feedback--inset" : ""}`}
       role={kind === "error" ? "alert" : "status"}
     >
       <h3>{title}</h3>

@@ -210,6 +210,13 @@ export function summarizeAgenda(entries: AgendaEntry[], today: string): AgendaSu
   };
 }
 
+export function agendaHeadline(summary: AgendaSummary): string {
+  const overdue = summary.overdue === 1 ? "1 atrasado" : `${summary.overdue} atrasados`;
+  const today =
+    summary.today === 1 ? "1 compromisso hoje" : `${summary.today} compromissos hoje`;
+  return `${overdue} · ${today} · ${summary.upcoming} nos próximos 7 dias`;
+}
+
 export function occupancyByDay(
   entries: AgendaEntry[],
   year: number,

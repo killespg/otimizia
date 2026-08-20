@@ -65,6 +65,12 @@ describe("LegalDeadlineBoard", () => {
     expect(html).toContain("Apresentar réplica");
     expect(html).toContain("Atrasados");
     expect(html).toContain("2 casos ativos sem prazo cadastrado.");
+    expect(html).toContain("ui-metric--danger");
+    expect(html).toContain("ui-button--secondary");
+    expect(html).toContain("ui-icon-button");
+    expect(html).toContain("/painel/juridico/prazos?month=2026-08&amp;dia=18");
+    expect(html).toContain("text-[var(--od-danger-fg)]");
+    expect(html).not.toContain("#fb7767");
     expect(html).not.toContain("Casos sem prazo");
     expect(html).not.toContain("Processos em acompanhamento");
     expect(html).not.toContain("Situação");
@@ -98,7 +104,68 @@ describe("LegalDeadlineBoard", () => {
 
     expect(html).toContain("Ligar para a testemunha");
     expect(html).toContain("Ana Souza");
+    expect(html).toContain("ui-status--neutral");
     expect(html).toContain("/painel/juridico/prazos?month=2026-08&amp;editar=task-1");
     expect(html).not.toContain("/painel/juridico/processos/case-1");
+  });
+
+  it("filters today from the metric band and shows an inset empty state for an idle day", () => {
+    const selected = renderToStaticMarkup(
+      createElement(LegalDeadlineBoard, {
+        entries: [hearing],
+        year: 2026,
+        month: 7,
+        monthParam: "2026-08",
+        prevMonth: "2026-07",
+        nextMonth: "2026-09",
+        monthTitle: "agosto de 2026",
+        today: "2026-08-18",
+        selectedDay: "2026-08-18",
+        casesWithoutDeadline: 0,
+      }),
+    );
+    const emptyDay = renderToStaticMarkup(
+      createElement(LegalDeadlineBoard, {
+        entries: [hearing],
+        year: 2026,
+        month: 7,
+        monthParam: "2026-08",
+        prevMonth: "2026-07",
+        nextMonth: "2026-09",
+        monthTitle: "agosto de 2026",
+        today: "2026-08-18",
+        selectedDay: "2026-08-25",
+        casesWithoutDeadline: 0,
+      }),
+    );
+    const upcoming = renderToStaticMarkup(
+      createElement(LegalDeadlineBoard, {
+        entries: [
+          {
+            ...hearing,
+            id: "dl-week",
+            day: "2026-08-22",
+            dueAt: "2026-08-22T12:00:00.000Z",
+            isHearing: false,
+          },
+        ],
+        year: 2026,
+        month: 7,
+        monthParam: "2026-08",
+        prevMonth: "2026-07",
+        nextMonth: "2026-09",
+        monthTitle: "agosto de 2026",
+        today: "2026-08-18",
+        selectedDay: null,
+        casesWithoutDeadline: 0,
+      }),
+    );
+
+    expect(selected).toContain('aria-current="true"');
+    expect(selected).toContain("/painel/juridico/prazos?month=2026-08\"");
+    expect(emptyDay).toContain("Nada neste dia.");
+    expect(emptyDay).toContain("ui-feedback--inset");
+    expect(emptyDay).toContain("Ver o mês");
+    expect(upcoming).toContain("ui-metric--warning");
   });
 });
