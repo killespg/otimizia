@@ -60,7 +60,7 @@ export function AgentPanel({ userName }: { userName?: string }) {
             <IconPlus className="h-3.5 w-3.5" />
           </button>
           <Link
-            href="/painel/assistente"
+            href="/assistente"
             className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text"
           >
             Tela cheia

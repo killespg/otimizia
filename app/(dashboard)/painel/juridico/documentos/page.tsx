@@ -6,6 +6,7 @@ import { canManageLegal, canViewLegal } from "@/lib/law/law-office";
 import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { LegalCase, LegalDocument, LegalDocumentSignature } from "@/lib/supabase/types";
+import { legalCaseHref } from "@/lib/law/legal-case-path";
 
 const TYPE_LABEL: Record<string, string> = { petition: "Petição", contract: "Contrato", evidence: "Prova", decision: "Decisão", power_of_attorney: "Procuração", client_document: "Documento do cliente", other: "Outro" };
 const STATUS_LABEL: Record<string, string> = { draft: "Rascunho", review: "Em revisão", approved: "Aprovado", filed: "Protocolado", archived: "Arquivado" };
@@ -18,23 +19,24 @@ export default async function DocumentsPage() {
     getOrgRole(supabase, orgId, user!.id),
     supabase.from("organization_members").select("job_role").eq("org_id", orgId).eq("user_id", user!.id).maybeSingle(),
     supabase.from("legal_documents").select("*").eq("org_id", orgId).order("updated_at", { ascending: false }),
-    supabase.from("legal_cases").select("id,title").eq("org_id", orgId),
+    supabase.from("legal_cases").select("id,title,slug").eq("org_id", orgId),
     supabase.from("legal_document_signatures").select("*").eq("org_id", orgId),
   ]);
   const isAdmin = orgRole === "admin";
   if (!canViewLegal(membership?.job_role, isAdmin)) return <section className="panel p-6"><h1 className="text-xl font-semibold">Acesso jurídico restrito</h1></section>;
 
   const docs = (rows ?? []) as LegalDocument[];
-  const cases = (caseRows ?? []) as Pick<LegalCase, "id" | "title">[];
+  const cases = (caseRows ?? []) as Pick<LegalCase, "id" | "title" | "slug">[];
   const signatures = (signatureRows ?? []) as LegalDocumentSignature[];
   const caseNames = new Map(cases.map((item) => [item.id, item.title]));
+  const caseHrefs = new Map(cases.map((item) => [item.id, legalCaseHref(item.slug, item.id)]));
   const signatureByDocument = new Map(signatures.map((item) => [item.document_id, item]));
   const reviewCount = docs.filter((item) => item.status === "review").length;
   const awaitingSignature = signatures.filter((item) => item.status === "pending" || item.status === "viewed").length;
   const filedThisMonth = docs.filter((item) => item.status === "filed" && new Date(item.updated_at).getMonth() === new Date().getMonth()).length;
 
   return <div className="ui-page">
-    <header className="flex flex-col gap-4 pb-5 md:flex-row md:items-end md:justify-between"><div><p className="text-xs font-semibold text-od-text-2">Jurídico / Documentos</p><h1 className="mt-2 text-od-title">Documentos</h1><p className="mt-2 text-sm leading-relaxed text-white/52">Arquivos, minutas, versões, revisão e assinatura vinculados aos casos reais.</p></div>{canManageLegal(membership?.job_role, isAdmin) ? <Link href="/painel/juridico/processos" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold hover:bg-brand-600"><Plus size={15}/>Adicionar em um caso</Link> : null}</header>
+    <header className="flex flex-col gap-4 pb-5 md:flex-row md:items-center md:justify-between"><div><h1 className="text-xs font-semibold text-od-text-2">Jurídico / Documentos</h1><p className="mt-1 text-sm leading-relaxed text-white/52">Arquivos, minutas, versões, revisão e assinatura vinculados aos casos reais.</p></div>{canManageLegal(membership?.job_role, isAdmin) ? <Link href="/juridico/processos" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold hover:bg-brand-600"><Plus size={15}/>Adicionar em um caso</Link> : null}</header>
     <section className="od-band grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"><Metric label="Documentos ativos" value={String(docs.filter((item) => item.status !== "archived").length)}/><Metric label="Aguardando revisão" value={String(reviewCount)} danger/><Metric label="Para assinatura" value={String(awaitingSignature)}/><Metric label="Protocolados no mês" value={String(filedThisMonth)} success/></section>
     <section className="od-band grid lg:grid-cols-[minmax(0,1.65fr)_minmax(260px,.55fr)]">
       <div className="py-7 lg:border-r lg:border-white/[0.08] lg:pr-8"><div className="mb-4"><h2 className="text-[15px] font-semibold">Arquivos recentes</h2><p className="mt-1 text-xs text-od-text-3">Documentos dos casos que sua função pode acessar</p></div>{docs.length ? <LegalDocumentList canManage={canManageLegal(membership?.job_role, isAdmin)} rows={docs.map((doc) => { const signature = signatureByDocument.get(doc.id); const content = <><FileText size={15} className="text-od-text-3"/><span className="min-w-0"><strong className="block truncate text-[12px] font-medium text-white/75">{doc.name}</strong><small className="mt-1 block text-xs text-od-text-3">{TYPE_LABEL[doc.document_type]} · v{doc.version}{doc.generated_by_ai ? " · minuta gerada" : ""}</small></span><span className="truncate text-xs text-od-text-3">{caseNames.get(doc.case_id) || "Caso removido"}</span><span className="w-fit rounded-md border border-white/[0.09] px-2 py-1 text-xs text-od-text-3">{signature ? `Assinatura: ${signature.status}` : STATUS_LABEL[doc.status]}</span><time className="text-xs text-od-text-3">{new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(doc.updated_at))}</time><Download size={12} className="text-od-text-3"/></>;
@@ -43,10 +45,10 @@ export default async function DocumentsPage() {
             ? <DocumentLink documentId={doc.id} className={classes}>{content}</DocumentLink>
             : doc.external_url
               ? <a href={doc.external_url} target="_blank" rel="noreferrer" className={classes}>{content}</a>
-              : <Link href={`/painel/juridico/processos/${doc.case_id}`} className={classes}>{content}</Link>;
+              : <Link href={caseHrefs.get(doc.case_id) ?? legalCaseHref(null, doc.case_id)} className={classes}>{content}</Link>;
           return { id: doc.id, name: doc.name, content: row };
         })}/> : <div className="border border-dashed border-white/[0.09] py-12 text-center"><FileText className="mx-auto text-od-text-3"/><p className="mt-3 text-sm font-semibold">Nenhum documento cadastrado</p><p className="mt-1 text-xs text-od-text-3">Abra um caso para enviar arquivo, adicionar link ou gerar minuta.</p></div>}</div>
-      <aside className="py-7 lg:pl-8"><h2 className="text-[15px] font-semibold">Fluxo documental</h2><p className="mt-1 text-xs text-od-text-3">Situação atual do escritório</p><div className="mt-6 space-y-6"><Flow icon={FilePenLine} title={`${reviewCount} aguardando revisão`} text="Minutas e arquivos que ainda precisam de decisão jurídica." tone="text-amber-300"/><Flow icon={Signature} title={`${awaitingSignature} para assinatura`} text="Status acompanhado pela integração de assinatura eletrônica." tone="text-od-text-2"/><Flow icon={FileCheck2} title={`${docs.filter((item) => item.status === "approved").length} aprovados`} text="Documentos aprovados permanecem vinculados ao histórico do caso." tone="text-emerald-300"/></div><Link href="/painel/juridico/processos" className="mt-8 inline-flex items-center gap-1 text-xs font-semibold text-od-text-2">Abrir carteira de casos<ArrowUpRight size={13}/></Link></aside>
+      <aside className="py-7 lg:pl-8"><h2 className="text-[15px] font-semibold">Fluxo documental</h2><p className="mt-1 text-xs text-od-text-3">Situação atual do escritório</p><div className="mt-6 space-y-6"><Flow icon={FilePenLine} title={`${reviewCount} aguardando revisão`} text="Minutas e arquivos que ainda precisam de decisão jurídica." tone="text-amber-300"/><Flow icon={Signature} title={`${awaitingSignature} para assinatura`} text="Status acompanhado pela integração de assinatura eletrônica." tone="text-od-text-2"/><Flow icon={FileCheck2} title={`${docs.filter((item) => item.status === "approved").length} aprovados`} text="Documentos aprovados permanecem vinculados ao histórico do caso." tone="text-emerald-300"/></div><Link href="/juridico/processos" className="mt-8 inline-flex items-center gap-1 text-xs font-semibold text-od-text-2">Abrir carteira de casos<ArrowUpRight size={13}/></Link></aside>
     </section>
   </div>;
 }

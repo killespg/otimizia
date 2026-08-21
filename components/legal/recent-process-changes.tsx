@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useState } from "react";
 import { DATAJUD_TRIBUNALS } from "@/lib/law/datajud-tribunals";
+import { legalCaseHrefOrSearch } from "@/lib/law/legal-case-path";
 
 type WatchedProcess = {
   id: string;
   tribunal_alias: string;
   case_number: string;
   case_id: string | null;
+  case_slug?: string | null;
   label: string | null;
   last_movement_nome: string | null;
   last_movement_at: string | null;
@@ -62,7 +64,7 @@ export function RecentProcessChanges({ initialItems }: { initialItems: WatchedPr
           const tribunalLabel = DATAJUD_TRIBUNALS.find((t) => t.alias === item.tribunal_alias)?.label ?? item.tribunal_alias;
           return (
             <article key={item.id} className="flex items-start justify-between gap-3 px-5 py-4">
-              <Link href={item.case_id ? `/painel/juridico/processos/${item.case_id}` : "/painel/juridico/consulta"} className="min-w-0 flex-1">
+              <Link href={legalCaseHrefOrSearch(item.case_slug, item.case_id)} className="min-w-0 flex-1">
                 <p className="truncate text-sm font-black text-ink">{item.label ?? formatNumero(item.case_number)}</p>
                 <p className="mt-1 truncate text-xs font-bold text-ink-muted">{tribunalLabel} · {formatNumero(item.case_number)}</p>
                 <p className="mt-1 truncate text-xs font-semibold text-brand-700">{item.last_movement_nome}</p>

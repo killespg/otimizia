@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { Check, FileSearch, RefreshCw } from "lucide-react";
 import { DATAJUD_TRIBUNALS } from "@/lib/law/datajud-tribunals";
 import type { LegalWatchedProcess } from "@/lib/supabase/types";
+import { legalCaseHrefOrSearch } from "@/lib/law/legal-case-path";
 
 function processNumber(value: string) {
   const digits = value.replace(/\D/g, "");
@@ -21,7 +22,11 @@ function isUnread(item: LegalWatchedProcess) {
   return Boolean(item.last_movement_at && (!item.seen_at || new Date(item.last_movement_at) > new Date(item.seen_at)));
 }
 
-export function LegalMovementsList({ initialItems }: { initialItems: LegalWatchedProcess[] }) {
+export function LegalMovementsList({
+  initialItems,
+}: {
+  initialItems: Array<LegalWatchedProcess & { case_slug?: string | null }>;
+}) {
   const [items, setItems] = useState(initialItems);
   const [view, setView] = useState<"review" | "all">("review");
   const [saving, setSaving] = useState<string | null>(null);
@@ -61,7 +66,7 @@ export function LegalMovementsList({ initialItems }: { initialItems: LegalWatche
             const tribunal = DATAJUD_TRIBUNALS.find((entry) => entry.alias === item.tribunal_alias)?.label ?? item.tribunal_alias;
             return (
               <article key={item.id} className="grid gap-4 px-5 py-4 transition-colors hover:bg-white/[0.025] md:grid-cols-[minmax(0,1.3fr)_minmax(180px,.8fr)_auto] md:items-center">
-                <Link href={item.case_id ? `/painel/juridico/processos/${item.case_id}` : "/painel/juridico/consulta"} className="group min-w-0">
+                <Link href={legalCaseHrefOrSearch(item.case_slug, item.case_id)} className="group min-w-0">
                   <div className="flex items-center gap-2">
                     <span className={`grid size-8 shrink-0 place-items-center rounded-xl ${unread ? "bg-white/[0.06] text-od-text-2" : "bg-white/[0.05] text-od-text-3"}`}>
                       {unread ? <RefreshCw size={14} /> : <Check size={14} />}

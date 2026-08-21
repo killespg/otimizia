@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
+import { canonicalizeDashboardPath } from "@/lib/workspace/app-routes";
 
 const INVITATION_BYTES = 32;
 const TOKEN_RE = /^[A-Za-z0-9_-]{32,128}$/;
@@ -17,7 +18,7 @@ export function safeInternalPath(value: unknown, fallback = "/painel"): string {
   if (typeof value !== "string") return fallback;
   const path = value.trim();
   if (!path.startsWith("/") || path.startsWith("//") || path.length > 1000) return fallback;
-  return path;
+  return canonicalizeDashboardPath(path);
 }
 
 export function maskEmail(email: string): string {

@@ -38,6 +38,6 @@ export async function acceptOrganizationInvitation(formData: FormData) {
 
   await syncOrganizationSeats(orgId);
   revalidatePath("/", "layout");
-  revalidatePath("/painel/equipe");
+  revalidatePath("/equipe");
   redirect("/painel");
 }

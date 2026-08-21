@@ -76,7 +76,7 @@ export function ProductCatalogList({
               />
               <div className="min-w-0 flex-1">
                 <div className="seller-product-grid grid gap-3 xl:items-center" style={columnsStyle}>
-                  <Link href={`/painel/produtos/${row.id}`} className="flex min-w-0 items-center gap-3">
+                  <Link href={`/produtos/${row.id}`} className="flex min-w-0 items-center gap-3">
                     <ProductThumb src={row.imageUrl} name={row.name} />
                     <span className="min-w-0">
                       <strong className="block truncate text-sm font-semibold text-white/88">{row.name}</strong>
@@ -106,7 +106,7 @@ export function ProductCatalogList({
                     </span>
                   ) : null}
                   <Link
-                    href={`/painel/produtos/${row.id}`}
+                    href={`/produtos/${row.id}`}
                     className="flex min-h-11 items-center justify-end text-xs font-semibold text-od-text-2"
                   >
                     Detalhes <ChevronRight size={14} />

@@ -29,7 +29,7 @@ export default async function TasksPage() {
     user?.user_metadata?.profession_type,
     profile?.is_admin ?? false
   );
-  if (workspaceKey === "law_office") redirect("/painel/juridico/prazos");
+  if (workspaceKey === "law_office") redirect("/juridico/prazos");
   const preset = getProfessionPreset(workspaceKey);
   const [{ data: tasks }, { data: contacts }, { data: org }, members, role] = await Promise.all([
     supabase
@@ -100,13 +100,10 @@ export default async function TasksPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-xs font-semibold text-od-text-2">{workspaceKey === "autonomous_seller" ? "Vendas" : "Escritório"} / {workspaceLabels.followups}</p>
-          <h1 className="mt-2 text-od-title text-white">
-            {workspaceLabels.followups}
-          </h1>
-          <p className="mt-2 hidden max-w-xl text-sm leading-relaxed text-white/52 sm:block">
+          <h1 className="text-xs font-semibold text-od-text-2">{workspaceKey === "autonomous_seller" ? "Vendas" : "Escritório"} / {workspaceLabels.followups}</h1>
+          <p className="mt-1 hidden max-w-xl text-sm leading-relaxed text-white/52 sm:block">
             Escolha dia e hora. O que atrasar sobe para o topo da fila.
           </p>
         </div>
@@ -119,7 +116,7 @@ export default async function TasksPage() {
       </section>
 
       <form id="new-task" action={createTask} className="ui-form-panel scroll-mt-24 p-5">
-        <input type="hidden" name="return_to" value="/painel/tarefas" />
+        <input type="hidden" name="return_to" value="/tarefas" />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_13rem_minmax(0,1fr)_auto] lg:items-end">
           <div>
             <label className="label" htmlFor="task-title">

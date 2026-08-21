@@ -69,7 +69,7 @@ export default async function ContactsPage(
         flat={isRealEstate}
       >
         <form action={createContact} className="space-y-4">
-          <input type="hidden" name="return_to" value="/painel/contatos" />
+          <input type="hidden" name="return_to" value="/contatos" />
           <Field name="name" label="Nome" required maxLength={120} autoComplete="name" />
           <div className="grid gap-4 sm:grid-cols-2">
             <Field name="phone" label="Telefone / WhatsApp" maxLength={40} autoComplete="tel" inputMode="tel" />

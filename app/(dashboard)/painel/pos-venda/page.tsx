@@ -34,7 +34,7 @@ export default async function SellerAfterSalesPage({ searchParams }: { searchPar
 
   return (
     <div className="mx-auto w-full max-w-[1550px] space-y-5">
-      <SellerPageHeader title="Pós-venda" description="Garantias por item vendido, números de série e atendimentos de troca, assistência ou reembolso." actions={<Link href="#novo-chamado" className="btn"><Plus size={16} /> Abrir atendimento</Link>} />
+      <SellerPageHeader eyebrow="Operação / Pós-venda" description="Garantias por item vendido, números de série e atendimentos de troca, assistência ou reembolso." actions={<Link href="#novo-chamado" className="btn"><Plus size={16} /> Abrir atendimento</Link>} />
       <SellerSummaryStrip items={[
         { label: "Garantias ativas", value: active.length, tone: "success" },
         { label: "Vencem em 30 dias", value: expiring.length, tone: expiring.length ? "warning" : "default" },
@@ -44,7 +44,7 @@ export default async function SellerAfterSalesPage({ searchParams }: { searchPar
         { label: "Resolvidos", value: claims.filter((claim) => claim.status === "resolved").length, tone: "success" },
       ]} />
 
-      {warranties.length === 0 ? <SellerEmptyState title="Nenhuma garantia emitida" description="Ao confirmar uma venda com prazo de garantia, o sistema criará automaticamente uma garantia ligada ao item e ao cliente." action={<Link href="/painel/funil" className="btn">Confirmar uma venda</Link>} icon="box" /> : (
+      {warranties.length === 0 ? <SellerEmptyState title="Nenhuma garantia emitida" description="Ao confirmar uma venda com prazo de garantia, o sistema criará automaticamente uma garantia ligada ao item e ao cliente." action={<Link href="/funil" className="btn">Confirmar uma venda</Link>} icon="box" /> : (
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,.65fr)]">
           <section className="overflow-hidden rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90">
             <header className="border-b border-white/[0.08] px-4 py-4"><h2 className="text-sm font-semibold text-white">Garantias emitidas</h2><p className="mt-1 text-xs text-od-text-3">O vencimento é calculado pela data, sem depender de um status que pode ficar desatualizado.</p></header>
@@ -54,7 +54,7 @@ export default async function SellerAfterSalesPage({ searchParams }: { searchPar
               const contact = warranty.contact_id ? contacts.get(warranty.contact_id) : null;
               const isExpired = isWarrantyExpired(warranty.expires_on);
               const days = daysUntil(warranty.expires_on);
-              return <Link key={warranty.id} href={`/painel/pos-venda?warranty=${warranty.id}#novo-chamado`} className="group grid min-h-16 gap-2 px-4 py-3 hover:bg-white/[0.025] lg:grid-cols-[minmax(13rem,1.3fr)_minmax(10rem,1fr)_8rem_8rem_3rem] lg:items-center">
+              return <Link key={warranty.id} href={`/pos-venda?warranty=${warranty.id}#novo-chamado`} className="group grid min-h-16 gap-2 px-4 py-3 hover:bg-white/[0.025] lg:grid-cols-[minmax(13rem,1.3fr)_minmax(10rem,1fr)_8rem_8rem_3rem] lg:items-center">
                 <span className="min-w-0"><strong className="block truncate text-sm font-semibold text-white/82">{item?.product_name_snapshot ?? "Produto removido"}</strong><span className="mt-1 block truncate text-xs text-od-text-3">{[item?.variant_snapshot, warranty.serial_number ? `Série ${warranty.serial_number}` : null].filter(Boolean).join(" · ") || "Sem série"}</span></span>
                 <span className="min-w-0"><span className="mb-1 block text-xs font-medium text-od-text-3 lg:hidden">Cliente</span><strong className="block truncate text-sm font-medium text-white/66">{contact?.name ?? "Cliente não vinculado"}</strong><span className="mt-1 block truncate text-xs text-od-text-3">{contact?.phone || contact?.email || "Sem contato"}</span></span>
                 <span><span className="mb-1 block text-xs font-medium text-od-text-3 lg:hidden">Validade</span><SellerStatus tone={isExpired ? "danger" : days <= 30 ? "warning" : "success"}>{isExpired ? "Vencida" : date(warranty.expires_on)}</SellerStatus></span>

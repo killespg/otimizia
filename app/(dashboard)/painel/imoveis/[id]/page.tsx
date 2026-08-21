@@ -173,7 +173,7 @@ export default async function ImovelDetailPage(props: { params: Promise<{ id: st
               label="Proprietário"
               value={
                 ownerContact ? (
-                  <Link href={`/painel/contatos/${ownerContact.id}`} className="nav-item text-brand-700 hover:underline">
+                  <Link href={`/contatos/${ownerContact.id}`} className="nav-item text-brand-700 hover:underline">
                     {ownerContact.name}
                   </Link>
                 ) : (
@@ -417,7 +417,7 @@ export default async function ImovelDetailPage(props: { params: Promise<{ id: st
           </form>
         </section>
       )}
-      <Link href="/painel/imoveis" className="nav-item inline-block text-sm font-semibold text-brand-700 hover:underline">
+      <Link href="/imoveis" className="nav-item inline-block text-sm font-semibold text-brand-700 hover:underline">
         Voltar para a carteira
       </Link>
     </div>

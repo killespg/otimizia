@@ -4,10 +4,10 @@ export type LegalCrmLossReasonCode = "price" | "competitor" | "no_response" | "t
 
 const FUNNEL_STAGES = ["novo", "em_contato", "negociacao", "ganho"] as const;
 const FUNNEL_LABELS: Record<LegalCrmFunnelStage, string> = {
-  novo: "Novo lead",
-  em_contato: "Qualificação",
-  negociacao: "Proposta enviada",
-  ganho: "Contratado",
+  novo: "Triagem Inicial",
+  em_contato: "Análise de Viabilidade",
+  negociacao: "Proposta / Honorários",
+  ganho: "Convertido (Processo Ativo)",
 };
 const STAGE_RANK: Record<LegalCrmStage, number> = {
   novo: 0,

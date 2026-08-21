@@ -130,7 +130,7 @@ export default async function NovoImovelPage() {
         </form>
       </section>
 
-      <Link href="/painel/imoveis" className="nav-item inline-block text-sm font-semibold text-brand-700 hover:underline">
+      <Link href="/imoveis" className="nav-item inline-block text-sm font-semibold text-brand-700 hover:underline">
         Voltar para a carteira
       </Link>
     </div>

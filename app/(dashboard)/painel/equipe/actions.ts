@@ -82,8 +82,8 @@ export async function updateOrganizationContext(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  revalidatePath("/painel/equipe");
-  revalidatePath("/painel/assistente");
+  revalidatePath("/equipe");
+  revalidatePath("/assistente");
   revalidatePath("/painel");
 }
 
@@ -159,7 +159,7 @@ export async function inviteMember(formData: FormData) {
     throw new Error("O convite não foi enviado. Verifique a configuração de e-mail.");
   }
 
-  revalidatePath("/painel/equipe");
+  revalidatePath("/equipe");
 }
 
 export async function revokeInvitation(formData: FormData) {
@@ -178,7 +178,7 @@ export async function revokeInvitation(formData: FormData) {
     console.error("[team/invitation-revoke]", error);
     throw new Error("Não deu para cancelar o convite.");
   }
-  revalidatePath("/painel/equipe");
+  revalidatePath("/equipe");
 }
 
 export async function updateMemberRole(formData: FormData) {
@@ -201,7 +201,7 @@ export async function updateMemberRole(formData: FormData) {
     console.error("[team/update-role]", error);
     throw new Error("Não deu para atualizar o papel.");
   }
-  revalidatePath("/painel/equipe");
+  revalidatePath("/equipe");
 }
 
 export async function updateMemberJobRole(formData: FormData) {
@@ -221,7 +221,7 @@ export async function updateMemberJobRole(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  revalidatePath("/painel/equipe");
+  revalidatePath("/equipe");
 }
 
 export async function removeMember(formData: FormData) {
@@ -241,7 +241,7 @@ export async function removeMember(formData: FormData) {
     throw new Error("Não deu para remover o membro.");
   }
   await syncOrganizationSeats(orgId);
-  revalidatePath("/painel/equipe");
+  revalidatePath("/equipe");
 }
 
 async function ensureNotLastAdmin(
@@ -310,10 +310,10 @@ export async function updateMyTaskVisibility(formData: FormData) {
     .eq("org_id", orgId)
     .eq("user_id", user.id);
   if (error) throw new Error("Não deu para salvar a visibilidade.");
-  revalidatePath("/painel/equipe");
-  revalidatePath(`/painel/equipe/${user.id}`);
-  revalidatePath("/painel/configuracoes");
-  revalidatePath("/painel/juridico/prazos");
+  revalidatePath("/equipe");
+  revalidatePath(`/equipe/${user.id}`);
+  revalidatePath("/configuracoes");
+  revalidatePath("/juridico/prazos");
   revalidatePath("/painel");
 }
 
@@ -327,9 +327,9 @@ export async function updateOrgTaskVisibility(formData: FormData) {
     .update({ task_visibility_locked: locked, task_visibility_mode: mode })
     .eq("id", orgId);
   if (error) throw new Error("Não deu para salvar a política da organização.");
-  revalidatePath("/painel/equipe");
-  revalidatePath("/painel/configuracoes");
-  revalidatePath("/painel/juridico/prazos");
+  revalidatePath("/equipe");
+  revalidatePath("/configuracoes");
+  revalidatePath("/juridico/prazos");
   revalidatePath("/painel");
 }
 

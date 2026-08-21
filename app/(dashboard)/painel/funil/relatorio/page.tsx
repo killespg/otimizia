@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { buildMonthlyDealStats } from "@/lib/crm/deals-report";
 import { formatBRL } from "@/lib/utils/format";
 import { getActiveOrgId } from "@/lib/workspace/org";
@@ -7,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Deal } from "@/lib/supabase/types";
 import { getWorkspaceLabels } from "@/lib/workspace/workspace-preferences";
 import { getWorkspaceKey } from "@/lib/workspace/workspaces";
-import { IconArrowRight, IconDownload } from "../../icons";
+import { IconDownload } from "../../icons";
 
 const MONTHS_BACK = 6;
 
@@ -65,19 +64,12 @@ export default async function PipelineReportPage(
 
   return (
     <div className={usesFlatSurface ? "w-full max-w-[1640px] space-y-6" : "max-w-5xl space-y-4 sm:space-y-5"}>
-      <header className={usesFlatSurface ? "flex flex-col gap-5 pb-5 lg:flex-row lg:items-end lg:justify-between" : "enter flex flex-col gap-4 rounded-lg border border-line bg-surface p-5 sm:p-6 lg:flex-row lg:items-end lg:justify-between"}>
+      <header className={usesFlatSurface ? "flex flex-col gap-5 pb-5 lg:flex-row lg:items-center lg:justify-between" : "enter flex flex-col gap-4 rounded-lg border border-line bg-surface p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between"}>
         <div>
-          <Link
-            href="/painel/funil"
-            className={usesFlatSurface ? "inline-flex items-center gap-1.5 text-xs font-semibold text-od-text-2 hover:text-od-text" : "inline-flex items-center gap-1 text-sm font-bold text-ink-muted hover:text-ink"}
-          >
-            <IconArrowRight className="h-4 w-4 rotate-180" />
-            {isRealEstate ? "Voltar para atendimentos" : `Voltar para ${workspaceLabels.pipeline}`}
-          </Link>
-          <h1 className={usesFlatSurface ? "mt-3 text-od-title text-white" : "mt-3 text-[clamp(1.4rem,5vw,2.2rem)] font-black leading-[1.05] tracking-[-0.03em] text-ink"}>
-            {isRealEstate ? "Relatório imobiliário" : "Relatório de vendas"}
+          <h1 className={usesFlatSurface ? "text-xs font-semibold text-od-text-2" : "text-xs font-semibold text-ink-muted"}>
+            {isSeller || isRealEstate ? "Gestão / Relatórios" : "Escritório / Relatórios"}
           </h1>
-          <p className={usesFlatSurface ? "mt-2 max-w-xl text-sm leading-relaxed text-white/52" : "mt-2 max-w-xl text-sm font-semibold leading-relaxed text-ink-muted"}>
+          <p className={usesFlatSurface ? "mt-1 max-w-xl text-sm leading-relaxed text-white/52" : "mt-1 max-w-xl text-sm font-semibold leading-relaxed text-ink-muted"}>
             {isRealEstate
               ? "Atendimentos por mês — iniciados, fechados, perdidos e taxa de conversão."
               : `${workspaceLabels.pipeline} por mês — criados, ganhos, perdidos e taxa de conversão.`}

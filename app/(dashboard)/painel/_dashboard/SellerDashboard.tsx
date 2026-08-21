@@ -169,10 +169,10 @@ export function SellerDashboard({
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-          <Link href="/painel/tarefas#new-task" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-white/[0.1] px-4 text-[13px] font-semibold text-white/68 hover:bg-white/[0.04] hover:text-white">
+          <Link href="/tarefas#new-task" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-white/[0.1] px-4 text-[13px] font-semibold text-white/68 hover:bg-white/[0.04] hover:text-white">
             <BellRing size={15} /> Novo lembrete
           </Link>
-          <Link href="/painel/funil#new-deal" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover">
+          <Link href="/funil#new-deal" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover">
             <Plus size={16} /> Nova venda
           </Link>
         </div>
@@ -194,7 +194,7 @@ export function SellerDashboard({
       <SellerOperationsPulse operations={operations} />
 
       <section className="panel px-4">
-        <Link href="/painel/assistente" className="group flex min-h-14 items-center gap-3 text-sm text-od-text-2 hover:text-od-text">
+        <Link href="/assistente" className="group flex min-h-14 items-center gap-3 text-sm text-od-text-2 hover:text-od-text">
           <Sparkles size={17} className="text-od-accent" />
           <span className="min-w-0 flex-1">Pergunte ao Tim sobre seus clientes e vendas</span>
           <ArrowRight size={16} className="text-od-text-3 transition-transform group-hover:translate-x-0.5 group-hover:text-od-text" />
@@ -210,10 +210,10 @@ export function SellerDashboard({
 
 function SellerOperationsPulse({ operations }: { operations: Props["operations"] }) {
   const items = [
-    { label: "Estoque baixo", value: operations.lowStockProducts, note: "produtos para repor", href: "/painel/produtos?stock=baixo", icon: PackageSearch, alert: operations.lowStockProducts > 0, enabled: operations.enabledModules.includes("inventory") },
-    { label: "Pedidos a preparar", value: operations.ordersToFulfill, note: "confirmados ou em separação", href: "/painel/pedidos?status=open", icon: Truck, alert: operations.ordersToFulfill > 0, enabled: true },
-    { label: "Garantias próximas", value: operations.expiringWarranties, note: "vencem em até 30 dias", href: "/painel/pos-venda?warranties=expiring", icon: ShieldAlert, alert: false, enabled: operations.enabledModules.includes("warranties") },
-    { label: "Trocas e chamados", value: operations.openWarrantyClaims, note: "aguardando conclusão", href: "/painel/pos-venda?claims=open", icon: RotateCcw, alert: operations.openWarrantyClaims > 0, enabled: operations.enabledModules.includes("warranties") },
+    { label: "Estoque baixo", value: operations.lowStockProducts, note: "produtos para repor", href: "/produtos?stock=baixo", icon: PackageSearch, alert: operations.lowStockProducts > 0, enabled: operations.enabledModules.includes("inventory") },
+    { label: "Pedidos a preparar", value: operations.ordersToFulfill, note: "confirmados ou em separação", href: "/pedidos?status=open", icon: Truck, alert: operations.ordersToFulfill > 0, enabled: true },
+    { label: "Garantias próximas", value: operations.expiringWarranties, note: "vencem em até 30 dias", href: "/pos-venda?warranties=expiring", icon: ShieldAlert, alert: false, enabled: operations.enabledModules.includes("warranties") },
+    { label: "Trocas e chamados", value: operations.openWarrantyClaims, note: "aguardando conclusão", href: "/pos-venda?claims=open", icon: RotateCcw, alert: operations.openWarrantyClaims > 0, enabled: operations.enabledModules.includes("warranties") },
   ].filter((item) => item.enabled);
   const attentionItems = items.filter((item) => item.value > 0);
   if (attentionItems.length === 0) {
@@ -224,7 +224,7 @@ function SellerOperationsPulse({ operations }: { operations: Props["operations"]
           <h2 id="seller-operation-title" className="text-sm font-semibold text-white">Operação em dia</h2>
           <p className="mt-0.5 truncate text-xs text-white/52">Nenhuma pendência operacional agora.</p>
         </div>
-        <Link href="/painel/produtos" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir operação <ArrowRight size={14} /></Link>
+        <Link href="/produtos" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir operação <ArrowRight size={14} /></Link>
       </section>
     );
   }
@@ -233,7 +233,7 @@ function SellerOperationsPulse({ operations }: { operations: Props["operations"]
     <section className="overflow-hidden panel lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]" aria-labelledby="seller-operation-title">
       <header className="flex min-h-20 items-center justify-between gap-3 px-4">
         <div><h2 id="seller-operation-title" className="text-sm font-semibold text-white">Pulso da operação</h2><p className="mt-0.5 text-xs text-white/52">O que precisa de atenção depois da venda.</p></div>
-        <Link href="/painel/produtos" className="inline-flex min-h-11 shrink-0 items-center px-2 text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir operação</Link>
+        <Link href="/produtos" className="inline-flex min-h-11 shrink-0 items-center px-2 text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir operação</Link>
       </header>
       <div className={`grid sm:grid-cols-2 ${columnClass}`}>
         {attentionItems.map((item) => { const Icon = item.icon; return (
@@ -313,7 +313,7 @@ function SellerCommercialIndicators({
           <h2 className="text-sm font-semibold text-white">Indicadores comerciais</h2>
           <p className="mt-1 text-xs text-od-text-3">Conversão, eficiência financeira e esforço da operação.</p>
         </div>
-        <Link href="/painel/funil/relatorio" className="-my-3 inline-flex min-h-11 shrink-0 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Ver relatório</Link>
+        <Link href="/funil/relatorio" className="-my-3 inline-flex min-h-11 shrink-0 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Ver relatório</Link>
       </header>
       <div className="grid divide-y divide-white/[0.08] lg:grid-cols-3 lg:divide-x lg:divide-y-0">
         <InsightGroup
@@ -416,7 +416,7 @@ function SellerPriorities({ tasks, overdue, now, contacts }: { tasks: Task[]; ov
             <h2 className="text-od-subtitle text-white">Prioridades de hoje</h2>
             <p className="mt-1 text-xs text-od-text-3">{tasks.length ? `${tasks.length} ${tasks.length === 1 ? "item exige" : "itens exigem"} sua atenção` : "Nenhum retorno pendente agora"}</p>
           </div>
-          <Link href="/painel/tarefas" className="-my-3 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Ver meu dia</Link>
+          <Link href="/tarefas" className="-my-3 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Ver meu dia</Link>
         </div>
         {tasks.length === 0 ? (
           <div className="flex min-h-28 items-center gap-3 px-4 py-5">
@@ -432,7 +432,7 @@ function SellerPriorities({ tasks, overdue, now, contacts }: { tasks: Task[]; ov
               const isOverdue = overdue.some((item) => item.id === task.id);
               const contact = task.contact_id ? contacts.get(task.contact_id) : undefined;
               return (
-                <Link key={task.id} href="/painel/tarefas" className="group grid min-h-16 gap-2 border-b border-white/[0.08] px-4 py-3 last:border-b-0 hover:bg-white/[0.025] md:grid-cols-[7rem_minmax(0,1.2fr)_minmax(9rem,.8fr)_7rem_1rem] md:items-center md:gap-3">
+                <Link key={task.id} href="/tarefas" className="group grid min-h-16 gap-2 border-b border-white/[0.08] px-4 py-3 last:border-b-0 hover:bg-white/[0.025] md:grid-cols-[7rem_minmax(0,1.2fr)_minmax(9rem,.8fr)_7rem_1rem] md:items-center md:gap-3">
                   <span className={`text-xs font-semibold uppercase tracking-[0.03em] ${isOverdue ? "text-[#fb7767]" : "text-od-text-3"}`}>{isOverdue ? "Atrasado" : isToday(new Date(task.due_at ?? now), now) ? "Hoje" : "Próximo"}</span>
                   <span className="min-w-0 truncate text-sm font-semibold text-white/88">{task.title}</span>
                   <span className="min-w-0 truncate text-xs text-od-text-3">{contact?.company || contact?.name || "Sem cliente vinculado"}</span>
@@ -468,17 +468,17 @@ function SellerDeals({ deals, contacts, preset }: { deals: Deal[]; contacts: Map
     <section data-dashboard-card className="h-full overflow-hidden panel">
       <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] px-4 py-4">
         <div><h2 className="text-sm font-semibold text-white">Vendas em acompanhamento</h2><p className="mt-1 text-xs text-od-text-3">Ordenadas pela atividade mais recente</p></div>
-        <Link href="/painel/funil" className="-my-3 inline-flex min-h-11 items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text">Ver funil <ArrowRight size={13} /></Link>
+        <Link href="/funil" className="-my-3 inline-flex min-h-11 items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text">Ver funil <ArrowRight size={13} /></Link>
       </div>
       {recent.length === 0 ? (
-        <div className="px-4 py-8 text-center"><Handshake size={24} className="mx-auto text-od-text-3" /><p className="mt-3 text-sm font-semibold text-white">Nenhuma venda aberta ainda.</p><Link href="/painel/funil#new-deal" className="mt-2 inline-flex min-h-11 items-center text-xs font-semibold text-od-accent-hover">Criar primeira venda</Link></div>
+        <div className="px-4 py-8 text-center"><Handshake size={24} className="mx-auto text-od-text-3" /><p className="mt-3 text-sm font-semibold text-white">Nenhuma venda aberta ainda.</p><Link href="/funil#new-deal" className="mt-2 inline-flex min-h-11 items-center text-xs font-semibold text-od-accent-hover">Criar primeira venda</Link></div>
       ) : (
         <div>
           <div className="hidden grid-cols-[minmax(0,1.2fr)_9rem_8rem_8rem] gap-3 border-b border-white/[0.07] px-5 py-2 text-xs font-semibold uppercase tracking-[0.04em] text-od-text-3 sm:grid"><span>Cliente / venda</span><span>Etapa</span><span>Valor</span><span>Entrada</span></div>
           {recent.map((deal) => {
             const contact = deal.contact_id ? contacts.get(deal.contact_id) : undefined;
             return (
-              <Link href="/painel/funil" key={deal.id} className="grid gap-2 border-b border-white/[0.07] px-5 py-4 last:border-b-0 hover:bg-white/[0.025] sm:grid-cols-[minmax(0,1.2fr)_9rem_8rem_8rem] sm:items-center sm:gap-3">
+              <Link href="/funil" key={deal.id} className="grid gap-2 border-b border-white/[0.07] px-5 py-4 last:border-b-0 hover:bg-white/[0.025] sm:grid-cols-[minmax(0,1.2fr)_9rem_8rem_8rem] sm:items-center sm:gap-3">
                 <div className="min-w-0"><p className="truncate text-sm font-semibold text-white/88">{deal.title}</p><p className="mt-1 truncate text-xs text-od-text-3">{contact?.company || contact?.name || "Sem cliente vinculado"}</p></div>
                 <span className="w-fit rounded bg-white/[0.06] px-2 py-1 text-xs font-semibold text-od-text-2">{stageLabel(deal.stage, preset)}</span>
                 <span className="text-sm font-semibold tabular-nums text-white/72">{formatBRL(deal.value_cents ?? 0)}</span>
@@ -526,7 +526,7 @@ function SellerRevenue({ openValue, wonValue, series, conversionRate, avgTicketC
                 <span className="grid size-9 shrink-0 place-items-center rounded bg-white/[0.06] text-od-text-2"><TrendingUp size={17} /></span>
                 <div><p className="text-sm font-semibold text-white/76">Seu gráfico começa com a primeira venda ganha.</p><p className="mt-1 text-xs text-od-text-3">Mova uma oportunidade para ganha no funil.</p></div>
               </div>
-              <Link href="/painel/funil" className="inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir funil</Link>
+              <Link href="/funil" className="inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Abrir funil</Link>
             </div>
             <div className="mt-4 grid divide-y divide-white/[0.08] border-t border-white/[0.08] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
               <MiniStat label="Em aberto" value={formatBRL(openValue)} />
@@ -569,7 +569,7 @@ function SellerAssistantPreview() {
         ].map((prompt) => (
           <Link
             key={prompt}
-            href="/painel/assistente"
+            href="/assistente"
             className="group flex min-h-12 items-center gap-3 px-4 text-xs font-medium text-white/62 hover:bg-white/[0.03] hover:text-white"
           >
             <MessageCircle size={14} className="text-od-text-3" />
@@ -578,7 +578,7 @@ function SellerAssistantPreview() {
           </Link>
         ))}
       </div>
-      <Link href="/painel/assistente" className="flex min-h-11 items-center justify-center gap-2 border-t border-white/[0.08] text-xs font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text">
+      <Link href="/assistente" className="flex min-h-11 items-center justify-center gap-2 border-t border-white/[0.08] text-xs font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text">
         Abrir conversa <ArrowRight size={14} />
       </Link>
     </section>
@@ -589,7 +589,7 @@ function SellerAgenda({ now, items }: { now: Date; items: CalendarItem[] }) {
   const upcoming = items.filter((item) => item.date >= now || item.tone === "danger").sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 6);
   return (
     <section data-dashboard-card className="h-full panel p-4">
-      <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Próximos lembretes</h2><p className="mt-1 text-xs text-od-text-3">Quem chamar e quando</p></div><Link href="/painel/calendario" className="-my-1 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Calendário</Link></div>
+      <div className="flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Próximos lembretes</h2><p className="mt-1 text-xs text-od-text-3">Quem chamar e quando</p></div><Link href="/calendario" className="-my-1 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Calendário</Link></div>
       {upcoming.length === 0 ? <div className="mt-4 flex flex-col gap-3 border-t border-white/[0.07] pt-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3"><Clock3 size={18} className="shrink-0 text-od-text-3" /><div><p className="text-sm font-medium text-white/62">Sua agenda está livre.</p><p className="mt-1 text-xs text-od-text-3">Crie um lembrete para não perder o próximo retorno.</p></div></div><Link href="#novo-lembrete" className="inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2 hover:text-od-text">Criar lembrete</Link></div> : <ul className="mt-4 divide-y divide-white/[0.07]">{upcoming.map((item, index) => <li key={`${item.title}-${index}`}><Link href={item.href} className="flex items-center gap-3 py-3 hover:text-white"><span className={`size-2 rounded-full ${item.tone === "danger" ? "bg-[#fb7767]" : item.tone === "warning" ? "bg-amber-300" : "bg-od-text-3"}`} /><span className="min-w-0 flex-1 truncate text-xs font-medium text-white/68">{item.title}</span><span className="text-xs text-od-text-3">{formatDate(item.date.toISOString())}</span></Link></li>)}</ul>}
     </section>
   );
@@ -609,11 +609,11 @@ function SellerOpenClaims({ tasks, deals, preset }: { tasks: Task[]; deals: Deal
 
 function SellerOnboarding({ preset, isOrgAdmin, done }: NonNullable<Props["onboarding"]> & { preset: ProfessionPreset }) {
   const steps = [
-    { label: preset.firstSteps[0], href: "/painel/contatos", done: done.contact, icon: UserRound },
-    { label: preset.firstSteps[1], href: "/painel/funil", done: done.deal, icon: Handshake },
-    { label: preset.firstSteps[2], href: "/painel/tarefas", done: done.task, icon: BellRing },
-    { label: "Conversar com o assistente", href: "/painel/assistente", done: done.assistant, icon: MessageCircle },
-    ...(isOrgAdmin ? [{ label: "Configurar o negócio", href: "/painel/equipe", done: done.businessContext, icon: Sparkles }, { label: "Convidar a equipe", href: "/painel/equipe", done: done.team, icon: UserRound }] : []),
+    { label: preset.firstSteps[0], href: "/contatos", done: done.contact, icon: UserRound },
+    { label: preset.firstSteps[1], href: "/funil", done: done.deal, icon: Handshake },
+    { label: preset.firstSteps[2], href: "/tarefas", done: done.task, icon: BellRing },
+    { label: "Conversar com o assistente", href: "/assistente", done: done.assistant, icon: MessageCircle },
+    ...(isOrgAdmin ? [{ label: "Configurar o negócio", href: "/equipe", done: done.businessContext, icon: Sparkles }, { label: "Convidar a equipe", href: "/equipe", done: done.team, icon: UserRound }] : []),
   ];
   if (steps.every((step) => step.done)) return <></>;
   return (

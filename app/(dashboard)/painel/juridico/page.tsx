@@ -11,6 +11,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { canManageFinance, canViewFinance, canViewLegal } from "@/lib/law/law-office";
+import { legalCaseHref } from "@/lib/law/legal-case-path";
 import { getLegalCrmMetrics } from "@/lib/law/legal-crm-data";
 import type { LegalCrmPeriodKey } from "@/lib/law/legal-crm-metrics";
 import { formatBRL } from "@/lib/utils/format";
@@ -377,14 +378,14 @@ export default async function LegalDashboardPage({
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           <Link
-            href="/painel/juridico/prazos"
+            href="/juridico/prazos"
             className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:bg-od-surface-hover hover:text-od-text"
           >
             <CalendarDays size={15} />
             Agenda e prazos
           </Link>
           <Link
-            href="/painel/juridico/processos?novo=1"
+            href="/juridico/processos?novo=1"
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover"
           >
             <FileCheck2 size={16} />
@@ -402,7 +403,7 @@ export default async function LegalDashboardPage({
               <h2 className="ui-data-panel__title">Lembretes da equipe</h2>
               <p className="ui-data-panel__description">Misturados com a sua operação, com o nome de quem é responsável.</p>
             </div>
-            <Link href="/painel/juridico/prazos" className="text-xs font-semibold text-od-text-2 hover:text-white">
+            <Link href="/juridico/prazos" className="text-xs font-semibold text-od-text-2 hover:text-white">
               Abrir agenda
             </Link>
           </header>
@@ -447,7 +448,7 @@ export default async function LegalDashboardPage({
             label="Prazos críticos"
             value={String(critical.length)}
             detail={`${weekDeadlines.length} nos próximos 7 dias`}
-            href="/painel/juridico/prazos"
+            href="/juridico/prazos"
             tone={critical.length > 0 ? "danger" : "neutral"}
           />
           <OperationalMetric
@@ -455,7 +456,7 @@ export default async function LegalDashboardPage({
             label="Casos sem movimento"
             value={String(stalled.length)}
             detail="há mais de 30 dias"
-            href="/painel/juridico/processos"
+            href="/juridico/processos"
             tone={stalled.length > 0 ? "warning" : "neutral"}
           />
           <OperationalMetric
@@ -463,7 +464,7 @@ export default async function LegalDashboardPage({
             label="Movimentações para revisar"
             value={String(reviews.length)}
             detail={`${events.length} registradas hoje`}
-            href="/painel/juridico/consulta"
+            href="/juridico/movimentacoes"
             tone={reviews.length > 0 ? "brand" : "neutral"}
           />
           {financeVisible ? (
@@ -472,7 +473,7 @@ export default async function LegalDashboardPage({
               label="Valores vencidos"
               value={formatBRL(overdueCents)}
               detail={`${overdueReceivables.length} cobranças abertas`}
-              href="/painel/financeiro#recebiveis"
+              href="/financeiro#recebiveis"
               tone={overdueCents > 0 ? "danger" : "neutral"}
             />
           ) : (
@@ -481,7 +482,7 @@ export default async function LegalDashboardPage({
               label="Carteira ativa"
               value={String(activeCases.length)}
               detail="casos sob acompanhamento"
-              href="/painel/juridico/processos"
+              href="/juridico/processos"
               tone="brand"
             />
           )}
@@ -505,19 +506,19 @@ export default async function LegalDashboardPage({
                 label: "Prazos críticos",
                 value: String(critical.length),
                 note: `${weekDeadlines.length} nos próximos 7 dias`,
-                href: "/painel/juridico/prazos",
+                href: "/juridico/prazos",
               },
               {
                 label: "Movimentações para revisar",
                 value: String(reviews.length),
                 note: `${events.length} registradas hoje`,
-                href: "/painel/juridico/consulta",
+                href: "/juridico/movimentacoes",
               },
               {
                 label: "Fora do filtro atual",
                 value: String(Math.max(0, deadlinesOutOfScope)),
                 note: "prazos pendentes em outro recorte",
-                href: "/painel/juridico/prazos",
+                href: "/juridico/prazos",
               },
             ]}
           />
@@ -528,19 +529,19 @@ export default async function LegalDashboardPage({
                 label: "Casos ativos",
                 value: String(activeCases.length),
                 note: portfolio === "mine" ? "na sua carteira" : "na carteira do escritório",
-                href: "/painel/juridico/processos",
+                href: "/juridico/processos",
               },
               {
                 label: "Sem movimento",
                 value: String(stalled.length),
                 note: "há mais de 30 dias",
-                href: "/painel/juridico/processos",
+                href: "/juridico/processos",
               },
               {
                 label: "Áreas acompanhadas",
                 value: String(areas.length),
                 note: area === "all" ? "todas as áreas" : area,
-                href: "/painel/juridico/processos",
+                href: "/juridico/processos",
               },
             ]}
           />
@@ -552,19 +553,19 @@ export default async function LegalDashboardPage({
                   label: "Recebido neste mês",
                   value: formatBRL(paidThisMonth),
                   note: "pagamentos confirmados",
-                  href: "/painel/financeiro#recebiveis",
+                  href: "/financeiro#recebiveis",
                 },
                 {
                   label: "Em aberto",
                   value: formatBRL(openCents),
                   note: `${openReceivables.length} ${openReceivables.length === 1 ? "parcela" : "parcelas"}`,
-                  href: "/painel/financeiro#recebiveis",
+                  href: "/financeiro#recebiveis",
                 },
                 {
                   label: "Vencido",
                   value: formatBRL(overdueCents),
                   note: `${overdueReceivables.length} ${overdueReceivables.length === 1 ? "cobrança" : "cobranças"}`,
-                  href: "/painel/financeiro#recebiveis",
+                  href: "/financeiro#recebiveis",
                 },
               ]}
             />
@@ -576,19 +577,19 @@ export default async function LegalDashboardPage({
                   label: "Casos da equipe",
                   value: String(allActiveCases.length),
                   note: "em acompanhamento",
-                  href: "/painel/juridico/processos",
+                  href: "/juridico/processos",
                 },
                 {
                   label: "Prazos visíveis",
                   value: String(visibleDeadlines.length),
                   note: `nos próximos ${period} dias`,
-                  href: "/painel/juridico/prazos",
+                  href: "/juridico/prazos",
                 },
                 {
                   label: "Movimentações hoje",
                   value: String(events.length),
                   note: "na carteira atual",
-                  href: "/painel/juridico/consulta",
+                  href: "/juridico/movimentacoes",
                 },
               ]}
             />
@@ -618,7 +619,7 @@ export default async function LegalDashboardPage({
             </div>
             {hasAnyCase ? (
               <Link
-                href="/painel/juridico/prazos"
+                href="/juridico/prazos"
                 className="inline-flex min-h-11 shrink-0 items-center text-xs font-semibold text-od-text-2 hover:text-od-text"
               >
                 Ver meu dia
@@ -637,7 +638,7 @@ export default async function LegalDashboardPage({
                 return (
                   <Link
                     key={deadline.id}
-                    href={`/painel/juridico/processos/${deadline.case_id}`}
+                    href={legalCaseHref(item?.slug, deadline.case_id)}
                     className="group flex min-h-[76px] items-center gap-3 py-3 hover:bg-white/[0.025]"
                   >
                     <span
@@ -689,7 +690,7 @@ export default async function LegalDashboardPage({
                 </span>
               </p>
               <Link
-                href="/painel/juridico/prazos"
+                href="/juridico/prazos"
                 className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-[var(--radius-control)] border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:border-od-border-hover hover:bg-od-surface-hover hover:text-od-text"
               >
                 Ver todos os prazos
@@ -706,7 +707,7 @@ export default async function LegalDashboardPage({
                   step: "1",
                   title: "Cadastre um caso",
                   body: "Cliente, área, responsável e o próximo prazo. É o que alimenta todo o resto do painel.",
-                  href: "/painel/juridico/processos",
+                  href: "/juridico/processos",
                   action: "Novo caso",
                   Icon: FileCheck2,
                 },
@@ -714,7 +715,7 @@ export default async function LegalDashboardPage({
                   step: "2",
                   title: "Puxe o processo do DataJud",
                   body: "Pelo número do processo, o OtimizIA importa as partes e o histórico em vez de você digitar.",
-                  href: "/painel/juridico/consulta",
+                  href: "/juridico/processos#datajud",
                   action: "Consultar",
                   Icon: FileSearch,
                 },
@@ -722,7 +723,7 @@ export default async function LegalDashboardPage({
                   step: "3",
                   title: "Deixe o Tim vigiar os prazos",
                   body: "Movimentação nova e prazo chegando aparecem aqui, e o assistente avisa antes de virar urgência.",
-                  href: "/painel/juridico/prazos",
+                  href: "/juridico/prazos",
                   action: "Ver prazos",
                   Icon: FileClock,
                 },
@@ -771,7 +772,7 @@ export default async function LegalDashboardPage({
                 {activeCases.length} casos ativos sob acompanhamento no filtro atual.
               </p>
               <Link
-                href="/painel/juridico/processos"
+                href="/juridico/processos"
                 className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:border-od-border-hover hover:bg-od-surface-hover hover:text-od-text"
               >
                 Abrir carteira
@@ -999,7 +1000,7 @@ function FinanceSummary({
           </p>
         </div>
         <Link
-          href="/painel/financeiro#recebiveis"
+          href="/financeiro#recebiveis"
           className="inline-flex min-h-11 shrink-0 items-center whitespace-nowrap text-xs font-semibold text-od-text-2 hover:text-od-text"
         >
           Ver recebíveis
@@ -1051,7 +1052,7 @@ function CasesTable({
           </p>
         </div>
         <Link
-          href="/painel/juridico/processos"
+          href="/juridico/processos"
           className="flex min-h-11 items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text"
         >
           Ver {total} casos
@@ -1081,7 +1082,7 @@ function CasesTable({
           return (
             <Link
               key={item.id}
-              href={`/painel/juridico/processos/${item.id}`}
+              href={legalCaseHref(item.slug, item.id)}
               className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-t border-white/[0.06] py-3 hover:bg-white/[0.02] xl:grid-cols-[1.4fr_.75fr_1fr_.9fr_1fr_28px]"
             >
               <span className="min-w-0">

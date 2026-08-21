@@ -90,14 +90,14 @@ test.describe("fluxos críticos autenticados", () => {
   test("abre dashboard, funil, calendário e Tim sem perder a sessão", async ({ page }) => {
     for (const path of [
       "/painel",
-      "/painel/funil",
-      "/painel/calendario",
-      "/painel/assistente",
-      "/painel/workspaces",
+      "/funil",
+      "/calendario",
+      "/assistente",
+      "/workspaces",
     ]) {
       await expectHealthyProductPage(page, path);
     }
-    await page.goto("/painel/assistente");
+    await page.goto("/assistente");
     await expect(
       page.getByRole("heading", {
         level: 1,
@@ -109,9 +109,9 @@ test.describe("fluxos críticos autenticados", () => {
   test("não oferece instalação por cima dos fluxos e mantém o controle nas configurações", async ({
     page,
   }) => {
-    await page.goto("/painel/funil");
+    await page.goto("/funil");
     await expect(page.locator(".install-app-prompt")).toHaveCount(0);
-    await page.goto("/painel/configuracoes");
+    await page.goto("/configuracoes");
     await expect(
       page.getByRole("heading", { name: "Aplicativo" }),
     ).toBeVisible();
@@ -123,7 +123,7 @@ test.describe("fluxos críticos autenticados", () => {
   test("nega a vertical imobiliária quando ela não é o workspace ativo", async ({
     page,
   }) => {
-    await page.goto("/painel/imoveis/novo");
+    await page.goto("/imoveis/novo");
     await expect(
       page.getByRole("heading", {
         name: "Este endereço não existe no painel",
@@ -162,7 +162,7 @@ test.describe("fluxos críticos autenticados", () => {
     const dealName = `Venda E2E ${suffix}`;
     const productName = `Produto E2E ${suffix}`;
 
-    await page.goto("/painel/contatos");
+    await page.goto("/contatos");
     await page.getByRole("button", { name: "Novo cliente" }).click();
     const contactDrawer = page.getByRole("dialog");
     await expect(contactDrawer).toBeVisible();
@@ -173,7 +173,7 @@ test.describe("fluxos críticos autenticados", () => {
       page.getByRole("link", { name: new RegExp(contactName) }),
     ).toBeVisible();
 
-    await page.goto("/painel/funil");
+    await page.goto("/funil");
     const newDealForm = page.locator("form#new-deal");
     await newDealForm.locator('input[name="title"]').fill(dealName);
     await newDealForm.locator('input[name="value"]').fill("149,90");
@@ -192,7 +192,7 @@ test.describe("fluxos críticos autenticados", () => {
       .getByRole("link", { name: "Confirmar venda e criar pedido" })
       .click();
 
-    await expect(page).toHaveURL(/\/painel\/vendas\/[^/]+\/confirmar/);
+    await expect(page).toHaveURL(/\/vendas\/[^/]+\/confirmar/);
     await page
       .getByRole("button", { name: "Criar produto nesta venda" })
       .click();
@@ -207,11 +207,11 @@ test.describe("fluxos críticos autenticados", () => {
       .getByRole("button", { name: "Confirmar venda e criar pedido" })
       .click();
 
-    await expect(page).toHaveURL(/\/painel\/pedidos\/[^/]+/);
+    await expect(page).toHaveURL(/\/pedidos\/[^/]+/);
     await expect(page.getByText(productName, { exact: true })).toBeVisible();
-    await page.goto("/painel/produtos");
+    await page.goto("/produtos");
     await expect(page.getByText(productName, { exact: true }).first()).toBeVisible();
-    await page.goto("/painel/pos-venda");
+    await page.goto("/pos-venda");
     await expect(page.getByText(productName, { exact: true }).first()).toBeVisible();
   });
 
@@ -258,8 +258,8 @@ test.describe("permissões autenticadas", () => {
       email: restrictedEmail!,
       password: restrictedPassword!,
     });
-    await expect(page).toHaveURL(/\/painel\/contatos$/);
-    await page.goto("/painel/imoveis/novo");
+    await expect(page).toHaveURL(/\/contatos$/);
+    await page.goto("/imoveis/novo");
     await expect(
       page.getByRole("heading", {
         name: "Este endereço não existe no painel",

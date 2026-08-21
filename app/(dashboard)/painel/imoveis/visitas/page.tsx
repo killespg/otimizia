@@ -67,7 +67,7 @@ export default async function VisitasPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-6">
-      <RealEstatePageHeader eyebrow="Imobiliário / Agenda" title="Visitas" description="Solicitações, agenda e histórico com lembretes automáticos antes de cada compromisso." />
+      <RealEstatePageHeader eyebrow="Imobiliário / Agenda de visitas" description="Solicitações, agenda e histórico com lembretes automáticos antes de cada compromisso." />
 
       {requested.length > 0 && (
         <section className="panel p-5">
@@ -181,7 +181,7 @@ export default async function VisitasPage() {
         </section>
       )}
 
-      <Link href="/painel/imoveis" className="nav-item inline-block text-sm font-semibold text-brand-700 hover:underline">
+      <Link href="/imoveis" className="nav-item inline-block text-sm font-semibold text-brand-700 hover:underline">
         Voltar para a carteira
       </Link>
     </div>

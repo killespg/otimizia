@@ -75,10 +75,10 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-6">
       <SellerPageHeader
-        title="Produtos"
+        eyebrow="Operação / Produtos"
         description="Catálogo, variações, estoque, coleções e garantias que alimentam seus pedidos."
         actions={<>
-          <Link href="/painel/operacao/configuracoes" className="btn-secondary"><SlidersHorizontal size={15} /> Configurar operação</Link>
+          <Link href="/operacao/configuracoes" className="btn-secondary"><SlidersHorizontal size={15} /> Configurar operação</Link>
           <Link href="#novo-produto" className="btn"><Plus size={16} /> Novo produto</Link>
         </>}
       />
@@ -96,7 +96,7 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
             {collections.map((collection) => <option key={collection.id} value={collection.id}>{collection.name}</option>)}
           </select> : null}
           <button className="btn-secondary" type="submit">Filtrar</button>
-          {params.stock === "baixo" ? <Link href="/painel/produtos" className="btn-secondary">Limpar estoque baixo</Link> : null}
+          {params.stock === "baixo" ? <Link href="/produtos" className="btn-secondary">Limpar estoque baixo</Link> : null}
         </form>
 
         <SellerSummaryStrip items={summaryItems} />
@@ -131,12 +131,12 @@ export default async function SellerProductsPage({ searchParams }: { searchParam
           <aside className="space-y-3">
             {usesCollections ? <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90 p-4">
               <div className="flex items-center justify-between gap-2"><h2 className="text-sm font-semibold text-white">Coleções ativas</h2><Layers3 size={16} className="text-od-text-3" /></div>
-              {activeCollections.length ? <ul className="mt-3 divide-y divide-white/[0.07]">{activeCollections.map((collection) => <li key={collection.id}><Link href={`/painel/colecoes#${collection.id}`} className="flex min-h-12 items-center justify-between gap-3 text-xs text-white/66"><span className="truncate">{collection.name}</span><SellerStatus tone="success">Ativa</SellerStatus></Link></li>)}</ul> : <p className="mt-3 text-xs leading-relaxed text-od-text-3">Nenhuma coleção ativa. Use coleções para organizar lançamentos sem apagar o histórico.</p>}
-              <Link href="/painel/colecoes" className="mt-3 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2">Gerenciar coleções <ChevronRight size={14} /></Link>
+              {activeCollections.length ? <ul className="mt-3 divide-y divide-white/[0.07]">{activeCollections.map((collection) => <li key={collection.id}><Link href={`/colecoes#${collection.id}`} className="flex min-h-12 items-center justify-between gap-3 text-xs text-white/66"><span className="truncate">{collection.name}</span><SellerStatus tone="success">Ativa</SellerStatus></Link></li>)}</ul> : <p className="mt-3 text-xs leading-relaxed text-od-text-3">Nenhuma coleção ativa. Use coleções para organizar lançamentos sem apagar o histórico.</p>}
+              <Link href="/colecoes" className="mt-3 inline-flex min-h-11 items-center text-xs font-semibold text-od-text-2">Gerenciar coleções <ChevronRight size={14} /></Link>
             </section> : null}
             {usesInventory ? <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90 p-4">
               <div className="flex items-center gap-2"><TriangleAlert size={16} className="text-amber-300" /><h2 className="text-sm font-semibold text-white">Estoque baixo</h2></div>
-              {lowStock.length ? <ul className="mt-3 divide-y divide-white/[0.07]">{lowStock.slice(0, 8).map((product) => <li key={product.id}><Link href={`/painel/produtos/${product.id}`} className="flex min-h-11 items-center justify-between gap-3 text-xs"><span className="truncate text-white/62">{product.name}</span><strong className="tabular-nums text-amber-300">{availableStock(product)} un.</strong></Link></li>)}</ul> : <p className="mt-3 text-xs text-od-text-3">Nenhum produto abaixo do limite configurado.</p>}
+              {lowStock.length ? <ul className="mt-3 divide-y divide-white/[0.07]">{lowStock.slice(0, 8).map((product) => <li key={product.id}><Link href={`/produtos/${product.id}`} className="flex min-h-11 items-center justify-between gap-3 text-xs"><span className="truncate text-white/62">{product.name}</span><strong className="tabular-nums text-amber-300">{availableStock(product)} un.</strong></Link></li>)}</ul> : <p className="mt-3 text-xs text-od-text-3">Nenhum produto abaixo do limite configurado.</p>}
             </section> : null}
             <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90 p-4"><div className="flex items-center gap-2"><Archive size={16} className="text-od-text-3" /><h2 className="text-sm font-semibold text-white">Inativos</h2></div><p className="mt-2 text-2xl font-semibold tabular-nums text-white/80">{products.filter((product) => product.status === "inactive").length}</p></section>
           </aside>

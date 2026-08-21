@@ -104,7 +104,7 @@ function withSettings(groups: NavigationGroup[]) {
     {
       key: "account",
       label: "Conta",
-      items: [item("settings", "/painel/configuracoes", "Configurações", "settings")],
+      items: [item("settings", "/configuracoes", "Configurações", "settings")],
     },
   ];
 }
@@ -115,34 +115,34 @@ function seller(input: BuildNavigationInput): ProductNavigationContract {
   const overview = item("overview", "/painel", "Visão geral", "overview", {
     exact: true,
   });
-  const tasks = item("tasks", "/painel/tarefas", "Lembretes", "tasks", {
+  const tasks = item("tasks", "/tarefas", "Lembretes", "tasks", {
     badge: counts.reminders,
     danger: (counts.reminders ?? 0) > 0,
   });
-  const whatsapp = item("whatsapp", "/painel/whatsapp", "WhatsApp", "whatsapp");
+  const whatsapp = item("whatsapp", "/whatsapp", "WhatsApp", "whatsapp");
   const groups = withSettings([
     {
       key: "overview",
       label: "",
       items: [
         overview,
-        item("assistant", "/painel/assistente", "Tim", "assistant"),
+        item("assistant", "/assistente", "Tim", "assistant"),
       ],
     },
     {
       key: "crm",
       label: "CRM",
       items: [
-        item("contacts", "/painel/contatos", "Clientes", "contacts", {
+        item("contacts", "/contatos", "Clientes", "contacts", {
           badge: counts.contacts,
         }),
-        item("pipeline", "/painel/funil", "Funil de vendas", "pipeline", {
+        item("pipeline", "/funil", "Funil de vendas", "pipeline", {
           badge: counts.deals,
           exact: true,
         }),
         tasks,
         whatsapp,
-        item("calendar", "/painel/calendario", "Calendário", "calendar"),
+        item("calendar", "/calendario", "Calendário", "calendar"),
       ],
     },
     {
@@ -150,16 +150,16 @@ function seller(input: BuildNavigationInput): ProductNavigationContract {
       label: "Operação",
       items: [
         ...(modules.includes("catalog")
-          ? [item("products", "/painel/produtos", "Produtos", "products")]
+          ? [item("products", "/produtos", "Produtos", "products")]
           : []),
         ...(modules.includes("collections")
-          ? [item("collections", "/painel/colecoes", "Coleções", "collections")]
+          ? [item("collections", "/colecoes", "Coleções", "collections")]
           : []),
         ...(modules.includes("orders")
-          ? [item("orders", "/painel/pedidos", "Pedidos", "orders")]
+          ? [item("orders", "/pedidos", "Pedidos", "orders")]
           : []),
         ...(modules.includes("warranties")
-          ? [item("warranty", "/painel/pos-venda", "Pós-venda", "warranty")]
+          ? [item("warranty", "/pos-venda", "Pós-venda", "warranty")]
           : []),
       ],
     },
@@ -167,14 +167,14 @@ function seller(input: BuildNavigationInput): ProductNavigationContract {
       key: "management",
       label: "Gestão",
       items: [
-        item("team", "/painel/equipe", "Meu negócio", "team"),
+        item("team", "/equipe", "Meu negócio", "team"),
         item(
           "operation-settings",
-          "/painel/operacao/configuracoes",
+          "/operacao/configuracoes",
           "Configurar operação",
           "settings",
         ),
-        item("reports", "/painel/funil/relatorio", "Relatórios", "reports"),
+        item("reports", "/funil/relatorio", "Relatórios", "reports"),
       ],
     },
   ]);
@@ -183,16 +183,16 @@ function seller(input: BuildNavigationInput): ProductNavigationContract {
     namespace: "seller",
     groups,
     bottomTabs: [overview, tasks, whatsapp],
-    assistantHref: "/painel/assistente",
+    assistantHref: "/assistente",
     quickActions: [
-      item("sale-create", "/painel/funil#new-deal", "Nova venda", "create"),
-      item("task-create", "/painel/tarefas#new-task", "Novo lembrete", "tasks"),
+      item("sale-create", "/funil#new-deal", "Nova venda", "create"),
+      item("task-create", "/tarefas#new-task", "Novo lembrete", "tasks"),
     ],
     submenu: {
       parentKey: "overview",
       items: [
         { key: "my-operation", href: "/painel", label: "Minha operação" },
-        { key: "reports", href: "/painel/funil/relatorio", label: "Relatórios" },
+        { key: "reports", href: "/funil/relatorio", label: "Relatórios" },
       ],
     },
   };
@@ -202,21 +202,21 @@ function legal(input: BuildNavigationInput): ProductNavigationContract {
   const counts = input.counts ?? {};
   const overview = item(
     "legal-overview",
-    "/painel/juridico",
+    "/juridico",
     "Visão geral",
     "overview",
     { exact: true },
   );
   const processes = item(
     "processes",
-    "/painel/juridico/processos",
+    "/juridico/processos",
     "Processos",
     "processes",
     { badge: counts.cases },
   );
   const deadlines = item(
     "deadlines",
-    "/painel/juridico/prazos",
+    "/juridico/prazos",
     "Agenda e prazos",
     "deadlines",
     { badge: counts.deadlines, danger: (counts.deadlines ?? 0) > 0 },
@@ -227,7 +227,7 @@ function legal(input: BuildNavigationInput): ProductNavigationContract {
       label: "",
       items: [
         overview,
-        item("assistant", "/painel/assistente", "Tim", "assistant"),
+        item("assistant", "/assistente", "Tim", "assistant"),
       ],
     },
     {
@@ -236,10 +236,9 @@ function legal(input: BuildNavigationInput): ProductNavigationContract {
       items: [
         processes,
         deadlines,
-        item("datajud", "/painel/juridico/consulta", "Consulta DataJud", "search"),
         item(
           "documents",
-          "/painel/juridico/documentos",
+          "/juridico/documentos",
           "Documentos",
           "documents",
           { badge: counts.documents },
@@ -252,15 +251,15 @@ function legal(input: BuildNavigationInput): ProductNavigationContract {
       key: "finance",
       label: "Financeiro",
       items: [
-        item("fees", "/painel/financeiro", "Honorários", "finance"),
+        item("fees", "/financeiro", "Honorários", "finance"),
         item(
           "receivables",
-          "/painel/financeiro#recebiveis",
+          "/financeiro#recebiveis",
           "Recebíveis",
           "receivables",
           { badge: counts.receivables },
         ),
-        item("expenses", "/painel/financeiro#despesas", "Despesas", "expenses"),
+        item("expenses", "/financeiro#despesas", "Despesas", "expenses"),
       ],
     });
   }
@@ -268,12 +267,12 @@ function legal(input: BuildNavigationInput): ProductNavigationContract {
     key: "office",
     label: "Escritório",
     items: [
-      item("contacts", "/painel/contatos", "Clientes e atendimentos", "contacts"),
-      item("pipeline", "/painel/funil", "Atendimentos", "pipeline"),
-      item("whatsapp", "/painel/whatsapp", "WhatsApp", "whatsapp"),
-        item("calendar", "/painel/calendario", "Calendário", "calendar"),
-        item("team", "/painel/equipe", "Equipe", "team"),
-      item("reports", "/painel/funil/relatorio", "Relatórios", "reports"),
+      item("contacts", "/contatos", "Clientes", "contacts"),
+      item("pipeline", "/funil", "Possíveis Clientes", "pipeline"),
+      item("whatsapp", "/whatsapp", "WhatsApp", "whatsapp"),
+        item("calendar", "/calendario", "Calendário", "calendar"),
+        item("team", "/equipe", "Equipe", "team"),
+      item("reports", "/funil/relatorio", "Relatórios", "reports"),
     ],
   });
 
@@ -281,7 +280,7 @@ function legal(input: BuildNavigationInput): ProductNavigationContract {
     namespace: "legal",
     groups: withSettings(groups),
     bottomTabs: [overview, processes, deadlines],
-    assistantHref: "/painel/assistente",
+    assistantHref: "/assistente",
     quickActions: [],
   };
 }
@@ -290,21 +289,21 @@ function realEstate(input: BuildNavigationInput): ProductNavigationContract {
   const counts = input.counts ?? {};
   const overview = item(
     "property-overview",
-    "/painel/imoveis/dashboard",
+    "/imoveis/dashboard",
     "Visão geral",
     "overview",
     { exact: true },
   );
   const properties = item(
     "properties",
-    "/painel/imoveis",
+    "/imoveis",
     "Carteira de imóveis",
     "properties",
     { badge: counts.properties, exact: true },
   );
   const visits = item(
     "visits",
-    "/painel/imoveis/visitas",
+    "/imoveis/visitas",
     "Agenda de visitas",
     "visits",
     { badge: counts.visits, danger: (counts.visits ?? 0) > 0 },
@@ -318,7 +317,7 @@ function realEstate(input: BuildNavigationInput): ProductNavigationContract {
         label: "",
         items: [
           overview,
-          item("assistant", "/painel/assistente", "Tim", "assistant"),
+          item("assistant", "/assistente", "Tim", "assistant"),
         ],
       },
       {
@@ -326,11 +325,11 @@ function realEstate(input: BuildNavigationInput): ProductNavigationContract {
         label: "Imobiliário",
         items: [
           properties,
-          item("map", "/painel/imoveis/mapa", "Mapa", "map"),
+          item("map", "/imoveis/mapa", "Mapa", "map"),
           visits,
           item(
             "collections",
-            "/painel/imoveis/colecoes",
+            "/imoveis/colecoes",
             "Vitrines",
             "collections",
             { badge: counts.collections },
@@ -341,12 +340,12 @@ function realEstate(input: BuildNavigationInput): ProductNavigationContract {
         key: "commercial",
         label: "Comercial",
         items: [
-          item("contacts", "/painel/contatos", "Clientes", "contacts"),
-          item("pipeline", "/painel/funil", "Atendimentos", "pipeline", {
+          item("contacts", "/contatos", "Clientes", "contacts"),
+          item("pipeline", "/funil", "Atendimentos", "pipeline", {
             badge: counts.deals,
           }),
-          item("whatsapp", "/painel/whatsapp", "WhatsApp", "whatsapp"),
-          item("calendar", "/painel/calendario", "Calendário", "calendar"),
+          item("whatsapp", "/whatsapp", "WhatsApp", "whatsapp"),
+          item("calendar", "/calendario", "Calendário", "calendar"),
         ],
       },
       {
@@ -355,12 +354,12 @@ function realEstate(input: BuildNavigationInput): ProductNavigationContract {
         items: [
           item(
             "commissions",
-            "/painel/imoveis/comissoes",
+            "/imoveis/comissoes",
             "Comissões e metas",
             "commissions",
           ),
-          item("team", "/painel/equipe", "Equipe", "team"),
-          item("reports", "/painel/funil/relatorio", "Relatórios", "reports"),
+          item("team", "/equipe", "Equipe", "team"),
+          item("reports", "/funil/relatorio", "Relatórios", "reports"),
         ],
       },
     ]),
@@ -369,21 +368,21 @@ function realEstate(input: BuildNavigationInput): ProductNavigationContract {
       { ...properties, label: "Imóveis" },
       visits,
     ],
-    assistantHref: "/painel/assistente",
+    assistantHref: "/assistente",
     quickActions: [
-      item("property-create", "/painel/imoveis/novo", "Novo imóvel", "create"),
+      item("property-create", "/imoveis/novo", "Novo imóvel", "create"),
     ],
     submenu: {
       parentKey: "property-overview",
       items: [
         {
           key: "my-operation",
-          href: "/painel/imoveis/dashboard",
+          href: "/imoveis/dashboard",
           label: "Minha operação",
         },
         {
           key: "commissions",
-          href: "/painel/imoveis/comissoes",
+          href: "/imoveis/comissoes",
           label: "Metas e comissões",
         },
       ],
@@ -401,21 +400,21 @@ function generic(input: BuildNavigationInput): ProductNavigationContract {
   const overview = item("overview", "/painel", "Visão geral", "overview", {
     exact: true,
   });
-  const tasks = item("tasks", "/painel/tarefas", labels.followups, "tasks");
-  const whatsapp = item("whatsapp", "/painel/whatsapp", "WhatsApp", "whatsapp");
+  const tasks = item("tasks", "/tarefas", labels.followups, "tasks");
+  const whatsapp = item("whatsapp", "/whatsapp", "WhatsApp", "whatsapp");
   const groups: NavigationGroup[] = [
     {
       key: "work",
       label: "Trabalho",
       items: [
         overview,
-        item("contacts", "/painel/contatos", labels.contacts, "contacts"),
-        item("pipeline", "/painel/funil", labels.pipeline, "pipeline"),
+        item("contacts", "/contatos", labels.contacts, "contacts"),
+        item("pipeline", "/funil", labels.pipeline, "pipeline"),
         whatsapp,
-        item("calendar", "/painel/calendario", "Calendário", "calendar"),
+        item("calendar", "/calendario", "Calendário", "calendar"),
         tasks,
-        item("assistant", "/painel/assistente", "Tim", "assistant"),
-        item("team", "/painel/equipe", "Equipe", "team"),
+        item("assistant", "/assistente", "Tim", "assistant"),
+        item("team", "/equipe", "Equipe", "team"),
       ],
     },
   ];
@@ -424,13 +423,12 @@ function generic(input: BuildNavigationInput): ProductNavigationContract {
       key: "legal",
       label: "Jurídico",
       items: [
-        item("legal-overview", "/painel/juridico", "Painel jurídico", "overview", {
+        item("legal-overview", "/juridico", "Painel jurídico", "overview", {
           exact: true,
         }),
-        item("processes", "/painel/juridico/processos", "Processos", "processes"),
-        item("deadlines", "/painel/juridico/prazos", "Prazos", "deadlines"),
-        item("datajud", "/painel/juridico/consulta", "Consulta DataJud", "search"),
-        item("documents", "/painel/juridico/documentos", "Documentos", "documents"),
+        item("processes", "/juridico/processos", "Processos", "processes"),
+        item("deadlines", "/juridico/prazos", "Prazos", "deadlines"),
+        item("documents", "/juridico/documentos", "Documentos", "documents"),
       ],
     });
   }
@@ -439,10 +437,10 @@ function generic(input: BuildNavigationInput): ProductNavigationContract {
       key: "real-estate",
       label: "Imobiliário",
       items: [
-        item("properties", "/painel/imoveis", "Imóveis", "properties"),
-        item("map", "/painel/imoveis/mapa", "Mapa", "map"),
-        item("visits", "/painel/imoveis/visitas", "Visitas", "visits"),
-        item("collections", "/painel/imoveis/colecoes", "Vitrines", "collections"),
+        item("properties", "/imoveis", "Imóveis", "properties"),
+        item("map", "/imoveis/mapa", "Mapa", "map"),
+        item("visits", "/imoveis/visitas", "Visitas", "visits"),
+        item("collections", "/imoveis/colecoes", "Vitrines", "collections"),
       ],
     });
   }
@@ -450,14 +448,14 @@ function generic(input: BuildNavigationInput): ProductNavigationContract {
     groups.push({
       key: "management",
       label: "Gestão",
-      items: [item("finance", "/painel/financeiro", "Financeiro", "finance")],
+      items: [item("finance", "/financeiro", "Financeiro", "finance")],
     });
   }
   if (access.isAdmin) {
     groups.push({
       key: "admin",
       label: "Administração",
-      items: [item("metrics", "/painel/metricas", "Métricas", "admin")],
+      items: [item("metrics", "/metricas", "Métricas", "admin")],
     });
   }
 
@@ -465,7 +463,7 @@ function generic(input: BuildNavigationInput): ProductNavigationContract {
     namespace: "generic",
     groups: withSettings(groups),
     bottomTabs: [overview, tasks, whatsapp],
-    assistantHref: "/painel/assistente",
+    assistantHref: "/assistente",
     quickActions: [],
   };
 }

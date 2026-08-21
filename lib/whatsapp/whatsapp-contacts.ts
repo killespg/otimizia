@@ -69,7 +69,8 @@ export async function createDealIfNeeded(
   admin: ReturnType<typeof createAdminClient>,
   orgId: string,
   contactId: string,
-  title: string
+  title: string,
+  extraDetails?: Record<string, string>,
 ): Promise<{ created: boolean; dealId: string | null }> {
   const { data: existingDeal } = await admin
     .from("deals")
@@ -96,6 +97,7 @@ export async function createDealIfNeeded(
       contact_id: contactId,
       title,
       stage: "novo",
+      ...(extraDetails ? { details: extraDetails } : {}),
     })
     .select("id")
     .single();

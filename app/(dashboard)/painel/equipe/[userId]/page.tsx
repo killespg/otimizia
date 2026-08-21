@@ -75,7 +75,7 @@ export default async function TeamMemberPage({
         description={`${memberJobRoleLabel(member.job_role, member.profession_type)}${member.role === "admin" ? " · Admin da organização" : ""}`}
         actions={
           <Link
-            href="/painel/equipe"
+            href="/equipe"
             className="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-od-border px-4 text-xs font-semibold text-od-text-2 hover:bg-od-surface-hover hover:text-white"
           >
             Voltar à equipe
@@ -116,7 +116,7 @@ export default async function TeamMemberPage({
           ) : !isSelf && ver !== "tarefas" ? (
             <div className="px-5 py-6">
               <Link
-                href={`/painel/equipe/${member.user_id}?ver=tarefas`}
+                href={`/equipe/${member.user_id}?ver=tarefas`}
                 className="inline-flex min-h-11 items-center rounded-[var(--radius-control)] border border-od-border px-4 text-xs font-semibold text-od-text-2 hover:bg-od-surface-hover hover:text-white"
               >
                 Ver tarefas e lembretes

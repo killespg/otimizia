@@ -57,13 +57,13 @@ export function LegalDeadlineBoard({
   const todayMonthParam = today.slice(0, 7);
   const todayIsSelected = selectedDay === today;
   const todayHref = todayIsSelected
-    ? `/painel/juridico/prazos?month=${todayMonthParam}`
-    : `/painel/juridico/prazos?month=${todayMonthParam}&dia=${todayDate}`;
-  const monthHref = `/painel/juridico/prazos?month=${monthParam}`;
+    ? `/juridico/prazos?month=${todayMonthParam}`
+    : `/juridico/prazos?month=${todayMonthParam}&dia=${todayDate}`;
+  const monthHref = `/juridico/prazos?month=${monthParam}`;
   const hrefFor = (day?: number) => {
     const params = new URLSearchParams({ month: monthParam });
     if (day) params.set("dia", String(day));
-    return `/painel/juridico/prazos?${params.toString()}`;
+    return `/juridico/prazos?${params.toString()}`;
   };
 
   return (
@@ -98,14 +98,14 @@ export function LegalDeadlineBoard({
           actions={
             <div className="flex gap-2">
               <Link
-                href={`/painel/juridico/prazos?month=${prevMonth}`}
+                href={`/juridico/prazos?month=${prevMonth}`}
                 aria-label="Mês anterior"
                 className="ui-button ui-button--secondary ui-icon-button"
               >
                 <ChevronLeft size={16} />
               </Link>
               <Link
-                href={`/painel/juridico/prazos?month=${nextMonth}`}
+                href={`/juridico/prazos?month=${nextMonth}`}
                 aria-label="Próximo mês"
                 className="ui-button ui-button--secondary ui-icon-button"
               >
@@ -228,7 +228,7 @@ export function LegalDeadlineBoard({
       {casesWithoutDeadline > 0 ? (
         <p className="text-xs leading-5 text-od-text-3">
           {casesWithoutDeadline === 1 ? "1 caso ativo sem prazo cadastrado." : `${casesWithoutDeadline} casos ativos sem prazo cadastrado.`}{" "}
-          <Link href="/painel/juridico/processos" className="font-semibold text-od-text-2 hover:text-white">
+          <Link href="/juridico/processos" className="font-semibold text-od-text-2 hover:text-white">
             Abrir carteira
           </Link>
         </p>

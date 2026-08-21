@@ -29,7 +29,7 @@ export default async function ImportContactsPage() {
     <div className="max-w-3xl space-y-4 sm:space-y-5">
       <header className="pb-5">
         <Link
-          href="/painel/contatos"
+          href="/contatos"
           className="inline-flex items-center gap-1 text-sm font-bold text-ink-muted hover:text-ink"
         >
           <IconArrowRight className="h-4 w-4 rotate-180" />

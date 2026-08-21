@@ -29,7 +29,7 @@ export default async function SellerOrdersPage({ searchParams }: { searchParams:
 
   return (
     <div className="mx-auto w-full max-w-[1550px] space-y-5">
-      <SellerPageHeader title="Pedidos" description="Acompanhe o que foi realmente vendido, o pagamento e a entrega. Pedidos nascem da confirmação de uma negociação." actions={<Link href="/painel/funil" className="btn"><ClipboardList size={16} /> Abrir funil</Link>} />
+      <SellerPageHeader eyebrow="Operação / Pedidos" description="Acompanhe o que foi realmente vendido, o pagamento e a entrega. Pedidos nascem da confirmação de uma negociação." actions={<Link href="/funil" className="btn"><ClipboardList size={16} /> Abrir funil</Link>} />
       <form className="flex flex-col gap-2 sm:flex-row" role="search"><label className="relative min-w-0 flex-1"><span className="sr-only">Buscar pedido</span><Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-od-text-3" /><input name="q" defaultValue={params.q} placeholder="Buscar número do pedido ou cliente" className="field pl-10" /></label><select name="status" defaultValue={status} className="field sm:max-w-60" aria-label="Status do pedido"><option value="">Todos os status</option><option value="open">Em andamento</option><option value="confirmed">Confirmados</option><option value="preparing">Em preparação</option><option value="ready">Prontos</option><option value="delivered">Entregues</option><option value="completed">Concluídos</option><option value="cancelled">Cancelados</option></select><button className="btn-secondary" type="submit">Filtrar</button></form>
       <SellerSummaryStrip items={[
         { label: "Pedidos", value: orders.length },
@@ -40,13 +40,13 @@ export default async function SellerOrdersPage({ searchParams }: { searchParams:
         { label: "Valor registrado", value: money(revenue) },
       ]} />
 
-      {orders.length === 0 ? <SellerEmptyState title="Nenhum pedido confirmado" description="Mova uma negociação para Ganho. Antes de fechar, o sistema pedirá os itens e permitirá criar um produto na hora." action={<Link href="/painel/funil" className="btn">Abrir funil</Link>} icon="box" /> : (
+      {orders.length === 0 ? <SellerEmptyState title="Nenhum pedido confirmado" description="Mova uma negociação para Ganho. Antes de fechar, o sistema pedirá os itens e permitirá criar um produto na hora." action={<Link href="/funil" className="btn">Abrir funil</Link>} icon="box" /> : (
         <section className="overflow-hidden rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90">
           <div className="hidden grid-cols-[9rem_minmax(12rem,1.4fr)_7rem_8rem_8rem_9rem_3rem] border-b border-white/[0.08] px-4 py-2 text-xs font-semibold text-od-text-3 lg:grid"><span>Pedido</span><span>Cliente</span><span>Itens</span><span>Total</span><span>Pagamento</span><span>Status</span><span /></div>
           {filtered.length ? <div className="divide-y divide-white/[0.08]">{filtered.map((order) => {
             const contact = order.contact_id ? contacts.get(order.contact_id) : null;
             const itemCount = order.seller_order_items.reduce((sum, item) => sum + item.quantity, 0);
-            return <Link key={order.id} href={`/painel/pedidos/${order.id}`} className="group grid min-h-16 gap-2 px-4 py-3 hover:bg-white/[0.025] lg:grid-cols-[9rem_minmax(12rem,1.4fr)_7rem_8rem_8rem_9rem_3rem] lg:items-center">
+            return <Link key={order.id} href={`/pedidos/${order.id}`} className="group grid min-h-16 gap-2 px-4 py-3 hover:bg-white/[0.025] lg:grid-cols-[9rem_minmax(12rem,1.4fr)_7rem_8rem_8rem_9rem_3rem] lg:items-center">
               <span><strong className="block text-sm font-semibold text-od-text">{order.order_number}</strong><span className="mt-1 block text-xs text-od-text-3">{date(order.confirmed_at || order.created_at)}</span></span>
               <span className="min-w-0"><strong className="block truncate text-sm font-semibold text-white/78">{contact?.name ?? "Cliente não vinculado"}</strong><span className="mt-1 block truncate text-xs text-od-text-3">{contact?.company || "Venda direta"}</span></span>
               <span className="text-sm text-white/62"><span className="mb-1 block text-xs font-medium text-od-text-3 lg:hidden">Itens</span><span className="flex items-center gap-2"><PackageCheck size={15} className="text-od-text-3" /> {itemCount}</span></span>

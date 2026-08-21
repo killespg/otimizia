@@ -8,7 +8,7 @@ export function LegalPage({ children }: { children: React.ReactNode }) {
   return <Page>{children}</Page>;
 }
 
-export function PageHeader({ eyebrow, title, description, action }: { eyebrow: string; title: string; description?: string; action?: React.ReactNode }) {
+export function PageHeader({ eyebrow, title, description, action }: { eyebrow: string; title?: string; description?: string; action?: React.ReactNode }) {
   return <ProductPageHeader eyebrow={eyebrow} title={title} description={description} actions={action} />;
 }
 

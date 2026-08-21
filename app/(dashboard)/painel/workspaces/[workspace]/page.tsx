@@ -8,5 +8,5 @@ import { redirect } from "next/navigation";
  * /painel/workspaces e persiste profession_type antes de abrir o painel.
  */
 export default function LegacyWorkspacePreview() {
-  redirect("/painel/workspaces");
+  redirect("/workspaces");
 }

@@ -51,8 +51,8 @@ export async function saveLeadPreferences(formData: FormData) {
     { onConflict: "deal_id" }
   );
   if (error) throw new Error("Não foi possível salvar as preferências do cliente.");
-  revalidatePath(`/painel/contatos/${contactId}`);
-  revalidatePath(`/painel/imoveis/match/${dealId}`);
+  revalidatePath(`/contatos/${contactId}`);
+  revalidatePath(`/imoveis/match/${dealId}`);
 }
 
 // Recalcula o score de todos os imóveis "no jogo" contra a preferência do
@@ -99,7 +99,7 @@ export async function recalculateDealMatches(formData: FormData) {
     );
     if (error) throw new Error("Não foi possível calcular os matches.");
   }
-  revalidatePath(`/painel/imoveis/match/${dealId}`);
+  revalidatePath(`/imoveis/match/${dealId}`);
 }
 
 const DEAL_PROPERTY_STATUSES: RealEstateDealPropertyStatus[] = [
@@ -124,6 +124,6 @@ export async function updateDealPropertyStatus(formData: FormData) {
     .eq("deal_id", dealId)
     .eq("property_id", propertyId);
   if (error) throw new Error("Não foi possível atualizar o status do imóvel neste atendimento.");
-  revalidatePath(`/painel/imoveis/match/${dealId}`);
+  revalidatePath(`/imoveis/match/${dealId}`);
 }
 

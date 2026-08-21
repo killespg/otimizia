@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       risk_level: "standard",
       confidentiality: "restricted",
     })
-    .select("id")
+    .select("id, slug")
     .single();
   if (error || !created) {
     return Response.json({ error: "Não foi possível criar o caso." }, { status: 500 });
@@ -84,5 +84,5 @@ export async function POST(request: Request) {
     .eq("tribunal_alias", tribunalAlias)
     .eq("case_number", numeroProcesso);
 
-  return Response.json({ caseId: created.id });
+  return Response.json({ caseId: created.id, slug: created.slug });
 }

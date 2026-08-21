@@ -33,10 +33,10 @@ type Props = {
 };
 
 const notificationDestination: Record<ShellVariant, string> = {
-  generic: "/painel/tarefas",
-  seller: "/painel/tarefas",
-  legal: "/painel/juridico/prazos",
-  "real-estate": "/painel/imoveis/visitas",
+  generic: "/tarefas",
+  seller: "/tarefas",
+  legal: "/juridico/prazos",
+  "real-estate": "/imoveis/visitas",
 };
 
 type NotificationPopoverPanelProps = {
@@ -197,8 +197,8 @@ export function ProductShellTopbar({
     const value = query.trim();
     router.push(
       value
-        ? `/painel/contatos?busca=${encodeURIComponent(value)}`
-        : "/painel/contatos",
+        ? `/contatos?busca=${encodeURIComponent(value)}`
+        : "/contatos",
     );
   }
 
@@ -228,7 +228,7 @@ export function ProductShellTopbar({
   }
 
   return (
-    <header className="product-topbar sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-od-border bg-[var(--surface-base)] px-5 md:px-6">
+    <header className="product-topbar sticky top-0 z-40 flex h-16 w-full items-center justify-between gap-3 border-b border-od-border bg-[var(--surface-base)] pl-5 pr-2 sm:pl-6 sm:pr-2 lg:pl-8 lg:pr-3">
       <div className="flex min-w-0 items-center md:hidden">
         <LogoWordmark height={22} />
       </div>
@@ -252,7 +252,7 @@ export function ProductShellTopbar({
       </form>
       <div className="flex shrink-0 items-center gap-1">
         <Link
-          href="/painel/assistente"
+          href="/assistente"
           aria-label="Abrir conversa com o Tim"
           className="grid size-11 place-items-center rounded-[var(--radius-control)] text-od-text-3 hover:bg-[var(--surface-hover)] hover:text-od-text"
         >
@@ -297,7 +297,7 @@ export function ProductShellTopbar({
             ) : null}
           </AnimatePresence>
         </div>
-        <div ref={accountMenuRef} className="relative ml-1">
+        <div ref={accountMenuRef} className="relative">
           <button
             ref={accountTriggerRef}
             type="button"
@@ -350,7 +350,7 @@ export function ProductShellTopbar({
                 </div>
                 <div role="separator" className="mx-2 border-t border-od-border" />
                 <Link
-                  href="/painel/configuracoes"
+                  href="/configuracoes"
                   role="menuitem"
                   data-account-menu-item
                   onClick={() => setOpenPopover(null)}

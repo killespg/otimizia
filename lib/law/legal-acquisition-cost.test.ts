@@ -432,7 +432,7 @@ describe("saveLegalAcquisitionCost", () => {
       created_by: "user-1",
       updated_by: "user-1",
     }, { onConflict: "org_id,workspace_key,month" });
-    expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/painel/juridico");
+    expect(actionMocks.revalidatePath).toHaveBeenCalledWith("/juridico");
     expect(state).toMatchObject({
       status: "success",
       message: "Custos de aquisição salvos.",

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PendingButton } from "@/components/ui/PendingButton";
 import { buildMonthCells, monthParam, parseMonthParam } from "@/lib/utils/calendar-grid";
 import { canManageLegal } from "@/lib/law/law-office";
+import { legalCaseHref } from "@/lib/law/legal-case-path";
 import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, LegalDeadline, Task } from "@/lib/supabase/types";
@@ -75,6 +76,16 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
             .order("due_at", { ascending: true })
         ).data ?? []
       : [];
+  const caseSlugById = new Map(
+    workspaceKey === "law_office"
+      ? (
+          (
+            await supabase.from("legal_cases").select("id, slug").eq("org_id", orgId)
+          ).data ?? []
+        ).map((item) => [item.id as string, item.slug as string])
+      : [],
+  );
+  const casePath = (caseId: string) => legalCaseHref(caseSlugById.get(caseId), caseId);
 
   const allTasks = ((taskRows ?? []) as Task[]).filter(
     (task) => task.review_status !== "submitted"
@@ -128,13 +139,10 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-xs font-semibold text-od-text-2">{isSeller ? "Vendas / Agenda" : isRealEstate ? "Imobiliário / Agenda" : "Jurídico / Agenda"}</p>
-          <h1 className="mt-2 text-od-title text-white">
-            Calendário
-          </h1>
-          <p className="mt-2 hidden max-w-xl text-sm leading-relaxed text-white/52 sm:block">
+          <h1 className="text-xs font-semibold text-od-text-2">{isSeller ? "Vendas / Calendário" : isRealEstate ? "Imobiliário / Calendário" : "Jurídico / Calendário"}</h1>
+          <p className="mt-1 hidden max-w-xl text-sm leading-relaxed text-white/52 sm:block">
             {workspaceKey === "law_office"
               ? "Tarefas e prazos processuais num só lugar."
               : "Todos os seus lembretes num só lugar."}
@@ -154,7 +162,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
       </section>
 
       <form id="new-reminder" action={createTask} className="ui-form-panel scroll-mt-24 p-5">
-        <input type="hidden" name="return_to" value="/painel/calendario" />
+        <input type="hidden" name="return_to" value="/calendario" />
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_13rem_minmax(0,1fr)_auto] lg:items-end">
           <div>
             <label className="label" htmlFor="reminder-title">
@@ -192,14 +200,14 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
           <h2 className="text-[14px] font-semibold capitalize text-white">{monthTitle}</h2>
           <div className="flex gap-2">
             <Link
-              href={`/painel/calendario?month=${prevParam}`}
+              href={`/calendario?month=${prevParam}`}
               aria-label="Mês anterior"
               className="nav-item grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-line bg-od-surface text-od-text-2 hover:border-brand-300 hover:bg-brand-50 hover:text-od-text"
             >
               <IconArrowRight className="h-4 w-4 rotate-180" />
             </Link>
             <Link
-              href={`/painel/calendario?month=${nextParam}`}
+              href={`/calendario?month=${nextParam}`}
               aria-label="Próximo mês"
               className="nav-item grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-line bg-od-surface text-od-text-2 hover:border-brand-300 hover:bg-brand-50 hover:text-od-text"
             >
@@ -233,7 +241,7 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
                       {entries.slice(0, 2).map((entry, entryIndex) => (
                         <Link
                           key={entryIndex}
-                          href={entry.kind === "task" ? "/painel/tarefas" : `/painel/juridico/processos/${entry.deadline.case_id}`}
+                          href={entry.kind === "task" ? "/tarefas" : casePath(entry.deadline.case_id)}
                           className={
                             "block truncate rounded px-1 py-0.5 text-xs font-bold hover:opacity-80 " +
                             (entry.kind === "task"
@@ -290,13 +298,13 @@ export default async function CalendarPage(props: { searchParams: Promise<{ mont
                         currentUserId={user!.id}
                         isAdmin={isAdmin}
                         canReviewAll={canReviewAll}
-                        returnTo="/painel/calendario"
+                        returnTo="/calendario"
                       />
                     ) : (
                       <li key={`deadline-${entry.deadline.id}`} className="flex items-center justify-between gap-3 py-3">
                         <div className="min-w-0">
                           <Link
-                            href={`/painel/juridico/processos/${entry.deadline.case_id}`}
+                            href={casePath(entry.deadline.case_id)}
                             className="clip-1 text-safe block text-sm font-black text-ink hover:text-brand-700"
                           >
                             {entry.deadline.title}

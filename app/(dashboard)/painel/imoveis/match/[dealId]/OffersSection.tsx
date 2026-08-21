@@ -114,7 +114,7 @@ function OfferThread({ offer, chain, canManage }: { offer: RealEstateOffer; chai
         <p className="text-sm font-semibold text-ink">{centsToReais(offer.amount_cents)}</p>
         <div className="flex items-center gap-2">
           <span className="tag bg-surface-2 text-ink-muted">{OFFER_STATUS_LABEL[offer.status]}</span>
-          <Link href={`/painel/imoveis/propostas/${offer.id}/pdf`} className="nav-item text-xs font-semibold text-brand-700 hover:underline">
+          <Link href={`/imoveis/propostas/${offer.id}/pdf`} className="nav-item text-xs font-semibold text-brand-700 hover:underline">
             PDF
           </Link>
         </div>

@@ -116,7 +116,7 @@ export default async function ContactDetailPage(
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-5">
       <Link
-        href="/painel/contatos"
+        href="/contatos"
         className="inline-flex items-center gap-2 text-xs font-semibold text-od-text-2 hover:text-od-text"
       >
         <IconArrowRight className="h-4 w-4 rotate-180" />
@@ -300,7 +300,7 @@ export default async function ContactDetailPage(
                 {preset.followUpOffsets.map((offset) => (
                   <form key={offset.label} action={createTask}>
                     <input type="hidden" name="contact_id" value={c.id} />
-                    <input type="hidden" name="return_to" value={`/painel/contatos/${c.id}`} />
+                    <input type="hidden" name="return_to" value={`/contatos/${c.id}`} />
                     <input type="hidden" name="title" value={`Retornar para ${contactName}`} />
                     <input
                       type="hidden"
@@ -378,7 +378,7 @@ export default async function ContactDetailPage(
               {relatedTasks.length === 0 ? (
                 <p className="py-5 text-sm font-medium text-ink-muted">
                   Nenhum lembrete.{" "}
-                  <Link href="/painel/tarefas" className="nav-item font-black text-brand-700 hover:text-brand-900">
+                  <Link href="/tarefas" className="nav-item font-black text-brand-700 hover:text-brand-900">
                     Criar um
                   </Link>
                 </p>

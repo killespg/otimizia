@@ -4,15 +4,17 @@ import { PageHeader } from "@/components/ui/surface";
 import { formatBRL, formatDate } from "@/lib/utils/format";
 
 export function SellerPageHeader({
+  eyebrow = "Operação de vendas",
   title,
   description,
   actions,
 }: {
-  title: string;
+  eyebrow?: string;
+  title?: string;
   description: string;
   actions?: ReactNode;
 }) {
-  return <PageHeader eyebrow="Operação de vendas" title={title} description={description} actions={actions} />;
+  return <PageHeader eyebrow={eyebrow} title={title} description={description} actions={actions} />;
 }
 
 export function SellerSummaryStrip({ items }: { items: Array<{ label: string; value: ReactNode; tone?: "default" | "warning" | "success" }> }) {

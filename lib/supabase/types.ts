@@ -100,6 +100,7 @@ export type LegalCase = {
   responsible_id: string | null;
   created_by: string;
   title: string;
+  slug: string;
   case_number: string | null;
   area: string | null;
   court: string | null;

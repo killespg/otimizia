@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DATAJUD_TRIBUNALS, sortTribunalsByFavorites } from "@/lib/law/datajud-tribunals";
 import type { DatajudProcess } from "@/lib/law/datajud";
+import { legalCaseHref } from "@/lib/law/legal-case-path";
 import { IconAlert, IconClock, IconPlus, IconSearch, IconStar } from "../../icons";
 
 // Datas vindas do DataJud nem sempre são um ISO 8601 válido (já vimos
@@ -99,7 +100,7 @@ export function DatajudSearchForm({
       });
       const data = await response.json();
       if (response.ok && data.caseId) {
-        router.push(`/painel/juridico/processos/${data.caseId}`);
+        router.push(legalCaseHref(data.slug, data.caseId));
       } else {
         setError(data.error ?? "Não consegui criar o caso.");
       }

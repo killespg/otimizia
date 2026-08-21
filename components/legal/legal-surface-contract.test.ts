@@ -38,5 +38,14 @@ describe("legal workspace surface contract", () => {
     expect(legalUi).toContain('from "@/components/ui/surface"');
     expect(source).not.toContain('border border-white/[0.09] bg-[#1e1d22]');
     expect(compactControls).not.toMatch(/(?:min-h|\bh)-(?:8|9|10)(?=[" ])/);
+    expect(processes).not.toMatch(/title="Processos"\n/);
+    expect(processes).toContain("<MetricBand");
+    expect(processes).toContain("Precisa de atenção");
+    expect(processes).toContain('id="busca"');
+    expect(processes).toContain("<DatajudSearchForm");
+    expect(processes).toContain('id="datajud"');
+    expect(read("lib/law/legal-case-path.ts")).toContain("slugifyLegalCaseTitle");
+    expect(read("components/legal/legal-case-list.tsx")).toContain("riskLabel");
+    expect(read("components/legal/legal-case-list.tsx")).toContain("<Status");
   });
 });

@@ -38,7 +38,7 @@ export async function createOffer(formData: FormData) {
     ...offerFieldsFromForm(formData),
   });
   if (error) throw new Error("Não foi possível criar a proposta.");
-  revalidatePath(`/painel/imoveis/match/${dealId}`);
+  revalidatePath(`/imoveis/match/${dealId}`);
 }
 
 export async function sendOffer(formData: FormData) {
@@ -58,7 +58,7 @@ export async function sendOffer(formData: FormData) {
     .from("real_estate_deal_properties")
     .upsert({ org_id: orgId, deal_id: offer.deal_id, property_id: offer.property_id, status: "offer" }, { onConflict: "deal_id,property_id" });
 
-  revalidatePath(`/painel/imoveis/match/${offer.deal_id}`);
+  revalidatePath(`/imoveis/match/${offer.deal_id}`);
 }
 
 export async function markOfferViewed(formData: FormData) {
@@ -73,7 +73,7 @@ export async function markOfferViewed(formData: FormData) {
     .select("deal_id")
     .maybeSingle();
   if (error) throw new Error("Não foi possível atualizar a proposta.");
-  if (offer) revalidatePath(`/painel/imoveis/match/${offer.deal_id}`);
+  if (offer) revalidatePath(`/imoveis/match/${offer.deal_id}`);
 }
 
 // Contraproposta = registro novo encadeado (RE-4xx) — nunca edita
@@ -106,7 +106,7 @@ export async function counterOffer(formData: FormData) {
   if (insertError) throw new Error("Não foi possível registrar a contraproposta.");
 
   await supabase.from("real_estate_offers").update({ status: "countered", responded_at: new Date().toISOString() }).eq("id", parentId).eq("org_id", orgId);
-  revalidatePath(`/painel/imoveis/match/${parent.deal_id}`);
+  revalidatePath(`/imoveis/match/${parent.deal_id}`);
 }
 
 // Aceite NUNCA muda deal.stage nem real_estate_properties.status sozinho
@@ -144,7 +144,7 @@ export async function acceptOffer(formData: FormData) {
     .eq("deal_id", offer.deal_id)
     .eq("property_id", offer.property_id);
 
-  revalidatePath(`/painel/imoveis/match/${offer.deal_id}`);
+  revalidatePath(`/imoveis/match/${offer.deal_id}`);
 }
 
 export async function declineOffer(formData: FormData) {
@@ -158,6 +158,6 @@ export async function declineOffer(formData: FormData) {
     .select("deal_id")
     .single();
   if (error || !offer) throw new Error("Não foi possível registrar a recusa.");
-  revalidatePath(`/painel/imoveis/match/${offer.deal_id}`);
+  revalidatePath(`/imoveis/match/${offer.deal_id}`);
 }
 

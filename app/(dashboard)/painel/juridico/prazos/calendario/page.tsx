@@ -6,5 +6,5 @@ export default async function DeadlinesCalendarPage({
   searchParams: Promise<{ month?: string }>;
 }) {
   const { month } = await searchParams;
-  redirect(month ? `/painel/juridico/prazos?month=${encodeURIComponent(month)}` : "/painel/juridico/prazos");
+  redirect(month ? `/juridico/prazos?month=${encodeURIComponent(month)}` : "/juridico/prazos");
 }

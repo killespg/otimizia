@@ -4,15 +4,23 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { bulkDeleteLegalCases } from "@/app/(dashboard)/painel/juridico/actions";
 import { BulkActionBar, BulkSelectAll, BulkSelectCheckbox, useBulkSelection } from "@/components/ui/BulkSelect";
+import { Status, type StatusIntent } from "@/components/ui/data-display";
+import { legalCaseHref } from "@/lib/law/legal-case-path";
 
 export type LegalCaseRow = {
   id: string;
+  slug: string;
   title: string;
   subtitle: string;
+  placeLabel: string | null;
   statusLabel: string;
+  statusIntent: StatusIntent;
+  riskLabel: string;
+  riskIntent: StatusIntent;
   responsibleLabel: string;
   deadlineLabel: string;
-  deadlineNear: boolean;
+  deadlineIntent: StatusIntent;
+  datajudLabel: string | null;
 };
 
 /**
@@ -25,7 +33,7 @@ export function LegalCaseList({ rows, canManage }: { rows: LegalCaseRow[]; canMa
 
   return (
     <div>
-      <div className="flex items-center gap-3 border-b border-white/[0.07] px-5 py-2 text-od-label text-od-text-3">
+      <div className="flex items-center gap-3 border-b border-od-border px-5 py-2 text-od-label text-od-text-3">
         {canManage && (
           <BulkSelectAll
             allSelected={selection.allSelected}
@@ -34,9 +42,10 @@ export function LegalCaseList({ rows, canManage }: { rows: LegalCaseRow[]; canMa
             dark
           />
         )}
-        <div className="hidden flex-1 grid-cols-[minmax(0,1.5fr)_8rem_9rem_10rem] gap-4 sm:grid">
+        <div className="hidden min-w-0 flex-1 grid-cols-[minmax(0,1.7fr)_7.5rem_6.5rem_8rem_9rem] gap-4 sm:grid">
           <span>Caso</span>
           <span>Situação</span>
+          <span>Prioridade</span>
           <span>Responsável</span>
           <span>Próximo prazo</span>
         </div>
@@ -44,7 +53,7 @@ export function LegalCaseList({ rows, canManage }: { rows: LegalCaseRow[]; canMa
       </div>
 
       {rows.map((row) => (
-        <div key={row.id} className="flex items-start gap-3 border-b border-white/[0.06] px-5 py-4 hover:bg-white/[0.025]">
+        <div key={row.id} className="flex items-start gap-3 border-b border-od-border px-5 py-4 hover:bg-od-surface-hover">
           {canManage && (
             <BulkSelectCheckbox
               checked={selection.selected.includes(row.id)}
@@ -54,20 +63,19 @@ export function LegalCaseList({ rows, canManage }: { rows: LegalCaseRow[]; canMa
             />
           )}
           <Link
-            href={`/painel/juridico/processos/${row.id}`}
-            className="grid min-w-0 flex-1 gap-3 sm:grid-cols-[minmax(0,1.5fr)_8rem_9rem_10rem] sm:items-center sm:gap-4"
+            href={legalCaseHref(row.slug, row.id)}
+            className="grid min-w-0 flex-1 gap-3 sm:grid-cols-[minmax(0,1.7fr)_7.5rem_6.5rem_8rem_9rem] sm:items-center sm:gap-4"
           >
             <div className="min-w-0">
-              <p className="truncate text-[13px] font-semibold text-white">{row.title}</p>
+              <p className="truncate text-[13px] font-semibold text-od-text">{row.title}</p>
               <p className="mt-1 truncate text-xs text-od-text-3">{row.subtitle}</p>
+              {row.placeLabel ? <p className="mt-1 truncate text-xs text-od-text-3">{row.placeLabel}</p> : null}
+              {row.datajudLabel ? <p className="mt-1 text-xs text-od-text-2">{row.datajudLabel}</p> : null}
             </div>
-            <span className="w-fit rounded-[var(--radius-round)] bg-white/[0.06] px-2 py-1 text-xs font-semibold text-od-text">
-              {row.statusLabel}
-            </span>
-            <span className="text-xs text-white/58">{row.responsibleLabel}</span>
-            <span className={"text-xs font-semibold " + (row.deadlineNear ? "text-[#fb7767]" : "text-white/52")}>
-              {row.deadlineLabel}
-            </span>
+            <Status intent={row.statusIntent}>{row.statusLabel}</Status>
+            <Status intent={row.riskIntent}>{row.riskLabel}</Status>
+            <span className="text-xs text-od-text-2">{row.responsibleLabel}</span>
+            <Status intent={row.deadlineIntent}>{row.deadlineLabel}</Status>
           </Link>
         </div>
       ))}

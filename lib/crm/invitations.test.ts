@@ -22,6 +22,7 @@ describe("convites de organização", () => {
 
   it("não aceita redirecionamento externo", () => {
     expect(safeInternalPath("/convite?token=abc")).toBe("/convite?token=abc");
+    expect(safeInternalPath("/painel/contatos")).toBe("/contatos");
     expect(safeInternalPath("//evil.example")).toBe("/painel");
     expect(safeInternalPath("https://evil.example")).toBe("/painel");
   });

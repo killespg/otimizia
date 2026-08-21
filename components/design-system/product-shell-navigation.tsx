@@ -214,7 +214,7 @@ export function ProductShellNavigation({
 
         <div className="border-t border-od-border py-2">
           <Link
-            href="/painel/configuracoes"
+            href="/configuracoes"
             aria-label={`Abrir configurações da conta de ${displayName}`}
             title={collapsed ? "Configurações da conta" : undefined}
             className={`mx-1 flex min-h-11 items-center rounded-[var(--radius-control)] transition-colors ${collapsed ? "justify-center" : "gap-3 px-3"} text-od-text-2 hover:bg-[var(--surface-hover)] hover:text-od-text`}

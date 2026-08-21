@@ -189,7 +189,7 @@
    translúcido por cima do elemento — o retoque clássico de "isto é uma
    página", nunca visto num app instalado. O feedback de toque real continua
    vindo de :active (.btn, .press). */
-html { min-height: 100%; background: var(--od-bg); font-family: var(--font-inter); scroll-behavior: smooth; scrollbar-gutter: stable; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+html { min-height: 100%; background: var(--od-bg); font-family: var(--font-inter); scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
 /* Rolagem por toque não "estica" além do topo/fim revelando o branco padrão
    do navegador atrás do body — em vez disso, o próprio plano de fundo já
    escuro aparece, como um scroll de app nativo. */
@@ -521,7 +521,14 @@ p { text-wrap: pretty; }
 .ui-surface--primary { background: var(--surface-primary); }
 .ui-surface--secondary { background: var(--surface-secondary); }
 .ui-surface--raised { background: var(--surface-primary); box-shadow: var(--shadow-od-float); }
-.ui-page { display: grid; width: 100%; max-width: 1640px; margin-inline: auto; gap: 24px; }
+.ui-page { display: grid; width: 100%; min-width: 0; max-width: 1640px; margin-inline: auto; gap: 24px; overflow-x: clip; }
+.pipeline-board {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
 .ui-page__zone { display: grid; gap: 16px; }
 .ui-page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
 .ui-page-header--compact { align-items: center; gap: 16px; }

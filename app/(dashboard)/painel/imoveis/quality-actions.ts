@@ -45,7 +45,7 @@ export async function recalculateListingQuality(formData: FormData) {
     await supabase.from("tasks").insert(newTasks);
   }
 
-  revalidatePath(`/painel/imoveis/${propertyId}`);
+  revalidatePath(`/imoveis/${propertyId}`);
 }
 
 export async function addDocumentChecklistItem(formData: FormData) {
@@ -60,7 +60,7 @@ export async function addDocumentChecklistItem(formData: FormData) {
     created_by: user.id,
   });
   if (error) throw new Error("Não foi possível adicionar o item ao checklist.");
-  revalidatePath(`/painel/imoveis/${propertyId}`);
+  revalidatePath(`/imoveis/${propertyId}`);
 }
 
 export async function updateDocumentChecklistStatus(formData: FormData) {
@@ -72,7 +72,7 @@ export async function updateDocumentChecklistStatus(formData: FormData) {
 
   const { error } = await supabase.from("real_estate_property_documents").update({ status }).eq("id", documentId).eq("org_id", orgId);
   if (error) throw new Error("Não foi possível atualizar o documento.");
-  revalidatePath(`/painel/imoveis/${propertyId}`);
+  revalidatePath(`/imoveis/${propertyId}`);
 }
 
 export async function removeDocumentChecklistItem(formData: FormData) {
@@ -81,6 +81,6 @@ export async function removeDocumentChecklistItem(formData: FormData) {
   const propertyId = requiredText(formData.get("property_id"), "Imóvel", 80);
   const { error } = await supabase.from("real_estate_property_documents").delete().eq("id", documentId).eq("org_id", orgId);
   if (error) throw new Error("Não foi possível remover o item.");
-  revalidatePath(`/painel/imoveis/${propertyId}`);
+  revalidatePath(`/imoveis/${propertyId}`);
 }
 

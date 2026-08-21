@@ -8,7 +8,7 @@ export function RealEstatePageHeader({
   action,
 }: {
   eyebrow: string;
-  title: ReactNode;
+  title?: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
 }) {

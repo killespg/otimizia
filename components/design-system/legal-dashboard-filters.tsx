@@ -27,7 +27,7 @@ export function LegalDashboardFilters({
     if (values.portfolio !== "mine") next.set("portfolio", values.portfolio);
     if (values.area !== "all") next.set("area", values.area);
     const query = next.toString();
-    startTransition(() => router.replace(query ? `/painel/juridico?${query}` : "/painel/juridico", { scroll: false }));
+    startTransition(() => router.replace(query ? `/juridico?${query}` : "/juridico", { scroll: false }));
   }
 
   return (

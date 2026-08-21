@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useMemo, useRef } from "react";
+import { canonicalizeDashboardPath, DASHBOARD_HOME } from "@/lib/workspace/app-routes";
 import { updateProfession } from "./actions";
 
 type WorkspaceOption = {
@@ -25,12 +26,13 @@ export function WorkspaceSwitcher({
     // jurídico e métricas de fundador). Trocar de área a partir delas
     // deixaria o usuário numa tela "indisponível neste workspace" — volta
     // pro painel, que existe em todas as áreas.
-    const professionSpecific = ["/painel/juridico", "/painel/financeiro", "/painel/imoveis", "/painel/metricas"];
-    if (professionSpecific.some((prefix) => pathname === prefix || pathname.startsWith(prefix + "/"))) {
-      return "/painel";
+    const current = canonicalizeDashboardPath(pathname || DASHBOARD_HOME);
+    const professionSpecific = ["/juridico", "/financeiro", "/imoveis", "/metricas"];
+    if (professionSpecific.some((prefix) => current === prefix || current.startsWith(`${prefix}/`))) {
+      return DASHBOARD_HOME;
     }
-    if (pathname.startsWith("/painel/contatos/")) return "/painel/contatos";
-    return pathname || "/painel";
+    if (current.startsWith("/contatos/")) return "/contatos";
+    return current || DASHBOARD_HOME;
   }, [pathname]);
 
   return (

@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { canonicalizeDashboardPath, isDashboardPath } from "@/lib/workspace/app-routes";
 
 export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
@@ -8,7 +9,7 @@ export async function updateSession(request: NextRequest) {
     path.startsWith("/signup") ||
     path.startsWith("/forgot-password");
   const isProtected =
-    path.startsWith("/painel") ||
+    isDashboardPath(path) ||
     path.startsWith("/onboarding") ||
     path.startsWith("/upgrade");
 
@@ -51,7 +52,9 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
-    const requestedPath = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+    const requestedPath = canonicalizeDashboardPath(
+      `${request.nextUrl.pathname}${request.nextUrl.search}`,
+    );
     url.pathname = "/login";
     url.search = "";
     url.searchParams.set("next", requestedPath);
@@ -71,7 +74,9 @@ export async function updateSession(request: NextRequest) {
       .maybeSingle();
     if (profile && !profile.cpf) {
       const url = request.nextUrl.clone();
-      const requestedPath = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+      const requestedPath = canonicalizeDashboardPath(
+        `${request.nextUrl.pathname}${request.nextUrl.search}`,
+      );
       url.pathname = "/onboarding/cpf";
       url.search = "";
       url.searchParams.set("next", requestedPath);

@@ -10,29 +10,33 @@ export default async function LegalMovementsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const orgId = await getActiveOrgId(supabase, user!.id);
-  const [orgRole, { data: membership }, { data }] = await Promise.all([
+  const [orgRole, { data: membership }, { data }, { data: caseRows }] = await Promise.all([
     getOrgRole(supabase, orgId, user!.id),
     supabase.from("organization_members").select("job_role").eq("org_id", orgId).eq("user_id", user!.id).maybeSingle(),
     supabase.from("legal_watched_processes").select("*").eq("org_id", orgId).order("last_movement_at", { ascending: false, nullsFirst: false }),
+    supabase.from("legal_cases").select("id, slug").eq("org_id", orgId),
   ]);
 
   if (!canViewLegal(membership?.job_role, orgRole === "admin")) {
     return <section className="max-w-xl rounded-xl border border-od-border bg-od-surface p-6"><h1 className="text-xl font-semibold">Acesso jurídico restrito</h1><p className="mt-2 text-sm text-od-text-2">Seu cargo não permite visualizar movimentações processuais.</p></section>;
   }
 
-  const items = (data ?? []) as LegalWatchedProcess[];
+  const caseSlugById = new Map((caseRows ?? []).map((item) => [item.id as string, item.slug as string]));
+  const items = ((data ?? []) as LegalWatchedProcess[]).map((item) => ({
+    ...item,
+    case_slug: item.case_id ? caseSlugById.get(item.case_id) : undefined,
+  }));
   const unread = items.filter((item) => item.last_movement_at && (!item.seen_at || new Date(item.last_movement_at) > new Date(item.seen_at))).length;
   const failed = items.filter((item) => item.datajud_sync_failed_count > 0).length;
 
   return (
     <div className="ui-page">
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-xs font-semibold text-od-text-2">Jurídico / Movimentações</p>
-          <h1 className="mt-2 text-od-title text-od-text">Movimentações processuais</h1>
-          <p className="mt-2 max-w-2xl text-sm text-od-text-2">Acompanhe o que mudou nos processos monitorados e registre cada revisão.</p>
+          <h1 className="text-xs font-semibold text-od-text-2">Jurídico / Movimentações</h1>
+          <p className="mt-1 max-w-2xl text-sm text-od-text-2">Acompanhe o que mudou nos processos monitorados e registre cada revisão.</p>
         </div>
-        <Link href="/painel/juridico/consulta" className="inline-flex min-h-11 items-center gap-2 self-start rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-brand-600 lg:self-auto"><FileSearch size={16} />Consultar DataJud</Link>
+        <Link href="/juridico/processos#datajud" className="inline-flex min-h-11 items-center gap-2 self-start rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-brand-600 lg:self-auto"><FileSearch size={16} />Consultar DataJud</Link>
       </header>
 
       <section className="ui-metric-band sm:grid-cols-3">

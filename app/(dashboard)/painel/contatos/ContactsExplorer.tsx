@@ -40,7 +40,6 @@ function contactMatchesTerms(contact: Contact, terms: string[]) {
 export function ContactsExplorer({
   contacts,
   initialQuery,
-  title,
   description,
   newContactTitle,
   eyebrow = "Escritório / Clientes e atendimentos",
@@ -50,7 +49,7 @@ export function ContactsExplorer({
 }: {
   contacts: Contact[];
   initialQuery: string;
-  title: string;
+  title?: string;
   description: string;
   newContactTitle: string;
   eyebrow?: string;
@@ -75,23 +74,20 @@ export function ContactsExplorer({
 
   return (
     <>
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-xs font-semibold text-od-text-2">{eyebrow}</p>
-          <h1 className="mt-2 text-od-title text-white">
-            {title}
-          </h1>
-          <p className="mt-2 hidden max-w-xl text-sm leading-relaxed text-white/52 sm:block">
+          <h1 className="text-xs font-semibold text-od-text-2">{eyebrow}</h1>
+          <p className="mt-1 hidden max-w-xl text-sm leading-relaxed text-white/52 sm:block">
             {description}
           </p>
           <Link
-            href="/painel/contatos/importar"
+            href="/contatos/importar"
             className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text"
           >
             Importar contatos via CSV
             <IconArrowRight className="h-4 w-4" />
           </Link>
-          <Link href="/painel/funil" className="ml-5 mt-3 inline-flex items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text">Ver atendimentos<IconArrowRight className="h-4 w-4"/></Link>
+          <Link href="/funil" className="ml-5 mt-3 inline-flex items-center gap-1 text-xs font-semibold text-od-text-2 hover:text-od-text">Ver atendimentos<IconArrowRight className="h-4 w-4"/></Link>
         </div>
 
         <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
@@ -189,7 +185,7 @@ export function ContactsExplorer({
                     dark
                   />
                   <Link
-                    href={`/painel/contatos/${contact.id}`}
+                    href={`/contatos/${contact.id}`}
                     className="group flex min-w-0 flex-1 items-center gap-3 py-4 pr-5"
                   >
                     <Avatar name={contact.name} />

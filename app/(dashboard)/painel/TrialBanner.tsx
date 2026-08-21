@@ -31,7 +31,7 @@ export function TrialBanner({ trialDaysLeft }: { trialDaysLeft: number }) {
       }
     >
       <Link
-        href="/painel/configuracoes"
+        href="/configuracoes"
         className="nav-item -my-2 inline-flex min-h-11 items-center"
       >
         Faltam {trialDaysLeft} {trialDaysLeft === 1 ? "dia" : "dias"} no seu

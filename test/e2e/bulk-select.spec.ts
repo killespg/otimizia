@@ -32,7 +32,7 @@ test.describe("seleção em lote", () => {
 
   test("marca contatos, mostra a barra e exige o segundo toque para excluir", async ({ page }) => {
     await signIn(page);
-    await page.goto("/painel/contatos");
+    await page.goto("/contatos");
     await expect(page).not.toHaveURL(/\/login/);
 
     const checkboxes = page.getByRole("checkbox", { name: /^Selecionar / });
@@ -67,7 +67,7 @@ test.describe("seleção em lote", () => {
   test("a barra flutuante não cobre a barra de navegação no celular", async ({ page }) => {
     await signIn(page);
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/painel/contatos");
+    await page.goto("/contatos");
 
     const checkboxes = page.getByRole("checkbox", { name: /^Selecionar / });
     test.skip((await checkboxes.count()) < 2, "a carteira da fixture não tem contato suficiente");

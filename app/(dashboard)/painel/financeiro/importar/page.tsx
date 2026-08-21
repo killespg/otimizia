@@ -47,7 +47,7 @@ export default async function FinanceImportPage() {
     <div className="max-w-3xl space-y-4 sm:space-y-5">
       <header className="enter rounded-lg border border-line bg-surface p-5 sm:p-6">
         <Link
-          href="/painel/financeiro"
+          href="/financeiro"
           className="inline-flex items-center gap-1 text-sm font-bold text-ink-muted hover:text-ink"
         >
           <IconArrowRight className="h-4 w-4 rotate-180" />

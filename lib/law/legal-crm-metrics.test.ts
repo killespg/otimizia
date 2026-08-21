@@ -350,10 +350,10 @@ describe("buildLegalCrmMetrics", () => {
     });
     expect(metrics.leads).toEqual({ total: 0, qualified: 0 });
     expect(metrics.funnel).toEqual([
-      { stage: "novo", label: "Novo lead", reached: 0, conversionFromPrevious: null },
-      { stage: "em_contato", label: "Qualificação", reached: 0, conversionFromPrevious: null },
-      { stage: "negociacao", label: "Proposta enviada", reached: 0, conversionFromPrevious: null },
-      { stage: "ganho", label: "Contratado", reached: 0, conversionFromPrevious: null },
+      { stage: "novo", label: "Triagem Inicial", reached: 0, conversionFromPrevious: null },
+      { stage: "em_contato", label: "Análise de Viabilidade", reached: 0, conversionFromPrevious: null },
+      { stage: "negociacao", label: "Proposta / Honorários", reached: 0, conversionFromPrevious: null },
+      { stage: "ganho", label: "Convertido (Processo Ativo)", reached: 0, conversionFromPrevious: null },
     ]);
     expect(metrics.origins).toEqual([]);
     expect(metrics.losses).toEqual([]);

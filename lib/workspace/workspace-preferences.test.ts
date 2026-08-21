@@ -15,6 +15,7 @@ const preset = {
 } as unknown as ProfessionPreset;
 
 const livestockPreset = { ...preset, key: "livestock_producer" } as unknown as ProfessionPreset;
+const lawPreset = { ...preset, key: "law_office", pipelineLabel: "Possíveis Clientes" } as unknown as ProfessionPreset;
 
 describe("getDefaultWorkspaceLabels", () => {
   it("uses the standard defaults for a regular profession", () => {
@@ -32,6 +33,12 @@ describe("getDefaultWorkspaceLabels", () => {
     const labels = getDefaultWorkspaceLabels(livestockPreset);
     expect(labels.contacts).toBe("Sujeitos");
     expect(labels.followups).toBe("Sujeitos para revisar");
+  });
+
+  it("uses possible-client wording for law offices", () => {
+    const labels = getDefaultWorkspaceLabels(lawPreset);
+    expect(labels.contacts).toBe("Clientes");
+    expect(labels.pipeline).toBe("Possíveis Clientes");
   });
 });
 
