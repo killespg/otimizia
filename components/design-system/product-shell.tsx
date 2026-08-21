@@ -56,7 +56,7 @@ export function ProductShell({
         {/* Goteira do conteúdo: 20px no telefone (o título da página encosta
             aqui), 24 no tablet e 32 no desktop. Quem sangra até a borda usa
             -mx-5 no mobile para casar com este valor. */}
-        <main className="w-full flex-1 px-5 pb-8 pt-5 sm:px-6 lg:px-8 lg:pt-7">
+        <main className="w-full min-w-0 flex-1 overflow-x-clip px-5 pb-8 pt-5 sm:px-6 lg:px-8 lg:pt-7">
           {children}
         </main>
       </div>

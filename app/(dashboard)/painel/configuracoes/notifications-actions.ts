@@ -61,7 +61,7 @@ export async function updateNotificationPreferences(formData: FormData) {
     updated_at: new Date().toISOString(),
   });
   ensureOk(error, "Não deu para salvar suas preferências de aviso.");
-  revalidatePath("/painel/configuracoes");
+  revalidatePath("/configuracoes");
 }
 
 export async function regenerateCalendarFeed(): Promise<string> {
@@ -72,7 +72,7 @@ export async function regenerateCalendarFeed(): Promise<string> {
     .update({ calendar_ics_token: token })
     .eq("id", user.id);
   ensureOk(error, "Não deu para gerar um novo link.");
-  revalidatePath("/painel/configuracoes");
+  revalidatePath("/configuracoes");
   return token;
 }
 

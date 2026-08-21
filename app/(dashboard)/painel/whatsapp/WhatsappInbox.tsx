@@ -486,12 +486,12 @@ export function WhatsappInbox({
                   }
                   title={
                     selected.ia_active
-                      ? "A IA responde automaticamente. Clique para pausar."
-                      : "Você responde manualmente. Clique para ativar a IA."
+                      ? "O Tim responde automaticamente. Clique para pausar e assumir o chat."
+                      : "Você responde manualmente. Clique para religar o Tim."
                   }
                 >
                   <IconBot className="h-3.5 w-3.5" />
-                  IA {selected.ia_active ? "ativa" : "pausada"}
+                  Tim {selected.ia_active ? "ativo" : "pausado"}
                 </button>
               </div>
             </div>

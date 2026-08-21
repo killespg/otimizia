@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/utils/request-origin";
+import { APP_SECTIONS, DASHBOARD_HOME } from "@/lib/workspace/app-routes";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -10,7 +11,15 @@ export default function robots(): MetadataRoute.Robots {
         // Área logada, APIs e links de compartilhamento por token. O /share
         // não é secreto por obscuridade só: é um link que o corretor manda
         // para um cliente e que não faz sentido virar resultado de busca.
-        disallow: ["/api/", "/painel", "/onboarding", "/upgrade", "/share/", "/reset-password"],
+        disallow: [
+          "/api/",
+          DASHBOARD_HOME,
+          ...APP_SECTIONS.map((section) => `/${section}`),
+          "/onboarding",
+          "/upgrade",
+          "/share/",
+          "/reset-password",
+        ],
       },
     ],
     sitemap: `${siteUrl()}/sitemap.xml`,

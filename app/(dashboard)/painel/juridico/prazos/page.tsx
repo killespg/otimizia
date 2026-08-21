@@ -11,6 +11,7 @@ import { createTask, deleteTask, updateAgendaTask } from "../../actions";
 import { IconPlus, IconTrash } from "../../icons";
 import { ContactField } from "../../ContactField";
 import { canManageLegal, canViewLegal } from "@/lib/law/law-office";
+import { legalCaseHref } from "@/lib/law/legal-case-path";
 import {
   agendaHeadline,
   buildAgendaEntries,
@@ -75,7 +76,7 @@ export default async function DeadlinesPage(props: {
       .order("due_at"),
     supabase
       .from("legal_cases")
-      .select("id, title, next_deadline_at, responsible_id, area, status")
+      .select("id, title, slug, next_deadline_at, responsible_id, area, status")
       .eq("org_id", orgId)
       .in("status", ["intake", "active", "waiting", "suspended"]),
     supabase
@@ -110,7 +111,7 @@ export default async function DeadlinesPage(props: {
   const { year, month } = parseMonthParam(searchParams?.month, now);
   const selectedDay = selectedCivilDay(year, month, searchParams?.dia);
   const deadlines = (deadlineRows ?? []) as DeadlineRow[];
-  const cases = (caseRows ?? []) as Pick<LegalCase, "id" | "title" | "next_deadline_at" | "responsible_id" | "area" | "status">[];
+  const cases = (caseRows ?? []) as Pick<LegalCase, "id" | "slug" | "title" | "next_deadline_at" | "responsible_id" | "area" | "status">[];
   const tasks = (taskRows ?? []) as Task[];
   const contacts = (contactRows ?? []) as Pick<Contact, "id" | "name" | "company">[];
   const orgPolicy = orgTaskVisibilityPolicy(org ?? {});
@@ -140,15 +141,19 @@ export default async function DeadlinesPage(props: {
   );
   const canManage = canManageLegal(membership?.job_role, isAdmin);
   const canAssign = canAssignLegalTasks(membership?.job_role, isAdmin);
-  const caseOptions = cases.map((item) => ({ value: item.id, label: item.title }));
+  const caseOptions = cases.map((item) => ({
+    value: item.id,
+    label: item.title,
+    href: legalCaseHref(item.slug, item.id),
+  }));
   const memberOptions = members.map((member) => ({
     value: member.user_id,
     label: member.user_id === user!.id ? "Eu" : member.name ?? "Sem nome",
   }));
   const monthValue = monthParam(new Date(year, month, 1));
   const agendaReturn = selectedDay
-    ? `/painel/juridico/prazos?month=${monthValue}&dia=${Number(selectedDay.slice(-2))}`
-    : `/painel/juridico/prazos?month=${monthValue}`;
+    ? `/juridico/prazos?month=${monthValue}&dia=${Number(selectedDay.slice(-2))}`
+    : `/juridico/prazos?month=${monthValue}`;
   const headline = agendaHeadline(summarizeAgenda(entries, today));
   const editingTask = visibleTasks.find((task) => task.id === searchParams?.editar);
   const canEditTask = Boolean(
@@ -166,10 +171,10 @@ export default async function DeadlinesPage(props: {
         description={headline}
         actions={
           <>
-            <Link href="/painel/juridico/prazos/calculadora" className="ui-button ui-button--quiet ui-button--sm">
+            <Link href="/juridico/prazos/calculadora" className="ui-button ui-button--quiet ui-button--sm">
               Calculadora
             </Link>
-            <Link href="/painel/juridico/processos" className="ui-button ui-button--quiet ui-button--sm">
+            <Link href="/juridico/processos" className="ui-button ui-button--quiet ui-button--sm">
               Carteira de casos
             </Link>
             {canManage ? (
@@ -255,7 +260,7 @@ function TaskForm({
   userId: string;
   canAssign: boolean;
   canEdit?: boolean;
-  caseOptions: { value: string; label: string }[];
+  caseOptions: { value: string; label: string; href?: string }[];
   memberOptions: { value: string; label: string }[];
   contacts: Pick<Contact, "id" | "name" | "company">[];
   returnTo: string;
@@ -303,7 +308,7 @@ function TaskForm({
       </label>
       {task?.case_id ? (
         <Link
-          href={`/painel/juridico/processos/${task.case_id}`}
+          href={caseOptions.find((option) => option.value === task.case_id)?.href ?? legalCaseHref(null, task.case_id)}
           className="text-xs font-semibold text-od-text-2 hover:text-white"
         >
           Abrir processo vinculado
@@ -376,7 +381,7 @@ function NewDeadlineForm({
     return (
       <p className="text-sm leading-relaxed text-od-text-2">
         Cadastre um caso na carteira antes de lançar um prazo.{" "}
-        <Link href="/painel/juridico/processos?novo=1" className="font-semibold text-white">
+        <Link href="/juridico/processos?novo=1" className="font-semibold text-white">
           Abrir novo caso
         </Link>
       </p>

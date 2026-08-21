@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { createElement, type ComponentType } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
@@ -14,6 +16,16 @@ import { ProductShellTopbar } from "@/components/design-system/product-shell-top
 import * as topbarModule from "@/components/design-system/product-shell-topbar";
 
 describe("ProductShellTopbar notifications", () => {
+  it("keeps the account actions against the right edge of the bar", () => {
+    const source = readFileSync(
+      resolve(process.cwd(), "components/design-system/product-shell-topbar.tsx"),
+      "utf8",
+    );
+    expect(source).toContain("lg:pr-3");
+    expect(source).not.toContain("px-5 md:px-6");
+    expect(source).not.toContain("relative ml-1");
+  });
+
   it("uses the notification bell as an accessible popover trigger", () => {
     const html = renderToStaticMarkup(
       createElement(ProductShellTopbar, {
@@ -46,7 +58,7 @@ describe("ProductShellTopbar notifications", () => {
 
     const html = renderToStaticMarkup(
       createElement(NotificationPopoverPanel, {
-        destination: "/painel/tarefas",
+        destination: "/tarefas",
         notificationCount: 3,
         reduceMotion: false,
       }),
@@ -54,7 +66,7 @@ describe("ProductShellTopbar notifications", () => {
 
     expect(html).toContain('role="dialog"');
     expect(html).toContain("3 notificações pendentes");
-    expect(html).toContain('href="/painel/tarefas"');
+    expect(html).toContain('href="/tarefas"');
     expect(html).toContain("Ver todas as notificações");
   });
 
@@ -75,7 +87,7 @@ describe("ProductShellTopbar notifications", () => {
 
     const html = renderToStaticMarkup(
       createElement(NotificationPopoverPanel, {
-        destination: "/painel/tarefas",
+        destination: "/tarefas",
         notificationCount: 0,
         reduceMotion: true,
       }),

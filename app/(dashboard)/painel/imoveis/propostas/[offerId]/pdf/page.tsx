@@ -107,7 +107,7 @@ export default async function OfferPdfPage(props: { params: Promise<{ offerId: s
         )}
       </section>
 
-      <Link href={`/painel/imoveis/match/${offer.deal_id}`} className="nav-item print-hide inline-block text-sm font-semibold text-brand-700 hover:underline">
+      <Link href={`/imoveis/match/${offer.deal_id}`} className="nav-item print-hide inline-block text-sm font-semibold text-brand-700 hover:underline">
         Voltar para o atendimento
       </Link>
     </div>

@@ -52,7 +52,7 @@ describe("accessible UI primitives", () => {
         items: [
           { label: "Conversão", value: "24,8%", detail: "+3,1 pontos" },
           { label: "Atrasados", value: 3, tone: "danger" },
-          { label: "Hoje", value: 2, href: "/painel/juridico/prazos?month=2026-08&dia=18", current: true },
+          { label: "Hoje", value: 2, href: "/juridico/prazos?month=2026-08&dia=18", current: true },
         ],
       }),
     );
@@ -67,7 +67,7 @@ describe("accessible UI primitives", () => {
     expect(metrics).toContain("ui-metric--danger");
     expect(metrics).toContain("ui-metric--current");
     expect(metrics).toContain('aria-current="true"');
-    expect(metrics).toContain("/painel/juridico/prazos?month=2026-08&amp;dia=18");
+    expect(metrics).toContain("/juridico/prazos?month=2026-08&amp;dia=18");
     expect(status).toContain("ui-status--success");
     expect(status).toContain("Concluído");
   });

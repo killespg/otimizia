@@ -164,7 +164,7 @@ export default async function NovaColecaoPage(props: { searchParams: Promise<{ i
         </form>
       </section>
 
-      <Link href="/painel/imoveis/colecoes" className="nav-item inline-block text-sm font-semibold text-brand-700 hover:underline">
+      <Link href="/imoveis/colecoes" className="nav-item inline-block text-sm font-semibold text-brand-700 hover:underline">
         Voltar para vitrines
       </Link>
     </div>

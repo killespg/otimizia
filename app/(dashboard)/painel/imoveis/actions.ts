@@ -130,7 +130,7 @@ export async function createProperty(formData: FormData) {
     .single();
   if (error || !property) throw new Error("Não foi possível criar o imóvel.");
   revalidateImoveis();
-  redirect(`/painel/imoveis/${property.id}`);
+  redirect(`/imoveis/${property.id}`);
 }
 
 export async function updateProperty(formData: FormData) {
@@ -147,7 +147,7 @@ export async function updateProperty(formData: FormData) {
     .eq("org_id", orgId);
   if (error) throw new Error("Não foi possível atualizar o imóvel.");
   revalidateImoveis();
-  revalidatePath(`/painel/imoveis/${id}`);
+  revalidatePath(`/imoveis/${id}`);
 }
 
 export async function deleteProperty(formData: FormData) {
@@ -167,7 +167,7 @@ export async function deleteProperty(formData: FormData) {
   const { error } = await supabase.from("real_estate_properties").delete().eq("id", id).eq("org_id", orgId);
   if (error) throw new Error("Não foi possível excluir o imóvel.");
   revalidateImoveis();
-  redirect("/painel/imoveis");
+  redirect("/imoveis");
 }
 
 // Exclusão em lote da carteira. Só apaga o que é da org (o `in` sozinho não
@@ -260,7 +260,7 @@ export async function uploadPropertyPhoto(formData: FormData) {
     await admin.storage.from(PROPERTY_PHOTOS_BUCKET).remove([path]);
     throw new Error("Não foi possível salvar a foto.");
   }
-  revalidatePath(`/painel/imoveis/${propertyId}`);
+  revalidatePath(`/imoveis/${propertyId}`);
 }
 
 export async function deletePropertyMedia(formData: FormData) {
@@ -281,7 +281,7 @@ export async function deletePropertyMedia(formData: FormData) {
 
   const admin = createAdminClient();
   await admin.storage.from(PROPERTY_PHOTOS_BUCKET).remove([mediaRow.storage_path as string]);
-  revalidatePath(`/painel/imoveis/${propertyId}`);
+  revalidatePath(`/imoveis/${propertyId}`);
 }
 
 // Reordenação por arrastar: o cliente manda a lista inteira de ids na nova
@@ -311,7 +311,7 @@ export async function reorderPropertyMedia(formData: FormData) {
       supabase.from("real_estate_property_media").update({ position: index }).eq("id", id).eq("org_id", orgId)
     )
   );
-  revalidatePath(`/painel/imoveis/${propertyId}`);
+  revalidatePath(`/imoveis/${propertyId}`);
 }
 
 const CONFIRMABLE_INTEGER_FIELDS = new Set(["price_cents", "rent_price_cents", "condo_fee_cents", "iptu_cents", "bedrooms", "bathrooms", "parking_spots"]);
@@ -363,7 +363,7 @@ export async function confirmPropertyAiField(formData: FormData) {
     .eq("id", propertyId)
     .eq("org_id", orgId);
   if (error) throw new Error("Não foi possível confirmar o campo sugerido.");
-  revalidatePath(`/painel/imoveis/${propertyId}`);
+  revalidatePath(`/imoveis/${propertyId}`);
 }
 
 export async function discardPropertyAiField(formData: FormData) {
@@ -381,7 +381,7 @@ export async function discardPropertyAiField(formData: FormData) {
     .eq("id", propertyId)
     .eq("org_id", orgId);
   if (error) throw new Error("Não foi possível descartar o campo sugerido.");
-  revalidatePath(`/painel/imoveis/${propertyId}`);
+  revalidatePath(`/imoveis/${propertyId}`);
 }
 
 export async function createShareCollection(formData: FormData) {
@@ -419,8 +419,8 @@ export async function createShareCollection(formData: FormData) {
   }
 
   await advancePropertiesToSent(supabase, orgId, dealId, propertyIds);
-  revalidatePath("/painel/imoveis/colecoes");
-  redirect("/painel/imoveis/colecoes");
+  revalidatePath("/imoveis/colecoes");
+  redirect("/imoveis/colecoes");
 }
 
 export async function addPropertyToCollection(formData: FormData) {
@@ -448,7 +448,7 @@ export async function addPropertyToCollection(formData: FormData) {
   });
   if (error) throw new Error("Não foi possível adicionar o imóvel à vitrine (confira se já não está nela).");
   await advancePropertiesToSent(supabase, orgId, (collection?.deal_id as string | null) ?? null, [propertyId]);
-  revalidatePath("/painel/imoveis/colecoes");
+  revalidatePath("/imoveis/colecoes");
 }
 
 export async function removePropertyFromCollection(formData: FormData) {
@@ -461,7 +461,7 @@ export async function removePropertyFromCollection(formData: FormData) {
     .eq("collection_id", collectionId)
     .eq("property_id", propertyId);
   if (error) throw new Error("Não foi possível remover o imóvel da vitrine.");
-  revalidatePath("/painel/imoveis/colecoes");
+  revalidatePath("/imoveis/colecoes");
 }
 
 export async function revokeShareCollection(formData: FormData) {
@@ -473,11 +473,11 @@ export async function revokeShareCollection(formData: FormData) {
     .eq("id", id)
     .eq("org_id", orgId);
   if (error) throw new Error("Não foi possível revogar a vitrine.");
-  revalidatePath("/painel/imoveis/colecoes");
+  revalidatePath("/imoveis/colecoes");
 }
 
 function revalidateImoveis() {
-  revalidatePath("/painel/imoveis");
+  revalidatePath("/imoveis");
   revalidatePath("/painel");
 }
 

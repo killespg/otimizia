@@ -12,6 +12,7 @@ import { normalizeBulkIds } from "@/lib/utils/form-parse";
 import type { SellerModule, SellerSalesModel } from "@/lib/supabase/types";
 import { parseWorkspacePreferences } from "@/lib/workspace/workspace-preferences";
 import { getWorkspaceKey } from "@/lib/workspace/workspaces";
+import { canonicalizeDashboardPath, isDashboardPath } from "@/lib/workspace/app-routes";
 
 const PRODUCT_IMAGE_BUCKET = "seller-product-images";
 const PRODUCT_IMAGE_MAX_BYTES = 6 * 1024 * 1024;
@@ -87,7 +88,7 @@ export async function updateSellerBusinessProfile(
     ...sellerOperation,
   }, { onConflict: "org_id,workspace_key" });
   revalidateSeller();
-  redirect("/painel/operacao/configuracoes?salvo=1");
+  redirect("/operacao/configuracoes?salvo=1");
 }
 
 export async function createSellerCollection(formData: FormData) {
@@ -104,7 +105,7 @@ export async function createSellerCollection(formData: FormData) {
   }).select("id").single();
   ensure(error, "Não foi possível criar a coleção.");
   revalidateSeller();
-  redirect(safeReturn(formData.get("return_to"), data?.id ? `/painel/colecoes#${data.id}` : "/painel/colecoes"));
+  redirect(safeReturn(formData.get("return_to"), data?.id ? `/colecoes#${data.id}` : "/colecoes"));
 }
 
 export async function updateSellerCollectionStatus(formData: FormData) {
@@ -133,7 +134,7 @@ export async function switchSellerCollection(formData: FormData) {
   ensure(error, "Não foi possível criar a nova coleção.");
   if (!isUuid(String(nextCollectionId ?? ""))) throw new Error("A nova coleção não foi criada.");
   revalidateSeller();
-  redirect("/painel/colecoes?trocada=1");
+  redirect("/colecoes?trocada=1");
 }
 
 export async function createSellerProduct(formData: FormData) {
@@ -171,7 +172,7 @@ export async function createSellerProduct(formData: FormData) {
     });
   }
   revalidateSeller();
-  redirect(`/painel/produtos/${product.id}`);
+  redirect(`/produtos/${product.id}`);
 }
 
 export async function updateSellerProduct(formData: FormData) {
@@ -198,7 +199,7 @@ export async function updateSellerProduct(formData: FormData) {
   }).eq("id", id).eq("org_id", orgId);
   ensure(error, productErrorMessage(error?.message));
   revalidateSeller();
-  redirect(`/painel/produtos/${id}?salvo=1`);
+  redirect(`/produtos/${id}?salvo=1`);
 }
 
 export async function createSellerVariant(formData: FormData) {
@@ -222,7 +223,7 @@ export async function createSellerVariant(formData: FormData) {
     });
   }
   revalidateSeller();
-  redirect(`/painel/produtos/${productId}?variacao=criada`);
+  redirect(`/produtos/${productId}?variacao=criada`);
 }
 
 export async function adjustSellerStock(formData: FormData) {
@@ -240,7 +241,7 @@ export async function adjustSellerStock(formData: FormData) {
   });
   ensure(error, "Não foi possível ajustar o estoque.");
   revalidateSeller();
-  redirect(`/painel/produtos/${productId}?estoque=ajustado`);
+  redirect(`/produtos/${productId}?estoque=ajustado`);
 }
 
 export async function uploadSellerProductPhoto(formData: FormData) {
@@ -268,7 +269,7 @@ export async function uploadSellerProductPhoto(formData: FormData) {
     throw new Error("A foto foi enviada, mas não pôde ser vinculada ao produto.");
   }
   revalidateSeller();
-  redirect(`/painel/produtos/${productId}?foto=enviada`);
+  redirect(`/produtos/${productId}?foto=enviada`);
 }
 
 export async function deleteSellerProductPhoto(formData: FormData) {
@@ -281,7 +282,7 @@ export async function deleteSellerProductPhoto(formData: FormData) {
   ensure(error, "Não foi possível excluir a foto.");
   await createAdminClient().storage.from(PRODUCT_IMAGE_BUCKET).remove([media.storage_path as string]);
   revalidateSeller();
-  redirect(`/painel/produtos/${productId}`);
+  redirect(`/produtos/${productId}`);
 }
 
 // Exclusão em lote do catálogo. Itens de pedido apontam pro produto com
@@ -368,7 +369,7 @@ export async function updateSellerOrder(formData: FormData) {
   }).eq("id", orderId).eq("org_id", orgId);
   ensure(error, "Não foi possível atualizar o pedido.");
   revalidateSeller();
-  redirect(`/painel/pedidos/${orderId}?salvo=1`);
+  redirect(`/pedidos/${orderId}?salvo=1`);
 }
 
 export async function createSellerWarrantyClaim(formData: FormData) {
@@ -384,7 +385,7 @@ export async function createSellerWarrantyClaim(formData: FormData) {
   });
   ensure(error, "Não foi possível abrir o atendimento.");
   revalidateSeller();
-  redirect("/painel/pos-venda?chamado=aberto");
+  redirect("/pos-venda?chamado=aberto");
 }
 
 export async function updateSellerWarrantyClaim(formData: FormData) {
@@ -398,7 +399,7 @@ export async function updateSellerWarrantyClaim(formData: FormData) {
   }).eq("id", claimId).eq("org_id", orgId);
   ensure(error, "Não foi possível atualizar o atendimento.");
   revalidateSeller();
-  redirect("/painel/pos-venda?chamado=atualizado");
+  redirect("/pos-venda?chamado=atualizado");
 }
 
 export async function updateSellerCustomerProfile(formData: FormData) {
@@ -416,12 +417,12 @@ export async function updateSellerCustomerProfile(formData: FormData) {
     reorder_interval_days: optionalInteger(formData.get("reorder_interval_days"), 1, 3650),
   }, { onConflict: "org_id,contact_id" });
   ensure(error, "Não foi possível salvar as preferências do cliente.");
-  revalidatePath(`/painel/contatos/${contactId}`);
-  redirect(`/painel/contatos/${contactId}?preferencias=salvas`);
+  revalidatePath(`/contatos/${contactId}`);
+  redirect(`/contatos/${contactId}?preferencias=salvas`);
 }
 
 function revalidateSeller() {
-  ["/painel", "/painel/funil", "/painel/produtos", "/painel/colecoes", "/painel/pedidos", "/painel/pos-venda", "/painel/operacao/configuracoes"]
+  ["/painel", "/funil", "/produtos", "/colecoes", "/pedidos", "/pos-venda", "/operacao/configuracoes"]
     .forEach((path) => revalidatePath(path));
 }
 
@@ -523,5 +524,8 @@ function friendlyRpcError(message?: string) {
 }
 function safeReturn(value: FormDataEntryValue | null, fallback: string) {
   const result = String(value ?? "");
-  return result.startsWith("/painel") && !result.startsWith("//") ? result : fallback;
+  if (result.startsWith("//")) return fallback;
+  const canonical = canonicalizeDashboardPath(result);
+  const path = canonical.split(/[?#]/)[0];
+  return isDashboardPath(path) ? canonical : fallback;
 }

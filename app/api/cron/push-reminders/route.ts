@@ -40,7 +40,7 @@ export async function GET(request: Request) {
       const { sent } = await sendPushToUser(admin, summary.userId, {
         title: "Retornos de hoje",
         body: `Você tem ${summaryMessage(summary)} esperando resposta.`,
-        url: "/painel/tarefas",
+        url: "/tarefas",
       });
       if (sent > 0) pushed++;
     } catch (err) {

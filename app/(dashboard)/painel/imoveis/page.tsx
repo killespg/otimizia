@@ -141,24 +141,23 @@ export default async function ImoveisPage(
   return (
     <div className="space-y-6">
       <RealEstatePageHeader
-        eyebrow="Imobiliário / Carteira"
-        title="Imóveis"
+        eyebrow="Imobiliário / Carteira de imóveis"
         description="Cadastre, filtre e monte vitrines com os imóveis da sua carteira."
         action={<>
           {v2Enabled && (
             <>
-              <Link href="/painel/imoveis/visitas" className="btn-secondary">
+              <Link href="/imoveis/visitas" className="btn-secondary">
                 Visitas
               </Link>
-              <Link href="/painel/imoveis/mapa" className="btn-secondary">
+              <Link href="/imoveis/mapa" className="btn-secondary">
                 Mapa
               </Link>
-              <Link href="/painel/imoveis/dashboard" className="btn-secondary">
+              <Link href="/imoveis/dashboard" className="btn-secondary">
                 Dashboard
               </Link>
             </>
           )}
-          <Link href="/painel/imoveis/novo" className="btn">
+          <Link href="/imoveis/novo" className="btn">
             <IconPlus className="h-4 w-4" />
             Novo imóvel
           </Link>
@@ -230,7 +229,7 @@ export default async function ImoveisPage(
                 <button type="submit" className="btn-secondary">
                   Aplicar filtros
                 </button>
-                <Link href="/painel/imoveis" className="nav-item rounded-[var(--radius-inner)] border border-line bg-surface px-3 py-2 text-center text-xs font-semibold text-ink-soft hover:bg-surface-2">
+                <Link href="/imoveis" className="nav-item rounded-[var(--radius-inner)] border border-line bg-surface px-3 py-2 text-center text-xs font-semibold text-ink-soft hover:bg-surface-2">
                   Limpar tudo
                 </Link>
               </div>

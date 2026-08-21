@@ -15,6 +15,7 @@ import { computeDevMetrics, type DevMetrics } from "@/lib/utils/devMetrics";
 import { dealValueOrZero, getCommissionCents } from "@/lib/crm/deals";
 import { buildMonthCells } from "@/lib/utils/calendar-grid";
 import { canManageLegal } from "@/lib/law/law-office";
+import { legalCaseHref } from "@/lib/law/legal-case-path";
 import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { DatajudSearchForm } from "../juridico/consulta/DatajudSearchForm";
 import { getProfessionPreset, type MetricKey, type ProfessionPreset } from "@/lib/people/professions";
@@ -119,7 +120,7 @@ export default async function DashboardPage() {
   // Consultas independentes entre si (só precisam de orgId/workspaceKey, já
   // conhecidos aqui) — feitas juntas para não formar uma fila de idas e
   // vindas ao banco antes do Promise.all principal logo abaixo.
-  const [orgRole, founderMetrics, { data: lawJobRoleRow }, { data: watchedProcessesData }, { data: legalDeadlinesData }] =
+  const [orgRole, founderMetrics, { data: lawJobRoleRow }, { data: watchedProcessesData }, { data: legalDeadlinesData }, { data: legalCaseSlugRows }] =
     await Promise.all([
       getOrgRole(supabase, orgId, user!.id),
       isAdmin ? loadFounderMetrics() : Promise.resolve(null),
@@ -147,14 +148,19 @@ export default async function DashboardPage() {
             .gte("due_at", monthStart.toISOString())
             .lt("due_at", monthEnd.toISOString())
         : Promise.resolve({ data: null }),
+      isLawOffice
+        ? supabase.from("legal_cases").select("id, slug").eq("org_id", orgId)
+        : Promise.resolve({ data: null }),
     ]);
   const isOrgAdmin = orgRole === "admin";
   const lawJobRole = lawJobRoleRow?.job_role;
+  const caseSlugById = new Map((legalCaseSlugRows ?? []).map((item) => [item.id as string, item.slug as string]));
   const watchedProcesses: LegalWatchedProcess[] = watchedProcessesData ?? [];
   const recentProcessChanges = watchedProcesses
     .filter((item) => !item.seen_at || new Date(item.last_movement_at as string) > new Date(item.seen_at))
     .sort((a, b) => new Date(b.last_movement_at as string).getTime() - new Date(a.last_movement_at as string).getTime())
-    .slice(0, 8);
+    .slice(0, 8)
+    .map((item) => ({ ...item, case_slug: item.case_id ? caseSlugById.get(item.case_id) : undefined }));
   const legalDeadlines: LegalDeadline[] = legalDeadlinesData ?? [];
   const [
     { data: deals },
@@ -390,13 +396,13 @@ export default async function DashboardPage() {
       .map((task) => ({
         date: new Date(task.due_at as string),
         title: task.title,
-        href: "/painel/tarefas",
+        href: "/tarefas",
         tone: (new Date(task.due_at as string) < now ? "danger" : "brand") as CalendarItem["tone"],
       })),
     ...legalDeadlines.map((deadline) => ({
       date: new Date(deadline.due_at),
       title: deadline.title,
-      href: `/painel/juridico/processos/${deadline.case_id}`,
+      href: legalCaseHref(caseSlugById.get(deadline.case_id), deadline.case_id),
       tone: (deadline.priority === "critical" || deadline.priority === "high" ? "warning" : "brand") as CalendarItem["tone"],
     })),
   ];
@@ -543,7 +549,7 @@ export default async function DashboardPage() {
       </div>
     ),
     open_claims: <OpenClaimsPanel tasks={unclaimedTasks} deals={unclaimedDeals} preset={preset} />,
-    calendar: <CalendarWidget now={now} items={calendarItems} viewAllHref="/painel/calendario" />,
+    calendar: <CalendarWidget now={now} items={calendarItems} viewAllHref="/calendario" />,
     chart: (
       <RevenueChart
         openValue={openValue}
@@ -597,7 +603,7 @@ export default async function DashboardPage() {
 
           <div className="flex shrink-0 items-center gap-2 sm:hidden">
             <Link
-              href="/painel/tarefas"
+              href="/tarefas"
               className="nav-item relative grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-od-border bg-od-surface text-od-text-2 hover:text-brand-700"
               aria-label="Ver lembretes"
             >
@@ -614,7 +620,7 @@ export default async function DashboardPage() {
         </div>
 
         <form
-          action="/painel/contatos"
+          action="/contatos"
           className="flex h-11 w-full min-w-0 items-center gap-2 rounded-[var(--radius-inner)] border border-od-border bg-od-surface px-3 text-sm sm:hidden"
         >
           <IconSearch className="h-5 w-5 shrink-0 text-od-text-3" />
@@ -632,7 +638,7 @@ export default async function DashboardPage() {
 
         <div className="hidden flex-col gap-3 sm:flex sm:flex-row sm:items-center">
           <form
-            action="/painel/contatos"
+            action="/contatos"
             className="flex h-11 w-full min-w-0 items-center gap-2 rounded-[var(--radius-inner)] border border-od-border bg-od-surface px-3 text-sm sm:w-[430px]"
           >
             <IconSearch className="h-5 w-5 shrink-0 text-od-text-3" />
@@ -656,7 +662,7 @@ export default async function DashboardPage() {
 
           <div className="flex items-center gap-3">
             <Link
-              href="/painel/tarefas"
+              href="/tarefas"
               className="nav-item relative grid h-11 w-11 place-items-center rounded-[var(--radius-control)] border border-od-border bg-od-surface text-od-text-2 hover:text-brand-700"
               aria-label="Ver lembretes"
             >
@@ -683,16 +689,16 @@ export default async function DashboardPage() {
             <span>Expediente</span>
             <strong>{new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" }).format(now)}</strong>
           </div>
-          <Link href="/painel/tarefas" className="law-docket-item">
+          <Link href="/tarefas" className="law-docket-item">
             <span>Vencidos</span><strong>{overdue.length}</strong><small>{overdue.length === 1 ? "pendência" : "pendências"}</small>
           </Link>
-          <Link href="/painel/tarefas" className="law-docket-item">
+          <Link href="/tarefas" className="law-docket-item">
             <span>Para hoje</span><strong>{todayTasks.length}</strong><small>{todayTasks.length === 1 ? "compromisso" : "compromissos"}</small>
           </Link>
-          <Link href="/painel/funil" className="law-docket-item">
+          <Link href="/funil" className="law-docket-item">
             <span>Em andamento</span><strong>{openDeals.length}</strong><small>atendimentos</small>
           </Link>
-          <Link href="/painel/juridico/prazos" className="law-docket-action">Abrir pauta <IconArrowRight className="h-4 w-4" /></Link>
+          <Link href="/juridico/prazos" className="law-docket-action">Abrir pauta <IconArrowRight className="h-4 w-4" /></Link>
         </section>
       )}
 
@@ -851,7 +857,7 @@ function FounderMetricsPanel({ metrics }: { metrics: DevMetrics }) {
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm font-black text-brand-800">Métricas do <BrandName /></p>
         <Link
-          href="/painel/metricas"
+          href="/metricas"
           className="nav-item inline-flex items-center gap-1 text-xs font-black text-brand-700 hover:text-brand-900"
         >
           Ver tudo
@@ -1033,7 +1039,7 @@ function DealsTable({
           </h2>
         </div>
         <Link
-          href="/painel/funil"
+          href="/funil"
           className="nav-item inline-flex items-center gap-1 text-sm font-black text-brand-700 hover:text-brand-900"
         >
           Ver todos
@@ -1182,7 +1188,7 @@ function TaskQueue({
       )}
 
       <Link
-        href="/painel/tarefas"
+        href="/tarefas"
         className="nav-item mt-4 inline-flex items-center gap-2 text-sm font-black text-brand-700 hover:text-brand-900"
       >
         Ver todas as tarefas
@@ -1320,7 +1326,7 @@ function OnboardingChecklist({
       key: "contact",
       title: preset.firstSteps[0],
       desc: "Comece com quem você está atendendo agora.",
-      href: "/painel/contatos",
+      href: "/contatos",
       icon: IconUsers,
       done: done.contact,
     },
@@ -1328,7 +1334,7 @@ function OnboardingChecklist({
       key: "deal",
       title: preset.firstSteps[1],
       desc: "Anote valor, etapa e próximo passo.",
-      href: "/painel/funil",
+      href: "/funil",
       icon: IconColumns,
       done: done.deal,
     },
@@ -1336,7 +1342,7 @@ function OnboardingChecklist({
       key: "task",
       title: preset.firstSteps[2],
       desc: "Escolha quando chamar o cliente de novo.",
-      href: "/painel/tarefas",
+      href: "/tarefas",
       icon: IconBell,
       done: done.task,
     },
@@ -1344,7 +1350,7 @@ function OnboardingChecklist({
       key: "assistant",
       title: "Converse com o assistente",
       desc: "Pergunte algo sobre seu negócio ou peça pra criar um contato.",
-      href: "/painel/assistente",
+      href: "/assistente",
       icon: IconBot,
       done: done.assistant,
     },
@@ -1354,7 +1360,7 @@ function OnboardingChecklist({
             key: "context",
             title: "Configure o contexto da empresa",
             desc: "Conte o que a empresa faz — a IA usa isso em tudo que responde.",
-            href: "/painel/equipe",
+            href: "/equipe",
             icon: IconSettings,
             done: done.businessContext,
           },
@@ -1362,7 +1368,7 @@ function OnboardingChecklist({
             key: "team",
             title: "Convide um colega de equipe",
             desc: "Traga quem também vende ou atende junto com você.",
-            href: "/painel/equipe",
+            href: "/equipe",
             icon: IconUsers,
             done: done.team,
           },
@@ -1429,11 +1435,11 @@ function OnboardingChecklist({
 }
 
 const REAL_ESTATE_V2_HIGHLIGHTS = [
-  { title: "Match de clientes", desc: "A carteira já sugere o imóvel certo pra cada perfil de busca.", href: "/painel/imoveis", icon: IconUsers },
-  { title: "Visitas", desc: "Agende, confirme e registre o feedback de cada visita num só lugar.", href: "/painel/imoveis/visitas", icon: IconCalendar },
-  { title: "Propostas", desc: "Monte, envie e acompanhe o status de cada proposta até fechar.", href: "/painel/imoveis", icon: IconBuilding },
-  { title: "Comissão", desc: "Veja o previsto, o recebido e o que já está vencido.", href: "/painel/imoveis/dashboard", icon: IconWallet },
-  { title: "Chat de filtro", desc: "Descreva o que o cliente procura e a IA já filtra a carteira.", href: "/painel/imoveis", icon: IconBot },
+  { title: "Match de clientes", desc: "A carteira já sugere o imóvel certo pra cada perfil de busca.", href: "/imoveis", icon: IconUsers },
+  { title: "Visitas", desc: "Agende, confirme e registre o feedback de cada visita num só lugar.", href: "/imoveis/visitas", icon: IconCalendar },
+  { title: "Propostas", desc: "Monte, envie e acompanhe o status de cada proposta até fechar.", href: "/imoveis", icon: IconBuilding },
+  { title: "Comissão", desc: "Veja o previsto, o recebido e o que já está vencido.", href: "/imoveis/dashboard", icon: IconWallet },
+  { title: "Chat de filtro", desc: "Descreva o que o cliente procura e a IA já filtra a carteira.", href: "/imoveis", icon: IconBot },
 ];
 
 // Card único de "o que mudou" quando a v2 imobiliária liga pro workspace —

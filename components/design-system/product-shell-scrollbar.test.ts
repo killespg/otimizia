@@ -21,7 +21,9 @@ describe("product shell scrolling", () => {
 
   it("keeps navigation scrolling stable and contained", () => {
     expect(navigation).toContain("product-scroll-region");
+    expect(globals).toContain(".product-scroll-region");
     expect(globals).toContain("scrollbar-gutter: stable");
     expect(globals).toContain("overscroll-behavior: contain");
+    expect(globals).not.toMatch(/html \{[^}]*scrollbar-gutter:\s*stable/);
   });
 });

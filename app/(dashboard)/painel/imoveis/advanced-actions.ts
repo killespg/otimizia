@@ -11,13 +11,13 @@ export async function togglePublicPage(formData: FormData) {
   const enabled = formData.get("enabled") === "on";
   const { error } = await supabase.from("organizations").update({ real_estate_public_page_enabled: enabled }).eq("id", orgId);
   if (error) throw new Error("Não foi possível atualizar a página pública.");
-  revalidatePath("/painel/imoveis/dashboard");
+  revalidatePath("/imoveis/dashboard");
 }
 
 export async function regeneratePublicPageToken() {
   const { supabase, orgId } = await requireRealEstate();
   const { error } = await supabase.from("organizations").update({ real_estate_public_page_token: crypto.randomUUID() }).eq("id", orgId);
   if (error) throw new Error("Não foi possível gerar um novo link.");
-  revalidatePath("/painel/imoveis/dashboard");
+  revalidatePath("/imoveis/dashboard");
 }
 

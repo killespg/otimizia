@@ -34,7 +34,7 @@ export default function TaskItem({
   currentUserId,
   isAdmin,
   canReviewAll = false,
-  returnTo = "/painel/tarefas",
+  returnTo = "/tarefas",
   selectable = false,
   selected = false,
   onSelectedChange,

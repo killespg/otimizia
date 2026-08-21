@@ -102,7 +102,7 @@ export function SellerSaleConfirmation({
   }));
 
   useEffect(() => {
-    if (state.orderId) router.replace(`/painel/pedidos/${state.orderId}?confirmado=1`);
+    if (state.orderId) router.replace(`/pedidos/${state.orderId}?confirmado=1`);
   }, [router, state.orderId]);
 
   const options = useMemo<CatalogOption[]>(() => products.flatMap<CatalogOption>((product) => {
@@ -266,7 +266,7 @@ export function SellerSaleConfirmation({
       {state.error ? <div role="alert" className="flex items-start gap-3 rounded-[var(--radius-panel)] border border-[#fb7767]/30 bg-[#fb7767]/[0.06] p-4 text-sm text-[#fca79b]"><AlertTriangle size={18} className="mt-0.5 shrink-0" /><div><strong className="font-semibold">A venda não foi confirmada.</strong><p className="mt-1 text-[#fca79b]/80">{state.error}</p></div></div> : null}
 
       <footer className="sticky bottom-[calc(80px+env(safe-area-inset-bottom))] z-[var(--z-sticky)] flex flex-col-reverse gap-2 border-t border-od-border bg-od-bg py-3 sm:flex-row sm:items-center sm:justify-end md:bottom-0">
-        <button type="button" onClick={() => router.push("/painel/funil")} className="btn-secondary">Voltar ao funil</button>
+        <button type="button" onClick={() => router.push("/funil")} className="btn-secondary">Voltar ao funil</button>
         <button type="submit" disabled={pending || items.length === 0} className="btn min-w-64">{pending ? "Confirmando venda…" : <><Check size={16} /> Confirmar venda e criar pedido</>}</button>
       </footer>
     </form>

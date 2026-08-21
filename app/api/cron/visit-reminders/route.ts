@@ -165,7 +165,7 @@ async function sendPushReminders(admin: ReturnType<typeof createAdminClient>, no
       const { sent: pushed } = await sendPushToUser(admin, visit.broker_id, {
         title: "Visita hoje",
         body: `${when} — ${property?.title ?? "Imóvel"}${address ? ` — ${address}` : ""}`,
-        url: "/painel/imoveis/visitas",
+        url: "/imoveis/visitas",
       });
       if (pushed > 0) sent++;
     } catch (err) {
@@ -207,7 +207,7 @@ async function sendOfferExpiryReminders(admin: ReturnType<typeof createAdminClie
       const { sent: pushed } = await sendPushToUser(admin, offer.created_by, {
         title: "Proposta expirando em breve",
         body: `${property?.title ?? "Imóvel"}${amount ? ` — ${amount}` : ""} — expira ${expiresWhen}`,
-        url: "/painel/imoveis",
+        url: "/imoveis",
       });
       if (pushed > 0) sent++;
     } catch (err) {

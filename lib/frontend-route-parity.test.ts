@@ -125,21 +125,20 @@ describe("frontend route parity", () => {
   it("preserves vertical destinations in the serializable navigation contract", () => {
     const navigation = read("lib/design-system/navigation.ts");
     for (const route of [
-      "/painel/contatos",
-      "/painel/funil",
-      "/painel/tarefas",
-      "/painel/whatsapp",
-      "/painel/produtos",
-      "/painel/pedidos",
-      "/painel/juridico/processos",
-      "/painel/juridico/prazos",
-      "/painel/juridico/consulta",
-      "/painel/imoveis/dashboard",
-      "/painel/imoveis/mapa",
-      "/painel/imoveis/visitas",
-      "/painel/imoveis/colecoes",
-      "/painel/imoveis/comissoes",
-      "/painel/configuracoes",
+      "/contatos",
+      "/funil",
+      "/tarefas",
+      "/whatsapp",
+      "/produtos",
+      "/pedidos",
+      "/juridico/processos",
+      "/juridico/prazos",
+      "/imoveis/dashboard",
+      "/imoveis/mapa",
+      "/imoveis/visitas",
+      "/imoveis/colecoes",
+      "/imoveis/comissoes",
+      "/configuracoes",
     ]) {
       expect(navigation).toContain(`"${route}"`);
     }
@@ -151,7 +150,7 @@ describe("frontend route parity", () => {
 
     expect(entry).toContain('workspaceKey === "real_estate_broker"');
     expect(entry).toContain("canViewRealEstate(membership?.job_role, isOrgAdmin)");
-    expect(entry).toContain('"/painel/imoveis/dashboard"');
+    expect(entry).toContain('"/imoveis/dashboard"');
     expect(areaLayout).toContain('workspaceKey !== "real_estate_broker"');
     expect(areaLayout).toContain("canViewRealEstate(");
   });

@@ -61,14 +61,14 @@ describe("LegalDeadlineBoard", () => {
     expect(html).toContain('data-ui="deadline-calendar"');
     expect(html).toContain('data-ui="deadline-timeline"');
     expect(html).toContain("Audiência de conciliação");
-    expect(html).toContain("/painel/juridico/processos/case-1");
+    expect(html).toContain("/juridico/processos/case-1");
     expect(html).toContain("Apresentar réplica");
     expect(html).toContain("Atrasados");
     expect(html).toContain("2 casos ativos sem prazo cadastrado.");
     expect(html).toContain("ui-metric--danger");
     expect(html).toContain("ui-button--secondary");
     expect(html).toContain("ui-icon-button");
-    expect(html).toContain("/painel/juridico/prazos?month=2026-08&amp;dia=18");
+    expect(html).toContain("/juridico/prazos?month=2026-08&amp;dia=18");
     expect(html).toContain("text-[var(--od-danger-fg)]");
     expect(html).not.toContain("#fb7767");
     expect(html).not.toContain("Casos sem prazo");
@@ -105,8 +105,8 @@ describe("LegalDeadlineBoard", () => {
     expect(html).toContain("Ligar para a testemunha");
     expect(html).toContain("Ana Souza");
     expect(html).toContain("ui-status--neutral");
-    expect(html).toContain("/painel/juridico/prazos?month=2026-08&amp;editar=task-1");
-    expect(html).not.toContain("/painel/juridico/processos/case-1");
+    expect(html).toContain("/juridico/prazos?month=2026-08&amp;editar=task-1");
+    expect(html).not.toContain("/juridico/processos/case-1");
   });
 
   it("filters today from the metric band and shows an inset empty state for an idle day", () => {
@@ -162,7 +162,7 @@ describe("LegalDeadlineBoard", () => {
     );
 
     expect(selected).toContain('aria-current="true"');
-    expect(selected).toContain("/painel/juridico/prazos?month=2026-08\"");
+    expect(selected).toContain("/juridico/prazos?month=2026-08\"");
     expect(emptyDay).toContain("Nada neste dia.");
     expect(emptyDay).toContain("ui-feedback--inset");
     expect(emptyDay).toContain("Ver o mês");

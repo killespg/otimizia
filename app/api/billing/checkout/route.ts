@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   const orgId = await getActiveOrgId(supabase, user.id);
   const role = await getOrgRole(supabase, orgId, user.id);
   if (role !== "admin") {
-    return NextResponse.redirect(new URL("/painel/configuracoes?checkout=forbidden", request.url));
+    return NextResponse.redirect(new URL("/configuracoes?checkout=forbidden", request.url));
   }
 
   const [{ data: org }, { count: seatCount }] = await Promise.all([
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       .eq("id", orgId);
     if (error) {
       logError("billing/checkout.link-customer", error, { userId: user.id });
-      return NextResponse.redirect(new URL("/painel/configuracoes?checkout=error", request.url));
+      return NextResponse.redirect(new URL("/configuracoes?checkout=error", request.url));
     }
   }
 
@@ -66,12 +66,12 @@ export async function POST(request: Request) {
     // Sem isso o Stripe guarda os dados só na sessão; com isso eles sobem para
     // o Customer e passam a sair impressos em toda fatura seguinte.
     customer_update: { name: "auto", address: "auto" },
-    success_url: `${origin}/painel/configuracoes?checkout=success`,
-    cancel_url: `${origin}/painel/configuracoes?checkout=cancel`,
+    success_url: `${origin}/configuracoes?checkout=success`,
+    cancel_url: `${origin}/configuracoes?checkout=cancel`,
   });
 
   if (!session.url) {
-    return NextResponse.redirect(new URL("/painel/configuracoes?checkout=error", request.url));
+    return NextResponse.redirect(new URL("/configuracoes?checkout=error", request.url));
   }
   return NextResponse.redirect(session.url, 303);
 }

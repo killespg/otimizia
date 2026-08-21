@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { isDashboardHref } from "@/lib/workspace/app-routes";
 
 export function DashboardNavigationFeedback() {
   const pathname = usePathname();
@@ -16,8 +17,10 @@ export function DashboardNavigationFeedback() {
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       const target = event.target;
       if (!(target instanceof Element)) return;
-      const anchor = target.closest<HTMLAnchorElement>('a[href^="/painel"]');
+      const anchor = target.closest<HTMLAnchorElement>("a[href]");
       if (!anchor || anchor.target === "_blank" || anchor.hasAttribute("download")) return;
+      const href = anchor.getAttribute("href") ?? "";
+      if (!isDashboardHref(href)) return;
       const next = new URL(anchor.href, window.location.href);
       if (`${next.pathname}?${next.searchParams.toString()}` === locationKey) return;
       startedAt.current = performance.now();

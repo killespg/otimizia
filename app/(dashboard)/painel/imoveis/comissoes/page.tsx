@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Download, HandCoins, Target, TriangleAlert, WalletCards } from "lucide-react";
+import { Download, HandCoins, Target, TriangleAlert, WalletCards } from "lucide-react";
 import { canManageRealEstate, canViewRealEstate, isRealEstateV2Enabled } from "@/lib/real-estate/real-estate";
 import {
   commissionPeriodOrFilter,
@@ -109,11 +108,10 @@ export default async function RealEstateCommissionsPage({
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-6">
-      <header className="flex flex-col gap-5 pb-6 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-5 pb-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <Link href="/painel/imoveis/dashboard" className="inline-flex items-center gap-2 text-xs font-semibold text-od-text-3 hover:text-white/72"><ArrowLeft size={14} /> Voltar à visão geral</Link>
-          <h1 className="mt-4 text-od-title text-white">Comissões e metas</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/52">Registre previsões, acompanhe recebimentos e defina objetivos para a equipe ou para cada corretor.</p>
+          <h1 className="text-xs font-semibold text-od-text-3">Imobiliário / Comissões</h1>
+          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-white/52">Registre previsões, acompanhe recebimentos e defina objetivos para a equipe ou para cada corretor.</p>
         </div>
         <a href={`/api/reports/real-estate-commissions?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}${brokerFilter ? `&broker=${encodeURIComponent(brokerFilter)}` : ""}`} download className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius-control)] border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text"><Download size={15} /> Baixar relatório filtrado</a>
       </header>

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { isDashboardHref } from "@/lib/workspace/app-routes";
 
 /**
  * Prefetch only on clear intent. Loading every module on hydration multiplied
@@ -21,8 +22,10 @@ export function DashboardRoutePreloader() {
     const warmLinkedRoute = (event: Event) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
-      const anchor = target.closest<HTMLAnchorElement>('a[href^="/painel"]');
+      const anchor = target.closest<HTMLAnchorElement>("a[href]");
       if (!anchor) return;
+      const href = anchor.getAttribute("href") ?? "";
+      if (!isDashboardHref(href)) return;
       warm(`${anchor.pathname}${anchor.search}`);
     };
 

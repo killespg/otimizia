@@ -4,9 +4,11 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { bulkClearCaseDeadlines, bulkDeleteLegalCases } from "@/app/(dashboard)/painel/juridico/actions";
 import { BulkActionBar, BulkSelectAll, BulkSelectCheckbox, useBulkSelection } from "@/components/ui/BulkSelect";
+import { legalCaseHref } from "@/lib/law/legal-case-path";
 
 export type DeadlineRow = {
   id: string;
+  slug?: string;
   title: string;
   subtitle: string;
   responsibleLabel: string;
@@ -63,7 +65,7 @@ export function LegalDeadlineQueue({
               />
             )}
             <Link
-              href={`/painel/juridico/processos/${row.id}`}
+              href={legalCaseHref(row.slug, row.id)}
               className="grid min-h-16 min-w-0 flex-1 gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_11rem_11rem] sm:items-center"
             >
               <div className="min-w-0">

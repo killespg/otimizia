@@ -8,6 +8,7 @@ import {
   LegalLossReasonDialog,
   type LegalLossReason,
 } from "@/components/legal/legal-loss-reason-dialog";
+import { StatusTag } from "@/components/legal/legal-ui";
 import type { FieldSpec } from "@/lib/people/professions";
 import type { Deal, DealStage } from "@/lib/supabase/types";
 import {
@@ -19,6 +20,13 @@ import {
 import { isLostPipelineList, stageFromPipelineList } from "@/lib/crm/pipeline-stage";
 import { formatBRL } from "@/lib/utils/format";
 import { pipelineMetaFromList } from "./pipeline-meta";
+import {
+  canonicalizeLegalPipelineList,
+  LEGAL_PIPELINE_COLUMNS,
+  LEGAL_STAGE_COLUMNS,
+  legalColumnMeta,
+  legalColumnTitle,
+} from "@/lib/law/legal-pipeline";
 import {
   acceptDealHandoff,
   adminReassignDeal,
@@ -96,10 +104,12 @@ export default function Board({
   const boardRef = useRef<HTMLDivElement>(null);
   const boardBusy = isPending || savingId !== null;
   const visibleDeals = deals.filter((deal) => !isPlaceholder(deal));
-  const allColumns = uniqueLists([
-    ...pipelineLists,
-    ...deals.map((deal) => listName(deal)).filter(Boolean),
-  ]);
+  const allColumns = isLegal
+    ? [...LEGAL_PIPELINE_COLUMNS]
+    : uniqueLists([
+        ...pipelineLists,
+        ...deals.map((deal) => listName(deal, isLegal)).filter(Boolean),
+      ]);
   const allLabels = useMemo(() => {
     return uniqueLists(visibleDeals.flatMap((deal) => dealLabels(deal)));
   }, [visibleDeals]);
@@ -112,7 +122,7 @@ export default function Board({
           deal.title,
           contactNames[deal.contact_id ?? ""],
           formatDealValue(deal),
-          listName(deal),
+          listName(deal, isLegal),
           labels.join(" "),
           ...Object.values(deal.details ?? {}),
         ].join(" ")
@@ -120,14 +130,14 @@ export default function Board({
       return (
         (!needle || haystack.includes(needle)) &&
         (!labelFilter || labels.includes(labelFilter)) &&
-        (!listFilter || listName(deal) === listFilter)
+        (!listFilter || listName(deal, isLegal) === listFilter)
       );
     });
-  }, [contactNames, labelFilter, listFilter, search, visibleDeals]);
+  }, [contactNames, isLegal, labelFilter, listFilter, search, visibleDeals]);
   const columns = allColumns.filter((column) => {
     if (listFilter && column !== listFilter) return false;
     if (!hideEmpty) return true;
-    return filteredDeals.some((deal) => listName(deal) === column);
+    return filteredDeals.some((deal) => listName(deal, isLegal) === column);
   });
 
   useEffect(() => {
@@ -148,14 +158,14 @@ export default function Board({
     if (!deal) return;
     const previousDetails = deal.details ?? {};
     const previousStage = deal.stage;
-    const previousList = listName(deal);
+    const previousList = listName(deal, isLegal);
     if (previousList === targetList) return;
 
     // No workspace de produtos, "Ganho" não é só uma coluna: precisa virar
     // pedido com itens, estoque e garantias. A confirmação é transacional e
     // só ela fecha a negociação de fato.
     if (isSeller && stageFromPipelineList(targetList) === "ganho") {
-      router.push(`/painel/vendas/${id}/confirmar`);
+      router.push(`/vendas/${id}/confirmar`);
       return;
     }
 
@@ -223,7 +233,7 @@ export default function Board({
   }
 
   return (
-    <div className={flat ? "space-y-5" : "space-y-4"}>
+    <div className={(flat ? "space-y-5" : "space-y-4") + " min-w-0 w-full max-w-full"}>
       {pendingLegalLoss ? (
         <LegalLossReasonDialog
           dealTitle={deals.find((deal) => deal.id === pendingLegalLoss.dealId)?.title ?? "Atendimento"}
@@ -232,8 +242,9 @@ export default function Board({
           returnFocusTo={legalLossReturnFocus}
         />
       ) : null}
+      {isLegal ? null : (
       <form action={createPipelineList} className="panel flex flex-col gap-3 p-4 sm:flex-row sm:items-end">
-        <input type="hidden" name="return_to" value="/painel/funil" />
+        <input type="hidden" name="return_to" value="/funil" />
         <div className="min-w-0 flex-1">
           <label className="label" htmlFor="pipeline-list-name">
             Nova lista
@@ -252,7 +263,19 @@ export default function Board({
           Criar lista
         </PendingButton>
       </form>
+      )}
 
+      {isLegal ? (
+        <label className="block max-w-xl">
+          <span className="sr-only">Buscar no quadro</span>
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Buscar nome, área ou resumo"
+            className="field"
+          />
+        </label>
+      ) : (
       <section className="panel grid gap-3 p-4 md:grid-cols-[minmax(14rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto] md:items-end">
         <label className="block min-w-0">
           <span className="label">Buscar no quadro</span>
@@ -303,6 +326,7 @@ export default function Board({
           Ocultar vazias
         </label>
       </section>
+      )}
 
       {columns.length > 1 && (
         <div className="sticky top-[calc(4.75rem+env(safe-area-inset-top))] z-20 -mx-1 flex items-center justify-between gap-2 rounded-[var(--radius-inner)] border border-od-border bg-od-surface p-1.5 sm:hidden">
@@ -315,7 +339,7 @@ export default function Board({
             Anterior
           </button>
           <span className="shrink-0 rounded-md bg-brand-50 px-2.5 py-1 text-xs font-black text-brand-700">
-            {columns.length} listas
+            {isLegal ? `${columns.length} etapas` : `${columns.length} listas`}
           </span>
           <button
             type="button"
@@ -331,12 +355,18 @@ export default function Board({
       <div
         ref={boardRef}
         aria-busy={boardBusy}
-        className={flat ? "pipeline-board -mx-5 flex snap-x snap-mandatory gap-0 overflow-x-auto border-y border-white/[0.08] px-5 sm:mx-0 sm:px-0" : "pipeline-board -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 sm:mx-0 sm:gap-4 sm:px-0"}
+        className={
+          isLegal
+            ? "pipeline-board flex snap-x snap-mandatory gap-3 pb-4"
+            : flat
+              ? "pipeline-board flex snap-x snap-mandatory gap-0 border-y border-white/[0.08]"
+              : "pipeline-board flex snap-x snap-mandatory gap-3 pb-2 sm:gap-4"
+        }
       >
         {columns.map((column) => {
           const meta = trelloMeta(column);
           const columnDeals = filteredDeals
-            .filter((deal) => listName(deal) === column)
+            .filter((deal) => listName(deal, isLegal) === column)
             .sort(compareDeals);
           const total = columnDeals.reduce((sum, deal) => sum + dealValueOrZero(deal), 0);
           const isOver = overList === column;
@@ -355,12 +385,33 @@ export default function Board({
               }}
               onDrop={() => onDrop(column)}
               className={
-                (flat
-                  ? "flex min-w-[calc(100vw-2rem)] shrink-0 snap-start flex-col overflow-hidden border-r border-white/[0.08] bg-transparent transition-colors duration-200 sm:min-w-[18rem] "
-                  : "panel flex min-w-[calc(100vw-2rem)] shrink-0 snap-start flex-col overflow-hidden transition-colors duration-200 sm:min-w-[18rem] ") +
-                (isOver ? (flat ? "bg-od-accent/[0.06]" : "border-brand-300 bg-brand-50") : "")
+                (isLegal
+                  ? "flex w-[min(17.5rem,100%)] shrink-0 snap-start flex-col overflow-hidden rounded-[var(--radius-panel)] border border-od-border bg-od-surface transition-colors duration-200 "
+                  : flat
+                    ? "flex w-[min(18rem,100%)] shrink-0 snap-start flex-col overflow-hidden border-r border-white/[0.08] bg-transparent transition-colors duration-200 "
+                    : "panel flex w-[min(18rem,100%)] shrink-0 snap-start flex-col overflow-hidden transition-colors duration-200 ") +
+                (isOver
+                  ? isLegal
+                    ? "border-od-accent/50 bg-od-accent/[0.06]"
+                    : flat
+                      ? "bg-od-accent/[0.06]"
+                      : "border-brand-300 bg-brand-50"
+                  : "")
               }
             >
+              {isLegal ? (
+                <header className="border-b border-od-border px-4 py-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h2 className="text-sm font-semibold text-white">{legalColumnMeta(column).title}</h2>
+                      <p className="mt-0.5 text-[11px] leading-snug text-od-text-3">{legalColumnMeta(column).hint}</p>
+                    </div>
+                    <span className="rounded-[var(--radius-round)] border border-od-border px-2 py-0.5 text-xs font-semibold tabular-nums text-od-text-2">
+                      {columnDeals.length}
+                    </span>
+                  </div>
+                </header>
+              ) : (
               <header className={flat ? "border-b border-white/[0.08] bg-transparent px-4 py-4" : "border-b border-line bg-white px-4 py-4"}>
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2">
@@ -375,15 +426,22 @@ export default function Board({
                   {formatBRL(total)}
                 </p>
               </header>
+              )}
 
               <div className={flat ? "flex min-h-[22rem] flex-1 flex-col gap-3 bg-transparent p-3" : "enter flex min-h-[22rem] flex-1 flex-col gap-3 bg-[#f8fbff] p-3"}>
                 {columnDeals.length === 0 ? (
                   <div className={flat ? "flex flex-1 flex-col items-center justify-center px-4 py-8 text-center" : "flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-line bg-white px-4 py-8 text-center"}>
-                    <p className="text-sm font-black text-ink">
-                      {isOver ? "Solte aqui" : isSeller ? "Sem vendas" : isRealEstate ? "Sem atendimentos" : "Vazio"}
+                    <p className={isLegal ? "text-sm font-semibold text-white" : "text-sm font-black text-ink"}>
+                      {isOver ? "Solte aqui" : isLegal ? "Ninguém nesta etapa" : isSeller ? "Sem vendas" : isRealEstate ? "Sem atendimentos" : "Vazio"}
                     </p>
-                    <p className="mt-1 text-xs font-medium leading-relaxed text-ink-muted">
-                      {isSeller ? "Nenhuma venda nesta etapa." : isRealEstate ? "Nenhum atendimento nesta etapa." : meta.empty}
+                    <p className={isLegal ? "mt-1 text-xs leading-relaxed text-od-text-3" : "mt-1 text-xs font-medium leading-relaxed text-ink-muted"}>
+                      {isLegal
+                        ? legalColumnMeta(column).empty
+                        : isSeller
+                          ? "Nenhuma venda nesta etapa."
+                          : isRealEstate
+                            ? "Nenhum atendimento nesta etapa."
+                            : meta.empty}
                     </p>
                   </div>
                 ) : (
@@ -403,16 +461,25 @@ export default function Board({
                           setOverList(null);
                         }}
                         className={
-                          (flat ? "row-link group rounded-md border border-white/[0.09] bg-white/[0.025] p-3 hover:border-od-accent/30 " : "row-link group rounded-lg border border-line bg-white p-3 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] hover:border-brand-200 ") +
+                          (isLegal
+                            ? "row-link group rounded-[var(--radius-inner)] border border-od-border bg-white/[0.03] p-3 hover:border-od-border-hover "
+                            : flat
+                              ? "row-link group rounded-md border border-white/[0.09] bg-white/[0.025] p-3 hover:border-od-accent/30 "
+                              : "row-link group rounded-lg border border-line bg-white p-3 shadow-[0_14px_34px_-28px_rgba(21,19,46,0.72)] hover:border-brand-200 ") +
                           (boardBusy ? "cursor-wait opacity-70" : canDrag ? "cursor-grab active:cursor-grabbing" : "") +
                           " " +
-                          (dragId === deal.id ? "scale-[0.985] opacity-45 ring-2 ring-brand-300" : "")
+                          (dragId === deal.id ? "scale-[0.985] opacity-45 ring-2 ring-brand-300" : "") +
+                          (isLegal && deal.details?.sensitive_alert === "true" ? " border-[color:var(--od-danger)] ring-1 ring-[color:var(--od-danger)]" : "")
                         }
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex min-w-0 items-start gap-2">
                             <IconGrip className="mt-0.5 h-4 w-4 shrink-0 text-ink-muted/45 transition-colors duration-150 group-hover:text-brand-700" />
                             <div className="min-w-0">
+                              {isLegal ? (
+                                <LegalDealSummary deal={deal} contactName={deal.contact_id ? contactNames[deal.contact_id] : undefined} />
+                              ) : (
+                              <>
                               <p className="clip-2 text-safe text-sm font-black leading-snug text-ink">
                                 {deal.title}
                               </p>
@@ -426,6 +493,11 @@ export default function Board({
                                   {firstDetail(deal.details, dealFields)}
                                 </p>
                               )}
+                              {isLegal && deal.details?.sensitive_alert === "true" ? (
+                                <p className="mt-1 text-[11px] font-semibold text-[var(--od-danger-fg)]">
+                                  Assumir conversa · {deal.details.sensitive_terms || "termo crítico"}
+                                </p>
+                              ) : null}
                               {dealLinks(deal).length > 0 && (
                                 <div className="mt-1 flex flex-wrap gap-2">
                                   {dealLinks(deal).map((link) => (
@@ -441,6 +513,8 @@ export default function Board({
                                     </a>
                                   ))}
                                 </div>
+                              )}
+                              </>
                               )}
                             </div>
                           </div>
@@ -467,7 +541,7 @@ export default function Board({
                             </button>
                             <form action={deleteDeal} className="shrink-0">
                               <input type="hidden" name="id" value={deal.id} />
-                              <input type="hidden" name="return_to" value="/painel/funil" />
+                              <input type="hidden" name="return_to" value="/funil" />
                               <PendingButton
                                 className="icon-button grid h-11 w-11 place-items-center rounded-md text-ink-muted/50 opacity-100 hover:bg-danger-50 hover:text-danger-600 sm:opacity-0 sm:group-hover:opacity-100"
                                 title="Excluir"
@@ -485,19 +559,20 @@ export default function Board({
                           <div className="mt-3 space-y-3 border-t border-line pt-3">
                             {isSeller && deal.details?.seller_order_id ? (
                               <Link
-                                href={`/painel/pedidos/${deal.details.seller_order_id}`}
+                                href={`/pedidos/${deal.details.seller_order_id}`}
                                 className="flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-od-accent/25 bg-od-accent/[0.06] px-3 text-xs font-semibold text-od-text hover:bg-white/[0.04]"
                               >
                                 Abrir pedido confirmado
                               </Link>
                             ) : isSeller && deal.stage !== "perdido" ? (
                               <Link
-                                href={`/painel/vendas/${deal.id}/confirmar`}
+                                href={`/vendas/${deal.id}/confirmar`}
                                 className="flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-od-accent/25 bg-od-accent/[0.06] px-3 text-xs font-semibold text-od-text hover:bg-white/[0.04]"
                               >
                                 Confirmar venda e criar pedido
                               </Link>
                             ) : null}
+                            <p className={flat ? "text-[11px] font-semibold text-od-text-3" : "text-[11px] font-black text-ink-muted"}>Mover para</p>
                             <div className="flex flex-wrap gap-1.5">
                               {otherLists.map((list) => (
                                 <button
@@ -509,14 +584,16 @@ export default function Board({
                                   }}
                                   className="min-h-11 rounded-md border border-line bg-white px-3 py-2 text-xs font-bold text-ink-soft hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
                                 >
-                                  {list}
+                                  {isLegal ? legalColumnTitle(list) : list}
                                 </button>
                               ))}
                             </div>
 
+                            {isLegal ? null : (
+                            <>
                             <form action={updateDealOptions} className={flat ? "space-y-2 border-t border-white/[0.08] pt-3" : "space-y-2 rounded-lg border border-line bg-[#f8fbff] p-3"}>
                               <input type="hidden" name="id" value={deal.id} />
-                              <input type="hidden" name="return_to" value="/painel/funil" />
+                              <input type="hidden" name="return_to" value="/funil" />
                               <label className="block">
                                 <span className="text-xs font-black text-ink-soft">Etiquetas</span>
                                 <input
@@ -573,7 +650,7 @@ export default function Board({
 
                             <form action={uploadDealPhoto} className={flat ? "space-y-2 border-t border-white/[0.08] pt-3" : "space-y-2 rounded-lg border border-line bg-white p-3"}>
                               <input type="hidden" name="id" value={deal.id} />
-                              <input type="hidden" name="return_to" value="/painel/funil" />
+                              <input type="hidden" name="return_to" value="/funil" />
                               <label className="block">
                                 <span className="text-xs font-black text-ink-soft">Foto</span>
                                 <input
@@ -590,6 +667,8 @@ export default function Board({
                                 Anexar foto
                               </PendingButton>
                             </form>
+                            </>
+                            )}
                           </div>
                         )}
 
@@ -726,7 +805,7 @@ function DealAssignee({
           <span className="tag bg-warning-50 text-warning-700">Em aberto</span>
           <form action={claimDeal}>
             <input type="hidden" name="deal_id" value={deal.id} />
-            <input type="hidden" name="return_to" value="/painel/funil" />
+            <input type="hidden" name="return_to" value="/funil" />
             <PendingButton
               className="rounded-md bg-brand-700 px-2 py-1 text-xs font-black text-white hover:bg-brand-800"
               pendingLabel="Pegando"
@@ -743,7 +822,7 @@ function DealAssignee({
             <span className="tag bg-warning-50 text-warning-700">Pediram para você pegar</span>
             <form action={acceptDealHandoff}>
               <input type="hidden" name="deal_id" value={deal.id} />
-              <input type="hidden" name="return_to" value="/painel/funil" />
+              <input type="hidden" name="return_to" value="/funil" />
               <PendingButton
                 className="rounded-md bg-brand-700 px-2 py-1 text-xs font-black text-white hover:bg-brand-800"
                 pendingLabel="Aceitando"
@@ -753,7 +832,7 @@ function DealAssignee({
             </form>
             <form action={declineDealHandoff}>
               <input type="hidden" name="deal_id" value={deal.id} />
-              <input type="hidden" name="return_to" value="/painel/funil" />
+              <input type="hidden" name="return_to" value="/funil" />
               <PendingButton
                 className="rounded-md border border-line bg-white px-2 py-1 text-xs font-black text-ink-soft hover:bg-surface-2"
                 pendingLabel="Recusando"
@@ -784,7 +863,7 @@ function DealAssignee({
           className="mt-1 flex w-full flex-wrap items-center gap-2"
         >
           <input type="hidden" name="deal_id" value={deal.id} />
-          <input type="hidden" name="return_to" value="/painel/funil" />
+          <input type="hidden" name="return_to" value="/funil" />
           <select
             name={isAdmin ? "assignee_id" : "target_user_id"}
             required
@@ -812,11 +891,63 @@ function DealAssignee({
   );
 }
 
-function listName(deal: Deal) {
-  return deal.details?.pipeline_list || deal.details?.trello_list || fallbackList(deal.stage);
+function LegalDealSummary({
+  deal,
+  contactName,
+}: {
+  deal: Deal;
+  contactName?: string;
+}) {
+  const area = deal.details?.area_direito;
+  const urgency = deal.details?.urgencia;
+  const summary = deal.details?.resumo_caso;
+  const venue = deal.details?.comarca;
+  const sensitive = deal.details?.sensitive_alert === "true";
+  const urgencyTone =
+    urgency === "Alta" ? "danger" : urgency === "Média" ? "warning" : "neutral";
+  const heading = contactName || deal.title;
+  const subtitle = contactName && deal.title !== contactName ? deal.title : null;
+
+  return (
+    <div className="min-w-0">
+      {sensitive ? (
+        <p className="mb-2 rounded-[var(--radius-inner)] border border-[color:var(--od-danger)]/35 bg-[color:var(--od-danger)]/10 px-2 py-1.5 text-[11px] font-semibold text-[var(--od-danger-fg)]">
+          Assumir conversa · {deal.details?.sensitive_terms || "termo crítico"}
+        </p>
+      ) : null}
+      <p className="clip-2 text-sm font-semibold leading-snug text-white">{heading}</p>
+      {subtitle ? <p className="mt-0.5 truncate text-xs text-od-text-3">{subtitle}</p> : null}
+      {area || urgency || venue ? (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {area ? <StatusTag>{area}</StatusTag> : null}
+          {urgency ? <StatusTag tone={urgencyTone}>{urgency}</StatusTag> : null}
+          {venue ? <StatusTag>{venue}</StatusTag> : null}
+        </div>
+      ) : null}
+      {summary ? (
+        <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-od-text-2">{summary}</p>
+      ) : null}
+      {deal.contact_id ? (
+        <Link
+          href={`/contatos/${deal.contact_id}`}
+          className="mt-2 inline-flex text-xs font-semibold text-od-accent hover:text-white"
+          onClick={(event) => event.stopPropagation()}
+        >
+          Abrir ficha
+        </Link>
+      ) : null}
+    </div>
+  );
 }
 
-function fallbackList(stage: DealStage) {
+function listName(deal: Deal, legal = false) {
+  const raw = deal.details?.pipeline_list || deal.details?.trello_list;
+  if (legal) return canonicalizeLegalPipelineList(raw || fallbackList(deal.stage, true));
+  return raw || fallbackList(deal.stage);
+}
+
+function fallbackList(stage: DealStage, legal = false) {
+  if (legal) return LEGAL_STAGE_COLUMNS[stage];
   const labels: Record<DealStage, string> = {
     novo: "Novo",
     em_contato: "Em contato",

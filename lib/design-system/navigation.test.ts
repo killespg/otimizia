@@ -16,15 +16,15 @@ describe("product navigation contract", () => {
     expect(destinations(navigation)).toEqual(
       expect.arrayContaining([
         "/painel",
-        "/painel/contatos",
-        "/painel/funil",
-        "/painel/produtos",
-        "/painel/pedidos",
-        "/painel/pos-venda",
-        "/painel/configuracoes",
+        "/contatos",
+        "/funil",
+        "/produtos",
+        "/pedidos",
+        "/pos-venda",
+        "/configuracoes",
       ]),
     );
-    expect(destinations(navigation)).not.toContain("/painel/colecoes");
+    expect(destinations(navigation)).not.toContain("/colecoes");
     expect(navigation.bottomTabs).toHaveLength(3);
   });
 
@@ -38,8 +38,11 @@ describe("product navigation contract", () => {
       access: { canViewFinance: true },
     });
 
-    expect(destinations(denied)).not.toContain("/painel/financeiro");
-    expect(destinations(allowed)).toContain("/painel/financeiro");
+    expect(destinations(denied)).not.toContain("/financeiro");
+    expect(destinations(allowed)).toContain("/financeiro");
+    expect(allowed.groups.flatMap((group) => group.items).map((item) => item.label)).toEqual(
+      expect.arrayContaining(["Possíveis Clientes", "Clientes"]),
+    );
   });
 
   it("keeps real-estate routes and mobile actions in one serializable contract", () => {
@@ -50,12 +53,12 @@ describe("product navigation contract", () => {
 
     expect(destinations(navigation)).toEqual(
       expect.arrayContaining([
-        "/painel/imoveis/dashboard",
-        "/painel/imoveis",
-        "/painel/imoveis/mapa",
-        "/painel/imoveis/visitas",
-        "/painel/imoveis/colecoes",
-        "/painel/imoveis/comissoes",
+        "/imoveis/dashboard",
+        "/imoveis",
+        "/imoveis/mapa",
+        "/imoveis/visitas",
+        "/imoveis/colecoes",
+        "/imoveis/comissoes",
       ]),
     );
     expect(navigation.quickActions[0]?.key).toBe("property-create");
@@ -79,10 +82,10 @@ describe("product navigation contract", () => {
     });
 
     const hrefs = destinations(navigation);
-    expect(hrefs).toContain("/painel/juridico");
-    expect(hrefs).toContain("/painel/financeiro");
-    expect(hrefs).toContain("/painel/metricas");
-    expect(hrefs).not.toContain("/painel/imoveis");
+    expect(hrefs).toContain("/juridico");
+    expect(hrefs).toContain("/financeiro");
+    expect(hrefs).toContain("/metricas");
+    expect(hrefs).not.toContain("/imoveis");
     expect(navigation.groups[0].items[1].label).toBe("Associados");
   });
 });

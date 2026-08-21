@@ -299,7 +299,7 @@ export default async function TeamPage(
                   <IconUsers className="h-4 w-4" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <Link href={`/painel/equipe/${member.user_id}`} className="truncate text-[13px] font-semibold text-white hover:text-od-accent-soft">
+                  <Link href={`/equipe/${member.user_id}`} className="truncate text-[13px] font-semibold text-white hover:text-od-accent-soft">
                     {member.name || "Sem nome"}
                     {isSelf && <span className="ml-1.5 font-medium text-ink-muted">(você)</span>}
                   </Link>
@@ -379,7 +379,7 @@ async function safeInvite(formData: FormData) {
     await inviteMember(formData);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Não deu para enviar o convite.";
-    redirect(`/painel/equipe?error=${encodeURIComponent(message)}`);
+    redirect(`/equipe?error=${encodeURIComponent(message)}`);
   }
 }
 

@@ -29,15 +29,15 @@ export default async function DashboardEntryPage() {
   if (workspaceKey === "law_office") {
     redirect(
       canViewLegal(membership?.job_role, isOrgAdmin)
-        ? "/painel/juridico"
-        : "/painel/contatos",
+        ? "/juridico"
+        : "/contatos",
     );
   }
   if (workspaceKey === "real_estate_broker") {
     redirect(
       canViewRealEstate(membership?.job_role, isOrgAdmin)
-        ? "/painel/imoveis/dashboard"
-        : "/painel/contatos",
+        ? "/imoveis/dashboard"
+        : "/contatos",
     );
   }
   return <GenericDashboard />;

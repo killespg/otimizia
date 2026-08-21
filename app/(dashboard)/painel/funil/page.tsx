@@ -1,10 +1,19 @@
+import { ActionDrawer } from "@/components/design-system/action-drawer";
+import { LegalPage, PageHeader as LegalPageHeader } from "@/components/legal/legal-ui";
+import { MetricBand } from "@/components/ui/data-display";
 import { PendingButton } from "@/components/ui/PendingButton";
-import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
+import { dealValueOrZero } from "@/lib/crm/deals";
+import {
+  canonicalizeLegalPipelineList,
+  LEGAL_INTAKE_COLUMN,
+  LEGAL_PIPELINE_COLUMNS,
+} from "@/lib/law/legal-pipeline";
 import { getProfessionPreset } from "@/lib/people/professions";
+import type { FieldSpec } from "@/lib/people/professions";
 import { createClient } from "@/lib/supabase/server";
 import type { Contact, Deal } from "@/lib/supabase/types";
-import { dealValueOrZero } from "@/lib/crm/deals";
 import { formatBRL } from "@/lib/utils/format";
+import { getActiveOrgId, getOrgMembers, getOrgRole } from "@/lib/workspace/org";
 import { getWorkspaceLabels } from "@/lib/workspace/workspace-preferences";
 import { getWorkspaceKey } from "@/lib/workspace/workspaces";
 import Link from "next/link";
@@ -29,7 +38,10 @@ const LIVESTOCK_LIST_ORDER = [
   "PERDAS",
 ];
 
-export default async function PipelinePage() {
+export default async function PipelinePage(props: {
+  searchParams?: Promise<{ novo?: string }>;
+}) {
+  const searchParams = await props.searchParams;
   const supabase = await createClient();
 
   const [
@@ -81,7 +93,7 @@ export default async function PipelinePage() {
   const isSeller = workspaceKey === "autonomous_seller";
   const isRealEstate = workspaceKey === "real_estate_broker";
   const isLegal = workspaceKey === "law_office";
-  const usesFlatPipeline = isSeller || isRealEstate || isLegal;
+  const usesFlatPipeline = isSeller || isRealEstate;
   const pipelineLists = pipelineListsFor(allDeals, preset.key);
   const contactNames = Object.fromEntries(
     allContacts.map((contact) => [contact.id, contact.name])
@@ -94,19 +106,89 @@ export default async function PipelinePage() {
     .filter((deal) => deal.stage === "ganho")
     .reduce((sum, deal) => sum + dealValueOrZero(deal), 0);
 
+  if (isLegal) {
+    const openLegal = allDeals.filter((deal) => deal.stage !== "ganho" && deal.stage !== "perdido");
+    const intakeCount = openLegal.filter(
+      (deal) => canonicalizeLegalPipelineList(deal.details?.pipeline_list || deal.details?.trello_list) === LEGAL_INTAKE_COLUMN,
+    ).length;
+    const assumeCount = openLegal.filter((deal) => deal.details?.sensitive_alert === "true").length;
+    const proposalCount = openLegal.filter(
+      (deal) => canonicalizeLegalPipelineList(deal.details?.pipeline_list || deal.details?.trello_list) === "Proposta / Honorários",
+    ).length;
+    const convertedCount = allDeals.filter((deal) => deal.stage === "ganho").length;
+
+    return (
+      <LegalPage>
+        <LegalPageHeader
+          eyebrow="Jurídico"
+          description="Arraste o card quando o atendimento avançar. O Tim preenche área, resumo e urgência pela conversa."
+          action={
+            <div className="flex flex-wrap gap-2">
+              <Link href="/funil/relatorio" className="ui-button ui-button--secondary">
+                Relatório
+              </Link>
+              <ActionDrawer
+                label="Novo possível cliente"
+                title="Novo possível cliente"
+                description="Cai em Triagem. Se a pessoa já falou no WhatsApp, o Tim completa o card sozinho."
+                icon={<IconPlus className="h-4 w-4" />}
+                triggerClassName="ui-button ui-button--primary"
+                initialOpen={searchParams?.novo === "1"}
+              >
+                <NewLegalDealForm
+                  contacts={allContacts}
+                  members={members}
+                  currentUserId={user!.id}
+                  isAdmin={isAdmin}
+                  dealFields={preset.dealFields}
+                />
+              </ActionDrawer>
+            </div>
+          }
+        />
+
+        <MetricBand
+          aria-label="Resumo dos possíveis clientes"
+          className="sm:grid-cols-2 lg:grid-cols-4"
+          items={[
+            { label: "Em triagem", value: intakeCount },
+            {
+              label: "Precisa assumir",
+              value: assumeCount,
+              tone: assumeCount > 0 ? "danger" : undefined,
+              detail: assumeCount > 0 ? "Conversa crítica no WhatsApp" : "Nenhuma conversa crítica",
+            },
+            { label: "Honorários", value: proposalCount },
+            { label: "Convertidos", value: convertedCount },
+          ]}
+        />
+
+        <Board
+          initialDeals={allDeals}
+          contactNames={contactNames}
+          stages={preset.stages}
+          dealFields={preset.dealFields}
+          pipelineLists={pipelineLists}
+          members={members}
+          currentUserId={user!.id}
+          isAdmin={isAdmin}
+          isLegal
+          flat
+        />
+      </LegalPage>
+    );
+  }
+
   return (
-    <div className="mx-auto w-full max-w-[1640px] space-y-5">
-      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-end lg:justify-between">
+    <div className="mx-auto w-full min-w-0 max-w-[1640px] space-y-5">
+      <header className="flex flex-col gap-4 border-b border-white/[0.08] pb-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-xs font-semibold text-od-text-2">{isSeller ? "CRM" : isRealEstate ? "Imobiliário" : "Escritório"} / {workspaceLabels.pipeline}</p>
-          <h1 className="mt-2 text-od-title text-white">
-            {preset.pipelineTitle}
-          </h1>
-          <p className="mt-2 hidden max-w-xl text-sm leading-relaxed text-white/52 sm:block">
+          <h1 className="text-xs font-semibold text-od-text-2">{isSeller ? "CRM" : isRealEstate ? "Imobiliário" : "Escritório"} / {workspaceLabels.pipeline}</h1>
+          <p className="mt-1 hidden max-w-xl text-sm leading-relaxed text-white/52 sm:block">
             {preset.pipelineDescription}
           </p>
         </div>
-        <Link href="/painel/funil/relatorio" className="inline-flex min-h-11 items-center gap-1.5 self-start rounded-md border border-white/[0.1] px-4 text-[12px] font-semibold text-white/62 hover:bg-white/[0.04] hover:text-white">
+        <Link href="/funil/relatorio" className="inline-flex min-h-11 items-center gap-1.5 self-start rounded-md border border-white/[0.1] px-4 text-[12px] font-semibold text-white/62 hover:bg-white/[0.04] hover:text-white">
           <IconChartBar className="h-4 w-4" />
           Relatório
         </Link>
@@ -119,7 +201,7 @@ export default async function PipelinePage() {
       </section>
 
       <form id="new-deal" action={createDeal} className="ui-form-panel scroll-mt-24 p-5">
-        <input type="hidden" name="return_to" value="/painel/funil" />
+        <input type="hidden" name="return_to" value="/funil" />
         <input type="hidden" name="pipeline_list" value={pipelineLists[0] ?? "Novo"} />
         {usesFlatPipeline ? <div className="mb-4"><h2 className="text-od-subtitle text-white">{isSeller ? "Nova venda" : "Novo atendimento"}</h2><p className="mt-1 text-xs text-od-text-3">{isSeller ? "Cadastre o essencial e acompanhe no quadro." : "Registre a demanda do cliente e acompanhe cada avanço no funil."}</p></div> : null}
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_9rem_minmax(0,1fr)_auto] lg:items-end">
@@ -217,10 +299,94 @@ export default async function PipelinePage() {
         isAdmin={isAdmin}
         isSeller={isSeller}
         isRealEstate={isRealEstate}
-        isLegal={isLegal}
         flat={usesFlatPipeline}
       />
     </div>
+  );
+}
+
+function NewLegalDealForm({
+  contacts,
+  members,
+  currentUserId,
+  isAdmin,
+  dealFields,
+}: {
+  contacts: Pick<Contact, "id" | "name">[];
+  members: { user_id: string; name: string | null }[];
+  currentUserId: string;
+  isAdmin: boolean;
+  dealFields: FieldSpec[];
+}) {
+  return (
+    <form action={createDeal} className="space-y-4">
+      <input type="hidden" name="return_to" value="/funil" />
+      <input type="hidden" name="pipeline_list" value={LEGAL_INTAKE_COLUMN} />
+      <div>
+        <label className="label" htmlFor="legal-deal-title">
+          Como chegou
+          <span className="ml-1 text-brand-700" aria-hidden="true">*</span>
+          <span className="sr-only"> obrigatório</span>
+        </label>
+        <input
+          id="legal-deal-title"
+          name="title"
+          required
+          maxLength={160}
+          placeholder="Ex: Consulta trabalhista — Maria"
+          className="field mt-1.5"
+        />
+      </div>
+      <ContactField contacts={contacts} />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <PresetFields fields={dealFields} />
+      </div>
+      <div>
+        <label className="label" htmlFor="legal-deal-value">
+          Honorários estimados (R$)
+        </label>
+        <input
+          id="legal-deal-value"
+          name="value"
+          type="text"
+          inputMode="decimal"
+          maxLength={32}
+          placeholder="Opcional"
+          className="field mt-1.5"
+        />
+      </div>
+      {members.length > 1 ? (
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="min-w-0 flex-1">
+            <label className="label" htmlFor="legal-deal-assignee">
+              Responsável
+            </label>
+            <select
+              id="legal-deal-assignee"
+              name="assignee_id"
+              className="field mt-1.5"
+              defaultValue={currentUserId}
+            >
+              {members.map((member) => (
+                <option key={member.user_id} value={member.user_id}>
+                  {member.user_id === currentUserId ? "Eu" : (member.name ?? "Sem nome")}
+                </option>
+              ))}
+            </select>
+          </div>
+          {isAdmin ? (
+            <label className="flex min-h-11 items-center gap-2 text-sm font-semibold text-od-text-2">
+              <input type="checkbox" name="open_assignment" className="h-4 w-4 rounded border-line accent-brand-700" />
+              Deixar em aberto
+            </label>
+          ) : null}
+        </div>
+      ) : null}
+      <PendingButton className="btn h-[42px] w-full" pendingLabel="Salvando">
+        <IconPlus className="h-4 w-4" />
+        Colocar na triagem
+      </PendingButton>
+    </form>
   );
 }
 
@@ -263,6 +429,10 @@ function pipelineListsFor(deals: Deal[], presetKey: string) {
       "NEGÓCIO PERDIDO",
       ...fromDeals,
     ]);
+  }
+
+  if (presetKey === "law_office") {
+    return [...LEGAL_PIPELINE_COLUMNS];
   }
 
   if (presetKey === "livestock_producer") {

@@ -101,28 +101,28 @@ export function RealEstateDashboard({
       value: String(activePropertyCount),
       note: `${capturedCount} ${capturedCount === 1 ? "captação" : "captações"} no período`,
       icon: Building2,
-      href: "/painel/imoveis",
+      href: "/imoveis",
     },
     {
       label: "Vitrines enviadas",
       value: String(showcaseCount),
       note: "seleções criadas no período",
       icon: Images,
-      href: "/painel/imoveis/colecoes",
+      href: "/imoveis/colecoes",
     },
     {
       label: "Visitas",
       value: `${completedVisits}/${visits.length}`,
       note: requestedVisits > 0 ? `${requestedVisits} aguardando confirmação` : "nenhuma solicitação pendente",
       icon: MapPinned,
-      href: "/painel/imoveis/visitas",
+      href: "/imoveis/visitas",
     },
     {
       label: "Comissão prevista",
       value: centsToReais(expectedTotal),
       note: `${centsToReais(receivedTotal)} recebida`,
       icon: HandCoins,
-      href: "/painel/imoveis/comissoes",
+      href: "/imoveis/comissoes",
     },
   ];
 
@@ -150,17 +150,17 @@ export function RealEstateDashboard({
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-          <Link href="/painel/imoveis/visitas" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text">
+          <Link href="/imoveis/visitas" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] border border-od-border px-4 text-[13px] font-semibold text-od-text-2 hover:bg-white/[0.04] hover:text-od-text">
             <CalendarDays size={15} /> Agenda de visitas
           </Link>
-          <Link href="/painel/imoveis/novo" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover">
+          <Link href="/imoveis/novo" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-control)] bg-od-accent px-4 text-[13px] font-semibold text-white hover:bg-od-accent-hover">
             <HousePlus size={16} /> Novo imóvel
           </Link>
         </div>
       </header>
 
       <section className="panel px-4">
-        <Link href="/painel/assistente" className="group flex min-h-14 items-center gap-3 text-sm text-white/52 hover:text-white/80">
+        <Link href="/assistente" className="group flex min-h-14 items-center gap-3 text-sm text-white/52 hover:text-white/80">
           <Sparkles size={17} className="text-od-accent" />
           <span className="min-w-0 flex-1 truncate">Pergunte ao Tim sobre sua carteira, clientes e negociações</span>
           <ArrowRight size={16} className="text-od-text-3 transition-transform group-hover:translate-x-0.5 group-hover:text-od-text" />
@@ -315,19 +315,19 @@ function RealEstateCommercialIndicators({
       </header>
       <div className="grid gap-2 pb-2 lg:grid-cols-3">
         <IndicatorGroup title="Conversão e carteira" items={[
-          { label: "Taxa de aceitação", value: acceptanceRate === null ? "—" : `${acceptanceRate}%`, note: totalOffers > 0 ? `${acceptedOffers} de ${totalOffers} propostas aceitas` : "Sem propostas no período", href: "/painel/funil" },
-          { label: "Visitas concluídas", value: totalVisits > 0 ? `${completedVisits}/${totalVisits}` : "—", note: totalVisits > 0 ? "visitas realizadas no período" : "Nenhuma visita agendada", href: "/painel/imoveis/visitas" },
-          { label: "Captações", value: String(capturedCount), note: "imóveis adicionados no período", href: "/painel/imoveis" },
+          { label: "Taxa de aceitação", value: acceptanceRate === null ? "—" : `${acceptanceRate}%`, note: totalOffers > 0 ? `${acceptedOffers} de ${totalOffers} propostas aceitas` : "Sem propostas no período", href: "/funil" },
+          { label: "Visitas concluídas", value: totalVisits > 0 ? `${completedVisits}/${totalVisits}` : "—", note: totalVisits > 0 ? "visitas realizadas no período" : "Nenhuma visita agendada", href: "/imoveis/visitas" },
+          { label: "Captações", value: String(capturedCount), note: "imóveis adicionados no período", href: "/imoveis" },
         ]} />
         <IndicatorGroup title="Indicadores financeiros" items={[
-          { label: "Comissão prevista", value: centsToReais(expectedTotal), note: "valor esperado no período", href: "/painel/imoveis/comissoes" },
-          { label: "Comissão recebida", value: centsToReais(receivedTotal), note: expectedTotal > 0 ? `${Math.round((receivedTotal / expectedTotal) * 100)}% da previsão realizada` : "Sem comissão prevista", href: "/painel/imoveis/comissoes" },
-          { label: "Meta comercial", value: targetTotal > 0 ? centsToReais(targetTotal) : "Configurar", note: targetTotal > 0 ? "meta total do período" : "Defina uma meta abaixo", href: "/painel/imoveis/comissoes#metas" },
+          { label: "Comissão prevista", value: centsToReais(expectedTotal), note: "valor esperado no período", href: "/imoveis/comissoes" },
+          { label: "Comissão recebida", value: centsToReais(receivedTotal), note: expectedTotal > 0 ? `${Math.round((receivedTotal / expectedTotal) * 100)}% da previsão realizada` : "Sem comissão prevista", href: "/imoveis/comissoes" },
+          { label: "Meta comercial", value: targetTotal > 0 ? centsToReais(targetTotal) : "Configurar", note: targetTotal > 0 ? "meta total do período" : "Defina uma meta abaixo", href: "/imoveis/comissoes#metas" },
         ]} />
         <IndicatorGroup title="Esforço operacional" items={[
-          { label: "Vitrines enviadas", value: String(showcaseCount), note: "seleções compartilhadas com clientes", href: "/painel/imoveis/colecoes" },
-          { label: "Propostas em aberto", value: String(openOffers), note: openOffers > 0 ? "aguardando resposta" : "nenhuma aguardando resposta", href: "/painel/funil" },
-          { label: "Comissões vencidas", value: String(overdueCount), note: overdueCount > 0 ? "exigem acompanhamento" : "nenhuma pendência financeira", href: "/painel/imoveis/comissoes" },
+          { label: "Vitrines enviadas", value: String(showcaseCount), note: "seleções compartilhadas com clientes", href: "/imoveis/colecoes" },
+          { label: "Propostas em aberto", value: String(openOffers), note: openOffers > 0 ? "aguardando resposta" : "nenhuma aguardando resposta", href: "/funil" },
+          { label: "Comissões vencidas", value: String(overdueCount), note: overdueCount > 0 ? "exigem acompanhamento" : "nenhuma pendência financeira", href: "/imoveis/comissoes" },
         ]} />
       </div>
     </section>

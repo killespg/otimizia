@@ -46,7 +46,8 @@ export async function generateWhatsappReply(
   supabase: SupabaseClient,
   orgId: string,
   history: WhatsappHistoryMessage[],
-  contactName: string | null
+  contactName: string | null,
+  options?: { workspaceKey?: string | null; lawyerName?: string | null },
 ): Promise<string | null> {
   if (!process.env.ANTHROPIC_API_KEY) {
     return null;
@@ -68,7 +69,7 @@ export async function generateWhatsappReply(
   const message = await client.messages.create({
     model: MODEL,
     max_tokens: 1024,
-    system: buildSystemPrompt(organization, contactName),
+    system: buildSystemPrompt(organization, contactName, options),
     messages: history,
   });
 
@@ -83,7 +84,8 @@ export async function generateWhatsappReply(
 
 function buildSystemPrompt(
   organization: OrganizationAiContext | null,
-  contactName: string | null
+  contactName: string | null,
+  options?: { workspaceKey?: string | null; lawyerName?: string | null },
 ): string {
   const businessName = organization?.name ?? "a empresa";
   const contextLines = [
@@ -91,6 +93,23 @@ function buildSystemPrompt(
     organization?.ai_tone ? `Jeito de falar preferido: ${organization.ai_tone}` : "",
     organization?.ai_instructions ? `Instruções internas: ${organization.ai_instructions}` : "",
   ].filter(Boolean);
+
+  if (options?.workspaceKey === "law_office") {
+    const lawyer = options.lawyerName?.trim() || "o advogado responsável";
+    const lawyerLabel = lawyer === "o advogado responsável" ? lawyer : `Dr. ${lawyer.split(/\s+/)[0]}`;
+    return `Você é o Tim, paralegal digital do escritório ${businessName}. Está no WhatsApp com ${contactName ?? "alguém que procurou ajuda jurídica"}.
+
+${contextLines.length > 0 ? contextLines.join("\n") + "\n" : ""}
+Como conversar:
+- Português do Brasil, humano, empático. Escute a dor primeiro. Frases curtas, como no WhatsApp.
+- Se esta for a primeira resposta da conversa, abra no espírito de: "Olá! Seja muito bem-vindo. Sou o Tim, assistente aqui do escritório. Me conte, o que aconteceu para você procurar ajuda jurídica hoje?"
+- Uma pergunta por vez. Nunca mande lista, formulário ou bloco longo de perguntas.
+- Nunca use as palavras lead, prospect ou telemarketing. A pessoa é um possível cliente.
+- Não invente tese jurídica, valor de honorários, prazo processual nem resultado. Se não souber, diga que o advogado confirma.
+- Nunca use markdown. Texto corrido.
+- Quando já tiver entendido o que aconteceu, a área do direito e se é urgente — ou se a pessoa citar prazo, audiência, juiz, prisão ou liminar — faça o passe de bastão de forma natural: "Entendi perfeitamente os detalhes. Vou repassar o seu caso agora mesmo para ${lawyerLabel}, que vai analisar a situação e te dar um retorno por aqui em instantes, ok?"
+- Depois do passe de bastão, não continue a triagem.`;
+  }
 
   return `Você atende o WhatsApp de ${businessName}, conversando com ${contactName ?? "um cliente"} que acabou de mandar uma mensagem.
 

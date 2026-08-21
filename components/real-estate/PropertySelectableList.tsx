@@ -43,7 +43,7 @@ export function PropertySelectableList({ rows, selectable = true }: { rows: Prop
               />
             )}
             <Link
-              href={`/painel/imoveis/${row.id}`}
+              href={`/imoveis/${row.id}`}
               className="nav-item flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
             >
               <div className="flex min-w-0 flex-1 items-center gap-3.5">
@@ -84,7 +84,7 @@ export function PropertySelectableList({ rows, selectable = true }: { rows: Prop
           nounPlural="imóveis"
         >
           <Link
-            href={`/painel/imoveis/colecoes/nova?ids=${selection.selected.join(",")}`}
+            href={`/imoveis/colecoes/nova?ids=${selection.selected.join(",")}`}
             className="min-h-11 shrink-0 content-center text-xs font-semibold text-brand-700 hover:text-brand-900"
           >
             Criar vitrine

@@ -41,7 +41,7 @@ export default async function SellerProductDetailPage({ params }: { params: Prom
 
   return (
     <div className="mx-auto w-full max-w-[1500px] space-y-5">
-      <Link href="/painel/produtos" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-white/52 hover:text-white"><ArrowLeft size={15} /> Voltar ao catálogo</Link>
+      <Link href="/produtos" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-white/52 hover:text-white"><ArrowLeft size={15} /> Voltar ao catálogo</Link>
       <SellerPageHeader
         title={product.name}
         description={[product.sku ? `SKU ${product.sku}` : "Sem SKU", product.brand, usesCollections ? collection?.name ?? "Sem coleção" : null, usesInventory ? product.track_stock ? `${totalStock} unidades disponíveis` : "Estoque não controlado" : null].filter(Boolean).join(" · ")}
@@ -128,7 +128,7 @@ export default async function SellerProductDetailPage({ params }: { params: Prom
 
           <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90 p-4"><h2 className="text-sm font-semibold text-white">Desempenho do produto</h2><dl className="mt-3 divide-y divide-white/[0.07] text-sm"><Metric label="Itens vendidos" value={String(orderItems.reduce((sum, item) => sum + item.quantity, 0))} /><Metric label="Receita observada" value={money(orderItems.reduce((sum, item) => sum + item.line_total_cents, 0))} /><Metric label="Garantias emitidas" value={String(warranties.length)} /><Metric label="Garantias ativas" value={String(warranties.filter((warranty) => warranty.status === "active" && new Date(`${warranty.expires_on}T23:59:59`) >= new Date()).length)} /></dl></section>
 
-          <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90 p-4"><h2 className="text-sm font-semibold text-white">Criação rápida</h2><p className="mt-2 text-xs leading-relaxed text-od-text-3">Se este produto ainda não existisse, ele poderia ser criado diretamente ao confirmar uma venda. Depois, esta tela serviria para completar fotos, variações e estoque.</p><Link href="/painel/funil" className="mt-3 inline-flex min-h-11 items-center gap-2 text-xs font-semibold text-od-text-2"><PackagePlus size={15} /> Ir para o funil</Link></section>
+          <section className="rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90 p-4"><h2 className="text-sm font-semibold text-white">Criação rápida</h2><p className="mt-2 text-xs leading-relaxed text-od-text-3">Se este produto ainda não existisse, ele poderia ser criado diretamente ao confirmar uma venda. Depois, esta tela serviria para completar fotos, variações e estoque.</p><Link href="/funil" className="mt-3 inline-flex min-h-11 items-center gap-2 text-xs font-semibold text-od-text-2"><PackagePlus size={15} /> Ir para o funil</Link></section>
         </aside>
       </div>
     </div>

@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   const orgId = await getActiveOrgId(supabase, user.id);
   const role = await getOrgRole(supabase, orgId, user.id);
   if (role !== "admin") {
-    return NextResponse.redirect(new URL("/painel/configuracoes", request.url));
+    return NextResponse.redirect(new URL("/configuracoes", request.url));
   }
 
   const { data: org } = await supabase
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (!org?.stripe_customer_id) {
-    return NextResponse.redirect(new URL("/painel/configuracoes", request.url));
+    return NextResponse.redirect(new URL("/configuracoes", request.url));
   }
 
   const origin = resolveOrigin(request.headers);

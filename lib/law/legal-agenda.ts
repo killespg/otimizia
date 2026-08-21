@@ -1,4 +1,5 @@
 import type { LegalDeadline } from "@/lib/supabase/types";
+import { legalCaseHref } from "@/lib/law/legal-case-path";
 
 const TIME_ZONE = "America/Sao_Paulo";
 
@@ -22,6 +23,7 @@ export type AgendaSourceDeadline = {
 
 export type AgendaSourceCase = {
   id: string;
+  slug?: string;
   title: string;
   next_deadline_at: string | null;
   responsible_id: string | null;
@@ -33,6 +35,7 @@ export type AgendaEntry = {
   kind: "deadline" | "case" | "task";
   title: string;
   caseId: string;
+  caseSlug?: string;
   caseTitle: string;
   typeLabel: string;
   dueAt: string;
@@ -91,17 +94,17 @@ export function toDatetimeLocalValue(iso: string | null | undefined): string {
 }
 
 export function agendaItemHref(
-  item: Pick<AgendaEntry, "kind" | "id" | "caseId">,
+  item: Pick<AgendaEntry, "kind" | "id" | "caseId" | "caseSlug">,
   monthParam: string,
   selectedDay: string | null,
 ) {
   if (item.kind === "task") {
     const params = new URLSearchParams({ month: monthParam, editar: item.id });
     if (selectedDay) params.set("dia", String(Number(selectedDay.slice(-2))));
-    return `/painel/juridico/prazos?${params.toString()}`;
+    return `/juridico/prazos?${params.toString()}`;
   }
-  if (item.caseId) return `/painel/juridico/processos/${item.caseId}`;
-  return `/painel/juridico/prazos?month=${monthParam}`;
+  if (item.caseId) return legalCaseHref(item.caseSlug, item.caseId);
+  return `/juridico/prazos?month=${monthParam}`;
 }
 
 export function formatAgendaClock(iso: string): string {
@@ -170,6 +173,7 @@ export function buildAgendaEntries(
       kind: "deadline",
       title: deadline.title,
       caseId: deadline.case_id,
+      caseSlug: legalCase?.slug,
       caseTitle: legalCase?.title ?? "Caso",
       typeLabel: LEGAL_DEADLINE_TYPE_LABEL[deadline.deadline_type],
       dueAt: deadline.due_at,
@@ -188,6 +192,7 @@ export function buildAgendaEntries(
       kind: "case",
       title: legalCase.title,
       caseId: legalCase.id,
+      caseSlug: legalCase.slug,
       caseTitle: legalCase.title,
       typeLabel: legalCase.area ?? "Compromisso da carteira",
       dueAt: legalCase.next_deadline_at,
@@ -343,6 +348,7 @@ export function buildTaskAgendaEntries(
         kind: "task" as const,
         title: task.title,
         caseId: task.case_id ?? "",
+        caseSlug: legalCase?.slug,
         caseTitle: legalCase?.title ?? "",
         typeLabel: task.due_at ? "Lembrete" : "Lembrete sem data",
         dueAt,

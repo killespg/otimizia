@@ -93,11 +93,8 @@ export default async function SettingsPage(
   return (
     <div className={`settings-hub mx-auto w-full max-w-[1640px] space-y-5 ${isSeller ? "seller-settings" : isRealEstate ? "real-estate-settings" : ""}`}>
       <header className="pb-5">
-        <p className="text-xs font-semibold text-od-text-2">{isSeller ? "Vendas / Configurações" : isRealEstate ? "Imobiliário / Configurações" : "Escritório / Configurações"}</p>
-        <h1 className="mt-2 text-od-title text-white">
-          {isSeller ? "Configurações do negócio" : isRealEstate ? "Configurações da operação imobiliária" : "Seu espaço de trabalho"}
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-white/52">
+        <h1 className="text-xs font-semibold text-od-text-2">{isSeller ? "Vendas / Configurações" : isRealEstate ? "Imobiliário / Configurações" : "Escritório / Configurações"}</h1>
+        <p className="mt-1 max-w-2xl text-sm leading-relaxed text-white/52">
           {isSeller ? "Painel, alertas, nomes do CRM, conta, segurança e plano." : isRealEstate ? "Painel, alertas, nomes do atendimento, conta, segurança e plano." : "Painel, alertas, vocabulário do escritório, conta, segurança e plano."}
         </p>
       </header>
@@ -126,7 +123,7 @@ export default async function SettingsPage(
               preset={preset}
               action={updateDashboardPreferences}
               compact
-              returnTo="/painel/configuracoes"
+              returnTo="/configuracoes"
             />
           </SectionCard>
 
@@ -154,7 +151,7 @@ export default async function SettingsPage(
           )}
 
           <Link
-            href="/painel/equipe"
+            href="/equipe"
             className="row-link od-band flex items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-od-text-2 transition-colors hover:text-white"
           >
             {isSeller ? "Dados do negócio e contexto do assistente ficam em Meu negócio" : "Nome da empresa, contexto e preferências da IA ficam em Equipe"}

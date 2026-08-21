@@ -142,8 +142,8 @@ export default async function ColecoesPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1640px] space-y-6">
-      <RealEstatePageHeader eyebrow="Imobiliário / Compartilhamento" title="Vitrines" description="Links públicos com uma seleção de imóveis para o cliente avaliar sem precisar de conta." action={canManage ? (
-          <Link href="/painel/imoveis/colecoes/nova" className="btn shrink-0">
+      <RealEstatePageHeader eyebrow="Imobiliário / Vitrines" description="Links públicos com uma seleção de imóveis para o cliente avaliar sem precisar de conta." action={canManage ? (
+          <Link href="/imoveis/colecoes/nova" className="btn shrink-0">
             <IconPlus className="h-4 w-4" />
             Nova vitrine
           </Link>
@@ -251,7 +251,7 @@ export default async function ColecoesPage() {
                           </div>
                           <div className="p-2.5 sm:p-3">
                             <Link
-                              href={`/painel/imoveis/${item.property_id}`}
+                              href={`/imoveis/${item.property_id}`}
                               className="line-clamp-2 text-[13px] font-medium text-ink hover:text-brand-700 sm:text-sm"
                             >
                               {item.title}
@@ -276,7 +276,7 @@ export default async function ColecoesPage() {
         </>
       )}
 
-      <Link href="/painel/imoveis" className="nav-item inline-block text-sm font-semibold text-brand-700 hover:underline">
+      <Link href="/imoveis" className="nav-item inline-block text-sm font-semibold text-brand-700 hover:underline">
         Voltar para a carteira
       </Link>
     </div>

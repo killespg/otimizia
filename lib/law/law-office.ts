@@ -21,6 +21,13 @@ export const LEGAL_CASE_STATUS: Record<LegalCaseStatus, string> = {
   archived: "Arquivado",
 };
 
+export const LEGAL_CASE_RISK: Record<"low" | "standard" | "high" | "critical", string> = {
+  low: "Baixa",
+  standard: "Normal",
+  high: "Alta",
+  critical: "Crítica",
+};
+
 export function jobRoleLabel(role: JobRole | null | undefined) {
   return LAW_JOB_ROLES.find((item) => item.value === role)?.label ?? "Colaborador(a)";
 }

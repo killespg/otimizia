@@ -90,8 +90,8 @@ export async function updateDashboardPreferences(formData: FormData) {
 
   revalidatePath("/", "layout");
   revalidatePath("/painel");
-  revalidatePath("/painel/imoveis/dashboard");
-  revalidatePath("/painel/configuracoes");
+  revalidatePath("/imoveis/dashboard");
+  revalidatePath("/configuracoes");
 }
 
 export async function updateDashboardBackgroundVisibility(formData: FormData) {
@@ -141,6 +141,6 @@ export async function updateDashboardBackgroundVisibility(formData: FormData) {
 
   revalidatePath("/", "layout");
   revalidatePath("/painel");
-  revalidatePath("/painel/imoveis/dashboard");
-  revalidatePath("/painel/configuracoes");
+  revalidatePath("/imoveis/dashboard");
+  revalidatePath("/configuracoes");
 }

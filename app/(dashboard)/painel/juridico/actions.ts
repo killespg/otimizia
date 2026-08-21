@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { canManageLegal, canViewFinance } from "@/lib/law/law-office";
+import { legalCaseHref } from "@/lib/law/legal-case-path";
 import { getActiveOrgId, getOrgRole } from "@/lib/workspace/org";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -108,11 +109,11 @@ export async function createLegalCase(formData: FormData) {
     confidentiality: text(formData.get("confidentiality"), 16) === "team" ? "team" : "restricted",
     next_deadline_at: dateTimeOrNull(formData.get("next_deadline_at")),
     summary: text(formData.get("summary"), MAX.text) || null,
-  }).select("id").single();
+  }).select("id, slug").single();
   if (error || !legalCase) throw new Error("Não foi possível criar o caso.");
   await supabase.from("legal_case_members").upsert({ case_id: legalCase.id, user_id: responsibleId, role: "lead" });
   revalidateLaw();
-  redirect(`/painel/juridico/processos/${legalCase.id}`);
+  redirect(legalCaseHref(legalCase.slug, legalCase.id));
 }
 
 export async function updateLegalCaseStatus(formData: FormData) {
@@ -204,7 +205,7 @@ export async function bulkDeleteLegalDeadlines(ids: string[]) {
     .eq("org_id", orgId);
   if (error) throw new Error("Não foi possível excluir os prazos selecionados.");
 
-  for (const caseId of caseIds) revalidatePath(`/painel/juridico/processos/${caseId}`);
+  for (const caseId of caseIds) revalidatePath(`/juridico/processos/${caseId}`);
   revalidateLaw();
   return { deleted: deadlineIds.length };
 }
@@ -226,8 +227,8 @@ export async function createLegalDeadline(formData: FormData) {
     notes: text(formData.get("notes"), MAX.text) || null,
   });
   if (error) throw new Error("Não foi possível criar o prazo.");
-  revalidateLaw(); revalidatePath(`/painel/juridico/processos/${caseId}`);
-  if (text(formData.get("return_to"), 24) === "agenda") redirect("/painel/juridico/prazos");
+  revalidateLaw(); revalidatePath(`/juridico/processos/${caseId}`);
+  if (text(formData.get("return_to"), 24) === "agenda") redirect("/juridico/prazos");
 }
 
 export async function completeLegalDeadline(formData: FormData) {
@@ -237,7 +238,7 @@ export async function completeLegalDeadline(formData: FormData) {
   const caseId = requiredText(formData.get("case_id"), "Caso", 80);
   const { error } = await supabase.from("legal_deadlines").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", id).eq("org_id", orgId);
   if (error) throw new Error("Não foi possível concluir o prazo.");
-  revalidateLaw(); revalidatePath(`/painel/juridico/processos/${caseId}`);
+  revalidateLaw(); revalidatePath(`/juridico/processos/${caseId}`);
 }
 
 export async function createLegalEvent(formData: FormData) {
@@ -253,7 +254,7 @@ export async function createLegalEvent(formData: FormData) {
     occurred_at: dateTimeOrNull(formData.get("occurred_at")) ?? new Date().toISOString(),
   });
   if (error) throw new Error("Não foi possível registrar a movimentação.");
-  revalidatePath(`/painel/juridico/processos/${caseId}`);
+  revalidatePath(`/juridico/processos/${caseId}`);
 }
 
 export async function createLegalDocumentLink(formData: FormData) {
@@ -270,7 +271,7 @@ export async function createLegalDocumentLink(formData: FormData) {
     status: "draft", notes: text(formData.get("notes"), MAX.text) || null,
   });
   if (error) throw new Error("Não foi possível adicionar o documento.");
-  revalidatePath(`/painel/juridico/processos/${caseId}`);
+  revalidatePath(`/juridico/processos/${caseId}`);
 }
 
 export async function generateLegalDocumentDraft(formData: FormData) {
@@ -316,7 +317,7 @@ export async function generateLegalDocumentDraft(formData: FormData) {
     name, document_type: "petition", content: draft, generated_by_ai: true, status: "draft",
   });
   if (error) throw new Error("Não foi possível salvar a minuta gerada.");
-  revalidatePath(`/painel/juridico/processos/${caseId}`);
+  revalidatePath(`/juridico/processos/${caseId}`);
 }
 
 export async function uploadLegalDocument(formData: FormData) {
@@ -343,7 +344,7 @@ export async function uploadLegalDocument(formData: FormData) {
     await admin.storage.from("legal-documents").remove([path]);
     throw new Error("Não foi possível adicionar o documento.");
   }
-  revalidatePath(`/painel/juridico/processos/${caseId}`);
+  revalidatePath(`/juridico/processos/${caseId}`);
 }
 
 // Exclusão em lote de documentos. Só o que tem storage_path deixa arquivo para
@@ -377,9 +378,9 @@ export async function bulkDeleteLegalDocuments(ids: string[]) {
   }
 
   for (const caseId of new Set(rows.map((row) => row.case_id as string))) {
-    revalidatePath(`/painel/juridico/processos/${caseId}`);
+    revalidatePath(`/juridico/processos/${caseId}`);
   }
-  revalidatePath("/painel/juridico/documentos");
+  revalidatePath("/juridico/documentos");
   revalidateLaw();
   return { deleted: rows.length };
 }
@@ -435,7 +436,7 @@ export async function sendLegalDocumentForSignature(formData: FormData) {
     signer_name: signerName, signer_email: signerEmail, sent_by: user.id,
   });
   if (error) throw new Error("O documento foi enviado para assinatura, mas não foi possível registrar o acompanhamento.");
-  revalidatePath(`/painel/juridico/processos/${document.case_id}`);
+  revalidatePath(`/juridico/processos/${document.case_id}`);
 }
 
 export async function createFeeAgreement(formData: FormData) {
@@ -481,7 +482,7 @@ export async function createFeeAgreement(formData: FormData) {
     }
   }
   revalidateLaw();
-  redirect("/painel/financeiro");
+  redirect("/financeiro");
 }
 
 export async function recordReceivablePayment(formData: FormData) {
@@ -689,7 +690,7 @@ export async function addLegalCaseMember(formData: FormData) {
     role: ["lead", "collaborator", "viewer"].includes(role) ? role : "collaborator",
   });
   if (error) throw new Error("Não foi possível adicionar o integrante.");
-  revalidatePath(`/painel/juridico/processos/${caseId}`);
+  revalidatePath(`/juridico/processos/${caseId}`);
 }
 
 export async function removeLegalCaseMember(formData: FormData) {
@@ -699,7 +700,7 @@ export async function removeLegalCaseMember(formData: FormData) {
   const userId = requiredText(formData.get("user_id"), "Integrante", 80);
   const { error } = await supabase.from("legal_case_members").delete().eq("case_id", caseId).eq("user_id", userId);
   if (error) throw new Error("Não foi possível remover o integrante.");
-  revalidatePath(`/painel/juridico/processos/${caseId}`);
+  revalidatePath(`/juridico/processos/${caseId}`);
 }
 
 export async function createCaseShareLink(formData: FormData) {
@@ -713,7 +714,7 @@ export async function createCaseShareLink(formData: FormData) {
     label: text(formData.get("label"), MAX.short) || null,
   });
   if (error) throw new Error("Não foi possível criar o link.");
-  revalidatePath(`/painel/juridico/processos/${caseId}`);
+  revalidatePath(`/juridico/processos/${caseId}`);
 }
 
 export async function revokeCaseShareLink(formData: FormData) {
@@ -723,7 +724,7 @@ export async function revokeCaseShareLink(formData: FormData) {
   const caseId = requiredText(formData.get("case_id"), "Caso", 80);
   const { error } = await supabase.from("legal_case_share_links").update({ revoked_at: new Date().toISOString() }).eq("id", id).eq("org_id", orgId);
   if (error) throw new Error("Não foi possível revogar o link.");
-  revalidatePath(`/painel/juridico/processos/${caseId}`);
+  revalidatePath(`/juridico/processos/${caseId}`);
 }
 
 async function toggleClientVisibility(table: "legal_deadlines" | "legal_case_events" | "legal_documents", label: string, formData: FormData) {
@@ -734,7 +735,7 @@ async function toggleClientVisibility(table: "legal_deadlines" | "legal_case_eve
   const current = formData.get("client_visible") === "true";
   const { error } = await supabase.from(table).update({ client_visible: !current }).eq("id", id).eq("org_id", orgId);
   if (error) throw new Error("Não foi possível atualizar a visibilidade.");
-  revalidatePath(`/painel/juridico/processos/${caseId}`);
+  revalidatePath(`/juridico/processos/${caseId}`);
 }
 
 export async function toggleDeadlineVisibility(formData: FormData) {
@@ -764,7 +765,7 @@ export async function linkDatajudProcess(formData: FormData) {
     .eq("id", caseId)
     .eq("org_id", orgId);
   if (error) throw new Error("Não foi possível vincular o processo.");
-  revalidatePath(`/painel/juridico/processos/${caseId}`);
+  revalidatePath(`/juridico/processos/${caseId}`);
 }
 
 export async function syncDatajudProcessNow(formData: FormData) {
@@ -780,14 +781,15 @@ export async function syncDatajudProcessNow(formData: FormData) {
   if (!legalCase) throw new Error("Caso não encontrado.");
   const result = await syncCaseWithDatajud(supabase, legalCase);
   if (result.error) throw new Error(result.error);
-  revalidatePath(`/painel/juridico/processos/${caseId}`);
+  revalidatePath(`/juridico/processos/${caseId}`);
 }
 
 function revalidateLaw() {
-  revalidatePath("/painel/juridico/processos");
-  revalidatePath("/painel/juridico/prazos");
-  revalidatePath("/painel/financeiro");
+  revalidatePath("/juridico/processos");
+  revalidatePath("/juridico/processos", "layout");
+  revalidatePath("/juridico/prazos");
+  revalidatePath("/financeiro");
   revalidatePath("/painel");
-  revalidatePath("/painel/contatos");
-  revalidatePath("/painel/calendario");
+  revalidatePath("/contatos");
+  revalidatePath("/calendario");
 }

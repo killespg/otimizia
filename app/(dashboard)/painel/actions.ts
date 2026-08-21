@@ -19,6 +19,7 @@ import { createClient } from "@/lib/supabase/server";
 import { DEAL_STAGES, type DealStage, type LegalLossReasonCode } from "@/lib/supabase/types";
 import { getWorkspaceKey, isWorkspaceEnabled, normalizeWorkspaceKeys } from "@/lib/workspace/workspaces";
 import { canAssignLegalTasks } from "@/lib/law/task-visibility";
+import { canonicalizeDashboardPath } from "@/lib/workspace/app-routes";
 
 const LIMIT = {
   name: 120,
@@ -101,10 +102,10 @@ export async function updateProfession(formData: FormData) {
 
   revalidatePath("/", "layout");
   revalidatePath("/painel");
-  revalidatePath("/painel/contatos");
-  revalidatePath("/painel/funil");
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/calendario");
+  revalidatePath("/contatos");
+  revalidatePath("/funil");
+  revalidatePath("/tarefas");
+  revalidatePath("/calendario");
   redirect(safeReturnPath(formData.get("return_to"), "/painel"));
 }
 
@@ -137,12 +138,12 @@ export async function updateProfessionTypes(formData: FormData) {
 
   revalidatePath("/", "layout");
   revalidatePath("/painel");
-  revalidatePath("/painel/contatos");
-  revalidatePath("/painel/funil");
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/calendario");
-  revalidatePath("/painel/configuracoes");
-  redirect("/painel/configuracoes");
+  revalidatePath("/contatos");
+  revalidatePath("/funil");
+  revalidatePath("/tarefas");
+  revalidatePath("/calendario");
+  revalidatePath("/configuracoes");
+  redirect("/configuracoes");
 }
 
 // ---------- Contacts ----------
@@ -162,12 +163,12 @@ export async function createContact(formData: FormData) {
     details: collectDetails(formData, preset.contactFields),
   });
   ensureOk(error, "Não deu para salvar o contato.");
-  revalidatePath("/painel/contatos");
+  revalidatePath("/contatos");
   revalidatePath("/painel");
-  revalidatePath("/painel/funil");
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/calendario");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/contatos"));
+  revalidatePath("/funil");
+  revalidatePath("/tarefas");
+  revalidatePath("/calendario");
+  redirect(safeReturnPath(formData.get("return_to"), "/contatos"));
 }
 
 const IMPORT_BATCH_LIMIT = 500;
@@ -208,7 +209,7 @@ export async function importContacts(
   const { error } = await supabase.from("contacts").insert(toInsert);
   ensureOk(error, "Não deu para importar os contatos.");
 
-  revalidatePath("/painel/contatos");
+  revalidatePath("/contatos");
   revalidatePath("/painel");
   return { imported: toInsert.length, skipped };
 }
@@ -255,12 +256,12 @@ export async function updateContact(formData: FormData) {
     .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para atualizar o contato.");
-  revalidatePath("/painel/contatos");
-  revalidatePath(`/painel/contatos/${id}`);
+  revalidatePath("/contatos");
+  revalidatePath(`/contatos/${id}`);
   revalidatePath("/painel");
-  revalidatePath("/painel/funil");
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/calendario");
+  revalidatePath("/funil");
+  revalidatePath("/tarefas");
+  revalidatePath("/calendario");
 }
 
 export async function deleteContact(formData: FormData) {
@@ -273,8 +274,8 @@ export async function deleteContact(formData: FormData) {
     .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para excluir o contato.");
-  revalidatePath("/painel/contatos");
-  redirect("/painel/contatos");
+  revalidatePath("/contatos");
+  redirect("/contatos");
 }
 
 // Exclusão em lote da carteira de contatos. Interações, tarefas e negociações
@@ -291,8 +292,8 @@ export async function bulkDeleteContacts(ids: string[]) {
     .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para excluir os contatos.");
-  revalidatePath("/painel/contatos");
-  revalidatePath("/painel/funil");
+  revalidatePath("/contatos");
+  revalidatePath("/funil");
   revalidatePath("/painel");
   return { deleted: contactIds.length };
 }
@@ -314,7 +315,7 @@ export async function createInteraction(formData: FormData) {
     body: requiredText(formData.get("body"), "Conversa", LIMIT.interaction),
   });
   ensureOk(error, "Não deu para salvar a conversa.");
-  revalidatePath(`/painel/contatos/${contactId}`);
+  revalidatePath(`/contatos/${contactId}`);
 }
 
 // ---------- Deals ----------
@@ -345,10 +346,10 @@ export async function createDeal(formData: FormData) {
     details,
   });
   ensureOk(error, "Não deu para salvar a venda.");
-  revalidatePath("/painel/funil");
+  revalidatePath("/funil");
   revalidatePath("/painel");
-  revalidatePath("/painel/contatos");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
+  revalidatePath("/contatos");
+  redirect(safeReturnPath(formData.get("return_to"), "/funil"));
 }
 
 export async function createPipelineList(formData: FormData) {
@@ -368,9 +369,9 @@ export async function createPipelineList(formData: FormData) {
     },
   });
   ensureOk(error, "Não deu para criar a lista.");
-  revalidatePath("/painel/funil");
+  revalidatePath("/funil");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
+  redirect(safeReturnPath(formData.get("return_to"), "/funil"));
 }
 
 export async function moveDealToList(
@@ -421,7 +422,7 @@ export async function moveDealToList(
     .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para mover a venda.");
-  revalidatePath("/painel/funil");
+  revalidatePath("/funil");
   revalidatePath("/painel");
 }
 
@@ -451,7 +452,7 @@ export async function moveDeal(id: string, stage: DealStage) {
     .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para mover a venda.");
-  revalidatePath("/painel/funil");
+  revalidatePath("/funil");
   revalidatePath("/painel");
 }
 
@@ -464,9 +465,9 @@ export async function deleteDeal(formData: FormData) {
     .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para excluir a venda.");
-  revalidatePath("/painel/funil");
+  revalidatePath("/funil");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
+  redirect(safeReturnPath(formData.get("return_to"), "/funil"));
 }
 
 export async function updateDealOptions(formData: FormData) {
@@ -503,9 +504,9 @@ export async function updateDealOptions(formData: FormData) {
     .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para atualizar as opções.");
-  revalidatePath("/painel/funil");
+  revalidatePath("/funil");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
+  redirect(safeReturnPath(formData.get("return_to"), "/funil"));
 }
 
 export async function uploadDealPhoto(formData: FormData) {
@@ -561,9 +562,9 @@ export async function uploadDealPhoto(formData: FormData) {
     .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para salvar a foto no card.");
-  revalidatePath("/painel/funil");
+  revalidatePath("/funil");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
+  redirect(safeReturnPath(formData.get("return_to"), "/funil"));
 }
 
 // ---------- Tasks ----------
@@ -587,12 +588,12 @@ export async function createTask(formData: FormData) {
     recurrence: recurrenceOrNone(formData.get("recurrence")),
   });
   ensureOk(error, "Não deu para salvar o lembrete.");
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/juridico/prazos");
-  revalidatePath("/painel/calendario");
+  revalidatePath("/tarefas");
+  revalidatePath("/juridico/prazos");
+  revalidatePath("/calendario");
   revalidatePath("/painel");
-  revalidatePath("/painel/contatos");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/tarefas"));
+  revalidatePath("/contatos");
+  redirect(safeReturnPath(formData.get("return_to"), "/tarefas"));
 }
 
 export async function toggleTask(id: string, done: boolean) {
@@ -632,9 +633,9 @@ export async function toggleTask(id: string, done: boolean) {
     await supabase.from("tasks").update({ recurrence_spawned: true }).eq("id", id);
   }
 
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/juridico/prazos");
-  revalidatePath("/painel/calendario");
+  revalidatePath("/tarefas");
+  revalidatePath("/juridico/prazos");
+  revalidatePath("/calendario");
   revalidatePath("/painel");
 }
 
@@ -698,12 +699,12 @@ export async function updateAgendaTask(formData: FormData) {
     }
   }
 
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/juridico/prazos");
-  revalidatePath("/painel/calendario");
+  revalidatePath("/tarefas");
+  revalidatePath("/juridico/prazos");
+  revalidatePath("/calendario");
   revalidatePath("/painel");
-  revalidatePath("/painel/contatos");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/juridico/prazos"));
+  revalidatePath("/contatos");
+  redirect(safeReturnPath(formData.get("return_to"), "/juridico/prazos"));
 }
 // concluídas direto pelo responsável: em vez de derrubar o lote inteiro, elas são
 // puladas e devolvidas em `skipped` para a interface avisar.
@@ -758,8 +759,8 @@ export async function bulkToggleTasks(ids: string[], done: boolean) {
     }
   }
 
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/calendario");
+  revalidatePath("/tarefas");
+  revalidatePath("/calendario");
   revalidatePath("/painel");
   return { updated: allowed.length, skipped: found.length - allowed.length };
 }
@@ -775,8 +776,8 @@ export async function bulkDeleteTasks(ids: string[]) {
     .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para excluir os lembretes.");
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/calendario");
+  revalidatePath("/tarefas");
+  revalidatePath("/calendario");
   revalidatePath("/painel");
   return { deleted: taskIds.length };
 }
@@ -815,11 +816,11 @@ export async function deleteTask(formData: FormData) {
     .eq("org_id", orgId)
     .eq("workspace_key", workspaceKey);
   ensureOk(error, "Não deu para excluir o lembrete.");
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/juridico/prazos");
-  revalidatePath("/painel/calendario");
+  revalidatePath("/tarefas");
+  revalidatePath("/juridico/prazos");
+  revalidatePath("/calendario");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/tarefas"));
+  redirect(safeReturnPath(formData.get("return_to"), "/tarefas"));
 }
 
 export async function submitTaskForReview(formData: FormData) {
@@ -827,9 +828,9 @@ export async function submitTaskForReview(formData: FormData) {
   const taskId = requiredText(formData.get("task_id"), "Tarefa", 80);
   const { error } = await supabase.rpc("submit_task_for_review", { p_task_id: taskId });
   ensureOk(error, "Não deu para enviar a tarefa para aprovação.");
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/calendario"); revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/tarefas"));
+  revalidatePath("/tarefas");
+  revalidatePath("/calendario"); revalidatePath("/painel");
+  redirect(safeReturnPath(formData.get("return_to"), "/tarefas"));
 }
 
 export async function reviewTaskCompletion(formData: FormData) {
@@ -840,9 +841,9 @@ export async function reviewTaskCompletion(formData: FormData) {
     p_task_id: taskId, p_approved: decision === "approve", p_note: text(formData.get("review_note"), 800) || null,
   });
   ensureOk(error, decision === "approve" ? "Não deu para aprovar a tarefa." : "Não deu para devolver a tarefa.");
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/calendario"); revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/tarefas"));
+  revalidatePath("/tarefas");
+  revalidatePath("/calendario"); revalidatePath("/painel");
+  redirect(safeReturnPath(formData.get("return_to"), "/tarefas"));
 }
 
 // ---------- Distribuição de tarefas ----------
@@ -857,11 +858,11 @@ export async function requestTaskHandoff(formData: FormData) {
     p_target_user: targetUserId,
   });
   ensureOk(error, "Não deu para solicitar a transferência.");
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/juridico/prazos");
-  revalidatePath("/painel/calendario");
+  revalidatePath("/tarefas");
+  revalidatePath("/juridico/prazos");
+  revalidatePath("/calendario");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/juridico/prazos"));
+  redirect(safeReturnPath(formData.get("return_to"), "/juridico/prazos"));
 }
 
 export async function acceptTaskHandoff(formData: FormData) {
@@ -869,11 +870,11 @@ export async function acceptTaskHandoff(formData: FormData) {
   const taskId = requiredText(formData.get("task_id"), "Lembrete", 80);
   const { error } = await supabase.rpc("accept_task_handoff", { p_task_id: taskId });
   ensureOk(error, "Não deu para aceitar a transferência.");
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/juridico/prazos");
-  revalidatePath("/painel/calendario");
+  revalidatePath("/tarefas");
+  revalidatePath("/juridico/prazos");
+  revalidatePath("/calendario");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/juridico/prazos"));
+  redirect(safeReturnPath(formData.get("return_to"), "/juridico/prazos"));
 }
 
 export async function declineTaskHandoff(formData: FormData) {
@@ -881,11 +882,11 @@ export async function declineTaskHandoff(formData: FormData) {
   const taskId = requiredText(formData.get("task_id"), "Lembrete", 80);
   const { error } = await supabase.rpc("decline_task_handoff", { p_task_id: taskId });
   ensureOk(error, "Não deu para recusar a transferência.");
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/juridico/prazos");
-  revalidatePath("/painel/calendario");
+  revalidatePath("/tarefas");
+  revalidatePath("/juridico/prazos");
+  revalidatePath("/calendario");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/juridico/prazos"));
+  redirect(safeReturnPath(formData.get("return_to"), "/juridico/prazos"));
 }
 
 export async function adminReassignTask(formData: FormData) {
@@ -898,10 +899,10 @@ export async function adminReassignTask(formData: FormData) {
     p_assignee_id: assigneeId,
   });
   ensureOk(error, "Não deu para reatribuir o lembrete.");
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/calendario");
+  revalidatePath("/tarefas");
+  revalidatePath("/calendario");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/tarefas"));
+  redirect(safeReturnPath(formData.get("return_to"), "/tarefas"));
 }
 
 // ---------- Distribuição de negócios/casos ----------
@@ -916,9 +917,9 @@ export async function requestDealHandoff(formData: FormData) {
     p_target_user: targetUserId,
   });
   ensureOk(error, "Não deu para solicitar a transferência.");
-  revalidatePath("/painel/funil");
+  revalidatePath("/funil");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
+  redirect(safeReturnPath(formData.get("return_to"), "/funil"));
 }
 
 export async function acceptDealHandoff(formData: FormData) {
@@ -926,9 +927,9 @@ export async function acceptDealHandoff(formData: FormData) {
   const dealId = requiredText(formData.get("deal_id"), "Negócio", 80);
   const { error } = await supabase.rpc("accept_deal_handoff", { p_deal_id: dealId });
   ensureOk(error, "Não deu para aceitar a transferência.");
-  revalidatePath("/painel/funil");
+  revalidatePath("/funil");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
+  redirect(safeReturnPath(formData.get("return_to"), "/funil"));
 }
 
 export async function declineDealHandoff(formData: FormData) {
@@ -936,9 +937,9 @@ export async function declineDealHandoff(formData: FormData) {
   const dealId = requiredText(formData.get("deal_id"), "Negócio", 80);
   const { error } = await supabase.rpc("decline_deal_handoff", { p_deal_id: dealId });
   ensureOk(error, "Não deu para recusar a transferência.");
-  revalidatePath("/painel/funil");
+  revalidatePath("/funil");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
+  redirect(safeReturnPath(formData.get("return_to"), "/funil"));
 }
 
 export async function adminReassignDeal(formData: FormData) {
@@ -951,9 +952,9 @@ export async function adminReassignDeal(formData: FormData) {
     p_assignee_id: assigneeId,
   });
   ensureOk(error, "Não deu para reatribuir o negócio.");
-  revalidatePath("/painel/funil");
+  revalidatePath("/funil");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
+  redirect(safeReturnPath(formData.get("return_to"), "/funil"));
 }
 
 // "Pegar" uma tarefa/negócio deixado em aberto — claim_task/claim_deal são
@@ -964,10 +965,10 @@ export async function claimTask(formData: FormData) {
   const taskId = requiredText(formData.get("task_id"), "Lembrete", 80);
   const { error } = await supabase.rpc("claim_task", { p_task_id: taskId });
   ensureOk(error, "Essa tarefa já foi pega por alguém.");
-  revalidatePath("/painel/tarefas");
-  revalidatePath("/painel/calendario");
+  revalidatePath("/tarefas");
+  revalidatePath("/calendario");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/tarefas"));
+  redirect(safeReturnPath(formData.get("return_to"), "/tarefas"));
 }
 
 export async function claimDeal(formData: FormData) {
@@ -975,9 +976,9 @@ export async function claimDeal(formData: FormData) {
   const dealId = requiredText(formData.get("deal_id"), "Negócio", 80);
   const { error } = await supabase.rpc("claim_deal", { p_deal_id: dealId });
   ensureOk(error, "Esse negócio já foi pego por alguém.");
-  revalidatePath("/painel/funil");
+  revalidatePath("/funil");
   revalidatePath("/painel");
-  redirect(safeReturnPath(formData.get("return_to"), "/painel/funil"));
+  redirect(safeReturnPath(formData.get("return_to"), "/funil"));
 }
 
 // Igual a requireUserWithPreset, mas sem precisar do preset completo — usado
@@ -1321,5 +1322,5 @@ function safeReturnPath(v: FormDataEntryValue | null, fallback: string): string 
   const path = typeof v === "string" ? v.trim() : "";
   if (!path.startsWith("/") || path.startsWith("//")) return fallback;
   if (path.includes("://")) return fallback;
-  return path.slice(0, 160);
+  return canonicalizeDashboardPath(path.slice(0, 160));
 }

@@ -207,7 +207,7 @@ export async function saveLegalAcquisitionCost(
     );
   }
 
-  revalidatePath("/painel/juridico");
+  revalidatePath("/juridico");
   return actionState(
     previousState,
     "success",

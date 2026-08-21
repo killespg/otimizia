@@ -4,6 +4,7 @@ import { canManageLegal, canViewFinance, canViewLegal } from "@/lib/law/law-offi
 import { getOrgRole } from "@/lib/workspace/org";
 import { DATAJUD_TRIBUNAL_ALIASES } from "@/lib/law/datajud-tribunals";
 import { DatajudApiError, normalizeProcessNumber, searchDatajudProcess } from "@/lib/law/datajud";
+import { legalCaseHref } from "@/lib/law/legal-case-path";
 import { syncCaseWithDatajud } from "@/lib/law/law-datajud-sync";
 import { trackWatchedProcess } from "@/lib/law/law-watched-processes";
 import type { JobRole } from "@/lib/supabase/types";
@@ -153,7 +154,7 @@ export async function listLegalCases(supabase: SupabaseClient, orgId: string, us
   const status = optionalEnum(input.status, LEGAL_CASE_STATUSES, "status");
   let query = supabase
     .from("legal_cases")
-    .select("id, title, case_number, area, status, risk_level, confidentiality, responsible_id, contact_id, next_deadline_at, opposing_party, court, jurisdiction, updated_at, created_at")
+    .select("id, title, slug, case_number, area, status, risk_level, confidentiality, responsible_id, contact_id, next_deadline_at, opposing_party, court, jurisdiction, updated_at, created_at")
     .eq("org_id", orgId)
     .order("updated_at", { ascending: false })
     .limit(clampInt(input.limite, 1, 50, 20));
@@ -173,6 +174,7 @@ export async function listLegalCases(supabase: SupabaseClient, orgId: string, us
   const names = await userNames(supabase, rows.map((r) => r.responsible_id as string | null));
   const casos = rows.map((r) => ({
     ...r,
+    caminho: legalCaseHref(r.slug as string | undefined, r.id as string),
     responsavel: r.responsible_id ? (names[r.responsible_id as string] ?? null) : null,
   }));
   return JSON.stringify({ total: casos.length, casos });
@@ -534,7 +536,7 @@ export async function createLegalCase(supabase: SupabaseClient, userId: string, 
       confidentiality,
       summary: optionalStr(input.resumo, MAX.text),
     })
-    .select("id, title, status")
+    .select("id, slug, title, status")
     .single();
   ensureOk(error);
   if (!legalCase) throw new Error("Não foi possível criar o caso.");
@@ -544,7 +546,11 @@ export async function createLegalCase(supabase: SupabaseClient, userId: string, 
     user_id: responsibleId,
     role: "lead",
   });
-  return JSON.stringify({ ok: true, caso: legalCase, mensagem: "Caso criado." });
+  return JSON.stringify({
+    ok: true,
+    caso: { ...legalCase, caminho: legalCaseHref(legalCase.slug, legalCase.id) },
+    mensagem: "Caso criado.",
+  });
 }
 
 export async function updateLegalCase(supabase: SupabaseClient, orgId: string, userId: string, input: ToolInput) {

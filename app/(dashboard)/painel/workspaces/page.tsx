@@ -160,7 +160,7 @@ export default async function WorkspacesPage() {
       <p className="mt-6 max-w-3xl text-sm leading-6 text-od-text-2">
         Para habilitar ou remover uma área, use{" "}
         <Link
-          href="/painel/configuracoes"
+          href="/configuracoes"
           className="font-semibold text-od-accent-soft underline decoration-od-accent/50 underline-offset-4 hover:text-od-text"
         >
           Configurações

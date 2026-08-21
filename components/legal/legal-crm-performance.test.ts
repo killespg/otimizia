@@ -10,10 +10,10 @@ function metrics(overrides: Partial<LegalCrmMetrics> = {}): LegalCrmMetrics {
     firstResponse: { status: "ready", medianMinutes: 18, responded: 8, pending: 2, ai: 3, human: 5 },
     leads: { total: 12, qualified: 7 },
     funnel: [
-      { stage: "novo", label: "Novo lead", reached: 12, conversionFromPrevious: null },
-      { stage: "em_contato", label: "Qualificação", reached: 7, conversionFromPrevious: 58.33 },
-      { stage: "negociacao", label: "Proposta enviada", reached: 5, conversionFromPrevious: 71.43 },
-      { stage: "ganho", label: "Contratado", reached: 3, conversionFromPrevious: 60 },
+      { stage: "novo", label: "Triagem Inicial", reached: 12, conversionFromPrevious: null },
+      { stage: "em_contato", label: "Análise de Viabilidade", reached: 7, conversionFromPrevious: 58.33 },
+      { stage: "negociacao", label: "Proposta / Honorários", reached: 5, conversionFromPrevious: 71.43 },
+      { stage: "ganho", label: "Convertido (Processo Ativo)", reached: 3, conversionFromPrevious: 60 },
     ],
     origins: [{ source: "Indicação", leads: 6, qualified: 4, wins: 2, conversion: 33.33, receivedCents: 180000 }],
     losses: [{ code: "price", label: "Preço", count: 2 }],
@@ -39,7 +39,7 @@ describe("LegalCrmPerformance", () => {
     for (const label of [
       "Desempenho comercial jurídico",
       "Tempo de 1ª resposta",
-      "Leads qualificados",
+      "Possíveis clientes qualificados",
       "Conversão por etapa",
       "Origens que mais convertem",
       "Principais motivos de perda",

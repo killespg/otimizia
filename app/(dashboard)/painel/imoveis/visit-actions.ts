@@ -55,8 +55,8 @@ export async function scheduleVisit(formData: FormData) {
     }
   }
 
-  revalidatePath("/painel/imoveis/visitas");
-  if (formData.get("deal_id")) revalidatePath(`/painel/imoveis/match/${formData.get("deal_id")}`);
+  revalidatePath("/imoveis/visitas");
+  if (formData.get("deal_id")) revalidatePath(`/imoveis/match/${formData.get("deal_id")}`);
 }
 
 export async function confirmVisit(formData: FormData) {
@@ -71,7 +71,7 @@ export async function confirmVisit(formData: FormData) {
     .eq("id", visitId)
     .eq("org_id", orgId);
   if (error) throw new Error("Não foi possível atualizar a confirmação.");
-  revalidatePath("/painel/imoveis/visitas");
+  revalidatePath("/imoveis/visitas");
 }
 
 // "Visita concluída -> feedback rápido; feedback positivo -> sugere criar
@@ -115,7 +115,7 @@ export async function completeVisit(formData: FormData) {
     });
   }
 
-  revalidatePath("/painel/imoveis/visitas");
+  revalidatePath("/imoveis/visitas");
 }
 
 // "Não compareceu -> tarefa de remarcação + histórico" — a linha da visita
@@ -146,7 +146,7 @@ export async function markVisitNoShow(formData: FormData) {
     due_at: new Date().toISOString(),
   });
 
-  revalidatePath("/painel/imoveis/visitas");
+  revalidatePath("/imoveis/visitas");
 }
 
 export async function cancelVisit(formData: FormData) {
@@ -154,6 +154,6 @@ export async function cancelVisit(formData: FormData) {
   const visitId = requiredText(formData.get("visit_id"), "Visita", 80);
   const { error } = await supabase.from("real_estate_visits").update({ status: "cancelled" }).eq("id", visitId).eq("org_id", orgId);
   if (error) throw new Error("Não foi possível cancelar a visita.");
-  revalidatePath("/painel/imoveis/visitas");
+  revalidatePath("/imoveis/visitas");
 }
 

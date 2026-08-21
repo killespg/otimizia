@@ -33,7 +33,7 @@ describe("dashboard control geometry", () => {
     expect(topbar).toContain('event.key === "Escape"');
     expect(topbar).toContain('"pointerdown"');
     expect(topbar).toContain('action={logout}');
-    expect(topbar).toContain('href="/painel/configuracoes"');
+    expect(topbar).toContain('href="/configuracoes"');
     expect(topbar).toContain("grid size-11 place-items-center");
     expect(topbar).toContain("grid size-9 place-items-center");
     expect(shell).toContain("displayName={displayName}");

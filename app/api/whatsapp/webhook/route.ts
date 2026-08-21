@@ -7,6 +7,8 @@ import {
 } from "@/lib/whatsapp/evolution";
 import { fetchWhatsappHistory, generateWhatsappReply } from "@/lib/ai/whatsapp-reply";
 import { detectPurchaseIntent } from "@/lib/ai/whatsapp-intent";
+import { findLawOfficeLawyerName, syncLegalIntakeToDeal } from "@/lib/ai/legal-intake";
+import { findSensitiveLegalTerms, LEGAL_INTAKE_COLUMN } from "@/lib/law/legal-pipeline";
 import { checkRateLimit } from "@/lib/ai/rate-limit";
 import { logError } from "@/lib/utils/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -297,20 +299,43 @@ export async function POST(request: Request) {
 
     if (rateLimit.allowed && !optedOut && messageType === "text" && contactId) {
       try {
-        const intent = await detectPurchaseIntent(history, contactName);
-        if (intent?.hasIntent) {
-          await createDealIfNeeded(admin, orgId, contactId, intent.dealTitle);
+        const { data: contactRow } = await admin
+          .from("contacts")
+          .select("workspace_key")
+          .eq("id", contactId)
+          .maybeSingle();
+        if (contactRow?.workspace_key === "law_office") {
+          await createDealIfNeeded(
+            admin,
+            orgId,
+            contactId,
+            contactName ? `Atendimento — ${contactName}` : "Novo atendimento WhatsApp",
+            { pipeline_list: LEGAL_INTAKE_COLUMN },
+          );
+          await syncLegalIntakeToDeal(admin, orgId, contactId, history);
+        } else {
+          const intent = await detectPurchaseIntent(history, contactName);
+          if (intent?.hasIntent) {
+            await createDealIfNeeded(admin, orgId, contactId, intent.dealTitle);
+          }
         }
       } catch (error) {
-        // Detecção de intenção é um "extra" — nunca deve impedir o resto do
-        // fluxo (mensagem já foi salva, resposta automática segue normal).
         logError("api/whatsapp/webhook.intent-detection-failed", error, { orgId, conversationId });
       }
     }
 
     if (rateLimit.allowed && !optedOut && iaActive && messageType === "text") {
       try {
-        const reply = await generateWhatsappReply(admin, orgId, history, contactName);
+        const { data: contactRow } = contactId
+          ? await admin.from("contacts").select("workspace_key").eq("id", contactId).maybeSingle()
+          : { data: null };
+        const workspaceKey = contactRow?.workspace_key ?? null;
+        const lawyerName =
+          workspaceKey === "law_office" ? await findLawOfficeLawyerName(admin, orgId) : null;
+        const reply = await generateWhatsappReply(admin, orgId, history, contactName, {
+          workspaceKey,
+          lawyerName,
+        });
         if (reply) {
           await sendEvolutionText(instanceName, phoneNumber, reply);
           await admin.from("whatsapp_messages").insert({
@@ -321,14 +346,15 @@ export async function POST(request: Request) {
             content: reply,
             sent_by: "ai",
           });
-          await admin
-            .from("whatsapp_conversations")
-            .update({ last_message_at: new Date().toISOString() })
-            .eq("id", conversationId);
+          const conversationUpdate: Record<string, unknown> = {
+            last_message_at: new Date().toISOString(),
+          };
+          if (workspaceKey === "law_office" && findSensitiveLegalTerms(content ?? "").length > 0) {
+            conversationUpdate.ia_active = false;
+          }
+          await admin.from("whatsapp_conversations").update(conversationUpdate).eq("id", conversationId);
         }
       } catch (error) {
-        // Falha na resposta automática não deve derrubar o webhook — a
-        // mensagem recebida já foi salva, o usuário responde manualmente.
         const message =
           error instanceof EvolutionApiError ? error.message : undefined;
         logError("api/whatsapp/webhook.auto-reply-failed", error, {

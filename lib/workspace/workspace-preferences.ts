@@ -34,7 +34,7 @@ export function getDefaultWorkspaceLabels(
   isLivestock = preset.key === "livestock_producer"
 ): WorkspaceLabels {
   return {
-    contacts: isLivestock ? "Sujeitos" : "Contatos",
+    contacts: isLivestock ? "Sujeitos" : preset.key === "law_office" ? "Clientes" : "Contatos",
     pipeline: preset.pipelineLabel,
     value: preset.valueLabel,
     followups: isLivestock ? "Sujeitos para revisar" : "Retornos do dia",

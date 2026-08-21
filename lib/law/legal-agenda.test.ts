@@ -199,13 +199,13 @@ describe("agendaItemHref", () => {
   it("opens the reminder editor instead of the linked case", () => {
     expect(
       agendaItemHref({ kind: "task", id: "task-1", caseId: "case-1" }, "2026-08", null),
-    ).toBe("/painel/juridico/prazos?month=2026-08&editar=task-1");
+    ).toBe("/juridico/prazos?month=2026-08&editar=task-1");
   });
 
   it("keeps process deadlines on the case page", () => {
     expect(
       agendaItemHref({ kind: "deadline", id: "dl-1", caseId: "case-1" }, "2026-08", null),
-    ).toBe("/painel/juridico/processos/case-1");
+    ).toBe("/juridico/processos/case-1");
   });
 });
 

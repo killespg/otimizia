@@ -18,7 +18,7 @@ export default async function ConfirmSellerSalePage({ params }: { params: Promis
     supabase.from("seller_product_variants").select("*").eq("org_id", orgId).order("name"),
     supabase.from("seller_collections").select("*").eq("org_id", orgId).neq("status", "archived").order("name"),
   ]);
-  if (existingOrder?.id) redirect(`/painel/pedidos/${existingOrder.id}`);
+  if (existingOrder?.id) redirect(`/pedidos/${existingOrder.id}`);
   if (!dealRow) notFound();
   const deal = dealRow as Deal;
   if (deal.details?.pipeline_list_placeholder === "true" || deal.stage === "perdido") notFound();
@@ -35,7 +35,7 @@ export default async function ConfirmSellerSalePage({ params }: { params: Promis
 
   return (
     <div className="mx-auto w-full max-w-[1550px] space-y-5">
-      <Link href="/painel/funil" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-white/52 hover:text-white"><ArrowLeft size={15} /> Voltar ao funil</Link>
+      <Link href="/funil" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-white/52 hover:text-white"><ArrowLeft size={15} /> Voltar ao funil</Link>
       <SellerPageHeader title="Confirmar venda" description="Revise o cliente, adicione os itens reais e só então autentique o fechamento. O pedido, o estoque e as garantias serão criados juntos." />
       <section className="grid border-y border-white/[0.08] bg-[#1e1d22]/88 sm:grid-cols-2 xl:grid-cols-4">
         <Summary icon={<UserRound size={16} />} label="Cliente" value={contact?.name ?? "Sem cliente vinculado"} detail={contact?.phone || contact?.email || "Cadastre depois no pedido"} />

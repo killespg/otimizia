@@ -46,7 +46,7 @@ function periodHref(key: LegalCrmPeriodKey, searchParams?: Record<string, Search
     }
   }
   query.set("crm_period", key);
-  return "/painel/juridico?" + query.toString();
+  return "/juridico?" + query.toString();
 }
 
 function Unavailable({ children = "Dados indisponíveis neste momento." }: { children?: string }) {
@@ -61,7 +61,7 @@ function ResponseValue({ value }: { value: LegalCrmMetrics["firstResponse"] }) {
           <span className="text-lg font-semibold text-white/78">Indisponível</span>
           <p className="mt-1 text-xs leading-5 text-white/64">
             Conecte o WhatsApp para medir a primeira resposta.{" "}
-            <Link href="/painel/configuracoes" className="text-blue-300 underline-offset-4 hover:underline">
+            <Link href="/configuracoes" className="text-blue-300 underline-offset-4 hover:underline">
               Configurar canal
             </Link>
           </p>
@@ -107,7 +107,7 @@ function MetricBand({ metrics, canManageFinance }: { metrics: LegalCrmMetrics; c
         <dd className="mt-2"><ResponseValue value={metrics.firstResponse} /></dd>
       </div>
       <div className="min-w-0">
-        <dt className="text-xs font-semibold text-white/64">Leads qualificados</dt>
+        <dt className="text-xs font-semibold text-white/64">Possíveis clientes qualificados</dt>
         <dd className="mt-2">
           {metrics.availability.leads === "ready" && metrics.leads ? (
             <>
@@ -201,7 +201,7 @@ function Origins({ metrics }: { metrics: LegalCrmMetrics }) {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <strong className="block truncate text-sm font-medium text-white/76">{item.source}</strong>
-                  <span className="mt-1 block text-xs text-white/64">{item.leads} leads · {item.qualified} qualificados · {item.wins} contratos</span>
+                  <span className="mt-1 block text-xs text-white/64">{item.leads} possíveis clientes · {item.qualified} qualificados · {item.wins} contratos</span>
                 </div>
                 <span className="shrink-0 text-sm font-semibold tabular-nums text-blue-300">{percent(item.conversion)}</span>
               </div>

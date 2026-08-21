@@ -89,7 +89,7 @@ export default async function MatchPage(props: { params: Promise<{ dealId: strin
         <section className="panel p-5 sm:p-6">
           <p className="text-sm font-bold text-ink">
             Este atendimento ainda não tem preferências de busca definidas.{" "}
-            <Link href={`/painel/contatos/${dealRow.contact_id}`} className="nav-item text-brand-700 hover:underline">
+            <Link href={`/contatos/${dealRow.contact_id}`} className="nav-item text-brand-700 hover:underline">
               Defina o perfil do cliente
             </Link>{" "}
             antes de calcular matches.
@@ -121,7 +121,7 @@ export default async function MatchPage(props: { params: Promise<{ dealId: strin
                   <section key={match.id} className="panel space-y-3 p-5">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div>
-                        <Link href={`/painel/imoveis/${property.id}`} className="nav-item text-sm font-semibold text-brand-700 hover:underline">
+                        <Link href={`/imoveis/${property.id}`} className="nav-item text-sm font-semibold text-brand-700 hover:underline">
                           {property.title}
                         </Link>
                         <p className="mt-0.5 text-xs font-bold text-ink-muted">
@@ -218,7 +218,7 @@ export default async function MatchPage(props: { params: Promise<{ dealId: strin
         </section>
       )}
 
-      <Link href={`/painel/contatos/${dealRow.contact_id}`} className="nav-item inline-block text-sm font-semibold text-brand-700 hover:underline">
+      <Link href={`/contatos/${dealRow.contact_id}`} className="nav-item inline-block text-sm font-semibold text-brand-700 hover:underline">
         Voltar para o cliente
       </Link>
     </div>

@@ -36,7 +36,7 @@ export async function updateName(formData: FormData) {
   ensureOk(error, "Não deu para atualizar o nome.");
 
   revalidatePath("/", "layout");
-  revalidatePath("/painel/configuracoes");
+  revalidatePath("/configuracoes");
 }
 
 export async function updateEmail(formData: FormData) {
@@ -49,7 +49,7 @@ export async function updateEmail(formData: FormData) {
 
   const { error } = await supabase.auth.updateUser({ email });
   ensureOk(error, "Não deu para atualizar o e-mail.");
-  revalidatePath("/painel/configuracoes");
+  revalidatePath("/configuracoes");
 }
 
 export async function updatePassword(formData: FormData) {
@@ -62,7 +62,7 @@ export async function updatePassword(formData: FormData) {
 
   const { error } = await supabase.auth.updateUser({ password });
   ensureOk(error, "Não deu para atualizar a senha.");
-  revalidatePath("/painel/configuracoes");
+  revalidatePath("/configuracoes");
 }
 
 export async function updateWorkspaceLabels(formData: FormData) {
@@ -118,10 +118,10 @@ export async function updateWorkspaceLabels(formData: FormData) {
   ensureOk(error, "Não deu para salvar a personalização.");
 
   revalidatePath("/", "layout");
-  revalidatePath("/painel/configuracoes");
-  revalidatePath("/painel/contatos");
-  revalidatePath("/painel/funil");
-  revalidatePath("/painel/tarefas");
+  revalidatePath("/configuracoes");
+  revalidatePath("/contatos");
+  revalidatePath("/funil");
+  revalidatePath("/tarefas");
 }
 
 export async function deleteAccount(formData: FormData) {

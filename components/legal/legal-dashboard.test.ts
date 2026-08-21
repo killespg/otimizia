@@ -30,6 +30,16 @@ describe("legal dashboard visual contract", () => {
     );
   });
 
+  it("keeps the possible-client board on the six office columns", () => {
+    const pipeline = read("app/(dashboard)/painel/funil/page.tsx");
+    const board = read("app/(dashboard)/painel/funil/Board.tsx");
+    expect(pipeline).toContain("return [...LEGAL_PIPELINE_COLUMNS]");
+    expect(pipeline).toContain("Novo possível cliente");
+    expect(board).toContain("LegalDealSummary");
+    expect(board).toContain("legalColumnMeta(column).title");
+    expect(board).toContain("[...LEGAL_PIPELINE_COLUMNS]");
+  });
+
   it("intercepts legal losses before an optimistic Board mutation", () => {
     const board = read("app/(dashboard)/painel/funil/Board.tsx");
     const action = read("app/(dashboard)/painel/actions.ts");

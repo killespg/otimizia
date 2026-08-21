@@ -86,17 +86,17 @@ export default async function ImoveisMapaPage() {
       statusKey: (p.status as string) ?? "",
       statusLabel: STATUS_LABEL[p.status as string] ?? "",
       facts,
-      href: `/painel/imoveis/${p.id}`,
+      href: `/imoveis/${p.id}`,
     };
   });
 
   return (
     <div className="max-w-[1400px] space-y-6">
-      <RealEstatePageHeader eyebrow="Imobiliário / Localização" title="Mapa de imóveis" description="Visualize a distribuição da carteira. Clique em um pin para ver o imóvel." />
+      <RealEstatePageHeader eyebrow="Imobiliário / Mapa" description="Visualize a distribuição da carteira. Clique em um pin para ver o imóvel." />
       <section className="panel overflow-hidden">
         <PropertyMap properties={points} />
       </section>
-      <Link href="/painel/imoveis" className="nav-item inline-block text-sm font-semibold text-brand-700 hover:underline">
+      <Link href="/imoveis" className="nav-item inline-block text-sm font-semibold text-brand-700 hover:underline">
         Voltar para a carteira
       </Link>
     </div>

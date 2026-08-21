@@ -24,7 +24,7 @@ export default async function SellerCollectionsPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1500px] space-y-5">
-      <SellerPageHeader title="Coleções" description="Organize lançamentos, encerre ciclos antigos e leve produtos selecionados para a próxima coleção sem apagar o histórico." actions={<><Link href="#trocar" className="btn-secondary"><ArrowRightLeft size={15} /> Trocar coleção</Link><Link href="#nova" className="btn"><Plus size={16} /> Nova coleção</Link></>} />
+      <SellerPageHeader eyebrow="Operação / Coleções" description="Organize lançamentos, encerre ciclos antigos e leve produtos selecionados para a próxima coleção sem apagar o histórico." actions={<><Link href="#trocar" className="btn-secondary"><ArrowRightLeft size={15} /> Trocar coleção</Link><Link href="#nova" className="btn"><Plus size={16} /> Nova coleção</Link></>} />
 
       {collections.length === 0 ? <SellerEmptyState title="Nenhuma coleção criada" description="Coleções são opcionais. Use-as para moda, campanhas sazonais ou catálogos por temporada." action={<Link href="#nova" className="btn"><Plus size={16} /> Criar coleção</Link>} /> : (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -37,7 +37,7 @@ export default async function SellerCollectionsPage() {
               {collection.status !== "active" ? <StatusForm id={collection.id} status="active" label="Ativar" /> : null}
               {collection.status !== "archived" ? <StatusForm id={collection.id} status="archived" label="Arquivar" /> : null}
               {collection.status === "archived" ? <StatusForm id={collection.id} status="draft" label="Reabrir como rascunho" /> : null}
-              <Link href={`/painel/produtos?collection=${collection.id}`} className="inline-flex min-h-11 items-center px-3 text-xs font-semibold text-od-text-2">Ver produtos</Link>
+              <Link href={`/produtos?collection=${collection.id}`} className="inline-flex min-h-11 items-center px-3 text-xs font-semibold text-od-text-2">Ver produtos</Link>
             </div>
           </article>)}
         </section>
@@ -65,7 +65,7 @@ export default async function SellerCollectionsPage() {
       <section id="nova" className="scroll-mt-24 rounded-[var(--radius-panel)] border border-white/[0.09] bg-[#1e1d22]/90">
         <header className="border-b border-white/[0.08] px-4 py-4"><div className="flex items-center gap-3"><CalendarDays size={18} className="text-od-text-2" /><div><h2 className="text-sm font-semibold text-white">Criar coleção sem trocar a atual</h2><p className="mt-1 text-xs text-od-text-3">Útil para preparar um lançamento como rascunho.</p></div></div></header>
         <form action={createSellerCollection} className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-[minmax(12rem,1fr)_10rem_10rem_10rem_minmax(14rem,1.5fr)_auto] xl:items-end">
-          <input type="hidden" name="return_to" value="/painel/colecoes" />
+          <input type="hidden" name="return_to" value="/colecoes" />
           <label><span className="label">Nome</span><input name="name" required maxLength={120} placeholder="Ex: Alto Verão" className="field mt-1.5" /></label>
           <label><span className="label">Status</span><select name="status" defaultValue="draft" className="field mt-1.5"><option value="draft">Rascunho</option><option value="active">Ativa</option></select></label>
           <label><span className="label">Início</span><input name="starts_on" type="date" className="field mt-1.5" /></label>

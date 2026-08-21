@@ -31,9 +31,9 @@ export async function createCommission(formData: FormData) {
     due_at: dueAt,
   });
   if (error) throw new Error("Não foi possível registrar a comissão.");
-  revalidatePath("/painel/imoveis/dashboard");
-  revalidatePath("/painel/imoveis/comissoes");
-  revalidatePath(`/painel/imoveis/match/${dealId}`);
+  revalidatePath("/imoveis/dashboard");
+  revalidatePath("/imoveis/comissoes");
+  revalidatePath(`/imoveis/match/${dealId}`);
 }
 
 export async function recordCommissionPayment(formData: FormData) {
@@ -58,8 +58,8 @@ export async function recordCommissionPayment(formData: FormData) {
     .eq("id", commissionId)
     .eq("org_id", orgId);
   if (error) throw new Error("Não foi possível registrar o recebimento.");
-  revalidatePath("/painel/imoveis/dashboard");
-  revalidatePath("/painel/imoveis/comissoes");
+  revalidatePath("/imoveis/dashboard");
+  revalidatePath("/imoveis/comissoes");
 }
 
 export async function cancelCommission(formData: FormData) {
@@ -67,8 +67,8 @@ export async function cancelCommission(formData: FormData) {
   const commissionId = requiredText(formData.get("commission_id"), "Comissão", 80);
   const { error } = await supabase.from("real_estate_commissions").update({ status: "cancelled" }).eq("id", commissionId).eq("org_id", orgId);
   if (error) throw new Error("Não foi possível cancelar a comissão.");
-  revalidatePath("/painel/imoveis/dashboard");
-  revalidatePath("/painel/imoveis/comissoes");
+  revalidatePath("/imoveis/dashboard");
+  revalidatePath("/imoveis/comissoes");
 }
 
 export async function createTarget(formData: FormData) {
@@ -87,6 +87,6 @@ export async function createTarget(formData: FormData) {
     created_by: user.id,
   });
   if (error) throw new Error("Não foi possível criar a meta.");
-  revalidatePath("/painel/imoveis/dashboard");
-  revalidatePath("/painel/imoveis/comissoes");
+  revalidatePath("/imoveis/dashboard");
+  revalidatePath("/imoveis/comissoes");
 }

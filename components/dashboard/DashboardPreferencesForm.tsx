@@ -132,7 +132,7 @@ export function DashboardPreferencesForm({
         try {
           await action(formData);
           setSaveStatus("saved");
-          router.push(returnTo === "/painel/configuracoes" ? "/painel?customized=1" : returnTo);
+          router.push(returnTo === "/configuracoes" ? "/painel?customized=1" : returnTo);
           router.refresh();
         } catch {
           setSaveStatus("error");
@@ -373,7 +373,7 @@ export function DashboardPreferencesForm({
             ? "Personalização salva."
             : saveStatus === "error"
               ? "Não deu para salvar. Tente novamente."
-              : returnTo === "/painel/configuracoes"
+              : returnTo === "/configuracoes"
                 ? "Ao salvar, você vai direto ao painel para conferir o resultado."
                 : "As mudanças aparecem no painel antes de você salvar."}
         </p>
