@@ -5,16 +5,32 @@ import { describe, expect, it } from "vitest";
 const read = (file: string) => readFileSync(resolve(process.cwd(), file), "utf8");
 
 describe("landing accessibility and visual contract", () => {
-  it("keeps the hero typographic and free of decorative animation", () => {
-    const page = read("app/page.tsx");
-    const hero = read("components/landing/hero.tsx");
+  it("keeps the landing identity scoped and independent from the product tokens", () => {
+    const css = read("app/landing.css");
 
-    expect(page).not.toMatch(/radial-gradient|<Glow/);
-    expect(hero).not.toMatch(/AnimatedShapesBackground|radial-gradient/);
+    expect(css).toContain(".oz {");
+    expect(css).not.toMatch(/var\(--od-/);
+    // Sem seletor global solto: toda regra da landing nasce de .oz, .oz-* ou html:has(.oz).
+    const stray = css
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .split("\n")
+      .filter((line) => /^[.#a-z@]/i.test(line) && line.includes("{"))
+      .filter((line) => !/^(\.oz|html:has\(\.oz\)|@media|@keyframes|\.oz-)/.test(line));
+    expect(stray).toEqual([]);
+  });
+
+  it("respects reduced motion and keeps content visible without JavaScript", () => {
+    const css = read("app/landing.css");
+    const effects = read("components/landing/effects.tsx");
+
+    expect(css).toContain("prefers-reduced-motion: reduce");
+    // Só o que está abaixo da dobra é escondido, e só depois da hidratação.
+    expect(effects).toContain("oz-will");
+    expect(effects).toContain("prefers-reduced-motion: reduce");
   });
 
   it("uses native details so FAQ answers exist without JavaScript", () => {
-    const faq = read("components/landing/FaqAccordion.tsx");
+    const faq = read("components/landing/faq.tsx");
 
     expect(faq).toContain("<details");
     expect(faq).toContain("<summary");
@@ -22,7 +38,7 @@ describe("landing accessibility and visual contract", () => {
   });
 
   it("implements a complete keyboard tab contract", () => {
-    const tabs = read("components/landing/feature-tabs.tsx");
+    const tabs = read("components/landing/professions.tsx");
 
     expect(tabs).toContain('role="tabpanel"');
     expect(tabs).toContain("aria-controls");

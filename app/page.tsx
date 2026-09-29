@@ -1,70 +1,83 @@
 import Link from "next/link";
-import { LandingNav } from "@/components/landing/landing-nav";
 import { redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Hero } from "@/components/landing/hero";
-import { LogoMarquee } from "@/components/landing/logo-marquee";
-import { FeatureTabs } from "@/components/landing/feature-tabs";
-import { DashboardPreview } from "@/components/landing/dashboard-preview";
+import { LandingNav } from "@/components/landing/nav";
+import { LandingEffects } from "@/components/landing/effects";
+import { StickyCta } from "@/components/landing/sticky-cta";
+import { Accent } from "@/components/landing/scene";
+import { Professions } from "@/components/landing/professions";
+import { PanelPreview } from "@/components/landing/panel-preview";
+import { Assistant } from "@/components/landing/assistant";
 import { Pricing } from "@/components/landing/pricing";
-import { Reveal } from "@/components/landing/reveal";
-import { FaqAccordion } from "@/components/landing/FaqAccordion";
-import { CookiePreferencesLink } from "@/components/site/CookieConsent";
-import { SpotlightCard } from "@/components/landing/spotlight-card";
-import { AiComposer } from "@/components/landing/ai-composer";
-import { ContainerScroll } from "@/components/landing/container-scroll-animation";
+import { Faq } from "@/components/landing/faq";
 import { About } from "@/components/landing/about";
-import { LogoWordmark } from "@/components/design-system/logo";
-import { MobileStickyCta } from "@/components/landing/mobile-sticky-cta";
-import { LandingMark } from "@/components/landing/mark";
+import { Footer } from "@/components/landing/footer";
+import "./landing.css";
 
 /**
- * Faixa de seção de largura total.
- *
- * A landing era um `main` único com as seções separadas só por padding-bottom
- * variável — sem régua, sem topo, sem mudança de fundo. Lia como um bloco só.
- * Agora cada categoria ocupa uma faixa, com rótulo próprio, ritmo igual e
- * superfície alternada: a divisão aparece antes de o visitante ler.
+ * Site institucional OtimizIA. Identidade própria (app/landing.css, escopada
+ * em .oz), independente dos tokens do produto. Só o marcador data-reveal
+ * anima a entrada; sem JavaScript o conteúdo inteiro continua visível.
  */
 function Section({
   id,
+  band = false,
   title,
   description,
-  raised = false,
   children,
 }: {
   id?: string;
-  /** Opcional: seções cujo próprio conteúdo abre com um título maior passam
-   *  sem ele, para não empilhar um h2 pequeno em cima de uma frase grande. */
+  band?: boolean;
   title?: string;
   description?: string;
-  raised?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <section
-      id={id}
-      className={`relative isolate scroll-mt-[calc(4rem+env(safe-area-inset-top))] overflow-hidden ${raised ? "bg-od-muted-surface" : "bg-od-bg"}`}
-    >
-      <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-20 sm:px-8 md:py-24">
+    <section id={id} className={`oz-section${band ? " oz-band" : ""}`}>
+      <div className="oz-container">
         {title || description ? (
-          <Reveal className="mx-auto mb-12 max-w-[560px] text-center">
-            {title ? <h2 className="text-od-title text-od-text">{title}</h2> : null}
-            {description ? (
-              <p className="mt-3 text-[15px] leading-relaxed text-od-text-2">{description}</p>
-            ) : null}
-          </Reveal>
+          <div className="oz-head" data-reveal>
+            {title ? <h2 className="oz-h2">{title}</h2> : null}
+            {description ? <p className="oz-lead">{description}</p> : null}
+          </div>
         ) : null}
-        <Reveal delay={0.08}>{children}</Reveal>
+        <div data-reveal>{children}</div>
       </div>
     </section>
   );
 }
 
+const FAQ = [
+  {
+    q: "Preciso de cartão de crédito para começar?",
+    a: "Não. Você cria a conta, escolhe sua profissão e entra no painel na hora. O cartão só entra se você decidir assinar depois do teste.",
+  },
+  {
+    q: "Serve para a minha profissão?",
+    a: "Hoje o OtimizIA tem painel próprio para vendedor autônomo, escritório de advocacia e corretor de imóveis. Cada um vem com as telas e os termos daquele trabalho: carteira e visitas no imobiliário, prazos e processos no jurídico, funil e pedidos nas vendas.",
+  },
+  {
+    q: "Como funciona o WhatsApp?",
+    a: "Você conecta seu número e passa a responder de dentro do painel. A conversa fica ligada ao contato e à negociação, com o histórico importado, e dá para deixar a IA responder quando você não puder.",
+  },
+  {
+    q: "Consigo usar no celular?",
+    a: "Sim. O OtimizIA é instalável direto do navegador, funciona como aplicativo e manda notificação antes dos seus compromissos. Funciona em trânsito, entre um atendimento e outro.",
+  },
+  {
+    q: "Como funciona com a minha equipe?",
+    a: "Você convida sócios e assistentes com cargos diferentes, controlando quem vê o financeiro, quem gerencia casos e quem só registra atendimento. E se hoje você trabalha sozinho, nada disso atrapalha: o painel já vem pronto para uma pessoa e a equipe entra quando você precisar.",
+  },
+  {
+    q: "E se eu quiser cancelar?",
+    a: "Cancela quando quiser, sem multa nem fidelidade. Seus dados continuam seus, e você pode exportá-los nas configurações da conta.",
+  },
+];
+
 export default async function LandingPage() {
-  // Quem ja tem sessao nao precisa da pagina de venda: vai direto pro produto.
-  // A landing veio do catalogo do design system, nao do frontend anterior.
+  // Quem já tem sessão não precisa da página de venda: vai direto pro produto.
   const supabase = await createClient();
   const {
     data: { user },
@@ -72,71 +85,56 @@ export default async function LandingPage() {
   if (user) redirect("/painel");
 
   return (
-    <div className="landing-page dark relative bg-od-bg">
-
+    <div className="oz">
+      <LandingEffects />
       <LandingNav />
-      <MobileStickyCta />
-      <main className="relative overflow-hidden">
-        {/* Abertura: hero e prova social continuam emendados, sem regua entre
-            eles — sao um bloco de entrada, nao duas categorias. */}
-        <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 pt-10 sm:px-8">
-          <Hero />
-          <div className="-mt-4 pb-20 pt-14">
-            <LandingMark className="mx-auto mb-10" />
-            <p className="mb-7 text-center text-od-label text-od-text-3">
-              Serve para quem trabalha sozinho e para equipe inteira
-            </p>
-            <LogoMarquee bare fadeColor="var(--od-bg)" />
+      <StickyCta />
+      <main>
+        <Hero />
+
+        <section className="oz-section" aria-label="Para quem é" style={{ paddingBlock: "clamp(40px, 6vw, 72px)" }}>
+          <div className="oz-container" style={{ textAlign: "center" }} data-reveal>
+            <p className="oz-label">Serve para quem trabalha sozinho e para equipe inteira</p>
+            <ul className="oz-audience">
+              {["Corretor de imóveis", "Escritório de advocacia", "Vendedor autônomo"].map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
           </div>
-        </div>
-
-        <Section
-          id="recursos"
-          title="O que muda de profissão pra profissão"
-          description="O núcleo é o mesmo; o que está em volta é feito pro seu trabalho. Escolha a sua."
-          raised
-        >
-          <FeatureTabs />
-        </Section>
-
-        <section id="painel" className="scroll-mt-[calc(4rem+env(safe-area-inset-top))] bg-od-bg">
-          <ContainerScroll
-            titleComponent={
-              <>
-                <p className="mb-3 text-od-label text-od-text-3">O painel</p>
-                <h2 className="text-4xl font-extrabold leading-none tracking-tight text-od-text md:text-6xl">
-                  Um painel só,
-                  <br />
-                  <span className="text-od-accent-hover">sem planilha escondida.</span>
-                </h2>
-                {/* A instrucao fica aqui fora: dentro do card, o bloco da
-                    organizacao e o WorkspaceSwitcher do produto, e destaca-lo
-                    quebraria a fidelidade da sidebar. */}
-                <p className="mx-auto mt-5 max-w-[440px] pb-10 text-[13px] leading-relaxed text-od-text-2">
-                  O exemplo abaixo é navegável: use os controles para trocar de tela e o{" "}
-                  <strong className="font-semibold text-od-text">nome do negócio</strong> para
-                  conhecer o painel de outra profissão.
-                </p>
-              </>
-            }
-          >
-            <div className="h-full w-full overflow-auto rounded bg-od-bg p-2 sm:p-4">
-              <DashboardPreview />
-            </div>
-          </ContainerScroll>
         </section>
 
         <Section
+          id="recursos"
+          band
+          title="O que muda de profissão pra profissão"
+          description="O núcleo é o mesmo; o que está em volta é feito pro seu trabalho. Escolha a sua."
+        >
+          <Accent side="right" size={620} top="6%" halo="rgba(36, 91, 255, 0.12)" />
+          <Professions />
+        </Section>
+
+        <Section id="painel">
+          <div className="oz-head" style={{ marginBottom: 48 }} data-reveal>
+            <p className="oz-eyebrow" style={{ marginBottom: 20 }}>O painel</p>
+            <h2 className="oz-h2" style={{ fontSize: "clamp(34px, 5vw, 60px)" }}>
+              Um painel só, <br />
+              <span style={{ color: "var(--oz-blue-soft)" }}>sem planilha escondida.</span>
+            </h2>
+            <p className="oz-small" style={{ margin: "20px auto 0", maxWidth: 440 }}>
+              O exemplo abaixo é navegável: use as abas para conhecer o painel de outra profissão.
+            </p>
+          </div>
+          <PanelPreview />
+        </Section>
+
+        <Section
           id="ia"
+          band
           title="Tim, o sócio-assistente"
           description="Ele não devolve conselho: cria o contato, abre a negociação e agenda o compromisso, por voz ou por escrito."
-          raised
         >
-          <div className="flex flex-col items-center gap-8">
-            <SpotlightCard />
-            <LandingMark />
-            <AiComposer />
-          </div>
+          <Accent side="left" size={560} top="20%" halo="rgba(123, 77, 255, 0.12)" />
+          <Assistant />
         </Section>
 
         <Section
@@ -147,142 +145,39 @@ export default async function LandingPage() {
           <Pricing />
         </Section>
 
-        <Section
-          id="duvidas"
-          title="Perguntas frequentes"
-          raised
-        >
-          <div className="mx-auto max-w-[760px]">
-            <FaqAccordion
-              items={[
-                {
-                  q: "Preciso de cartão de crédito para começar?",
-                  a: "Não. Você cria a conta, escolhe sua profissão e entra no painel na hora. O cartão só entra se você decidir assinar depois do teste.",
-                },
-                {
-                  q: "Serve para a minha profissão?",
-                  a: "Hoje o OtimizIA tem painel próprio para vendedor autônomo, escritório de advocacia e corretor de imóveis. Cada um vem com as telas e os termos daquele trabalho: carteira e visitas no imobiliário, prazos e processos no jurídico, funil e pedidos nas vendas.",
-                },
-                {
-                  q: "Como funciona o WhatsApp?",
-                  a: "Você conecta seu número e passa a responder de dentro do painel. A conversa fica ligada ao contato e à negociação, com o histórico importado, e dá para deixar a IA responder quando você não puder.",
-                },
-                {
-                  q: "Consigo usar no celular?",
-                  a: "Sim. O OtimizIA é instalável direto do navegador, funciona como aplicativo e manda notificação antes dos seus compromissos. Funciona em trânsito, entre um atendimento e outro.",
-                },
-                {
-                  q: "Como funciona com a minha equipe?",
-                  a: "Você convida sócios e assistentes com cargos diferentes, controlando quem vê o financeiro, quem gerencia casos e quem só registra atendimento. E se hoje você trabalha sozinho, nada disso atrapalha: o painel já vem pronto para uma pessoa e a equipe entra quando você precisar.",
-                },
-                {
-                  q: "E se eu quiser cancelar?",
-                  a: "Cancela quando quiser, sem multa nem fidelidade. Seus dados continuam seus, e você pode exportá-los nas configurações da conta.",
-                },
-              ]}
-            />
-          </div>
+        <Section id="duvidas" band title="Perguntas frequentes">
+          <Faq items={FAQ} />
         </Section>
 
-        <Section
-          id="sobre"
-        >
+        <Section id="sobre">
+          <Accent side="right" size={520} top="8%" halo="rgba(36, 91, 255, 0.1)" />
           <About />
         </Section>
 
-        <section id="cta-final" className="bg-od-muted-surface">
-          <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-24 text-center sm:px-8">
-            <h2 className="mx-auto mb-4 max-w-[520px] text-od-title text-od-text">
-              Pronto pra parar de perder negócio por esquecimento?
-            </h2>
-            <p className="mx-auto mb-8 max-w-[440px] text-[15px] text-od-text-2">
+        <section id="cta-final" className="oz-section oz-band oz-cta">
+          <Accent side="left" size={640} top="-20%" halo="rgba(73, 55, 255, 0.16)" />
+          <div className="oz-container" data-reveal>
+            <h2 className="oz-h2">Pronto pra parar de perder negócio por esquecimento?</h2>
+            <p className="oz-lead" style={{ margin: "16px auto 32px", maxWidth: 440 }}>
               Comece grátis hoje, sem cartão de crédito.
             </p>
-            <Link href="/signup" className="btn inline-flex items-center gap-2">
+            <Link href="/signup" className="oz-btn" style={{ minHeight: 52 }}>
               Começar grátis
-              <ArrowRight className="size-4" strokeWidth={2} />
+              <ArrowRight size={16} aria-hidden />
             </Link>
 
-            {/* Faixa de fatos verificáveis — não depoimento. Cada item é algo
-                que o produto de fato faz (30 dias sem cartão, IA no WhatsApp,
-                exportação própria, sem multa), não alegação de cliente. Quando
-                houver um depoimento real, trocar por ele (slot abaixo). */}
-            <ul className="mx-auto mt-12 flex max-w-[680px] flex-wrap items-center justify-center gap-x-8 gap-y-3 text-[12px] text-od-text-3">
+            {/* Faixa de fatos verificáveis, não depoimento. Quando houver um
+                depoimento real, ele entra aqui; não publicar frase inventada. */}
+            <ul className="oz-facts">
               <li>30 dias grátis, sem cartão</li>
-              <li aria-hidden className="text-od-border">·</li>
               <li>IA atendendo no WhatsApp</li>
-              <li aria-hidden className="text-od-border">·</li>
               <li>Exporta seus dados quando quiser</li>
-              <li aria-hidden className="text-od-border">·</li>
               <li>Cancele sem multa</li>
             </ul>
-
-            {/* SLOT de depoimento real — preencher quando houver um cliente
-                disposto a assinar. Não publicar frase inventada: seria o mesmo
-                vício de "prova social falsa" que tiramos da faixa de logos.
-                Exemplo de estrutura:
-                <figure className="mx-auto mt-14 max-w-[560px]">
-                  <blockquote className="text-[18px] ...">"frase real"</blockquote>
-                  <figcaption>Nome · profissão · cidade</figcaption>
-                </figure> */}
           </div>
         </section>
-
-        <footer className="bg-od-bg">
-          <div className="mx-auto max-w-[1180px] min-[1536px]:max-w-[1480px] min-[1800px]:max-w-[1720px] min-[2200px]:max-w-[1960px] px-5 py-12 sm:px-8">
-            <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
-              <div className="max-w-[320px]">
-                <LogoWordmark height={24} />
-                <p className="mt-3 text-[13px] leading-relaxed text-od-text-2">
-                  CRM para quem trabalha sozinho ou com equipe, com o painel da sua profissão.
-                </p>
-              </div>
-              <div className="grid gap-x-8 gap-y-6 min-[560px]:grid-cols-3">
-                <div>
-                  <p className="text-od-label text-od-text-3">Produto</p>
-                  <ul className="mt-3 space-y-2 text-[13px]">
-                    <li><Link href="#recursos" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">Recursos</Link></li>
-                    <li><Link href="#painel" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">O painel</Link></li>
-                    <li><Link href="#planos" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">Planos</Link></li>
-                    <li><Link href="#sobre" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">Sobre nós</Link></li>
-                  </ul>
-                </div>
-                <div>
-                  <p className="text-od-label text-od-text-3">Conta</p>
-                  <ul className="mt-3 space-y-2 text-[13px]">
-                    <li><Link href="/login" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">Entrar</Link></li>
-                    <li><Link href="/signup" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">Criar conta</Link></li>
-                    <li><Link href="/termos" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">Termos de uso</Link></li>
-                    <li><Link href="/privacidade" className="inline-flex min-h-11 min-w-11 items-center text-od-text-2 hover:text-od-text">Privacidade</Link></li>
-                    <li>
-                      <CookiePreferencesLink className="inline-flex min-h-11 items-center text-left text-od-text-2 hover:text-od-text" />
-                    </li>
-                  </ul>
-                </div>
-                {/* SAC como mailto de verdade, não texto solto: no celular, um
-                    endereço que não abre o app de e-mail vira copiar e colar. */}
-                <div>
-                  <p className="text-od-label text-od-text-3">Atendimento</p>
-                  <ul className="mt-3 space-y-2 text-[13px]">
-                    <li>
-                      <a
-                        href="mailto:venancio@useotimizia.com"
-                        className="inline-flex min-h-11 items-center break-all text-od-text-2 hover:text-od-text"
-                      >
-                        venancio@useotimizia.com
-                      </a>
-                    </li>
-                    <li><Link href="#duvidas" className="inline-flex min-h-11 items-center text-od-text-2 hover:text-od-text">Perguntas frequentes</Link></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <p className="mt-10 border-t border-od-border pt-6 text-[12px] text-od-text-3">
-              © {new Date().getFullYear()} OtimizIA. Todos os direitos reservados.
-            </p>
-          </div>
-        </footer>
       </main>
+      <Footer />
     </div>
   );
 }
