@@ -1,50 +1,80 @@
-import { ArrowRight, Check } from "lucide-react";
-import { PhoneMockup } from "./phone-mockup";
+import Image from "next/image";
+import { ArrowRight, Check, Send, Paperclip } from "lucide-react";
+import { HeroScene } from "./scene";
 
-export function Hero() {
+/**
+ * Conversa com o Tim, em vidro. O pitch do hero entra na fala: ele diz que já
+ * respondeu a Carla no WhatsApp; embaixo, o recibo do que já está na conta.
+ */
+const ACOES = ["Contato · Carla Nogueira", "Negociação · Qualificação", "Visita · amanhã, 15h"];
+
+function TimChat() {
   return (
-    <section className="bg-od-bg pb-16 pt-20 md:pb-20 md:pt-28">
-      <div className="mx-auto max-w-[1180px] px-5 sm:px-8">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          {/* Copy */}
-          <div className="text-center lg:text-left">
-            <p className="mb-6 text-od-label text-od-accent-soft">
-              CRM do solo ao time, com WhatsApp e IA
-            </p>
-            <h1 className="text-balance text-[36px] font-extrabold leading-[1.08] tracking-[-0.035em] text-od-text sm:text-[48px] md:text-[58px]">
-              A IA atende seu WhatsApp. <span className="text-od-accent-soft">Você entra quando importa.</span>
-            </h1>
-            <p className="mx-auto mt-6 max-w-[650px] text-base leading-relaxed text-od-text-2 sm:text-lg lg:mx-0">
-              Ela responde na hora, identifica quem está pronto para fechar e abre a
-              negociação no seu funil. Você acompanha tudo e assume quando quiser.
-            </p>
-            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
-              <a id="hero-cta" href="/signup" className="btn min-h-12 gap-2 px-6">
-                Começar grátis
-                <ArrowRight className="size-4" strokeWidth={2} />
-              </a>
-              <a href="#painel" className="btn-ghost min-h-12 px-6">
-                Conhecer o painel
-              </a>
-            </div>
-            <ul className="mt-8 flex flex-col items-center justify-center gap-3 text-sm text-od-text-2 sm:flex-row sm:gap-6 lg:justify-start">
-              {['Sem cartão', 'Configuração guiada', 'Cancele quando quiser'].map((item) => (
-                <li key={item} className="flex items-center gap-2">
-                  <span className="grid size-5 place-items-center rounded-full bg-od-accent-tint text-od-accent-soft">
-                    <Check className="size-3.5" strokeWidth={2.5} />
-                  </span>
-                  {item}
+    <div className="oz-card oz-chat" role="img" aria-label="Conversa com o Tim: ele responde a Carla no WhatsApp, cria o contato e marca a visita">
+      <div className="oz-chat-inner" aria-hidden="true">
+        <div className="oz-chat-top">
+          <Image src="/otimizia-mark-2026-dark.png" alt="" width={24} height={24} unoptimized />
+          Tim
+        </div>
+        <div className="oz-chat-body">
+          <p className="oz-bubble oz-bubble-me">Quem eu preciso chamar hoje?</p>
+          <div className="oz-bubble oz-bubble-tim">
+            A Carla mandou no WhatsApp agora perguntando do apartamento do Sumaré. Já respondi, criei o contato e deixei a
+            visita marcada pra amanhã às 15h.
+            <ul className="oz-recibo">
+              {ACOES.map((acao) => (
+                <li key={acao}>
+                  <Check size={14} strokeWidth={2.5} />
+                  {acao}
                 </li>
               ))}
             </ul>
           </div>
-
-          {/* Conversa com o Tim: ele diz que já respondeu o WhatsApp;
-              embaixo, o que isso já virou na conta. */}
-          <div className="mx-auto flex w-full max-w-[460px] justify-center lg:justify-end">
-            <PhoneMockup />
-          </div>
         </div>
+        <div className="oz-chat-input">
+          <span>Mensagem para o Tim…</span>
+          <span>
+            <Paperclip size={14} /> Enviar <Send size={13} />
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function Hero() {
+  return (
+    <section className="oz-hero">
+      <HeroScene />
+      <div className="oz-container oz-hero-grid">
+        <div>
+          <p className="oz-eyebrow">CRM do solo ao time, com WhatsApp e IA</p>
+          <h1 className="oz-h1" style={{ marginTop: 24 }}>
+            A IA atende seu WhatsApp. <em>Você entra quando importa.</em>
+          </h1>
+          <p className="oz-lead" style={{ marginTop: 24, maxWidth: 560 }}>
+            Ela responde na hora, identifica quem está pronto para fechar e abre a negociação no seu funil. Você acompanha
+            tudo e assume quando quiser.
+          </p>
+          <div style={{ marginTop: 36, display: "flex", flexWrap: "wrap", gap: 12 }}>
+            <a id="hero-cta" href="/signup" className="oz-btn" style={{ minHeight: 52 }}>
+              Começar grátis
+              <ArrowRight size={16} aria-hidden />
+            </a>
+            <a href="#painel" className="oz-btn-ghost" style={{ minHeight: 52 }}>
+              Conhecer o painel
+            </a>
+          </div>
+          <ul className="oz-checks" style={{ marginTop: 32 }}>
+            {["Sem cartão", "Configuração guiada", "Cancele quando quiser"].map((item) => (
+              <li key={item}>
+                <Check size={16} strokeWidth={2.5} aria-hidden />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <TimChat />
       </div>
     </section>
   );

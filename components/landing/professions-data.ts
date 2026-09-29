@@ -1,11 +1,15 @@
-"use client";
-
-import * as React from "react";
-import { motion } from "framer-motion";
+/**
+ * O que cada profissão encontra no produto (textos da landing).
+ * A lista sai das rotas e integrações que existem de verdade: carteira, mapa,
+ * DataJud, Evolution, Autentique, feed .ics, push.
+ *
+ * ATENÇÃO: hoje só o imobiliário e o de vendas correspondem ao código do Tim.
+ * A linha do jurídico descreve comportamento ainda por implementar, por
+ * decisão do dono do produto. Se a implementação mudar, ajuste a copy junto.
+ */
 import {
   BadgeCheck,
   Bell,
-  Bot,
   CalendarDays,
   CalendarRange,
   Calculator,
@@ -34,11 +38,11 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-type Feature = { icon: LucideIcon; title: string; description: string };
-type Group = { label: string; features: Feature[] };
+export type Feature = { icon: LucideIcon; title: string; description: string };
+export type Group = { label: string; features: Feature[] };
 /** O que o Tim faz nesta profissão, com ordens de verdade que a pessoa daria. */
-type Tim = { line: string; examples: string[] };
-type Vertical = {
+export type Tim = { line: string; examples: string[] };
+export type Vertical = {
   key: string;
   tab: string;
   mobileTab: string;
@@ -69,7 +73,7 @@ type Vertical = {
  * dono do produto (o próximo passo é fazer o Tim falar cada profissão). Se a
  * implementação mudar de forma, ajuste a copy junto.
  */
-const COMUM: Feature[] = [
+export const COMUM: Feature[] = [
   { icon: MessageCircle, title: "WhatsApp que responde sozinho", description: "A IA atende na hora e você assume a conversa quando quiser." },
   { icon: CalendarDays, title: "Calendário interativo", description: "Assine no Google ou Apple por um link que atualiza sozinho." },
   { icon: Bell, title: "Lembrete no celular", description: "Notificação antes do compromisso, com app instalável." },
@@ -77,7 +81,7 @@ const COMUM: Feature[] = [
   { icon: Users, title: "Equipe com cargos", description: "Cada pessoa vê só o que o cargo dela permite." },
 ];
 
-const VERTICALS: Vertical[] = [
+export const VERTICALS: Vertical[] = [
   {
     key: "autonomous_seller",
     tab: "Vendedor autônomo",
@@ -194,154 +198,3 @@ const VERTICALS: Vertical[] = [
   },
 ];
 
-function FeatureRow({ feature, index }: { feature: Feature; index: number }) {
-  const Icon = feature.icon;
-  return (
-    <motion.div
-      className="flex min-w-0 gap-3 py-3.5"
-      initial={false}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1], delay: Math.min(index, 5) * 0.045 }}
-    >
-      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-xl bg-od-accent/10 text-od-accent-hover">
-        <Icon className="size-4" strokeWidth={2} />
-      </span>
-      <span className="min-w-0">
-        <span className="block text-[14px] font-semibold text-od-text">{feature.title}</span>
-        <span className="mt-0.5 block text-[13px] leading-relaxed text-od-text-2">{feature.description}</span>
-      </span>
-    </motion.div>
-  );
-}
-
-export function FeatureTabs() {
-  const [activeKey, setActiveKey] = React.useState(VERTICALS[2].key);
-  const vertical = VERTICALS.find((item) => item.key === activeKey) ?? VERTICALS[2];
-  const tabsRef = React.useRef<Array<HTMLButtonElement | null>>([]);
-
-  function handleTabKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number) {
-    const keys = ["ArrowRight", "ArrowLeft", "Home", "End"];
-    if (!keys.includes(event.key)) return;
-    event.preventDefault();
-    const nextIndex = event.key === "Home"
-      ? 0
-      : event.key === "End"
-        ? VERTICALS.length - 1
-        : (index + (event.key === "ArrowRight" ? 1 : -1) + VERTICALS.length) % VERTICALS.length;
-    setActiveKey(VERTICALS[nextIndex].key);
-    tabsRef.current[nextIndex]?.focus();
-  }
-
-  return (
-    <div>
-      {/* Controle segmentado: a versão anterior usava texto solto com um fio de
-          2px embaixo, que não lia como algo clicável. */}
-      <div
-        role="tablist"
-        aria-label="Escolha a profissão"
-        className="mx-auto flex max-w-[620px] gap-1 rounded-lg border border-od-border bg-od-muted-surface p-1"
-      >
-        {VERTICALS.map((item, index) => {
-          const selected = item.key === vertical.key;
-          return (
-            <button
-              key={item.key}
-              type="button"
-              role="tab"
-              id={`profession-tab-${item.key}`}
-              aria-controls="profession-tabpanel"
-              aria-label={item.tab}
-              aria-selected={selected}
-              tabIndex={selected ? 0 : -1}
-              ref={(node) => { tabsRef.current[index] = node; }}
-              onKeyDown={(event) => handleTabKeyDown(event, index)}
-              onClick={() => setActiveKey(item.key)}
-              className={`flex min-h-11 min-w-0 flex-1 items-center justify-center rounded px-2 text-[13px] font-semibold transition-colors sm:px-3 ${
-                selected ? "bg-od-surface text-od-text" : "text-od-text-3 hover:text-od-text-2"
-              }`}
-            >
-              <span className="sm:hidden" aria-hidden>{item.mobileTab}</span>
-              <span className="hidden sm:inline" aria-hidden>{item.tab}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div
-        id="profession-tabpanel"
-        role="tabpanel"
-        aria-labelledby={`profession-tab-${vertical.key}`}
-        tabIndex={0}
-        className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-od-focus"
-      >
-      <p className="mx-auto mt-8 max-w-[560px] text-center text-od-subtitle text-od-text">{vertical.headline}</p>
-
-      {/* Grupos empilhados em faixa: o rótulo à esquerda nomeia a faixa e os
-          itens ocupam a largura em duas colunas. Antes eram quatro blocos de
-          alturas diferentes num grid de dois, com a base toda irregular. */}
-      {/* Sem régua entre grupos: o rótulo à esquerda nomeia a faixa e a
-          zebra (lp-rows) marca o corte — o mesmo elemento do About. */}
-      <div className="lp-rows mt-10">
-        {/* O Tim é a peça central do produto, então não pode dividir peso com
-            "Honorários" numa lista de dez. Ganha faixa própria no topo, com
-            ícone maior, texto de corpo e ordens reais. Continua sendo faixa,
-            não card: o destaque vem de escala e do acento, não de moldura. */}
-        <div className="grid gap-x-8 gap-y-4 px-4 py-8 md:grid-cols-[160px_minmax(0,1fr)] md:px-5">
-          <p className="text-od-label text-od-accent-hover">Sócio-assistente</p>
-          <div className="min-w-0">
-            <div className="flex items-start gap-4">
-              <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-od-accent text-white">
-                <Bot className="size-5" strokeWidth={2} />
-              </span>
-              <div className="min-w-0">
-                <p className="text-[19px] font-bold tracking-[-0.01em] text-od-text">
-                  Tim, o sócio-assistente
-                </p>
-                <p className="mt-2.5 max-w-[62ch] text-[14px] leading-relaxed text-od-text-2">
-                  {vertical.tim.line}
-                </p>
-              </div>
-            </div>
-            <ul className="mt-6 flex flex-wrap gap-2.5 md:pl-15">
-              {vertical.tim.examples.map((example) => (
-                <li
-                  key={example}
-                  className="rounded bg-od-muted-surface px-3 py-2 text-[13px] leading-relaxed text-od-text-2"
-                >
-                  “{example}”
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {vertical.groups.map((group) => (
-          <div key={group.label} className="grid gap-x-8 px-4 py-7 md:grid-cols-[160px_minmax(0,1fr)] md:px-5">
-            <p className="pt-3.5 text-od-label text-od-text-3">{group.label}</p>
-            <div className="grid gap-x-8 sm:grid-cols-2 2xl:grid-cols-3">
-              {group.features.map((feature, index) => (
-                <FeatureRow key={feature.title} feature={feature} index={index} />
-              ))}
-            </div>
-          </div>
-        ))}
-
-        <div className="grid gap-x-8 px-4 py-7 md:grid-cols-[160px_minmax(0,1fr)] md:px-5">
-          <div className="pt-3.5">
-            <p className="text-od-label text-od-text-3">Em todas</p>
-            <p className="mt-1.5 text-[12px] leading-relaxed text-od-text-3">
-              Vale para as três profissões.
-            </p>
-          </div>
-          <div className="grid gap-x-8 sm:grid-cols-2 2xl:grid-cols-3">
-            {COMUM.map((feature, index) => (
-              <FeatureRow key={feature.title} feature={feature} index={index} />
-            ))}
-          </div>
-        </div>
-      </div>
-      </div>
-    </div>
-  );
-}

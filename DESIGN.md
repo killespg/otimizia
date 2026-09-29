@@ -7,7 +7,7 @@ experimentação; nenhuma peça de lá entra no CRM sem ser incorporada aqui.
 ## Registros separados
 
 - `components/design-system`: shell, navegação e primitivas reutilizáveis do produto.
-- `components/landing`: linguagem de marca e marketing. Não define o produto.
+- `components/landing`: linguagem de marca e marketing. Não define o produto. Tem sistema visual próprio (`app/landing.css`, escopado em `.oz`, dark cinematográfico com gradientes e vidro), independente dos tokens `--od-*`; as regras 3 e 4 abaixo valem para o produto, não para a landing.
 - Componentes de cada vertical ficam próximos do domínio (`legal`,
   `real-estate`, `seller`) e usam os mesmos tokens centrais.
 
